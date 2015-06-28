@@ -201,11 +201,9 @@ public class Validator {
 
     }
 
-    public synchronized static boolean validateSymbolFile(HashMap<String,String> args) {
+    public synchronized static boolean validateSymbolFile(String symbolFileName) {
         boolean correctFormat = true;
         try {
-            ArrayList<BeanSymbol> symbolList = new ArrayList<>();
-            String symbolFileName =args.get("symbolfile") == null ? "symbols.csv" : args.get("symbolfile");
             List<String> existingSymbolsLoad = Files.readAllLines(Paths.get(symbolFileName), StandardCharsets.UTF_8);
             existingSymbolsLoad.remove(0);
             int i = 1;
@@ -293,11 +291,9 @@ public class Validator {
 
     }
 
-     public synchronized static boolean validateConnectionFile(HashMap<String,String>args) {
+     public synchronized static boolean validateConnectionFile(String connectionFileName) {
         boolean correctFormat = true;
         try {
-            ArrayList<BeanSymbol> connectionList = new ArrayList<>();
-            String connectionFileName = args.get("connectionfile") == null ? "connection.csv" : args.get("connectionfile");
             List<String> existingConnectionsLoad = Files.readAllLines(Paths.get(connectionFileName), StandardCharsets.UTF_8);
             existingConnectionsLoad.remove(0);
             int i = 1;

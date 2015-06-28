@@ -53,7 +53,7 @@ public class Algorithm {
             String symbolFileName = globalProperties.getProperty("symbolfile", "symbols.csv").toString().trim();
             File symbolFile = new File(symbolFileName);
             logger.log(Level.FINE, "102, Symbol File, {0}", new Object[]{symbolFileName});
-            boolean symbolFileOK = Validator.validateSymbolFile(args);
+            boolean symbolFileOK = Validator.validateSymbolFile(symbolFileName);
             if (!symbolFileOK) {
                 JOptionPane.showMessageDialog(null, "Symbol File did not pass inStrat validation. Please check logs and correct the symbolFile. inStrat will now close.");
                 System.exit(0);
@@ -69,7 +69,7 @@ public class Algorithm {
                 String connectionFileName = globalProperties.getProperty("connectionfile", "connections.csv").toString().trim();
                 File connectionFile = new File(connectionFileName);
                 logger.log(Level.FINE, "102, Connection File, {0}", new Object[]{connectionFileName});
-                boolean connectionFileOK = Validator.validateConnectionFile(args);
+                boolean connectionFileOK = Validator.validateConnectionFile(connectionFileName);
                 if (!connectionFileOK) {
                     JOptionPane.showMessageDialog(null, "Connection File did not pass inStrat validation. Please check logs and correct the connectionFile. inStrat will now close.");
                     System.exit(0);
