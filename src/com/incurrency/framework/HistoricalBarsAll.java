@@ -271,7 +271,7 @@ public class HistoricalBarsAll implements Runnable {
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         String exitCalString = sdf.format(exitCal.getTime());
-        while (exitCal.get(Calendar.DAY_OF_WEEK) == 7 || exitCal.get(Calendar.DAY_OF_WEEK) == 1 || holidays.contains(exitCalString)) {
+        while (exitCal.get(Calendar.DAY_OF_WEEK) == 7 || exitCal.get(Calendar.DAY_OF_WEEK) == 1 || (holidays!=null && holidays.contains(exitCalString))) {
             exitCal.add(Calendar.DATE, 1);
             exitCalString = sdf.format(exitCal.getTime());
         }
