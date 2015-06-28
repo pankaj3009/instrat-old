@@ -1145,6 +1145,9 @@ public class TWSConnection extends Thread implements EWrapper {
         con.m_primaryExch = s.getPrimaryexchange();
         con.m_right = s.getRight();
         con.m_secType = s.getType();
+        if (s.getType().equals("FUT") || s.getType().equals("OPT")) {
+            con.m_includeExpired = true;
+        }
         if (!eClientSocket.isConnected()) {
             connectToTWS();
         }
