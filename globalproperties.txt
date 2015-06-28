@@ -1,0 +1,52 @@
+timezone=Asia/Kolkata
+openhour=9
+opentime=15
+closehour=15
+closetime=30
+connectionfileneeded=true
+symbolfileneeded=true
+symbolfile=201506_futures-inr.csv
+connectionfile=connections-inr.csv
+holidayfile=
+datasource=notanotherfund.com
+requestport=5555
+pubsubport=5556
+topic=INR
+getsnapshotfromallconnections=false
+headless=false
+backtest=false
+trading=false
+# backtest prices can be tick or bar. if tick, bars are created using these "ticks"
+backtestprices=tick
+# A backtest needs a set of parameters that will be iterated through. 
+backtestvariationfile=
+# bars can be set as "realtimebars" or "tick". If excluded, tick is assumed.
+bars=realtimebars
+# lowest denomination of barsize that is needed. 
+barsize=1sec
+deemedcancellation=103,135,201,202,461
+threadlimit=500
+
+
+#####
+requestdatapath=notanotherfund.com
+responsedatapath=
+openhour=9
+openminute=15
+closehour=15
+closeminute=30
+
+# Historical Data
+cassandraconnection=192.187.112.162
+
+cassandraport=4242
+
+barsize=1sec
+
+1min=india.nse.equity.s1.1min
+
+1sec=india.nse.equity.s1.1sec
+
+daily=india.nse.equity.s1.daily
+
+#Market Data Publisher
