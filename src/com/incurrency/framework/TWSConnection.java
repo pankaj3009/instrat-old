@@ -1870,9 +1870,12 @@ public class TWSConnection extends Thread implements EWrapper {
         tes.fireErrors(0, 0, "API.msg1: " + str, c);
     }
 
+   
     @Override
     public void error(int id, int errorCode, String errorMsg) {
         try {
+            logger.log(Level.INFO, "103,IB Message,{0}", new Object[]{c.getAccountName()+delimiter+id+delimiter+errorCode+delimiter+errorMsg});
+                    
             switch (errorCode) {
                 case 430://We are sorry, but fundamentals data for the security specified is not available.failed to fetch
 
@@ -1884,6 +1887,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 case 200: //No security definition has been found for the request
                     symbol = getRequestDetails().get(id) != null ? getRequestDetails().get(id).symbol.getSymbol() : "";
                     getRequestDetails().get(id).symbol.setStatus(false);
+                    TWSConnection.skipsymbol=true;
                     if (symbol.compareTo("") != 0) {
                         logger.log(Level.INFO, "103,ContractDetailsNotReceived,{0}", new Object[]{symbol});
                         requestDetails.get(id).requestStatus = EnumRequestStatus.CANCELLED;
@@ -1891,7 +1895,20 @@ public class TWSConnection extends Thread implements EWrapper {
 
                     }
                     break;
+                case 1100://Connectivity between IB and TWS has been lost.
+                case 2105://A historical data farm is disconnected
+                    setHistoricalDataFarmConnected(false);
+                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{c.getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    break;
+                case 1101://Connectivity between IB and TWS has been restoreddata lost.*
+                case 1102://Connectivity between IB and TWS has been restoreddata maintained.
+                case 2106://A historical data farm is connected.
+                    setHistoricalDataFarmConnected(true);
+                    logger.log(Level.INFO,"103,HistoricalDataFarmConnected,{0}",new Object[]{c.getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    break;
                 case 502: //could not connect . Check port
+                    setHistoricalDataFarmConnected(false);
+                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{c.getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     if (!this.severeEmailSent) {
                         Thread t = new Thread(new Mail(c.getOwnerEmail(), "Connection: " + c.getIp() + ", Port: " + c.getPort() + ", ClientID: " + c.getClientID() + "could not connect. Check that TWSSend is accessible and API connections are enabled in TWSSend. ", "Algorithm SEVERE ALERT"));
                         t.start();
@@ -1899,6 +1916,8 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     break;
                 case 504: //disconnected
+                    setHistoricalDataFarmConnected(false);
+                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{c.getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     if (!this.severeEmailSent) {
                         Thread t = new Thread(new Mail(c.getOwnerEmail(), "Connection: " + c.getIp() + ", Port: " + c.getPort() + ", ClientID: " + c.getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
                         t.start();
