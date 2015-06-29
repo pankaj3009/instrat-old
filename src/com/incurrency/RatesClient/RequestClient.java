@@ -37,7 +37,7 @@ public class RequestClient implements Runnable {
     ZMQ.Socket requester;
     int requestid = -1;
     BeanSymbol s;
-    private static AtomicBoolean availableForNewRequest = new AtomicBoolean(true);
+    private AtomicBoolean availableForNewRequest = new AtomicBoolean(true);
     private boolean savetofile = false;
     private boolean savetomemory = false;
     private boolean headerWritten = false;
@@ -88,7 +88,45 @@ public class RequestClient implements Runnable {
         shouldStop = true;
     }
 
+    /*
     public void sendRequest(String requestType, BeanSymbol s, String[] parameters, String metric,String[]timeSeries,boolean appendAtEnd) {
+        String concatParameters = null;
+        String request = null;
+        this.s=s;
+        this.appendAtEnd=appendAtEnd;
+        this.headerWritten=appendAtEnd;
+        this.timeSeries=timeSeries;
+        switch (requestType) {
+            case "contractid":
+                request = requestType + ":" + s.getDisplayname();
+                break;
+            case "backfill":
+                String append = parameters[0] + "," + parameters[1] + "," + parameters[2];
+                request = "requestid" + ":" + s.getDisplayname() + ":" + append + ":" + metric;
+                //parameters[0]=barSize
+                //parameters[1]=requestid
+                break;
+            case "historicaldata":
+                for (String p : parameters) {
+                    if (concatParameters == null) {
+                        concatParameters = p;
+                    } else {
+                        concatParameters = concatParameters + "," + p;
+                    }
+                }
+                request = requestType + ":" + s.getDisplayname() + ":" + concatParameters;
+                break;
+            default:
+                break;
+        }
+        requester.send(request.getBytes(ZMQ.CHARSET), 0);
+        //logger.log(Level.FINE,"Symbol: {0}, Request sent for {1}",new Object[]{symbol,requestType.toString()});
+        //System.out.println("setting availability for new request as false as new requestid request sent");
+        setAvailableForNewRequest(false);
+    }
+*/
+    
+      public void sendRequest(String requestType, BeanSymbol s, String[] parameters, String metric,String[]timeSeries,boolean appendAtEnd) {
         String concatParameters = null;
         String request = null;
         this.s=s;
@@ -125,11 +163,12 @@ public class RequestClient implements Runnable {
 
     }
 
+    
     @Override
     public void run() {
         try {
             while (!shouldStop) {
-                //if (!availableForNewRequest.get() && !intrarequestgap) {
+                if (!availableForNewRequest.get() && !intrarequestgap) {
                     Thread.yield();
                     byte[] responseBytes = requester.recv(0);
                     String response = new String(responseBytes, ZMQ.CHARSET);
@@ -143,7 +182,7 @@ public class RequestClient implements Runnable {
                         stop();
                         availableForNewRequest.set(true);
                     }
-                //}
+                }
             }
         } finally {
             close();
@@ -157,55 +196,23 @@ public class RequestClient implements Runnable {
             System.out.println(response);
             String identifier = response.split(":")[1];
             String[] symbol = identifier.split("_");
-                int id = -1;
-                if(symbol.length>=2){
-                    switch(symbol[1]){
-                        case "STK":
-                        case "IND":
-                            id = TradingUtil.getIDFromSymbol(symbol[0], symbol[1], "", "", "");
-                            break;
-                        case "FUT":
-                            id = TradingUtil.getIDFromSymbol(symbol[0], symbol[1], symbol[2], "", "");
-                            break;
-                        case "OPT":
-                            id = TradingUtil.getIDFromSymbol(symbol[0], symbol[1], symbol[2], symbol[3], symbol[4]);
-                            break;
-                        default:
-                            break;
-                    }
+                int id = TradingUtil.getIDFromDisplayName(symbol[0]);
                     if (id >= 0) {
                         int length=symbol.length;
-                        switch(symbol[1]){
-                        case "STK":
-                            if(length>=3){
-                                Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[2]));
-                            }
-                            if(length>=4){
-                                Parameters.symbol.get(id).setTickSize(Double.parseDouble(symbol[3]));
-                            }
-                            break;
-                        case "FUT":
-                            if(length>=4){
-                                Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[3]));
-                            }
-                            if(length>=5){
-                                Parameters.symbol.get(id).setTickSize(Double.parseDouble(symbol[4]));
-                            }
-                            break;
-                        case "OPT":
-                            if(length>=6){
-                                Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[5]));
-                            }
-                            if(length>=7){
-                                Parameters.symbol.get(id).setTickSize(Double.parseDouble(symbol[6]));
-                            }
+                        switch(length){
+                        case 2:
+                               Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[1]));
+                                break;
+                        case 3:
+                               Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[1]));
+                            Parameters.symbol.get(id).setTickSize(Double.parseDouble(symbol[2]));
                             break;
                         default:
                             break;
-                        }
+                            }
                     }
-                }
-                RequestClient.setAvailableForNewRequest(true);
+                
+                this.setAvailableForNewRequest(true);
                 break;
                 case "requestid":
                 requestid = Math.max(Integer.valueOf(response.split(":")[4]), RequestIDManager.singleton().getNextRequestId());
@@ -258,8 +265,7 @@ public class RequestClient implements Runnable {
                             logger.log(Level.FINER,"Time:{0}, Symbol:{1}, Price:{2}, Values:{3}",new Object[]{new SimpleDateFormat("yyyyMMdd HH:mm:ss").format(new Date(Long.valueOf(values[0]))),s.getDisplayname(),values[1],values.length});
                             s.setTimeSeries(tempBarSize, timeSeries, values);
                         }
-                        if (savetofile) {
-                            
+                        if (savetofile) {                            
                             String filename = s.getDisplayname().toUpperCase()+"_"+barSize.toString() + ".csv";
                             String[] values = value.split("_");
                             if (!headerWritten) {
@@ -338,14 +344,14 @@ public class RequestClient implements Runnable {
     /**
      * @return the availableForNewRequest
      */
-    public static boolean isAvailableForNewRequest() {
+    public  boolean isAvailableForNewRequest() {
         return availableForNewRequest.get();
     }
 
     /**
      * @param availableForNewRequest the availableForNewRequest to set
      */
-    public static void setAvailableForNewRequest(boolean availableForNewRequest) {
-        RequestClient.availableForNewRequest.set(availableForNewRequest);
+    public void setAvailableForNewRequest(boolean availableForNewRequest) {
+        this.availableForNewRequest.set(availableForNewRequest);
     }
 }

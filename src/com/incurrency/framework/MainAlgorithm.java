@@ -6,7 +6,6 @@ package com.incurrency.framework;
 
 import com.incurrency.RatesClient.RequestClient;
 import com.incurrency.RatesClient.SocketListener;
-import com.incurrency.adr.ADRPublisher;
 import static com.incurrency.framework.Algorithm.globalProperties;
 import com.verhas.licensor.License;
 import java.lang.reflect.Constructor;
@@ -26,7 +25,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -39,7 +37,6 @@ public class MainAlgorithm extends Algorithm {
     private static HashMap<String, String> input = new HashMap();
     public final static Logger logger = Logger.getLogger(MainAlgorithm.class.getName());
     private static final Object lockInput = new Object();
-    private ADRPublisher paramADR;
     public static JFrame ui;
     private Date preopenDate;
     private static Date startDate;
@@ -205,7 +202,7 @@ public class MainAlgorithm extends Algorithm {
                 int j = 0;
                 for (BeanSymbol s : Parameters.symbol) {
                     j = j < threadCount ? j : 0;
-                    while (!RequestClient.isAvailableForNewRequest()) {
+                    while (!arrRequestClient.get(j).isAvailableForNewRequest()) {
                         Thread.sleep(100);
                     }
                     arrRequestClient.get(j).sendRequest("contractid", s, null, null, null, false);
@@ -221,7 +218,7 @@ public class MainAlgorithm extends Algorithm {
                     Thread.yield();
                     complete = true;
                     for (RequestClient r : arrRequestClient) {
-                        complete = complete && RequestClient.isAvailableForNewRequest();
+                        complete = complete && r.isAvailableForNewRequest();
                     }
                 }
                 //populate contracts with missing contract id - to be deleted
@@ -456,6 +453,7 @@ public class MainAlgorithm extends Algorithm {
             //requestClientList.add(requestClient);
             t1.setName("DataRequester");
             t1.start();
+            int j=0;
             for (BeanSymbol s : Parameters.symbol) {
                 String symbol = "";
                 String[] expiries = null;
@@ -475,10 +473,10 @@ public class MainAlgorithm extends Algorithm {
                     default:
                         break;
                 }
-                while (!RequestClient.isAvailableForNewRequest()) {
+                while (!requestClientList.get(j).isAvailableForNewRequest()) {
                     Thread.sleep(100);
                 }
-
+                j++;
                 if (expiries != null) {
                     for (String exp : expiries) {
                         symbol = s.getDisplayname() + "_" + s.getType() + "_" + exp;
@@ -489,7 +487,9 @@ public class MainAlgorithm extends Algorithm {
                             Thread.sleep(100);
                             Thread.yield();
                             complete = true;
-                            complete = complete && RequestClient.isAvailableForNewRequest();
+                                                for (RequestClient r : requestClientList) {
+                        complete = complete && r.isAvailableForNewRequest();
+                    }
 
                         }
                     }
@@ -502,7 +502,9 @@ public class MainAlgorithm extends Algorithm {
                         Thread.sleep(100);
                         Thread.yield();
                         complete = true;
-                        complete = complete && RequestClient.isAvailableForNewRequest();
+                                                                    for (RequestClient r : requestClientList) {
+                        complete = complete && r.isAvailableForNewRequest();
+                    }
                     }
                 }
             }
@@ -859,20 +861,6 @@ public class MainAlgorithm extends Algorithm {
      */
     public void setTradingAlgoInitialized(boolean tradingAlgoInitialized) {
         this.tradingAlgoInitialized = tradingAlgoInitialized;
-    }
-
-    /**
-     * @return the paramADR
-     */
-    public ADRPublisher getParamADR() {
-        return paramADR;
-    }
-
-    /**
-     * @param paramADR the paramADR to set
-     */
-    public void setParamADR(ADRPublisher paramADR) {
-        this.paramADR = paramADR;
     }
 
     /**

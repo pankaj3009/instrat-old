@@ -1260,8 +1260,8 @@ public class TradingUtil {
     
     public static int getIDFromDisplayName(String displayName) {
         for (BeanSymbol symb : Parameters.symbol) {
-if(symb.getDisplayname().equals(displayName)){
-            return symb.getSerialno() - 1;
+            if (symb.getDisplayname().equals(displayName)) {
+                return symb.getSerialno() - 1;
             }
         }
         return -1;

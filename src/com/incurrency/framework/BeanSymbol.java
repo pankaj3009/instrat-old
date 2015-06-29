@@ -120,7 +120,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private int closeHour = Integer.valueOf(Algorithm.globalProperties.get("closehour").toString().trim());
     private int closeMinute = Integer.valueOf(Algorithm.globalProperties.get("closeminute").toString().trim());
     private String timeZone = Algorithm.globalProperties.get("timezone").toString().trim();
-    private List<BeanSymbol> symbols;
     private LimitedQueue<Double> tradedPrices;
     private LimitedQueue<Integer> tradedVolumes;
     private LimitedQueue<Long> tradedDateTime;
@@ -180,6 +179,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param minsize
      */
     public BeanSymbol(String symbol, String displayName, String type, String exchange, String currency, String expiry, String option, String right, int minsize) {
+        tradedPrices = new LimitedQueue(10);
+        tradedVolumes = new LimitedQueue(10);
+        tradedDateTime = new LimitedQueue(10);
         this.symbol = symbol;
         this.displayName = displayName;
         this.type = type;
@@ -193,6 +195,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     public BeanSymbol(String[] input) {
         try {
+                    tradedPrices = new LimitedQueue(10);
+        tradedVolumes = new LimitedQueue(10);
+        tradedDateTime = new LimitedQueue(10);
             propertySupport = new PropertyChangeSupport(this);
 //          this.serialno = Integer.parseInt(input[0]);
             this.symbol = input[1].equals("") ? null : input[1];
@@ -743,11 +748,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             }
         }
         synchronized (lockTimeSeries) {
-            if (symbols.size() > 0) {
-                addEmptyRows(size, labels, symbols);
+            if (Parameters.symbol.size() > 0) {
+                addEmptyRows(size, labels, Parameters.symbol);
             } else {
-                symbols.add(this);
-                addEmptyRows(size, labels, symbols);
+                Parameters.symbol.add(this);
+                addEmptyRows(size, labels, Parameters.symbol);
             }
             if (startTime > 0 && endTime > 0 && startTime <= endTime) {
                 out = Utilities.getTimeArray(startTime, endTime, size, Algorithm.holidays, true, openHour, openMinute, closeHour, closeMinute, timeZone);
@@ -755,11 +760,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 int length = out.size();
                 if (length > 0) {
                     if (getColumnLabels().get(size).indexOf(Long.valueOf(out.get(length - 1))) == -1) {
-                        if (symbols.size() > 0) {
-                            addEmptyColumns(out, symbols);
+                        if (Parameters.symbol.size() > 0) {
+                            addEmptyColumns(out, Parameters.symbol);
                         } else {
-                            symbols.add(this);
-                            addEmptyColumns(out, symbols);
+                            Parameters.symbol.add(this);
+                            addEmptyColumns(out, Parameters.symbol);
                         }
 
                     }
@@ -863,7 +868,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     @Override
     public void reader(String inputfile, ArrayList<BeanSymbol> target) {
-        symbols = target;
         File inputFile = new File(inputfile);
         if (inputFile.exists() && !inputFile.isDirectory()) {
             try {

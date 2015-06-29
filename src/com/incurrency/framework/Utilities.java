@@ -57,14 +57,14 @@ public class Utilities {
      * @param appendAtEnd data retrieved from the request is appended to the end of specified output text file
      * @return 
      */
-     public BeanSymbol requestMarketData(BeanSymbol s, String[] timeSeries, String metric, String startTime, String endTime, EnumBarSize barSize,boolean appendAtEnd) {
+     public static BeanSymbol requestMarketData(BeanSymbol s, String[] timeSeries, String metric, String startTime, String endTime, EnumBarSize barSize,boolean appendAtEnd) {
         try {
             SimpleDateFormat sdfExtendedTimeFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
             Date startDate = sdfExtendedTimeFormat.parse(startTime);
             Date endDate = sdfExtendedTimeFormat.parse(endTime);
             String symbol = null;
             symbol = s.getDisplayname().replaceAll(" ", "").replaceAll("&", "").toLowerCase() + "_" + s.getType();
-            String path = Algorithm.globalProperties.getProperty("path").toString().toLowerCase();
+            String path = Algorithm.globalProperties.getProperty("historicaldataserver").toString().toLowerCase();
             RequestClient rc = new RequestClient(path);
             String concatMetrics = null;
             for (String m : timeSeries) {
@@ -81,6 +81,7 @@ public class Utilities {
 
 
         } catch (Exception e) {
+            logger.log(Level.INFO,null,e);
         } finally {
             return s;
         }

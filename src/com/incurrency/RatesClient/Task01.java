@@ -19,12 +19,12 @@ import static com.incurrency.framework.Algorithm.*;
  *
  * @author pankaj
  */
-public class Task implements Runnable {
+public class Task01 implements Runnable {
 
     String input;
     private static final Logger logger = Logger.getLogger(Task.class.getName());
 
-    public Task(String input) {
+    public Task01(String input) {
         this.input = input;
     }
 
