@@ -259,7 +259,7 @@ public class OrderForm extends javax.swing.JFrame {
         int dynamicOrderDuration;
         double maxSlippage;
 
-        int strategyIndex = MainAlgorithm.strategies.indexOf(strategy);
+        int strategyIndex = MainAlgorithm.getStrategies().indexOf(strategy);
         Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
         oms = s.getOms();
         maxOrderDuration = s.getMaxOrderDuration();
@@ -281,7 +281,7 @@ public class OrderForm extends javax.swing.JFrame {
 
     private void cmdCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdCancelActionPerformed
                ExecutionManager oms;
-        int strategyIndex = MainAlgorithm.strategies.indexOf(strategy);
+        int strategyIndex = MainAlgorithm.getStrategies().indexOf(strategy);
         Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
         oms = s.getOms();
         if (oms != null) {

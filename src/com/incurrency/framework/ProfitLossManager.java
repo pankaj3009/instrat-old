@@ -101,7 +101,7 @@ public class ProfitLossManager implements TradeListener {
                     }
    
                     double pnl = Parameters.connection.get(j).getPnlByStrategy().get(strategy) != null ? Parameters.connection.get(j).getPnlByStrategy().get(strategy) : 0;
-                    if (MainAlgorithm.strategies.indexOf(strategy) >= 0 && ((this.getPeriodicProfitTarget() > 0 && pnl > getPeriodicProfitTarget() * profitsToBeTaken.get(j)) || (this.getDayProfitTarget() > 0 && !this.isDayProfitTargetHit() && pnl > this.getDayProfitTarget()) || (this.getDayStopLoss() > 0 && !this.isDayStopLossHit() && pnl < -this.getDayStopLoss()))) { //if pnl for the strategy in account > takeprofit target
+                    if (MainAlgorithm.getStrategies().indexOf(strategy) >= 0 && ((this.getPeriodicProfitTarget() > 0 && pnl > getPeriodicProfitTarget() * profitsToBeTaken.get(j)) || (this.getDayProfitTarget() > 0 && !this.isDayProfitTargetHit() && pnl > this.getDayProfitTarget()) || (this.getDayStopLoss() > 0 && !this.isDayStopLossHit() && pnl < -this.getDayStopLoss()))) { //if pnl for the strategy in account > takeprofit target
                         if (pnl > this.getDayProfitTarget()) {
                             this.setDayProfitTargetHit(true);
                             //logger.log(Level.INFO, "Day Take Profit Hit. Strategy:{0}, Day Take Profit: {1}, Current PNL:{2}", new Object[]{strategy, this.getDayProfitTarget(), pnl});
@@ -115,7 +115,7 @@ public class ProfitLossManager implements TradeListener {
                             //logger.log(Level.INFO, "Claw Profit Target Hit. Strategy:{0}, Claw Profit Target{1}", new Object[]{strategy, (profitsTaken) * this.getPeriodicProfitTarget()});
 
                         }
-                        int strategyIndex = MainAlgorithm.strategies.indexOf(strategy);
+                        int strategyIndex = MainAlgorithm.getStrategies().indexOf(strategy);
                         //logger.log(Level.INFO, "Size of StrategyInstances: {0}, strategyIndex: {1}", new Object[]{MainAlgorithm.strategyInstances.size(), strategyIndex});
                         ExecutionManager oms = strategyIndex >= 0 ? MainAlgorithm.strategyInstances.get(strategyIndex).getOms() : null;
                         if (oms != null) {

@@ -41,7 +41,7 @@ public class TableModelPNL extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return !MainAlgorithm.instantiated ? 0 : MainAlgorithm.strategies == null ? 0 : MainAlgorithm.strategies.size();
+        return !MainAlgorithm.instantiated ? 0 : MainAlgorithm.getStrategies() == null ? 0 : MainAlgorithm.getStrategies().size();
     }
 
     @Override
@@ -52,12 +52,12 @@ public class TableModelPNL extends AbstractTableModel {
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         this.display = DashBoardNew.comboDisplayGetConnection();
-        String strategy = MainAlgorithm.strategies.get(rowIndex);
+        String strategy = MainAlgorithm.getStrategies().get(rowIndex);
         Index ind = new Index(strategy, rowIndex);      
 
         switch (columnIndex) {
             case 0:
-                return MainAlgorithm.strategies.get(rowIndex);
+                return MainAlgorithm.getStrategies().get(rowIndex);
             case 1:
                 return ((int) Math.round(Parameters.connection.get(display).getPnlByStrategy().get(strategy) * 100)) / 100;
 

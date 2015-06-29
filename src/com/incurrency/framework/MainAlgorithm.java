@@ -43,7 +43,7 @@ public class MainAlgorithm extends Algorithm {
     private static Date closeDate;
     Timer preopen;
     public static Boolean preOpenCompleted = false;
-    public static List<String> strategies = new ArrayList();
+    private static List<String> strategies = new ArrayList();
     private List<Double> maxPNL = new ArrayList();
     private List<Double> minPNL = new ArrayList();
     private String historicalData;
@@ -73,6 +73,7 @@ public class MainAlgorithm extends Algorithm {
     private static int backtestFileCount = 1;
     private volatile static Date algoDate = null;
     private static final Object lockUseForTrading = new Object();
+    private static final Object lockStrategies = new Object();
     public static int selectedStrategy = 0;
     /*
      * EOD Validation Fixed
@@ -569,7 +570,7 @@ public class MainAlgorithm extends Algorithm {
             strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts, backtestFileCount));
             String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-");
             String strategyName = tempStrategyArray[tempStrategyArray.length - 1] + backtestFileCount;
-            strategies.add(strategyName);
+            getStrategies().add(strategyName);
             backtestFileCount = backtestFileCount + 1;
             return;
         }
@@ -582,7 +583,7 @@ public class MainAlgorithm extends Algorithm {
 
     public void postInit() {
         if (strategyInstances.isEmpty()) {
-            strategies.add("NoStrategy");
+            getStrategies().add("NoStrategy");
         }
         for (int i = 0; i < strategyInstances.size(); i++) {
             minPNL.add(0D);
@@ -634,10 +635,11 @@ public class MainAlgorithm extends Algorithm {
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
             Properties p = TradingUtil.loadParameters(parameterFile);
             if (useForTrading) {
-                strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts, null));
                 String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-");
                 String strategyName = tempStrategyArray[tempStrategyArray.length - 1];
-                strategies.add(strategyName);
+                getStrategies().add(strategyName);
+                strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts, null));
+                
             } else if(Boolean.parseBoolean(globalProperties.getProperty("backtest","false"))){
                 ArrayList<ArrayList<String>> parameterList = new ArrayList<>();
                 for (BackTestParameter b : backtestParameters) {
@@ -735,14 +737,22 @@ public class MainAlgorithm extends Algorithm {
     /**
      * @return the licensedStrategies
      */
-    public List<String> getStrategies() {
+    public static List<String> getStrategies() {
+        synchronized(lockStrategies){
         return strategies;
+        }
+    }
+    
+    public static void delStrategies(String strategy) {
+        synchronized(lockStrategies){
+            strategies.remove(strategy);
+        }
     }
 
     /**
      * @param licensedStrategies the licensedStrategies to set
      */
-    public void setStrategies(List<String> strategies) {
+    public static synchronized void setStrategies(List<String> strategies) {
         MainAlgorithm.strategies = strategies;
     }
 

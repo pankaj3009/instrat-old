@@ -60,7 +60,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         initComponents2();
 
         List<String> inputList = new ArrayList();
-        for(String s: MainAlgorithm.strategies){
+        for(String s: MainAlgorithm.getStrategies()){
             inputList.add(s.toUpperCase());
         }
         
