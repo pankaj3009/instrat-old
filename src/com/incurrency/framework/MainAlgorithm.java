@@ -97,6 +97,14 @@ public class MainAlgorithm extends Algorithm {
             runBackTest();
         }else if(Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
             connectToTWS();
+            boolean subscribe=Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
+            if (subscribe) {
+                getContractInformation();
+                subscribeMarketData();
+                Timer keepAlive = new Timer("Timer: Maintain IB Connection");
+                keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
+            }
+            
         }
         collectTicks = Boolean.parseBoolean(globalProperties.getProperty("collectticks", "false").toString().trim());
     }
