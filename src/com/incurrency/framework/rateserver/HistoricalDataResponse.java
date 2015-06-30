@@ -204,7 +204,8 @@ public class HistoricalDataResponse implements Runnable {
         }
     }
 
-    private void publishTick(String symbol, String[] metric) throws URISyntaxException, IOException, InterruptedException {
+    private void publishTick(String symbol, String[] metric) {
+        try{
         HttpClient client = new HttpClient("http://192.187.112.162:8085");
         String metricnew = null;
         int startCounter = 0;
@@ -275,7 +276,9 @@ public class HistoricalDataResponse implements Runnable {
         long memoryCleared = memoryNow - memoryLater;
         System.out.println("Memory cleared:" + memoryCleared);
         client.shutdown();
-
+        }catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
+        }
     }
 
     public OHLCV getSplitShares(OHLCV d) {
