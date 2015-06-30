@@ -199,7 +199,7 @@ public class MainAlgorithm extends Algorithm {
         ArrayList<RequestClient> arrRequestClient = new ArrayList<>();
         if (TradingUtil.checkLicense() && !duplicateAccounts) {
             int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
-            if (globalProperties.getProperty("datasource") != null) {
+            if (globalProperties.getProperty("datasource") != null &&!"".equals(globalProperties.getProperty("datasource").toString().trim()) ) {
                 for (int i = 0; i < threadCount; i++) {
                     String dataSource = globalProperties.getProperty("datasource").toString().trim();
                     String requestPort = globalProperties.getProperty("requestport", "5555").toString().trim();
@@ -345,7 +345,7 @@ public class MainAlgorithm extends Algorithm {
     }
 
     private void subscribeMarketData() {
-        if (globalProperties.getProperty("datasource") != null) { //use jeromq connector
+        if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use jeromq connector
             String dataSource = globalProperties.getProperty("datasource").toString().trim();
             String pubsubPort = globalProperties.getProperty("pubsubport", "5556").toString().trim();
             String topic = globalProperties.getProperty("topic", "INR").toString().trim();
@@ -379,7 +379,7 @@ public class MainAlgorithm extends Algorithm {
             serialno = serialno + 1;
         }
         if (TradingUtil.checkLicense() && !duplicateAccounts) {
-            if (globalProperties.getProperty("datasource") == null) { //use IB for market data
+            if (globalProperties.getProperty("datasource") == null||"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use IB for market data
                 int count = Parameters.symbol.size();
                 int allocatedCapacity = 0;
                 for (BeanConnection c : Parameters.connection) {
