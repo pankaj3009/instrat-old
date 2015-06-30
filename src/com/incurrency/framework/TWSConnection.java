@@ -27,10 +27,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import static com.incurrency.framework.Algorithm.globalProperties;
-import com.incurrency.rateserver.Cassandra;
-import com.incurrency.rateserver.Rates;
+import com.incurrency.framework.rateserver.Cassandra;
+import com.incurrency.framework.rateserver.Rates;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.concurrent.atomic.AtomicBoolean;
 /**
  *
  * @author admin
@@ -76,6 +77,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public String rtFutureMetric;
     public String rtOptionMetric;
     public static String[][] marketData;
+    public static AtomicBoolean serverInitialized=new AtomicBoolean();
 
     
     public TWSConnection(BeanConnection c) {
@@ -1255,7 +1257,7 @@ public class TWSConnection extends Thread implements EWrapper {
     //<editor-fold defaultstate="collapsed" desc="EWrapper Overrides">
     @Override
     public void tickPrice(int tickerId, int field, double price, int canAutoExecute) {
-        if(realtime){
+        if(realtime && serverInitialized.get()){
             realtime_tickPrice(tickerId,field,price,canAutoExecute);
         }else{
         try {
@@ -1390,7 +1392,7 @@ public class TWSConnection extends Thread implements EWrapper {
     
     @Override
     public void tickSize(int tickerId, int field, int size) {
-        if(realtime){
+        if(realtime && serverInitialized.get()){
             realtime_tickSize(tickerId,field,size);
         }else{
                 

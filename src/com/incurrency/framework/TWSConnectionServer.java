@@ -5,8 +5,8 @@
 package com.incurrency.framework;
 
 import com.ib.client.*;
-import com.incurrency.rateserver.Cassandra;
-import com.incurrency.rateserver.Rates;
+import com.incurrency.framework.rateserver.Cassandra;
+import com.incurrency.framework.rateserver.Rates;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;

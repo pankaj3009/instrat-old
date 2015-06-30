@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.incurrency.rateserver;
+package com.incurrency.framework.rateserver;
 
 import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.BeanConnection;
@@ -15,9 +15,11 @@ import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static com.incurrency.framework.Algorithm.*;
+import com.incurrency.framework.TWSConnection;
 import com.incurrency.framework.Utilities;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
 
 /**
@@ -33,7 +35,7 @@ public class Rates {
 
     private static int publishport;
     private static int responseport;
-    public static com.incurrency.rateserver.ServerPubSub rateServer;
+    public static com.incurrency.framework.rateserver.ServerPubSub rateServer;
     private static final Logger logger = Logger.getLogger(Rates.class.getName());
     Date endDate;
     public static String country;
@@ -50,18 +52,16 @@ public class Rates {
 
     public Rates(String parameterFile) {
         loadParameters(parameterFile);
-        rateServer= new com.incurrency.rateserver.ServerPubSub(publishport);
+        rateServer= new com.incurrency.framework.rateserver.ServerPubSub(publishport);
         Thread t = new Thread(new ServerResponse(responseport));
         t.setName("ResponseServer");
         t.start();
-        Timer closeProcessing = new Timer("Timer: Rates CloseProcessing");
-        if (endDate != null) {
-            closeProcessing.schedule(runPrintOrders, com.incurrency.framework.DateUtil.addSeconds(endDate, 600));
-        }
+        TWSConnection.serverInitialized.set(true);
+
     }
 
     private void loadParameters(String ParameterFile) {
-        properties=Utilities.loadParameters(ParameterFile);
+properties=Utilities.loadParameters(ParameterFile);
         String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime());
         String endDateStr;
         if (Boolean.getBoolean(properties.getProperty("historicaldata","false"))) {
@@ -69,13 +69,15 @@ public class Rates {
         } else {
             endDateStr = currDateStr + " " + properties.getProperty("endtime");
         }
-        if (!endDateStr.contains("null")) {
+        if(Utilities.isDate(endDateStr, new SimpleDateFormat("yyyyMMdd HH:mm:ss"))){
             endDate = DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, Algorithm.timeZone);
-
             if (new Date().compareTo(endDate) > 0) {
                 //increase enddate by one calendar day
                 endDate = DateUtil.addDays(endDate, 1);
             }
+        }
+        if(endDate!=null){
+            MainAlgorithm.setCloseDate(endDate);
         }
         responseport=Integer.parseInt(properties.getProperty("responseport", "5555"));
         publishport=Integer.parseInt(properties.getProperty("publishport", "5556"));
@@ -90,6 +92,7 @@ public class Rates {
         rtFutureMetric = properties.getProperty("rtfuturemetric");
         rtEquityMetric = properties.getProperty("rtequitymetric");
         rtOptionMetric = properties.getProperty("rtoptionmetric");
+        boolean realtime=Boolean.parseBoolean(properties.getProperty("realtime","false"));
         pushToCassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra","false")) ;
         boolean savetocassandra=Boolean.parseBoolean(properties.getProperty("savetocassandra","false"));
         if (Parameters.connection.size()>0) {
@@ -104,6 +107,7 @@ public class Rates {
                 c.getWrapper().rtEquityMetric = rtEquityMetric;
                 c.getWrapper().rtFutureMetric = rtFutureMetric;
                 c.getWrapper().rtOptionMetric = rtOptionMetric;
+                c.getWrapper().realtime=realtime;
                 c.getWrapper().saveToCassandra = savetocassandra;
                 if (savetocassandra) {
                     try {
@@ -127,17 +131,6 @@ public class Rates {
         logger.log(Level.INFO, "RT Equity Metric: {0}", rtEquityMetric);
         logger.log(Level.INFO, "RT Future Metric: {0}", rtFutureMetric);
         logger.log(Level.INFO, "RT Option Metric {0}", rtOptionMetric);
-
-
     }
-    TimerTask runPrintOrders = new TimerTask() {
-        public void run() {
-            closeSystem();
-        }
-    };
 
-    private void closeSystem() {
-        logger.log(Level.INFO, "EndTime Reached. Closing RateServer");
-        System.exit(0);
-    }
 }

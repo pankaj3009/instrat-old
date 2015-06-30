@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.incurrency.rateserver;
+package com.incurrency.framework.rateserver;
 
 import java.io.PrintStream;
 import java.util.logging.Level;
