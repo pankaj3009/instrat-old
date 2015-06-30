@@ -27,6 +27,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import static com.incurrency.framework.Algorithm.globalProperties;
+import com.incurrency.rateserver.Cassandra;
+import com.incurrency.rateserver.Rates;
+import java.io.PrintStream;
+import java.net.Socket;
 /**
  *
  * @author admin
@@ -56,6 +60,22 @@ public class TWSConnection extends Thread implements EWrapper {
     final static Object lock_request =new Object();
     private boolean historicalDataFarmConnected=true;
     public static boolean skipsymbol=false;
+    //Parameters for dataserver
+    public String cassandraIP = "192.187.112.162";
+    public int cassandraPort = 4242;
+    public Socket cassandraConnection;
+    public PrintStream output;
+    public boolean useRTVolume = false;
+    public String topic;
+    public boolean saveToCassandra;
+    public boolean realtime=false;
+    public String tickEquityMetric;
+    public String tickFutureMetric;
+    public String tickOptionMetric;
+    public String rtEquityMetric;
+    public String rtFutureMetric;
+    public String rtOptionMetric;
+    public static String[][] marketData;
 
     
     public TWSConnection(BeanConnection c) {
@@ -71,15 +91,15 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     public boolean connectToTWS() {
-        String twsHost = c.getIp();
-        int twsPort = c.getPort();
-        int clientID = c.getClientID();
+        String twsHost = getC().getIp();
+        int twsPort = getC().getPort();
+        int clientID = getC().getClientID();
         if (!eClientSocket.isConnected()) {
             eClientSocket.eConnect(twsHost, twsPort, clientID);
             int waitCount = 0;
             String orderid=this.getOrderIDSync().take();
-            c.getIdmanager().initializeOrderId(Integer.valueOf(orderid));
-            logger.log(Level.INFO,"Next OrderID Received,{0}_{1}_{2}_{3}",new Object[]{c.getIp(),c.getPort(),c.getClientID(),orderid});
+            getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
+            logger.log(Level.INFO,"Next OrderID Received,{0}_{1}_{2}_{3}",new Object[]{getC().getIp(),getC().getPort(),getC().getClientID(),orderid});
             /*
             while (!c.getIdmanager().singleton().isOrderIdInitialized() && (waitCount < MAX_WAIT_COUNT)) {
                 try {
@@ -124,9 +144,9 @@ public class TWSConnection extends Thread implements EWrapper {
             con.m_right = s.getRight();
             con.m_secType = s.getType();
             con.m_strike = s.getOption() == null ? 0 : Double.parseDouble(s.getOption());
-            if (c.getReqHandle().requestContractDetailsHandle()) {
-                c.getReqHandle().setContractDetailsReturned(false);
-                if (c.getReqHandle().getHandle()) {
+            if (getC().getReqHandle().requestContractDetailsHandle()) {
+                getC().getReqHandle().setContractDetailsReturned(false);
+                if (getC().getReqHandle().getHandle()) {
                     mRequestId = RequestIDManager.singleton().getNextRequestId();
                     //c.getmReqID().put(mRequestId, s.getSerialno());
                     synchronized(lock_request){
@@ -154,7 +174,7 @@ public class TWSConnection extends Thread implements EWrapper {
         } else {
             con.m_secType = s.getType();
         }
-        if (c.getReqHandle().getHandle()) {
+        if (getC().getReqHandle().getHandle()) {
             mRequestId = RequestIDManager.singleton().getNextRequestId();
             //c.getmReqID().put(mRequestId, s.getSerialno());
             synchronized(lock_request){
@@ -177,7 +197,7 @@ public class TWSConnection extends Thread implements EWrapper {
             }
         }
         }
-        if (proceed && c.getReqHandle().getHandle()) {
+        if (proceed && getC().getReqHandle().getHandle()) {
             int mRequestId = RequestIDManager.singleton().getNextRequestId();
             synchronized(lock_request){
                 getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
@@ -190,7 +210,7 @@ public class TWSConnection extends Thread implements EWrapper {
             con.m_exchange = s.getExchange();
             con.m_currency = s.getCurrency();
             this.eClientSocket.reqMktData(mRequestId, con, null, true);
-            logger.log(Level.FINER, "403,OneTimeSnapshotSent, {0}", new Object[]{c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+            logger.log(Level.FINER, "403,OneTimeSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
         }
     }
 
@@ -200,7 +220,7 @@ public class TWSConnection extends Thread implements EWrapper {
         }
         //for streaming request
         if (!isSnap) { //streaming data request
-            if (c.getReqHandle().getHandle()) {
+            if (getC().getReqHandle().getHandle()) {
                 mRequestId = RequestIDManager.singleton().getNextRequestId();
                 // Store the request ID for each symbol for later use while updating the symbol table
                 s.setReqID(mRequestId);
@@ -213,18 +233,18 @@ public class TWSConnection extends Thread implements EWrapper {
 
                 //c.getmStreamingSymbolRequestID().put(s.getSerialno(), mRequestId);
                 eClientSocket.reqMktData(mRequestId, contract, null, isSnap);
-                s.setDataConnectionID(Parameters.connection.indexOf(c));
-                logger.log(Level.FINER, "403,MarketDataRequestSent, {0}", new Object[]{c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+                s.setDataConnectionID(Parameters.connection.indexOf(getC()));
+                logger.log(Level.FINER, "403,MarketDataRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
             } else {
                 System.out.println("101,ErrorOnHandle,{0}" + s.getDisplayname());
             }
         } else if (isSnap) {
-            if (c.getReqHandle().getHandle()) {
+            if (getC().getReqHandle().getHandle()) {
                 if (this.getRequestDetailsWithSymbolKey().containsKey(s.getSerialno())) {//if the symbol is already being serviced, 
                     if (new Date().getTime() > getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestTime + 10000) { //and request is over 10 seconds seconds old
                         int origReqID = getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestID;
-                        c.getWrapper().eClientSocket.cancelMktData(origReqID);
-                        logger.log(Level.FINEST, "403,SnapshotCancelled, {0}", new Object[]{c.getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
+                        getC().getWrapper().eClientSocket.cancelMktData(origReqID);
+                        logger.log(Level.FINEST, "403,SnapshotCancelled, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
                         //there is no callback to confirm that IB processed the market data cancellation, so we will just remove from queue
                         getRequestDetailsWithSymbolKey().remove(s.getSerialno());
                         synchronized(lock_request){
@@ -241,8 +261,8 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     getRequestDetailsWithSymbolKey().put(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
                     eClientSocket.reqMktData(mRequestId, contract, null, isSnap);
-                    s.setDataConnectionID(Parameters.connection.indexOf(c));
-                    logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+                    s.setDataConnectionID(Parameters.connection.indexOf(getC()));
+                    logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
                 }
             } else {
                 System.out.println("### Error getting handle while requesting snapshot data for contract " + contract.m_conId + " Name: " + s.getSymbol());
@@ -262,15 +282,15 @@ public class TWSConnection extends Thread implements EWrapper {
         if (!eClientSocket.isConnected()) {
             connectToTWS();
         }
-        if (c.getReqHistoricalHandle().getHandle()) {
-            if (c.getReqHandle().getHandle()) {
+        if (getC().getReqHistoricalHandle().getHandle()) {
+            if (getC().getReqHandle().getHandle()) {
                 mRequestId = RequestIDManager.singleton().getNextRequestId();
 
                 synchronized(lock_request){
                     getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.REALTIMEBAR,EnumBarSize.FIVESECOND, EnumRequestStatus.PENDING, new Date().getTime()));
                 }
                 eClientSocket.reqRealTimeBars(mRequestId, con, 5, "TRADES", true); //only returns regular trading hours
-                logger.log(Level.FINER, "403,RealTimeBarsRequestSent, {0}", new Object[]{c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+                logger.log(Level.FINER, "403,RealTimeBarsRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
 
             } else {
                 System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getSymbol());
@@ -315,15 +335,15 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public HashMap<Integer, Order> createOrder(int id, int internalOrderID, int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, EnumOrderStage stage, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<Integer, Integer> stubs) {
         if (recentOrders == null) {
-            recentOrders = new LimitedQueue(c.getOrdersHaltTrading());
+            recentOrders = new LimitedQueue(getC().getOrdersHaltTrading());
         }
 
         HashMap<Integer, Order> orders = new HashMap<>();
-        if ((ordSide == EnumOrderSide.BUY || ordSide == EnumOrderSide.SHORT) && stage != EnumOrderStage.AMEND && (isStopTrading() || (getRecentOrders().size() == c.getOrdersHaltTrading() && (new Date().getTime() - (Long) getRecentOrders().get(0)) < 120000))) {
-            Thread t = new Thread(new Mail(c.getOwnerEmail(), "Account: " + c.getAccountName() + ", Connection: " + c.getIp() + ", Port: " + c.getPort() + ", ClientID: " + c.getClientID() + " has sent " + c.getOrdersHaltTrading() + " orders in the last two minutes. Trading halted", "Algorithm SEVERE ALERT - " + orderRef.toUpperCase()));
+        if ((ordSide == EnumOrderSide.BUY || ordSide == EnumOrderSide.SHORT) && stage != EnumOrderStage.AMEND && (isStopTrading() || (getRecentOrders().size() == getC().getOrdersHaltTrading() && (new Date().getTime() - (Long) getRecentOrders().get(0)) < 120000))) {
+            Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Account: " + getC().getAccountName() + ", Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " has sent " + getC().getOrdersHaltTrading() + " orders in the last two minutes. Trading halted", "Algorithm SEVERE ALERT - " + orderRef.toUpperCase()));
             t.start();
             setStopTrading(true);
-            logger.log(Level.INFO, "303,StopTrading,{0}", new Object[]{c.getAccountName() + delimiter + this.getRecentOrders().size() + delimiter + DateUtil.getFormatedDate("yyyMMdd HH:mm:ss", (long) this.getRecentOrders().get(0))});
+            logger.log(Level.INFO, "303,StopTrading,{0}", new Object[]{getC().getAccountName() + delimiter + this.getRecentOrders().size() + delimiter + DateUtil.getFormatedDate("yyyMMdd HH:mm:ss", (long) this.getRecentOrders().get(0))});
             return orders;
         } else {
             if (!Parameters.symbol.get(id).getType().equals("COMBO")) {
@@ -441,7 +461,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
         order.m_orderRef = orderRef;
         order.m_totalQuantity = size;
-        order.m_account = c.getAccountName().toUpperCase();
+        order.m_account = getC().getAccountName().toUpperCase();
         if ("".compareTo(link) != 0) {
             order.m_ocaGroup = ocaGroup;
             order.m_ocaType = 2;
@@ -460,7 +480,7 @@ public class TWSConnection extends Thread implements EWrapper {
             default:
                 break;
         }
-        logger.log(Level.FINE, "307,OrderDetails,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + order.m_action + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate});
+        logger.log(Level.FINE, "307,OrderDetails,{0}", new Object[]{getC().getAccountName() + delimiter + order.m_orderRef + delimiter + order.m_action + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate});
         return order;
 
     }
@@ -645,10 +665,10 @@ public class TWSConnection extends Thread implements EWrapper {
                 while (pairLimitPrice > limit) {
                     loops = loops + 1;
                     for (int i = 0; i < orders.size(); i++) {
-                        OrderBean ob = c.getOrders().get(orders.get(i));
+                        OrderBean ob = getC().getOrders().get(orders.get(i));
                         int childid = ob.getChildSymbolID() - 1;
                         if (ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-                            limitPrices.put(childid, c.getOrders().get(orders.get(i)).getFillPrice());
+                            limitPrices.put(childid, getC().getOrders().get(orders.get(i)).getFillPrice());
                         } else if (Math.round((minTickValue * loops) / tickValue.get(childid)) > Math.round((minTickValue * (loops - 1)) / tickValue.get(childid))) {
                             limitPrices.put(childid, limitPrices.get(childid) - Parameters.symbol.get(childid).getTickSize() * buysell.get(childid));
                         }
@@ -665,10 +685,10 @@ public class TWSConnection extends Thread implements EWrapper {
                 while (pairLimitPrice < limit) {
                     loops = loops + 1;
                     for (int j = 0; j < orders.size(); j++) {
-                        OrderBean ob = c.getOrders().get(orders.get(j));
+                        OrderBean ob = getC().getOrders().get(orders.get(j));
                         int childid = ob.getChildSymbolID() - 1;
                         if (ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-                            limitPrices.put(childid, c.getOrders().get(orders.get(j)).getFillPrice());
+                            limitPrices.put(childid, getC().getOrders().get(orders.get(j)).getFillPrice());
                         } else if (Math.round((minTickValue * loops) / tickValue.get(childid)) > Math.round((minTickValue * (loops - 1)) / tickValue.get(childid))) {
                             limitPrices.put(childid, limitPrices.get(childid) + tickSize * buysell.get(childid));
                         }
@@ -1042,7 +1062,7 @@ public class TWSConnection extends Thread implements EWrapper {
         con.m_primaryExch = s.getPrimaryexchange();
         con.m_right = s.getRight();
         con.m_secType = s.getType();
-        if (c.getReqHandle().getHandle()) {
+        if (getC().getReqHandle().getHandle()) {
             mRequestId = RequestIDManager.singleton().getNextRequestId();
             synchronized(lock_request){
                 getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.valueOf(reportType.toUpperCase()), EnumBarSize.UNDEFINED,EnumRequestStatus.PENDING, new Date().getTime()));
@@ -1101,8 +1121,8 @@ public class TWSConnection extends Thread implements EWrapper {
         if (!eClientSocket.isConnected()) {
             connectToTWS();
         }
-        if (c.getReqHistoricalHandle().getHandle()) {
-            if (c.getReqHandle().getHandle()) {
+        if (getC().getReqHistoricalHandle().getHandle()) {
+            if (getC().getReqHandle().getHandle()) {
                 mRequestId = RequestIDManager.singleton().getNextRequestId();
                 //c.getmReqID().put(mRequestId, s.getSerialno());
                 synchronized(lock_request){
@@ -1112,7 +1132,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 String endDateStr = currDateStr + " " + "23:30:00";
                 //System.out.println(s.getDisplayname()+":"+mRequestId+":"+"DailyBars");
                 eClientSocket.reqHistoricalData(mRequestId, con, endDateStr, duration, "1 day", "TRADES", 1, 2);
-                logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + "1 day"});
+                logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + "1 day"});
             } else {
                 System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getSymbol());
             }
@@ -1151,8 +1171,8 @@ public class TWSConnection extends Thread implements EWrapper {
         if (!eClientSocket.isConnected()) {
             connectToTWS();
         }
-        if (c.getReqHistoricalHandle().getHandle()) {
-            if (c.getReqHandle().getHandle()) {
+        if (getC().getReqHistoricalHandle().getHandle()) {
+            if (getC().getReqHandle().getHandle()) {
                 mRequestId = RequestIDManager.singleton().getNextRequestId();
                 switch (barSize) {
                     case "1 day":
@@ -1175,7 +1195,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 }
                 //System.out.println(s.getDisplayname()+":"+mRequestId+":"+barSize);
                 eClientSocket.reqHistoricalData(mRequestId, con, endDate, duration, barSize, "TRADES", 1, 2);
-                logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize+delimiter+endDate});
+                logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize+delimiter+endDate});
                 //System.out.println("HistoricalDataRequestSent"+c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize+delimiter+endDate);
 
                 
@@ -1231,9 +1251,13 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     //</editor-fold>
+    
     //<editor-fold defaultstate="collapsed" desc="EWrapper Overrides">
     @Override
     public void tickPrice(int tickerId, int field, double price, int canAutoExecute) {
+        if(realtime){
+            realtime_tickPrice(tickerId,field,price,canAutoExecute);
+        }else{
         try {
             int serialno = getRequestDetails().get(tickerId) != null ? (int) getRequestDetails().get(tickerId).symbol.getSerialno() : 0;
             int id = serialno - 1;
@@ -1287,10 +1311,89 @@ public class TWSConnection extends Thread implements EWrapper {
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
+        }
     }
 
+    public void realtime_tickPrice(int tickerId, int field, double price, int canAutoExecute){
+        int serialno = getRequestDetails().get(tickerId) != null ? (int) getRequestDetails().get(tickerId).symbol.getSerialno() : 0;
+        int id = serialno - 1;
+        boolean snapshot = false;
+        if (getRequestDetails().get(tickerId) != null) {
+            snapshot = getRequestDetails().get(tickerId).requestType == EnumRequestType.SNAPSHOT ? true : false;
+        } else {
+            logger.log(Level.SEVERE, "RequestID: {0} was not found", new Object[]{tickerId});
+        }
+
+        String type = Parameters.symbol.get(id).getType();
+        String header = topic + ":" + type + ":" + "ALL";
+        String symbol = "";
+        switch (type) {
+            case "STK":
+                symbol = Parameters.symbol.get(id).getSymbol();
+                break;
+            case "IND":
+                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType();
+                break;
+            case "FUT":
+                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType() + "_" + Parameters.symbol.get(id).getExpiry();
+                break;
+            case "OPT":
+                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType() + "_" + Parameters.symbol.get(id).getExpiry() + "_" + Parameters.symbol.get(id).getRight() + "_" + Parameters.symbol.get(id).getOption();
+                break;
+            default:
+                symbol = "";
+                break;
+        }
+        if (field == com.ib.client.TickType.CLOSE) {
+            Parameters.symbol.get(id).setClosePrice(price);
+        } else if (field == com.ib.client.TickType.OPEN) {
+            Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
+            Parameters.symbol.get(id).setOpenPrice(price);
+        } else if (field == com.ib.client.TickType.HIGH) {
+            Parameters.symbol.get(id).setHighPrice(price);
+            Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
+        } else if (field == com.ib.client.TickType.LOW) {
+            Parameters.symbol.get(id).setLowPrice(price);
+            Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
+        } else if (field == com.ib.client.TickType.BID || field == com.ib.client.TickType.ASK) {
+            Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
+        }
+        if (field == com.ib.client.TickType.LAST) {
+            if (useRTVolume && snapshot || !useRTVolume) {
+                double lastPrice = Parameters.symbol.get(id).getLastPrice();
+                Parameters.symbol.get(id).setPrevLastPrice(lastPrice);
+                Parameters.symbol.get(id).setLastPrice(price);
+                Rates.rateServer.send(header, com.ib.client.TickType.LAST + "," + new Date().getTime() + "," + price + "," + symbol);
+                Rates.rateServer.send(header, com.ib.client.TickType.CLOSE + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getClosePrice() + "," + symbol);
+                Rates.rateServer.send(header, com.ib.client.TickType.OPEN + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getOpenPrice() + "," + symbol);
+                Rates.rateServer.send(header, com.ib.client.TickType.HIGH + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getHighPrice() + "," + symbol);
+                Rates.rateServer.send(header, com.ib.client.TickType.LOW + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getLowPrice() + "," + symbol);
+
+                if (saveToCassandra) {
+                    if (type.equals("STK") || type.equals("IND")) {
+                        new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                    } else if (type.equals("FUT")) {
+                        new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                    }
+                }
+            } else {
+                if (saveToCassandra) {
+                    if (type.equals("STK") || type.equals("IND")) {
+                        new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                    } else if (type.equals("FUT")) {
+                        new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                    }
+                }
+            }
+        }
+    }
+    
     @Override
     public void tickSize(int tickerId, int field, int size) {
+        if(realtime){
+            realtime_tickSize(tickerId,field,size);
+        }else{
+                
         try {
             int serialno = getRequestDetails().get(tickerId) != null ? (int) getRequestDetails().get(tickerId).symbol.getSerialno() : 0;
             Request r; 
@@ -1347,8 +1450,106 @@ public class TWSConnection extends Thread implements EWrapper {
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
+        }
     }
 
+    public void realtime_tickSize(int tickerId,int field, int size){
+        int serialno = getRequestDetails().get(tickerId) != null ? (int) getRequestDetails().get(tickerId).symbol.getSerialno() : 0;
+        int id = serialno - 1;
+        
+        boolean snapshot = false;
+        if (getRequestDetails().get(tickerId) != null) {
+            snapshot = getRequestDetails().get(tickerId).requestType == EnumRequestType.SNAPSHOT ? true : false;
+        } else {
+            logger.log(Level.SEVERE, "RequestID: {0} was not found", new Object[]{tickerId});
+        }
+        
+        String type = Parameters.symbol.get(id).getType();
+        String header = Rates.country + ":" + type + ":" + "ALL";
+        String symbol = "";
+        switch (type) {
+            case "STK":
+                symbol = Parameters.symbol.get(id).getSymbol();
+                break;
+            case "IND":
+                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType();
+                break;
+            case "FUT":
+                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType() + "_" + Parameters.symbol.get(id).getExpiry();
+                break;
+            case "OPT":
+                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType() + "_" + Parameters.symbol.get(id).getExpiry() + "_" + Parameters.symbol.get(id).getRight() + "_" + Parameters.symbol.get(id).getOption();
+                break;
+            default:
+                symbol = "";
+                break;
+        }
+        if (field == com.ib.client.TickType.BID_SIZE || field == com.ib.client.TickType.ASK_SIZE) {
+            Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
+        }
+        if (field == com.ib.client.TickType.VOLUME) {
+            long localTime = new Date().getTime();
+            int lastSize = size - Parameters.symbol.get(id).getVolume();
+            if ((useRTVolume && snapshot) || !useRTVolume) {
+                //Rates.rateServer.send(header, com.ib.client.TickType.LAST_SIZE + "," + new Date().getTime() + "," + lastSize + "," + symbol);
+                Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
+                Parameters.symbol.get(id).setVolume(size);
+                if (saveToCassandra) {
+                    if (type.equals("STK") || type.equals("IND")) {
+                        new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                        //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.equity.s1.tick.volume", Parameters.symbol.get(id).getServicename(), null, output)).start();
+                    } else if (type.equals("FUT")) {
+                        new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                        //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.future.s1.tick.volume", Parameters.symbol.get(id).getServicename(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                    }
+                }
+
+            } else {
+                if (saveToCassandra) {
+                    switch (type) {
+                        case "STK":
+                        case "IND":
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.equity.s1.tick.volume", Parameters.symbol.get(id).getServicename(), null, output)).start();
+                            break;
+                        case "FUT":
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.future.s1.tick.volume", Parameters.symbol.get(id).getServicename(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            break;
+                    }
+                }
+            }
+        } else if (field == com.ib.client.TickType.LAST_SIZE) {
+            long localTime = new Date().getTime();
+            if ((useRTVolume && snapshot) || !useRTVolume) {
+                Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
+                if (saveToCassandra) {
+                    switch (type) {
+                        case "STK":
+                        case "IND":
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            break;
+                        case "FUT":
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            break;
+                    }
+                }
+            } else {
+                if (saveToCassandra) {
+                    switch (type) {
+                        case "STK":
+                        case "IND":
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            break;
+                        case "FUT":
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    
     @Override
     public void tickOptionComputation(int tickerId, int field, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice) {
         int serialno = getRequestDetails().get(tickerId) != null ? (int) getRequestDetails().get(tickerId).symbol.getSerialno() : 0;
@@ -1407,9 +1608,9 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-        String orderRef = c.getOrders() == null ? c.getOrders().get(orderId).getOrderReference() : "NA";
+        String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
         //logger.log(Level.FINE, "{0},{1},TWSReceive,orderStatus, OrderID:{2},Status:{3}.Filled:{4},Remaining:{5},AvgFillPrice:{6},LastFillPrice:{7}", new Object[]{c.getAccountName(), orderRef, orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
-        tes.fireOrderStatus(c, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
+        tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
     }
 
     @Override
@@ -1534,11 +1735,11 @@ public class TWSConnection extends Thread implements EWrapper {
         StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
         StackTraceElement e = stacktrace[1];//coz 0th will be getStackTrace so 1st
         String methodName = e.getMethodName();
-        if (c.getOrders().get(execution.m_orderId) != null) {
-            if (c.getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty == 0) {
-                tes.fireOrderStatus(c, execution.m_orderId, "Filled", execution.m_cumQty, c.getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+        if (getC().getOrders().get(execution.m_orderId) != null) {
+            if (getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty == 0) {
+                tes.fireOrderStatus(getC(), execution.m_orderId, "Filled", execution.m_cumQty, getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
             } else {
-                tes.fireOrderStatus(c, execution.m_orderId, "Submitted", execution.m_cumQty, c.getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                tes.fireOrderStatus(getC(), execution.m_orderId, "Submitted", execution.m_cumQty, getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
             }
             //public void fireOrderStatus(BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
@@ -1753,8 +1954,8 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void currentTime(long time) {
-        c.setConnectionTime(time * 1000);
-        c.setTimeDiff(System.currentTimeMillis() - time * 1000);
+        getC().setConnectionTime(time * 1000);
+        getC().setTimeDiff(System.currentTimeMillis() - time * 1000);
         //System.out.println("Time Diff for:" + c.getIp() + ":" + c.getTimeDiff());
     }
 
@@ -1860,21 +2061,21 @@ public class TWSConnection extends Thread implements EWrapper {
     public void error(Exception e) {
 //        System.out.println(" [API.msg3] IP: " + c.getIp() + ":" + c.getPort() + ":" + c.getClientID() + "Message: " + e.toString());
         //       logger.log(Level.SEVERE, "API.msg3. IP:{0}, Port:{1},ClientID:{2},Message:{3}", new Object[]{c.getIp(), c.getPort(), c.getClientID(), e.toString()});
-        tes.fireErrors(0, 0, e.toString(), c);
+        tes.fireErrors(0, 0, e.toString(), getC());
     }
 
     @Override
     public void error(String str) {
         //     System.out.println(" [API.msg1] Connection: " + c.getIp() + ":" + c.getPort() + ":" + c.getClientID() + " Message: " + str);
         //      logger.log(Level.SEVERE, "API.msg1. IP:{0}, Port:{1},ClientID:{2},Message:{3}", new Object[]{c.getIp(), c.getPort(), c.getClientID(), str});
-        tes.fireErrors(0, 0, "API.msg1: " + str, c);
+        tes.fireErrors(0, 0, "API.msg1: " + str, getC());
     }
 
    
     @Override
     public void error(int id, int errorCode, String errorMsg) {
         try {
-            logger.log(Level.INFO, "103,IB Message,{0}", new Object[]{c.getAccountName()+delimiter+id+delimiter+errorCode+delimiter+errorMsg});
+            logger.log(Level.INFO, "103,IB Message,{0}", new Object[]{getC().getAccountName()+delimiter+id+delimiter+errorCode+delimiter+errorMsg});
                     
             switch (errorCode) {
                 case 430://We are sorry, but fundamentals data for the security specified is not available.failed to fetch
@@ -1898,35 +2099,35 @@ public class TWSConnection extends Thread implements EWrapper {
                 case 1100://Connectivity between IB and TWS has been lost.
                 case 2105://A historical data farm is disconnected
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{c.getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     break;
                 case 1101://Connectivity between IB and TWS has been restoreddata lost.*
                 case 1102://Connectivity between IB and TWS has been restoreddata maintained.
                 case 2106://A historical data farm is connected.
                     setHistoricalDataFarmConnected(true);
-                    logger.log(Level.INFO,"103,HistoricalDataFarmConnected,{0}",new Object[]{c.getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    logger.log(Level.INFO,"103,HistoricalDataFarmConnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     break;
                 case 502: //could not connect . Check port
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{c.getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     if (!this.severeEmailSent) {
-                        Thread t = new Thread(new Mail(c.getOwnerEmail(), "Connection: " + c.getIp() + ", Port: " + c.getPort() + ", ClientID: " + c.getClientID() + "could not connect. Check that TWSSend is accessible and API connections are enabled in TWSSend. ", "Algorithm SEVERE ALERT"));
+                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + "could not connect. Check that TWSSend is accessible and API connections are enabled in TWSSend. ", "Algorithm SEVERE ALERT"));
                         t.start();
                         this.severeEmailSent = true;
                     }
                     break;
                 case 504: //disconnected
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{c.getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     if (!this.severeEmailSent) {
-                        Thread t = new Thread(new Mail(c.getOwnerEmail(), "Connection: " + c.getIp() + ", Port: " + c.getPort() + ", ClientID: " + c.getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
+                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
                         t.start();
                         this.severeEmailSent = true;
                     }
                     break;
                 case 326://client id is in use
                     if (!this.severeEmailSent) {
-                        Thread t = new Thread(new Mail(c.getOwnerEmail(), "Connection: " + c.getIp() + ", Port: " + c.getPort() + ", ClientID: " + c.getClientID() + " could not connect. Client ID was already in use", "Algorithm SEVERE ALERT"));
+                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " could not connect. Client ID was already in use", "Algorithm SEVERE ALERT"));
                         t.start();
                         this.severeEmailSent = true;
                     }
@@ -1935,7 +2136,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     break;
 
             }
-            tes.fireErrors(id, errorCode, "API.msg2: " + errorMsg, c);
+            tes.fireErrors(id, errorCode, "API.msg2: " + errorMsg, getC());
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
@@ -1946,7 +2147,7 @@ public class TWSConnection extends Thread implements EWrapper {
         StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
         StackTraceElement e = stacktrace[1];//coz 0th will be getStackTrace so 1st
         String methodName = e.getMethodName();
-        logger.log(Level.SEVERE, "100,IBConnectionClosed", new Object[]{c.getAccountName()});
+        logger.log(Level.SEVERE, "100,IBConnectionClosed", new Object[]{getC().getAccountName()});
         //System.out.println(methodName);
     }
     //</editor-fold>
@@ -2063,5 +2264,19 @@ public class TWSConnection extends Thread implements EWrapper {
      */
     public void setOrderIDSync(Drop orderIDSync) {
         this.orderIDSync = orderIDSync;
+    }
+
+    /**
+     * @return the c
+     */
+    public BeanConnection getC() {
+        return c;
+    }
+
+    /**
+     * @param c the c to set
+     */
+    public void setC(BeanConnection c) {
+        this.c = c;
     }
 }

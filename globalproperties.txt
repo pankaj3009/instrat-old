@@ -26,6 +26,7 @@ bars=realtimebars
 barsize=1sec
 deemedcancellation=103,135,201,202,461
 threadlimit=500
+strategylog=true
 
 
 #####
