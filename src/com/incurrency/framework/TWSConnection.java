@@ -42,7 +42,7 @@ public class TWSConnection extends Thread implements EWrapper {
     protected final static int WAIT_TIME = 1;//seconds
     public EClientSocket eClientSocket = new EClientSocket(this);
     private BeanConnection c;
-    private static int mRequestId;
+    private int mRequestId;
     public static volatile int mTotalSymbols;
     public static volatile int mTotalATMChecks;
     private ArrayList _fundamentallisteners = new ArrayList();
@@ -54,7 +54,7 @@ public class TWSConnection extends Thread implements EWrapper {
     private LimitedQueue recentOrders;
     private boolean stopTrading = false;
     boolean severeEmailSent = false;
-    private static ConcurrentHashMap<Integer, Request> requestDetails = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, Request> requestDetails = new ConcurrentHashMap<>();
     private HashMap<Integer, Request> requestDetailsWithSymbolKey = new HashMap<>();
     public int outstandingSnapshots = 0;
     private final String delimiter = "_";
@@ -78,6 +78,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public String rtOptionMetric;
     public static String[][] marketData;
     public static AtomicBoolean serverInitialized=new AtomicBoolean();
+    public RequestIDManager requestIDManager=new RequestIDManager();
 
     
     public TWSConnection(BeanConnection c) {
@@ -149,10 +150,10 @@ public class TWSConnection extends Thread implements EWrapper {
             if (getC().getReqHandle().requestContractDetailsHandle()) {
                 getC().getReqHandle().setContractDetailsReturned(false);
                 if (getC().getReqHandle().getHandle()) {
-                    mRequestId = RequestIDManager.singleton().getNextRequestId();
+                    mRequestId = requestIDManager.getNextRequestId();
                     //c.getmReqID().put(mRequestId, s.getSerialno());
                     synchronized(lock_request){
-                    getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.CONTRACTDETAILS,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                    getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.CONTRACTDETAILS,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     }
                     eClientSocket.reqContractDetails(mRequestId, con);
                 } else {
@@ -177,10 +178,10 @@ public class TWSConnection extends Thread implements EWrapper {
             con.m_secType = s.getType();
         }
         if (getC().getReqHandle().getHandle()) {
-            mRequestId = RequestIDManager.singleton().getNextRequestId();
+            mRequestId = requestIDManager.getNextRequestId();
             //c.getmReqID().put(mRequestId, s.getSerialno());
             synchronized(lock_request){
-                getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.CONTRACTDETAILS,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.CONTRACTDETAILS,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
             }
             eClientSocket.reqContractDetails(mRequestId, con);
 
@@ -192,7 +193,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public void requestSingleSnapshot(BeanSymbol s) {
         boolean proceed = true;
         synchronized(lock_request){
-        for (Map.Entry<Integer, Request> entry : getRequestDetails().entrySet()) {
+        for (Map.Entry<String, Request> entry : getRequestDetails().entrySet()) {
             if (s.getSerialno() == entry.getValue().symbol.getSerialno() && entry.getValue().requestType.equals(EnumRequestType.SNAPSHOT)) {
                 proceed = false;
                 logger.log(Level.INFO, "101,ErrorSnapshotRequestExists", new Object[]{s.getDisplayname()});
@@ -200,9 +201,9 @@ public class TWSConnection extends Thread implements EWrapper {
         }
         }
         if (proceed && getC().getReqHandle().getHandle()) {
-            int mRequestId = RequestIDManager.singleton().getNextRequestId();
+            int mRequestId = requestIDManager.getNextRequestId();
             synchronized(lock_request){
-                getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                 logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
             }
 
@@ -224,12 +225,12 @@ public class TWSConnection extends Thread implements EWrapper {
         //for streaming request
         if (!isSnap) { //streaming data request
             if (getC().getReqHandle().getHandle()) {
-                mRequestId = RequestIDManager.singleton().getNextRequestId();
+                mRequestId = requestIDManager.getNextRequestId();
                 // Store the request ID for each symbol for later use while updating the symbol table
                 s.setReqID(mRequestId);
                 //make snapshot/ streaming data request
                 synchronized(lock_request){
-                    getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.STREAMING,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                    getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.STREAMING,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     logger.log(Level.FINER,"MarketDataRequestSent_Streaming,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
 
                 }
@@ -253,19 +254,19 @@ public class TWSConnection extends Thread implements EWrapper {
                         //there is no callback to confirm that IB processed the market data cancellation, so we will just remove from queue
                         getRequestDetailsWithSymbolKey().remove(s.getSerialno());
                         synchronized(lock_request){
-                        getRequestDetails().remove(origReqID);
+                        getRequestDetails().remove(origReqID+delimiter+c.getAccountName());
                         }
                         //we dont reattempt just yet to prevent a loop of attempts when IB is not throwing data for the symbol
                     }
                 } else {
-                    mRequestId = RequestIDManager.singleton().getNextRequestId();
+                    mRequestId = requestIDManager.getNextRequestId();
                     // Store the request ID for each symbol for later use while updating the symbol table
                     s.setReqID(mRequestId);
                     synchronized(lock_request){
-                        getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                        getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                         logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
                     }
-                    getRequestDetailsWithSymbolKey().put(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                    getRequestDetailsWithSymbolKey().put(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     eClientSocket.reqMktData(mRequestId, contract, null, isSnap);
                     s.setDataConnectionID(Parameters.connection.indexOf(getC()));
                     logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
@@ -290,10 +291,10 @@ public class TWSConnection extends Thread implements EWrapper {
         }
         if (getC().getReqHistoricalHandle().getHandle()) {
             if (getC().getReqHandle().getHandle()) {
-                mRequestId = RequestIDManager.singleton().getNextRequestId();
+                mRequestId = requestIDManager.getNextRequestId();
 
                 synchronized(lock_request){
-                    getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.REALTIMEBAR,EnumBarSize.FIVESECOND, EnumRequestStatus.PENDING, new Date().getTime()));
+                    getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.REALTIMEBAR,EnumBarSize.FIVESECOND, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     logger.log(Level.FINER,"MarketDataRequestSent_Realtime,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
 
                 }
@@ -1037,7 +1038,7 @@ public class TWSConnection extends Thread implements EWrapper {
         if (reqid >= 0) {//original: streaming market data
             eClientSocket.cancelMktData(reqid);
             synchronized(lock_request){
-                getRequestDetails().remove(reqid);
+                getRequestDetails().remove(reqid+delimiter+c.getAccountName());
             }
             //c.getmReqID().remove(reqid);
         }
@@ -1071,9 +1072,9 @@ public class TWSConnection extends Thread implements EWrapper {
         con.m_right = s.getRight();
         con.m_secType = s.getType();
         if (getC().getReqHandle().getHandle()) {
-            mRequestId = RequestIDManager.singleton().getNextRequestId();
+            mRequestId = requestIDManager.getNextRequestId();
             synchronized(lock_request){
-                getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.valueOf(reportType.toUpperCase()), EnumBarSize.UNDEFINED,EnumRequestStatus.PENDING, new Date().getTime()));
+                getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.valueOf(reportType.toUpperCase()), EnumBarSize.UNDEFINED,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
             }
             s.getFundamental().setSnapshotRequestID(mRequestId);
             eClientSocket.reqFundamentalData(mRequestId, con, reportType);
@@ -1131,10 +1132,10 @@ public class TWSConnection extends Thread implements EWrapper {
         }
         if (getC().getReqHistoricalHandle().getHandle()) {
             if (getC().getReqHandle().getHandle()) {
-                mRequestId = RequestIDManager.singleton().getNextRequestId();
+                mRequestId = requestIDManager.getNextRequestId();
                 //c.getmReqID().put(mRequestId, s.getSerialno());
                 synchronized(lock_request){
-                    getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.DAILY, EnumRequestStatus.PENDING, new Date().getTime()));
+                    getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.DAILY, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     logger.log(Level.FINER,"HistoricalDataRequestSent_Historical,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
 
                 }
@@ -1154,7 +1155,7 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     public void requestExecutionDetails(ExecutionFilter filter) {
-        mRequestId = RequestIDManager.singleton().getNextRequestId();
+        mRequestId = requestIDManager.getNextRequestId();
         eClientSocket.reqExecutions(mRequestId, filter);
     }
 
@@ -1183,21 +1184,21 @@ public class TWSConnection extends Thread implements EWrapper {
         }
         if (getC().getReqHistoricalHandle().getHandle()) {
             if (getC().getReqHandle().getHandle()) {
-                mRequestId = RequestIDManager.singleton().getNextRequestId();
+                mRequestId = requestIDManager.getNextRequestId();
                 switch (barSize) {
                     case "1 day":
                         synchronized(lock_request){
-                            getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL, EnumBarSize.DAILY,EnumRequestStatus.PENDING, new Date().getTime()));
+                            getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL, EnumBarSize.DAILY,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                         }
                         break;
                     case "1 min":
                         synchronized(lock_request){
-                            getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.ONEMINUTE, EnumRequestStatus.PENDING, new Date().getTime()));
+                            getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.ONEMINUTE, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                         }
                         break;
                     case "1 secs":
                         synchronized(lock_request){
-                            getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.ONESECOND, EnumRequestStatus.PENDING, new Date().getTime()));
+                            getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.ONESECOND, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                         }
                         break;
                     default:
@@ -1831,7 +1832,7 @@ public class TWSConnection extends Thread implements EWrapper {
             int id = serialno - 1;
             if(getRequestDetails().get(reqId)==null){
                 //System.out.println("NULL");
-                for(Integer r1:getRequestDetails().keySet()){
+                for(String r1:getRequestDetails().keySet()){
                     //System.out.print(r1+",");
                 }
             }
@@ -2223,14 +2224,14 @@ public class TWSConnection extends Thread implements EWrapper {
     /**
      * @return the requestDetails
      */
-    public static ConcurrentHashMap<Integer, Request> getRequestDetails() {
+    public static ConcurrentHashMap<String, Request> getRequestDetails() {
         return requestDetails;
     }
 
     /**
      * @param requestDetails the requestDetails to set
      */
-    public static void setRequestDetails(ConcurrentHashMap<Integer, Request> requestDetails) {
+    public static void setRequestDetails(ConcurrentHashMap<String, Request> requestDetails) {
         TWSConnection.requestDetails = requestDetails;
     }
 

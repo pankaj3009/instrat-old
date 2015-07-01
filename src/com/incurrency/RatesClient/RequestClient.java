@@ -222,7 +222,7 @@ public class RequestClient implements Runnable {
                 RequestIDManager.singleton().setRequestId(new AtomicInteger(requestid));
                 symbol = response.split(":")[1].split("_");
  //               BeanSymbol s = Scanner.symbol.get(Utilities.getIDFromSymbol(symbol));
-                Request r = new Request(requestid, s, barSize);
+                Request r = new Request(requestid, s, barSize,"na");
                 //Scanner.requestDetails.put(requestid, r);
                 //Scanner.requestDetails.put(requestid,new Request(requestid, s, EnumRequestType.HISTORICAL,EnumBarSize.DAILY, EnumRequestStatus.PENDING, new Date().getTime()));
                 String request = "backfill" + ":" + response.split(":")[1] + ":" + response.split(":")[2] + ":" + response.split(":")[3] + ":" + requestid;

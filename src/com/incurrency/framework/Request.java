@@ -16,8 +16,9 @@ public class Request {
     EnumSource source;
     EnumRequestStatus requestStatus;
     long requestTime;
+    String accountName;
 
-    public Request(EnumSource source,int requestID,BeanSymbol symbol, EnumRequestType requestType,EnumBarSize barSize, EnumRequestStatus requestStatus,long requestTime) {
+    public Request(EnumSource source,int requestID,BeanSymbol symbol, EnumRequestType requestType,EnumBarSize barSize, EnumRequestStatus requestStatus,long requestTime,String accountName) {
         this.requestID=requestID;
         this.symbol = symbol;
         this.requestType = requestType;
@@ -25,12 +26,14 @@ public class Request {
         this.source=source;
         this.requestStatus = requestStatus;
         this.requestTime=requestTime;
+        this.accountName=accountName;
     }
     
-        public Request(int requestID,BeanSymbol s,EnumBarSize barSize){
+        public Request(int requestID,BeanSymbol s,EnumBarSize barSize, String accountName){
         this.requestID=requestID;
         this.symbol = s;
         this.barSize=barSize;
+        this.accountName=accountName;
     }
     
 }
