@@ -243,6 +243,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 System.out.println("101,ErrorOnHandle,{0}" + s.getDisplayname());
             }
         } else if (isSnap) {
+            boolean requestData=true;
             if (getC().getReqHandle().getHandle()) {
                 if (this.getRequestDetailsWithSymbolKey().containsKey(s.getSerialno())) {//if the symbol is already being serviced, 
                     if (new Date().getTime() > getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestTime + 10000) { //and request is over 10 seconds seconds old
@@ -255,8 +256,11 @@ public class TWSConnection extends Thread implements EWrapper {
                         getRequestDetails().remove(origReqID+delimiter+c.getAccountName());
                         }
                         //we dont reattempt just yet to prevent a loop of attempts when IB is not throwing data for the symbol
+                    }else{
+                        requestData=false;
                     }
-                } else {
+                } 
+                if(requestData) {//we request data only if there is no outstanding request
                     mRequestId = requestIDManager.getNextRequestId();
                     // Store the request ID for each symbol for later use while updating the symbol table
                     s.setReqID(mRequestId);
@@ -1338,6 +1342,13 @@ public class TWSConnection extends Thread implements EWrapper {
         } else {
             logger.log(Level.SEVERE, "RequestID: {0} was not found", new Object[]{tickerId});
         }
+        Request r;
+        synchronized (lock_request) {
+            r = getRequestDetails().get(tickerId + delimiter + c.getAccountName());
+        }
+        if (r != null) {
+            r.requestStatus = EnumRequestStatus.SERVICED;
+        }
 
         String type = Parameters.symbol.get(id).getType();
         String header = topic + ":" + type + ":" + "ALL";
@@ -1486,7 +1497,13 @@ public class TWSConnection extends Thread implements EWrapper {
         } else {
             logger.log(Level.SEVERE, "RequestID: {0} was not found", new Object[]{tickerId});
         }
-        
+        Request r;
+        synchronized (lock_request) {
+            r = getRequestDetails().get(tickerId + delimiter + c.getAccountName());
+        }
+        if (r != null) {
+            r.requestStatus = EnumRequestStatus.SERVICED;
+        }
         String type = Parameters.symbol.get(id).getType();
         String header = Rates.country + ":" + type + ":" + "ALL";
         String symbol;
