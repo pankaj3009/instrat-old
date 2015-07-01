@@ -175,6 +175,7 @@ public class MarketData implements Runnable {
                 int origReqID = pairs.getValue().requestID;
                 String accountName=mIB.getWrapper().getC().getAccountName();
                 if (mIB.getWrapper().getRequestDetails().get(origReqID + delimiter + accountName).requestStatus != EnumRequestStatus.CANCELLED) {
+                    mIB.getWrapper().getRequestDetails().get(origReqID + delimiter + accountName).requestStatus=EnumRequestStatus.CANCELLED;
                     mIB.getWrapper().eClientSocket.cancelMktData(origReqID);
                 }
                 //logger.log(Level.FINER, "SnapShot cancelled. Symbol:{0},RequestID:{1}", new Object[]{Parameters.symbol.get(pairs.getKey()).getSymbol(), origReqID});
@@ -189,7 +190,7 @@ public class MarketData implements Runnable {
         }
 
         for(int i:reqID){//cleanup the main request details too
-            mIB.getWrapper().getRequestDetails().remove(i);
+            mIB.getWrapper().getRequestDetails().remove(i+delimiter+mIB.getWrapper().getC().getAccountName());
         }
         }
     
