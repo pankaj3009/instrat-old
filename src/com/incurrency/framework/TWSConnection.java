@@ -244,10 +244,9 @@ public class TWSConnection extends Thread implements EWrapper {
             }
         } else if (isSnap) {
             if (getC().getReqHandle().getHandle()) {
-                if (this.getRequestDetailsWithSymbolKey().containsKey(s.getSerialno()) &&this.getRequestDetailsWithSymbolKey().get(s.getSerialno()).accountName.equals(c.getAccountName()) ) {//if the symbol is already being serviced, 
+                if (this.getRequestDetailsWithSymbolKey().containsKey(s.getSerialno())) {//if the symbol is already being serviced, 
                     if (new Date().getTime() > getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestTime + 10000) { //and request is over 10 seconds seconds old
-                        int origReqID = getRequestDetailsWithSymbolKey().get(s.getSerialno()).accountName.equals(c.getAccountName())?getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestID:-1;
-                        if(origReqID>=0){
+                        int origReqID = getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestID;
                         getC().getWrapper().eClientSocket.cancelMktData(origReqID);
                         logger.log(Level.FINEST, "403,SnapshotCancelled, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
                         //there is no callback to confirm that IB processed the market data cancellation, so we will just remove from queue
@@ -256,8 +255,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         getRequestDetails().remove(origReqID+delimiter+c.getAccountName());
                         }
                         //we dont reattempt just yet to prevent a loop of attempts when IB is not throwing data for the symbol
-                        }
-                        }
+                    }
                 } else {
                     mRequestId = requestIDManager.getNextRequestId();
                     // Store the request ID for each symbol for later use while updating the symbol table
