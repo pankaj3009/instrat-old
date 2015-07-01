@@ -203,6 +203,7 @@ public class TWSConnection extends Thread implements EWrapper {
             int mRequestId = RequestIDManager.singleton().getNextRequestId();
             synchronized(lock_request){
                 getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
             }
 
             //c.getmSnapShotReqID().put(mRequestId, s.getSerialno());
@@ -229,6 +230,8 @@ public class TWSConnection extends Thread implements EWrapper {
                 //make snapshot/ streaming data request
                 synchronized(lock_request){
                     getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.STREAMING,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                    logger.log(Level.FINER,"MarketDataRequestSent_Streaming,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
+
                 }
                 //c.getmReqID().put(mRequestId, s.getSerialno());
                 //getRequestDetails().put(mRequestId, new Request(mRequestId, s, EnumRequestType.STREAMING, EnumRequestStatus.PENDING, new Date().getTime()));
@@ -260,6 +263,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     s.setReqID(mRequestId);
                     synchronized(lock_request){
                         getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
+                        logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
                     }
                     getRequestDetailsWithSymbolKey().put(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime()));
                     eClientSocket.reqMktData(mRequestId, contract, null, isSnap);
@@ -290,6 +294,8 @@ public class TWSConnection extends Thread implements EWrapper {
 
                 synchronized(lock_request){
                     getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.REALTIMEBAR,EnumBarSize.FIVESECOND, EnumRequestStatus.PENDING, new Date().getTime()));
+                    logger.log(Level.FINER,"MarketDataRequestSent_Realtime,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
+
                 }
                 eClientSocket.reqRealTimeBars(mRequestId, con, 5, "TRADES", true); //only returns regular trading hours
                 logger.log(Level.FINER, "403,RealTimeBarsRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
@@ -1129,6 +1135,8 @@ public class TWSConnection extends Thread implements EWrapper {
                 //c.getmReqID().put(mRequestId, s.getSerialno());
                 synchronized(lock_request){
                     getRequestDetails().put(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.DAILY, EnumRequestStatus.PENDING, new Date().getTime()));
+                    logger.log(Level.FINER,"HistoricalDataRequestSent_Historical,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
+
                 }
                 String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", Parameters.connection.get(0).getConnectionTime());
                 String endDateStr = currDateStr + " " + "23:30:00";
@@ -2093,7 +2101,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     TWSConnection.skipsymbol=true;
                     if (symbol.compareTo("") != 0) {
                         logger.log(Level.INFO, "103,ContractDetailsNotReceived,{0}", new Object[]{symbol});
-                        requestDetails.get(id).requestStatus = EnumRequestStatus.CANCELLED;
+                        getRequestDetails().get(id).requestStatus = EnumRequestStatus.CANCELLED;
                         TWSConnection.mTotalSymbols = TWSConnection.mTotalSymbols - 1;
 
                     }
