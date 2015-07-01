@@ -248,6 +248,8 @@ public class TWSConnection extends Thread implements EWrapper {
                 if (this.getRequestDetailsWithSymbolKey().containsKey(s.getSerialno())) {//if the symbol is already being serviced, 
                     if (new Date().getTime() > getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestTime + 10000) { //and request is over 10 seconds seconds old
                         int origReqID = getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestID;
+                        this.getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestStatus=EnumRequestStatus.CANCELLED;
+                        getRequestDetails().get(origReqID+delimiter+c.getAccountName()).requestStatus=EnumRequestStatus.CANCELLED;
                         getC().getWrapper().eClientSocket.cancelMktData(origReqID);
                         logger.log(Level.FINEST, "403,SnapshotCancelled, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
                         //there is no callback to confirm that IB processed the market data cancellation, so we will just remove from queue
@@ -1040,7 +1042,9 @@ public class TWSConnection extends Thread implements EWrapper {
             }
         }
         }
-        if (reqid >= 0) {//original: streaming market data
+        if (reqid >= 0 &&getRequestDetails().get(reqid+delimiter+c.getAccountName()).requestStatus!=EnumRequestStatus.CANCELLED ) {//original: streaming market data
+            this.getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestStatus=EnumRequestStatus.CANCELLED;
+            getRequestDetails().get(reqid+delimiter+c.getAccountName()).requestStatus=EnumRequestStatus.CANCELLED;
             eClientSocket.cancelMktData(reqid);
             synchronized(lock_request){
                 getRequestDetails().remove(reqid+delimiter+c.getAccountName());
@@ -2259,14 +2263,14 @@ public class TWSConnection extends Thread implements EWrapper {
     /**
      * @return the requestDetails
      */
-    public static ConcurrentHashMap<String, Request> getRequestDetails() {
+    public ConcurrentHashMap<String, Request> getRequestDetails() {
         return requestDetails;
     }
 
     /**
      * @param requestDetails the requestDetails to set
      */
-    public static void setRequestDetails(ConcurrentHashMap<String, Request> requestDetails) {
+    public void setRequestDetails(ConcurrentHashMap<String, Request> requestDetails) {
         TWSConnection.requestDetails = requestDetails;
     }
 

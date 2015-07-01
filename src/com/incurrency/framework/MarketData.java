@@ -35,6 +35,7 @@ public class MarketData implements Runnable {
     private int rtrequets;
     private boolean onetime = false;
     private int connectionid;
+        private final String delimiter = "_";
     /*
      * Constructor()
      * 
@@ -172,7 +173,10 @@ public class MarketData implements Runnable {
             Map.Entry<Integer, Request> pairs = (Map.Entry) it.next();
             if (new Date().getTime() > pairs.getValue().requestTime + 10000) { //and request is over 10 seconds old
                 int origReqID = pairs.getValue().requestID;
-                mIB.getWrapper().eClientSocket.cancelMktData(origReqID);
+                String accountName=mIB.getWrapper().getC().getAccountName();
+                if (mIB.getWrapper().getRequestDetails().get(origReqID + delimiter + accountName).requestStatus != EnumRequestStatus.CANCELLED) {
+                    mIB.getWrapper().eClientSocket.cancelMktData(origReqID);
+                }
                 //logger.log(Level.FINER, "SnapShot cancelled. Symbol:{0},RequestID:{1}", new Object[]{Parameters.symbol.get(pairs.getKey()).getSymbol(), origReqID});
                 //there is no callback to confirm that IB processed the market data cancellation, so we will just remove from queue
                 reqID.add(pairs.getValue().requestID);
