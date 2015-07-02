@@ -693,7 +693,7 @@ public class MainAlgorithm extends Algorithm {
         String[] instanceFile = argValues.split(",");
         //here instance file will have length=3
         for (int i = 0; i < instanceFile.length; i++) {
-            String[] instanceParameters = instanceFile[i].split("-");
+            String[] instanceParameters = instanceFile[i].split("_");
             //here instance parameters will have length=3,2 and 1
             ArrayList<String> subAccountNames = new ArrayList<>();
             if (instanceParameters.length == 1) {
