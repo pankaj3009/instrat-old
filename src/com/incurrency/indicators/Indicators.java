@@ -190,9 +190,9 @@ public class Indicators {
             
                 */
                 logger.log(Level.FINE, "Symbol:{0},Swings Calculated:{1}", new Object[]{s.getDisplayname(), trend.length});
-                s.setTimeSeries(barSize, dT, new String[]{"trend", "updownbar","greenbar", "daysinupswing", "daysindownswing", 
+                s.setTimeSeries(barSize, dT, new String[]{"trend", "updownbar","updownbarclean","greenbar", "daysinupswing", "daysindownswing", 
                     "daysoutsidetrend", "daysintrend", "stickytrend", "fliptrend","daysinuptrend","daysindowntrend","y"},
-                        new double[][]{trend.data, updownbar.data, greenBar.data, daysinupswing.data, daysindownswing.data,
+                        new double[][]{trend.data, updownbar.data,updownbarclean.data, greenBar.data, daysinupswing.data, daysindownswing.data,
                     daysoutsidetrend.data, daysintrend.data, stickyTrend.data, flipTrend.data,daysinuptrend.data,daysindowntrend.data,y.data});
             }            
         } catch (Exception e) {
@@ -202,6 +202,25 @@ public class Indicators {
         return s;
     }
 
+    public static DoubleMatrix stddev(DoubleMatrix input, int period){
+        Core c = new Core();
+        RetCode retCode;
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+        double[] out=new double[input.length];
+        retCode = c.stdDev(0, input.length-1, input.data, period,0, begin, length, out);
+        return new DoubleMatrix(out).reshape(1, input.length);
+    }
+    
+    public static DoubleMatrix ma(DoubleMatrix input, int period){
+        Core c = new Core();
+        RetCode retCode;
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+        double[] out=new double[input.length-1];
+        retCode = c.sma(0, input.length-1, input.data, period, begin, length, out);
+        return new DoubleMatrix(out).reshape(1, input.length);
+    }
     
     private static DoubleMatrix fnHighSwing(DoubleMatrix conditionArray,DoubleMatrix priceArray){
         DoubleMatrix lowsignal=MatrixMethods.cross(MatrixMethods.create(0D, conditionArray.length), conditionArray);

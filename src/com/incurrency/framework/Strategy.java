@@ -278,7 +278,6 @@ public class Strategy implements NotificationListener {
 
     private void loadParameters(String strategy, String type, Properties p) {
         setTimeZone(p.getProperty("TradeTimeZone") == null ? "Asia/Kolkata" : p.getProperty("TradeTimeZone"));
-
         // String currDateStr = DateUtil.getFormatedDate("yyyyMMddHHmmss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         //Date currDate=DateUtil.parseDate("yyyyMMddHHmmss", currDateStr, TimeZone.getDefault().toString());
         Date currDate = TradingUtil.getAlgoDate();
@@ -659,7 +658,7 @@ public class Strategy implements NotificationListener {
         getTrades().put(new OrderLink(internalorderid, 0, "Order"), new Trade(id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, getTimeZone(), "Order"));
         logger.log(Level.INFO, "310,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
         if (MainAlgorithm.isUseForTrading()) {
-            oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), maxOrderDuration, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
+            oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
         }
     }
 
@@ -761,7 +760,7 @@ public class Strategy implements NotificationListener {
             getTrades().put(new OrderLink(tempinternalOrderID, 0, "Order"), tempTrade);
             logger.log(Level.INFO,"Debugging_Strategy_exit,{0}",new Object[]{exitSize+delimiter+exitPrice+delimiter+size+delimiter+expectedFillPrice+delimiter+newexitSize+delimiter+newexitPrice});
             if (MainAlgorithm.isUseForTrading()) {
-                oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, reason, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), maxOrderDuration, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scaleout, orderGroup, effectiveTime, null);
+                oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, reason, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scaleout, orderGroup, effectiveTime, null);
             }
         } else {
             logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side + tempinternalOrderID});

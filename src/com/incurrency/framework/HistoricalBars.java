@@ -20,12 +20,24 @@ public class HistoricalBars implements Runnable {
     String strategyFilter;
     String typeFilter;
     EnumSource source;
+    String[] timeSeries;
+    String metric;
+    String startTime;
+    String endTime;
+    boolean appendAtEnd;
+    EnumBarSize barSize;
     private static final Logger logger = Logger.getLogger(HistoricalBars.class.getName());
 
-    public HistoricalBars(String strategyFilter, String typeFilter, EnumSource source) {
+    public HistoricalBars(String strategyFilter, String typeFilter, EnumSource source,String[] timeSeries,String metric,String startTime, String endTime,EnumBarSize barSize, boolean appendAtEnd) {
         this.strategyFilter = strategyFilter;
         this.typeFilter = typeFilter;
         this.source = source;
+        this.timeSeries=timeSeries;
+        this.metric=metric;
+        this.startTime=startTime;
+        this.endTime=endTime;
+        this.appendAtEnd=appendAtEnd;
+        this.barSize=barSize;
     }
 
 //    public HistoricalBars(String ThreadName){
@@ -56,7 +68,6 @@ public class HistoricalBars implements Runnable {
                                         logger.log(Level.SEVERE, null, ex);
                                     }
                                 }
-
                             }
                         }
                     }
@@ -64,9 +75,9 @@ public class HistoricalBars implements Runnable {
                     break;
                 case CASSANDRA:
                     for (BeanSymbol s : Parameters.symbol) {
-                        if (s.getDailyBar().getHistoricalBars().size() == 0 && Pattern.compile(Pattern.quote(strategyFilter), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
+                        if (s.getTimeSeriesLength(barSize) == 0 && Pattern.compile(Pattern.quote(strategyFilter), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
                             if ("".compareTo(typeFilter) != 0 && s.getType().compareTo(typeFilter) == 0) {
-                                TWSConnection.requestCassandraBars(s, EnumBarSize.DAILY);
+                                Utilities.requestHistoricalData(s,timeSeries,metric,startTime,endTime,barSize,appendAtEnd);
                             }
                         }
                     }
@@ -77,6 +88,5 @@ public class HistoricalBars implements Runnable {
         } catch (Exception ex) {
             logger.log(Level.INFO, "101", ex);
         }
-
     }
 }

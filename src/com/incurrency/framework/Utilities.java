@@ -57,7 +57,7 @@ public class Utilities {
      * @param appendAtEnd data retrieved from the request is appended to the end of specified output text file
      * @return 
      */
-     public static BeanSymbol requestMarketData(BeanSymbol s, String[] timeSeries, String metric, String startTime, String endTime, EnumBarSize barSize,boolean appendAtEnd) {
+     public static BeanSymbol requestHistoricalData(BeanSymbol s, String[] timeSeries, String metric, String startTime, String endTime, EnumBarSize barSize,boolean appendAtEnd) {
         try {
             SimpleDateFormat sdfExtendedTimeFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
             Date startDate = sdfExtendedTimeFormat.parse(startTime);

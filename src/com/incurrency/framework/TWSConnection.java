@@ -1094,42 +1094,6 @@ public class TWSConnection extends Thread implements EWrapper {
         eClientSocket.cancelFundamentalData(reqId);
     }
     
-    public static void requestCassandraBars(BeanSymbol s, EnumBarSize periodicity) {
-        String symbol;
-        symbol = s.getDisplayname().toLowerCase() + "_" + s.getType();
-        String[] parameters;
-        switch (s.getType()) {
-            case "FUT":
-                symbol = symbol + "_" + s.getExpiry();
-                break;
-            case "OPT":
-                symbol = symbol + "_" + s.getExpiry() + "_" + s.getRight() + "_" + s.getOption();
-                break;
-        }
-        String barSize = periodicity.toString().toLowerCase();
-/* TBD - this commented section needs to be reworked
-        String[] metricDetails = MainAlgorithm.globalVariables.getProperty(barSize).toString().toLowerCase().split(",");
-        String metric[] = new String[metricDetails.length - 1];
-        String baseMetric = metricDetails[0];
-        for (int i = 0; i < metric.length; i++) {
-            metric[i] = baseMetric + "." + metricDetails[i + 1];
-        }
-        String concatMetrics = null;
-        for (String m : metric) {
-            if (concatMetrics == null) {
-                concatMetrics = m;
-            } else {
-                concatMetrics = concatMetrics + "," + m;
-            }
-        }
-        String path = MainAlgorithm.globalVariables.getProperty("path").toString().toLowerCase();
-        RequestClient rc=RequestClient.singleton(path);
-        while(RequestClient.isAvailableForNewRequest()){
-        rc.sendRequest("backfill", s, new String[]{barSize.toString()}, concatMetrics,null,false);
-        }
-     */
-    }
-
     public void requestDailyBar(BeanSymbol s, String duration) {
         Contract con = new Contract();
         con.m_symbol = s.getSymbol();
