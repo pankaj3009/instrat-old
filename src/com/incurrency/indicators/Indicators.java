@@ -78,7 +78,6 @@ public class Indicators {
                 
                 DoubleMatrix upbar = HH.and(HL);
                 DoubleMatrix downbar = LL.and(LH);
-                DoubleMatrix updownbarclean=upbar.add(downbar.mul(-1));
                 DoubleMatrix outsidebar = (HH.and(LL)).or(EH.and(LL)).or(HH.and(LL));
                 DoubleMatrix upbar_1 = MatrixMethods.ref(upbar, -1);
                 DoubleMatrix downbar_1 = MatrixMethods.ref(downbar, -1);
@@ -88,6 +87,8 @@ public class Indicators {
                 downbar.negi();
                 DoubleMatrix updownbar = upbar.add(downbar);
                 updownbar = MatrixMethods.valueWhen(updownbar, updownbar, 1);
+                DoubleMatrix updownbarclean=updownbar.mul(outsidebar.not());
+//                DoubleMatrix updownbarclean=upbar.add(downbar.mul(-1));
                 
                 //***** ADJUST UPDOWNBAR FOR OUTSIDE BAR
                 int[] outsidebarindices = outsidebar.eq(1).findIndices();
