@@ -1344,7 +1344,7 @@ public class TWSConnection extends Thread implements EWrapper {
         if (getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null) {
             snapshot = getRequestDetails().get(tickerId+delimiter+c.getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
         } else {
-            //logger.log(Level.SEVERE, "RequestID: {0} was not found", new Object[]{tickerId});
+            logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId});
         }
         Request r;
         synchronized (lock_request) {
@@ -1499,7 +1499,7 @@ public class TWSConnection extends Thread implements EWrapper {
         if (getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null) {
             snapshot = getRequestDetails().get(tickerId+delimiter+c.getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
         } else {
-            //logger.log(Level.SEVERE, "RequestID: {0} was not found", new Object[]{tickerId});
+            logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId});
         }
         Request r;
         synchronized (lock_request) {
@@ -1864,7 +1864,7 @@ public class TWSConnection extends Thread implements EWrapper {
             if (r != null) {
                 r.requestStatus = EnumRequestStatus.SERVICED;
             } else {
-                //logger.log(Level.INFO, "Request ID not found, requestID:{0},serialno:{1}", new Object[]{reqId, serialno});
+                logger.log(Level.INFO, "Request ID not found, requestID:{0},serialno:{1}", new Object[]{reqId, serialno});
             }
             int id = serialno - 1;
             if(getRequestDetails().get(reqId+delimiter+c.getAccountName())==null){
