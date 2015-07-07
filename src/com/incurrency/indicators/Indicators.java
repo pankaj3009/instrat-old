@@ -217,10 +217,27 @@ public class Indicators {
         RetCode retCode;
         MInteger begin = new MInteger();
         MInteger length = new MInteger();
-        double[] out=new double[input.length-1];
+        double[] out=new double[input.length];
         retCode = c.sma(0, input.length-1, input.data, period, begin, length, out);
         return new DoubleMatrix(out).reshape(1, input.length);
     }
+    
+    public static DoubleMatrix rsi(DoubleMatrix input, int period){
+        Core c=new Core();
+        RetCode retCode;
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+        double[] out=new double[input.length];
+        retCode=c.rsi(0, input.length-1, input.data, period, begin, length, out);
+        return new DoubleMatrix(out).reshape(1, input.length);
+    }
+    public static DoubleMatrix zscore(DoubleMatrix input, int period){
+                DoubleMatrix dma=Indicators.ma(input, period);
+                DoubleMatrix dstd=Indicators.stddev(input, period);
+                DoubleMatrix out=(input.sub(dma)).div(dstd);
+                return out;
+    }
+    
     
     private static DoubleMatrix fnHighSwing(DoubleMatrix conditionArray,DoubleMatrix priceArray){
         DoubleMatrix lowsignal=MatrixMethods.cross(MatrixMethods.create(0D, conditionArray.length), conditionArray);

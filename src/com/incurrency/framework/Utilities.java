@@ -48,17 +48,18 @@ public class Utilities {
     public static String newline = System.getProperty("line.separator");
 
     /**
-     * 
+     *
      * @param s
      * @param timeSeries - example {"open","close"}
      * @param metric - example "india.nse.index.s4.daily"
      * @param startTime format 20150101 00:00:00 or yyyyMMdd HH:mm:ss
      * @param endTime format 20150101 00:00:00 or yyyyMMdd HH:mm:ss
      * @param barSize
-     * @param appendAtEnd data retrieved from the request is appended to the end of specified output text file
-     * @return 
+     * @param appendAtEnd data retrieved from the request is appended to the end
+     * of specified output text file
+     * @return
      */
-     public static BeanSymbol requestHistoricalData(BeanSymbol s, String[] timeSeries, String metric, String startTime, String endTime, EnumBarSize barSize,boolean appendAtEnd) {
+    public static BeanSymbol requestHistoricalData(BeanSymbol s, String[] timeSeries, String metric, String startTime, String endTime, EnumBarSize barSize, boolean appendAtEnd) {
         try {
             SimpleDateFormat sdfExtendedTimeFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
             Date startDate = sdfExtendedTimeFormat.parse(startTime);
@@ -75,14 +76,14 @@ public class Utilities {
                     concatMetrics = concatMetrics + "," + metric + "." + m;
                 }
             }
-            rc.sendRequest("backfill", s, new String[]{barSize.toString(), String.valueOf(startDate.getTime()), String.valueOf(endDate.getTime())}, concatMetrics, timeSeries,appendAtEnd);
+            rc.sendRequest("backfill", s, new String[]{barSize.toString(), String.valueOf(startDate.getTime()), String.valueOf(endDate.getTime())}, concatMetrics, timeSeries, appendAtEnd);
             rc.run();
             rc.start.put("start");
             String finished = rc.end.take();
 
 
         } catch (Exception e) {
-            logger.log(Level.INFO,null,e);
+            logger.log(Level.INFO, null, e);
         } finally {
             return s;
         }
@@ -139,8 +140,8 @@ public class Utilities {
     }
 
     public static void loadMarketData(String filePath, String displayName, List<BeanSymbol> symbols) {
-        int id = Utilities.getIDFromDisplayName(symbols,displayName);
-        EnumBarSize barSize=EnumBarSize.valueOf(filePath.split("_")[1].split("\\.")[0]);
+        int id = Utilities.getIDFromDisplayName(symbols, displayName);
+        EnumBarSize barSize = EnumBarSize.valueOf(filePath.split("_")[1].split("\\.")[0]);
         if (id >= 0) {
             File dir = new File("logs");
             File inputFile = new File(dir, filePath);
@@ -164,7 +165,7 @@ public class Utilities {
                             Calendar c = Calendar.getInstance(timeZone);
                             Date d = sdfDate.parse(input[0]);
                             c.setTime(d);
-                            String[]timeOfDay=input[1].split(":");
+                            String[] timeOfDay = input[1].split(":");
                             c.set(Calendar.HOUR_OF_DAY, Integer.valueOf(timeOfDay[0]));
                             c.set(Calendar.MINUTE, Integer.valueOf(timeOfDay[1]));
                             c.set(Calendar.SECOND, Integer.valueOf(timeOfDay[2]));
@@ -194,8 +195,8 @@ public class Utilities {
      */
     public static long[] getDateRange(String filePath) {
         long[] dateRange = new long[2];
-             File dir = new File("logs");
-            File inputFile = new File(dir, filePath);
+        File dir = new File("logs");
+        File inputFile = new File(dir, filePath);
         if (inputFile.exists() && !inputFile.isDirectory()) {
             try {
                 List<String> existingDataLoad = Files.readAllLines(inputFile.toPath(), StandardCharsets.UTF_8);
@@ -222,7 +223,7 @@ public class Utilities {
             try {
                 Date d = sdfDate.parse(input[0]);
                 c.setTime(d);
-                String[]timeOfDay=input[1].split(":");
+                String[] timeOfDay = input[1].split(":");
                 c.set(Calendar.HOUR_OF_DAY, Integer.valueOf(timeOfDay[0]));
                 c.set(Calendar.MINUTE, Integer.valueOf(timeOfDay[1]));
                 c.set(Calendar.SECOND, Integer.valueOf(timeOfDay[2]));
@@ -237,7 +238,7 @@ public class Utilities {
         return time;
     }
 
-    public static <K> String  concatStringArray(K[] input) {
+    public static <K> String concatStringArray(K[] input) {
         if (input.length > 0) {
             StringBuilder nameBuilder = new StringBuilder();
 
@@ -250,8 +251,8 @@ public class Utilities {
             return "";
         }
     }
-    
-     public static String  concatStringArray(double[] input) {
+
+    public static String concatStringArray(double[] input) {
         if (input.length > 0) {
             StringBuilder nameBuilder = new StringBuilder();
 
@@ -264,7 +265,7 @@ public class Utilities {
             return "";
         }
     }
-    
+
     public static double boxRange(double[] range, double input, int segments) {
         double min = Doubles.min(range);
         double max = Doubles.max(range);
@@ -473,14 +474,15 @@ public class Utilities {
         return cal.getTimeInMillis();
 
     }
-    
- /**
-  * Rounds to the specified step as http://bytes.com/topic/visual-basic-net/answers/553549-how-round-number-custom-step-0-25-20-100-a
-  * @param input
-  * @param step
-  * @return 
-  */
 
+    /**
+     * Rounds to the specified step as
+     * http://bytes.com/topic/visual-basic-net/answers/553549-how-round-number-custom-step-0-25-20-100-a
+     *
+     * @param input
+     * @param step
+     * @return
+     */
     public static double roundTo(double input, double step) {
         if (step == 0) {
             return input;
@@ -494,6 +496,7 @@ public class Utilities {
             return round;
         }
     }
+
     /**
      * Returns a native array of specified 'size', filled with values starting
      * from 'value', incremented by 'increment'.
@@ -568,14 +571,16 @@ public class Utilities {
 
         return out;
     }
-   /**
-    * Returns a copy of the target list, with indices removed.
-    * @param <E>
-    * @param target
-    * @param indices
-    * @param adjustment
-    * @return 
-    */ 
+
+    /**
+     * Returns a copy of the target list, with indices removed.
+     *
+     * @param <E>
+     * @param target
+     * @param indices
+     * @param adjustment
+     * @return
+     */
     public static <E> List<E> removeList(List<E> target, int[] indices, int adjustment) {
         //adjustment is to handle scenarios where indices are generated from packages that start indexing at 1, eg.R
         List<Integer> l_indices = Ints.asList(indices);
@@ -592,23 +597,21 @@ public class Utilities {
         return copy;
     }
 
-    public static int[] addArrays(int[] input1,int[] input2){
-        TreeSet t1=new <Integer>TreeSet(Arrays.asList(input1));
-        TreeSet t2=new <Integer>TreeSet(Arrays.asList(input2));
+    public static int[] addArrays(int[] input1, int[] input2) {
+        TreeSet t1 = new <Integer>TreeSet(Arrays.asList(input1));
+        TreeSet t2 = new <Integer>TreeSet(Arrays.asList(input2));
         t1.add(t2);
-        Integer[] out=new Integer[t1.size()]; 
+        Integer[] out = new Integer[t1.size()];
         t1.toArray(out);
-        int[]out2=new int[t1.size()];
-        for(int i=0;i<out.length; i++){
-            out2[i]=out[i];
+        int[] out2 = new int[t1.size()];
+        for (int i = 0; i < out.length; i++) {
+            out2[i] = out[i];
         }
         return out2;
-    //    String[] countries1 = t1.toArray(new String[t1.size()]);
-        
+        //    String[] countries1 = t1.toArray(new String[t1.size()]);
+
     }
-    
-    
-    
+
     /**
      * Returns the sum of an arraylist for specified indices.
      *
@@ -768,7 +771,7 @@ public class Utilities {
     public static boolean isDouble(String value) {
         //String decimalPattern = "([0-9]*)\\.([0-9]*)";  
         //return Pattern.matches(decimalPattern, value)||Pattern.matches("\\d*", value);
-        value=value.trim();
+        value = value.trim();
         return value.matches("-?\\d+(\\.\\d+)?");
     }
 
@@ -776,7 +779,7 @@ public class Utilities {
         if (str == null) {
             return false;
         }
-        str=str.trim();
+        str = str.trim();
         int length = str.length();
         if (length == 0) {
             return false;
@@ -796,7 +799,7 @@ public class Utilities {
         }
         return true;
     }
-    
+
     public static boolean isDate(String dateString, SimpleDateFormat sdf) {
 
         sdf.setLenient(false);
@@ -849,15 +852,15 @@ public class Utilities {
     public static Properties loadParameters(String parameterFile) {
         Properties p = new Properties();
         FileInputStream propFile;
-        File f=new File(parameterFile);
-        if(f.exists()){
-        try {
-            propFile = new FileInputStream(parameterFile);
-            p.load(propFile);
+        File f = new File(parameterFile);
+        if (f.exists()) {
+            try {
+                propFile = new FileInputStream(parameterFile);
+                p.load(propFile);
 
-        } catch (Exception ex) {
-            logger.log(Level.INFO, "101", ex);
-        }
+            } catch (Exception ex) {
+                logger.log(Level.INFO, "101", ex);
+            }
         }
 
         return p;
@@ -911,6 +914,17 @@ public class Utilities {
         return ret;
     }
 
+    public static String[] convertLongListToArray(List<Long> integers) {
+        String[] ret = new String[integers.size()];
+        Iterator<Long> iterator = integers.iterator();
+        int i = 0;
+        while (iterator.hasNext()) {
+            ret[i] = iterator.next().toString();
+            i++;
+        }
+        return ret;
+    }
+
     public static boolean timeStampsWithinDay(long ts1, long ts2, String timeZone) {
         Calendar cl1 = Calendar.getInstance(TimeZone.getTimeZone(timeZone));
         Calendar cl2 = Calendar.getInstance(TimeZone.getTimeZone(timeZone));
@@ -933,7 +947,7 @@ public class Utilities {
      * @param option
      * @return
      */
-    public static int getIDFromSymbol(List<BeanSymbol> symbols,String symbol, String type, String expiry, String right, String option) {
+    public static int getIDFromSymbol(List<BeanSymbol> symbols, String symbol, String type, String expiry, String right, String option) {
         for (BeanSymbol symb : symbols) {
             String s = symb.getSymbol() == null ? "" : symb.getSymbol();
             String t = symb.getType() == null ? "" : symb.getType();
@@ -961,7 +975,7 @@ public class Utilities {
      * @param symbol
      * @return
      */
-    public static int getIDFromSymbol(List<BeanSymbol> symbols,String[] symbol) {
+    public static int getIDFromSymbol(List<BeanSymbol> symbols, String[] symbol) {
         String si = "", ti = "", ei = "", ri = "", oi = "";
         switch (symbol.length) {
             case 2:
@@ -1010,7 +1024,7 @@ public class Utilities {
      * @param displayName
      * @return
      */
-    public static int getIDFromDisplayName(List<BeanSymbol>symbols,String displayName) {
+    public static int getIDFromDisplayName(List<BeanSymbol> symbols, String displayName) {
         for (BeanSymbol symb : symbols) {
             if (symb.getDisplayname().equals(displayName)) {
                 return symb.getSerialno() - 1;
@@ -1050,7 +1064,7 @@ public class Utilities {
      * @param content
      * @param timeZone
      */
-    public static void writeToFile(String filename, String[] content, String timeZone,boolean appendAtEnd) {
+    public static void writeToFile(String filename, String[] content, String timeZone, boolean appendAtEnd) {
         try {
             File dir = new File("logs");
             File file = new File(dir, filename);
@@ -1070,18 +1084,18 @@ public class Utilities {
                 dateString = dateFormatter.format(new java.util.Date(Long.parseLong(content[0])));
                 timeString = timeFormatter.format(new java.util.Date(Long.parseLong(content[0])));
             }
-            if(!appendAtEnd){
-             if (!file.exists()) {
-                file.createNewFile();
-            }   
-                File newfile = new File(dir, filename+".old");
+            if (!appendAtEnd) {
+                if (!file.exists()) {
+                    file.createNewFile();
+                }
+                File newfile = new File(dir, filename + ".old");
                 file.renameTo(newfile);
                 file = new File(dir, filename);
                 if (!file.exists()) {
-                file.createNewFile();
+                    file.createNewFile();
+                }
             }
-            }
-        
+
             FileWriter fileWritter = new FileWriter(file, true);
             BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
             String result = "";
@@ -1093,18 +1107,15 @@ public class Utilities {
             }
             bufferWritter.write(dateString + "," + timeString + "," + result + newline);
             bufferWritter.close();
-            if(!appendAtEnd){
-                File newfile = new File(dir, filename+".old");
+            if (!appendAtEnd) {
+                File newfile = new File(dir, filename + ".old");
                 copyFileUsingFileStreams(newfile, file);
                 newfile.delete();
-             }            
+            }
         } catch (IOException ex) {
-            
-            
         }
     }
 
-    
     private static void copyFileUsingFileStreams(File source, File dest) throws IOException {
         InputStream input = null;
         OutputStream output = null;
@@ -1122,7 +1133,6 @@ public class Utilities {
         }
     }
 
-    
     /**
      * Writes to filename, the values in String[].
      *
@@ -1145,7 +1155,7 @@ public class Utilities {
         } catch (IOException ex) {
         }
     }
-    
+
     public static void writeToFile(File file, String content) {
         try {
             //if file doesnt exists, then create it
@@ -1160,18 +1170,18 @@ public class Utilities {
         } catch (IOException ex) {
         }
     }
-    
-    public static void deleteFile(String filename){
+
+    public static void deleteFile(String filename) {
         File dir = new File("logs");
-            File file = new File(dir, filename);
-            if (file.exists()) {
-                file.delete();
-            }
+        File file = new File(dir, filename);
+        if (file.exists()) {
+            file.delete();
+        }
     }
-    
-        public static void deleteFile(File file){
-            if (file.exists()) {
-                file.delete();
-            }
+
+    public static void deleteFile(File file) {
+        if (file.exists()) {
+            file.delete();
+        }
     }
 }
