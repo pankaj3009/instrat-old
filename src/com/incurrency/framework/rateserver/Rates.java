@@ -73,7 +73,7 @@ properties=Utilities.loadParameters(ParameterFile);
                 endDate = DateUtil.addDays(endDate, 1);
             }
         }
-        if(endDate!=null){
+        if(endDate!=null ||"".equals(endDate)){
             MainAlgorithm.setCloseDate(endDate);
         }
         responseport=Integer.parseInt(properties.getProperty("responseport", "5555"));

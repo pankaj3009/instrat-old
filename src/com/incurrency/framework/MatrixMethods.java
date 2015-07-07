@@ -28,6 +28,20 @@ public class MatrixMethods {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
+    public static DoubleMatrix insertColumn(DoubleMatrix m, double[] values, int[] range){
+        int newColumns=range[1]-range[0]+1;
+        DoubleMatrix m1=m.getRange(0, m.rows, 0, range[0]);
+        DoubleMatrix m2=new DoubleMatrix(m.rows,newColumns,values);
+        DoubleMatrix out=DoubleMatrix.concatHorizontally(m1, m2);
+        if(range[0]<m.columns){
+        DoubleMatrix m3=m.getRange(0, m.rows, range[0], m.columns);
+        out=DoubleMatrix.concatHorizontally(out, m3);    
+        }
+        
+        return out;
+    }
+    
+    
     public static DoubleMatrix range(DoubleMatrix m,int range,double step){
         DoubleMatrix out=DoubleMatrix.zeros(m.length);
         DoubleMatrix hhv=hhv(m,range);

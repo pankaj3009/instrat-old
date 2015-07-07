@@ -158,8 +158,10 @@ public class Task implements Runnable {
                                 }
                                 break;
                             case 6:
+                                 Parameters.symbol.get(id).setHighPrice(Double.parseDouble(value)); 
                                 break;
                             case 7:
+                                 Parameters.symbol.get(id).setLowPrice(Double.parseDouble(value)); 
                                 break;
                             case 8: //volume
                                 int size = (int) Double.parseDouble(value);
@@ -182,6 +184,9 @@ public class Task implements Runnable {
                                 if (MainAlgorithm.getCollectTicks()) {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Close," + value);
                                 }
+                                break;
+                            case 14: //open
+                                Parameters.symbol.get(id).setOpenPrice(Double.parseDouble(value)); 
                                 break;
                             case 99:
                                 Parameters.symbol.get(id).setClosePrice(Double.parseDouble(value));

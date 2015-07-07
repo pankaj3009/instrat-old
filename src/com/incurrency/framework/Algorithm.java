@@ -12,6 +12,9 @@ import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
@@ -31,6 +34,7 @@ public class Algorithm {
     public static int closeHour;
     public static int closeMinute;
     public static boolean useForTrading;
+    public static ConcurrentHashMap<EnumBarSize,Long> databarSetup=new ConcurrentHashMap<>();
 
     public Algorithm(HashMap<String, String> args) throws Exception {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
@@ -41,6 +45,7 @@ public class Algorithm {
                 holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
             }
         }
+        
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
         openHour = Integer.valueOf(globalProperties.getProperty("openhour", "9").toString().trim());

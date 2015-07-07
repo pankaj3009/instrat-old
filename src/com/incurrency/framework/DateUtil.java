@@ -22,8 +22,32 @@ public class DateUtil {
     public final static long HOUR_MILLIS = MINUTE_MILLIS*60;
     public final static long DAY_MILLIS = HOUR_MILLIS*24;
     public final static long YEAR_MILLIS = DAY_MILLIS*365;
+    
+    
     public static long getCurrentTime() {
         return System.currentTimeMillis();
+    }
+    
+    /**
+     * Duration is passed in minutes.The function returns the starttime of the next bar
+     * @param duration 
+     */
+    public static long getNextPeriodStartTime(EnumBarSize barSize){
+        long currenttime=getCurrentTime();
+        Calendar calNow=Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+        calNow.setTimeInMillis(currenttime);
+        long out=Long.MAX_VALUE;
+        switch(barSize){
+            case ONEMINUTE:
+                calNow.add(Calendar.MINUTE, 1);
+                calNow.set(Calendar.SECOND, 0);
+                calNow.set(Calendar.MILLISECOND, 0);
+                out=Utilities.nextGoodDay(calNow.getTime(), 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true).getTime();
+                break;
+            default:
+                break;
+        }
+        return out;
     }
     
         /**

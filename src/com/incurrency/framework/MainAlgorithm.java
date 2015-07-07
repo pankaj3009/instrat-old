@@ -40,7 +40,7 @@ public class MainAlgorithm extends Algorithm {
     public static JFrame ui;
     private Date preopenDate;
     private static Date startDate;
-    private static Date closeDate;
+    private static Date closeDate=null;
     Timer preopen;
     public static Boolean preOpenCompleted = false;
     private static List<String> strategies = new ArrayList();
@@ -599,7 +599,7 @@ public class MainAlgorithm extends Algorithm {
         }
         //set close timer after all licensedStrategies have been initialized. This ensures we get the futhest closeDate
         Timer closeProcessing = new Timer("Timer: Close Algorithm");
-        if (!(MainAlgorithm.strategies.contains("NoStrategy") || !MainAlgorithm.useForTrading)) {
+        if (closeDate!=null) {
             closeProcessing.schedule(closeAlgorithms, closeDate);
         }
         if (MainAlgorithm.isUseForTrading()) {

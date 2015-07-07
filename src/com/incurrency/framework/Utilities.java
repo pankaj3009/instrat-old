@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -591,6 +592,23 @@ public class Utilities {
         return copy;
     }
 
+    public static int[] addArrays(int[] input1,int[] input2){
+        TreeSet t1=new <Integer>TreeSet(Arrays.asList(input1));
+        TreeSet t2=new <Integer>TreeSet(Arrays.asList(input2));
+        t1.add(t2);
+        Integer[] out=new Integer[t1.size()]; 
+        t1.toArray(out);
+        int[]out2=new int[t1.size()];
+        for(int i=0;i<out.length; i++){
+            out2[i]=out[i];
+        }
+        return out2;
+    //    String[] countries1 = t1.toArray(new String[t1.size()]);
+        
+    }
+    
+    
+    
     /**
      * Returns the sum of an arraylist for specified indices.
      *

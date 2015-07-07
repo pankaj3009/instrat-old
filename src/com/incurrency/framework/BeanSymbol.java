@@ -34,6 +34,12 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jblas.DoubleMatrix;
 import static com.incurrency.framework.Algorithm.*;
+import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -92,7 +98,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private ConcurrentHashMap<EnumBarSize, DoubleMatrix> timeSeries = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<EnumBarSize, List<Long>> columnLabels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<EnumBarSize, List<String>> rowLabels = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<EnumBarSize, DoubleMatrix> filter = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<EnumBarSize,BeanOHLC> databars=new ConcurrentHashMap<>();
     private boolean active;
     public TreeMap<String, String[]> initData = new TreeMap<>();
     //properties
@@ -100,6 +106,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public static final String PROP_LASTPRICE = "lastPrice";
     public static final String PROP_BIDPRICE = "bidPrice";
     public static final String PROP_ASKPRICE = "askPrice";
+    public static final String PROP_VOLUME = "volume";
     //locks
     private final String delimiter = "_";
     private final Object lockLastPrice = new Object();
@@ -251,6 +258,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 if (timeLength > 0 && getColumnLabels().get(barSize).indexOf(incrementalTime.get(0)) == -1 && getColumnLabels().get(barSize).indexOf(incrementalTime.get(timeLength - 1)) == -1
                         && current) {
                     getColumnLabels().get(barSize).addAll(incrementalTime);
+                    Collections.sort(getColumnLabels().get(barSize),null);
                     for (BeanSymbol s : symbols) {
                         s.addEmptyMatrixValues(barSize, incrementalTime);
                     }
@@ -274,6 +282,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     private void addEmptyMatrixValues(EnumBarSize barSize, List<Long> time) {
         int colCount = time.size();
+        int[]range=new int[2];
+        range[0]=this.getColumnLabels().get(barSize).indexOf(time.get(0));
+        range[1]=this.getColumnLabels().get(barSize).indexOf(time.get(colCount-1));
         int rowCount = this.getRowLabels().get(barSize).size();
         if (rowCount > 0) {
             double[] values = Utilities.range(ReservedValues.EMPTY, 0, colCount * rowCount);
@@ -282,7 +293,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 getTimeSeries().put(barSize, m);
             } else {
                 logger.log(Level.FINE, "Symbol:{0},Existing Matrix rows:{1},Rows being Added:{2}", new Object[]{this.getDisplayname(), getTimeSeries().get(barSize).rows, m.rows});
-                getTimeSeries().put(barSize, DoubleMatrix.concatHorizontally(getTimeSeries().get(barSize), m));
+                getTimeSeries().put(barSize, MatrixMethods.insertColumn(getTimeSeries().get(barSize), values, range));
+//                getTimeSeries().put(barSize, DoubleMatrix.concatHorizontally(getTimeSeries().get(barSize), m));
             }
         }
     }
@@ -708,12 +720,13 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             default:
                 break;
         }
-
         if (time != null) {
             if (getColumnLabels().get(size).indexOf(time.get(0)) == -1) {//time(0) does not exist in database as yet
                 int existingTimeSize = getColumnLabels().get(size).size();
                 if (existingTimeSize > 0) {//time bar has some values
-                    startTime = getColumnLabels().get(size).get(existingTimeSize - 1); //To comply with C3, mak sure that there are no gaps in time    
+                    //startTime = getColumnLabels().get(size).get(existingTimeSize - 1); //To comply with C3, mak sure that there are no gaps in time    
+                    startTime=time.get(0);
+                    /*
                     switch (size) {
                         case DAILY:
                         case ONEMINUTE:
@@ -732,6 +745,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                             break;
 
                     }
+                  */
                 } else {
                     startTime = time.get(time.size() - 1);
                     Calendar startCal = Calendar.getInstance(TimeZone.getTimeZone(timeZone));
@@ -1149,6 +1163,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         synchronized (lockLastPrice) {
             double oldValue = this.lastPrice;
             this.lastPrice = lastPrice;
+            if (lastPrice > this.getHighPrice()) {
+                this.setHighPrice(lastPrice);
+            } else if (lastPrice < this.getLowPrice()) {
+                this.setLowPrice(lastPrice);
+            }
             if (propertySupport != null) {
                 propertySupport.firePropertyChange(PROP_LASTPRICE, oldValue, lastPrice);
             }
@@ -1216,7 +1235,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setVolume(int volume) {
         synchronized (lockVolume) {
+            double oldValue = this.volume;
             this.volume = volume;
+            if (propertySupport != null) {
+                propertySupport.firePropertyChange(PROP_VOLUME, oldValue, volume);
+            }
         }
     }
 
@@ -1926,5 +1949,43 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setIntraDayBarsFromTick(DataBars intraDayBarsFromTick) {
         this.intraDayBarsFromTick = intraDayBarsFromTick;
+    }
+
+    /**
+     * @return the databars
+     */
+    public ConcurrentHashMap<EnumBarSize,BeanOHLC> getDatabars() {
+        return databars;
+    }
+
+    /**
+     * @param databars the databars to set
+     */
+    public void setDatabars(EnumBarSize barSize, int duration) {
+        final EnumBarSize barSizeLocal=barSize;
+        databars.put(barSize, new BeanOHLC(this.getSerialno() - 1, duration));
+        if (Algorithm.databarSetup.get(barSize) == null) {
+            Algorithm.databarSetup.put(barSize, DateUtil.getNextPeriodStartTime(barSize));
+            ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
+            ScheduledFuture scheduledFuture =
+                    ex.schedule(new Callable() {
+                public Object call() throws Exception {
+                    for (BeanSymbol s : Parameters.symbol) {
+                        BeanOHLC ohlc = s.getDatabars().get(barSizeLocal);
+                        long time=Algorithm.databarSetup.get(barSizeLocal);
+                        if(ohlc.getOpen()!=0){
+                            s.addTimeSeries(barSizeLocal, new String[]{"open","high","low","close","volume"}, time, new double[]{ohlc.getOpen(),ohlc.getHigh(),ohlc.getLow(),ohlc.getClose(),ohlc.getVolume()});
+                            ohlc.setVolume(0);
+                        }
+                    }
+                    Algorithm.databarSetup.put(barSizeLocal, DateUtil.getNextPeriodStartTime(barSizeLocal));
+                    return true;
+                }
+            },
+                    duration,
+                    TimeUnit.MINUTES);
+        }
+
+        this.databars = databars;
     }
 }

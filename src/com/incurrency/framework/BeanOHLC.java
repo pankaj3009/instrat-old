@@ -4,6 +4,10 @@
  */
 package com.incurrency.framework;
 
+import static com.incurrency.framework.BeanSymbol.PROP_LASTPRICE;
+import static com.incurrency.framework.BeanSymbol.PROP_VOLUME;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.Serializable;
 import java.util.logging.Logger;
 
@@ -11,18 +15,26 @@ import java.util.logging.Logger;
  *
  * @author jaya
  */
-public class BeanOHLC implements Serializable {
+public class BeanOHLC  implements PropertyChangeListener {
 
     private EnumBarSize periodicity;
+    private int id;
     private long openTime;
     private double open;
     private double high;
     private double low;
     private double close;
     private long volume;
+    public long totalvolume;
     private long oi;
     private final static Logger logger = Logger.getLogger(BeanOHLC.class.getName());
+    private int barduration=60;
 
+    public BeanOHLC(int id,int duration){
+        this.barduration=duration;
+        Parameters.symbol.get(id).addPropertyChangeListener(this);
+    }
+    
     public BeanOHLC(BeanOHLC ohlc) {
         this.openTime = ohlc.getOpenTime();
         this.open = ohlc.getOpen();
@@ -123,5 +135,48 @@ public class BeanOHLC implements Serializable {
      */
     public void setOi(long oi) {
         this.oi = oi;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        BeanSymbol s = (BeanSymbol) evt.getSource();
+        if (s.getSerialno() == id + 1) {
+            switch (evt.getPropertyName()) {
+                case PROP_LASTPRICE:
+                    double lastPrice = s.getLastPrice();
+                    if (getOpen() == 0) {
+                        setOpen(lastPrice);
+                        setClose(lastPrice);
+                        setHigh(lastPrice);
+                        setLow(lastPrice);
+                    } else {
+                        setClose(lastPrice);
+                        setHigh(getHigh() < lastPrice ? lastPrice : getHigh());
+                        setLow(getLow() < lastPrice ? lastPrice : getLow());
+                    }
+                    break;
+                case PROP_VOLUME:
+                    setVolume((long) evt.getNewValue() - (long) evt.getOldValue());
+                    break;
+                default:
+                    break;
+            }
+
+        }
+    }
+    
+
+    /**
+     * @return the barduration
+     */
+    public int getBarduration() {
+        return barduration;
+    }
+
+    /**
+     * @param barduration the barduration to set
+     */
+    public void setBarduration(int barduration) {
+        this.barduration = barduration;
     }
 }
