@@ -75,7 +75,7 @@ public class HistoricalBars implements Runnable {
                     break;
                 case CASSANDRA:
                     for (BeanSymbol s : Parameters.symbol) {
-                        if (s.getTimeSeriesLength(barSize) == 0 && Pattern.compile(Pattern.quote(strategyFilter), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
+                        if (s.getTimeSeriesLength(barSize) <= 0 && Pattern.compile(Pattern.quote(strategyFilter), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
                             if ("".compareTo(typeFilter) != 0 && s.getType().compareTo(typeFilter) == 0) {
                                 Utilities.requestHistoricalData(s,timeSeries,metric,startTime,endTime,barSize,appendAtEnd);
                             }
