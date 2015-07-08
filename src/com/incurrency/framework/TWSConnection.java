@@ -1302,6 +1302,7 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     public void realtime_tickPrice(int tickerId, int field, double price, int canAutoExecute){
+        try{
         int serialno = getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId+delimiter+c.getAccountName()).symbol.getSerialno() : 0;
         int id = serialno - 1;
         boolean snapshot = false;
@@ -1388,6 +1389,9 @@ public class TWSConnection extends Thread implements EWrapper {
                 }
             }
         }
+        }catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
+        }
     }
     
     @Override
@@ -1456,6 +1460,7 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     public void realtime_tickSize(int tickerId,int field, int size){
+        try{
         int serialno = getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId+delimiter+c.getAccountName()).symbol.getSerialno() : 0;
         int id = serialno - 1;
         
@@ -1559,6 +1564,9 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                 }
             }
+        }
+        }catch (Exception e){
+            logger.log(Level.INFO,null,e);
         }
     }
     
