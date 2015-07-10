@@ -38,8 +38,8 @@ public class Algorithm {
 
     public Algorithm(HashMap<String, String> args) throws Exception {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
-        String holidayFile = globalProperties.getProperty("holidayfile").toString().trim();
-        if (holidayFile != null) {
+        String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();
+        if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {
                 holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
