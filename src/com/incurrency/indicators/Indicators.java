@@ -24,6 +24,7 @@ import java.util.logging.Logger;
 import org.jblas.DoubleMatrix;
 import java.text.SimpleDateFormat;
 import static com.incurrency.framework.MatrixMethods.*;
+import java.util.Arrays;
 
 /**
  *
@@ -202,40 +203,77 @@ public class Indicators {
         return s;
     }
 
-    public static DoubleMatrix stddev(DoubleMatrix input, int period){
+    public static DoubleMatrix stddev(DoubleMatrix m, int period){
+        DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c = new Core();
         RetCode retCode;
         MInteger begin = new MInteger();
         MInteger length = new MInteger();
-        double[] out=new double[input.length];
-        retCode = c.stdDev(0, input.length-1, input.data, period,0, begin, length, out);
-        return new DoubleMatrix(out).reshape(1, input.length);
+        double[] out=new double[m.length];
+        int[] indices=m.ne(ReservedValues.EMPTY).findIndices();
+        DoubleMatrix input1=MatrixMethods.getSubSetVector(m, indices);
+        retCode = c.stdDev(0, input1.length-1, input1.data, period,1, begin, length, out);
+        double[] out1=Arrays.copyOfRange(out, 0, length.value);
+        double[] na=Utilities.range(ReservedValues.EMPTY, 0, begin.value);
+        double []out2=com.google.common.primitives.Doubles.concat(na,out1);
+        DoubleMatrix mout1=new DoubleMatrix(out2).reshape(1, out2.length);
+        mout.put(indices, mout1);
+        return mout;
     }
     
-    public static DoubleMatrix ma(DoubleMatrix input, int period){
+    public static DoubleMatrix ma(DoubleMatrix m, int period){
+        DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c = new Core();
         RetCode retCode;
         MInteger begin = new MInteger();
         MInteger length = new MInteger();
-        double[] out=new double[input.length];
-        retCode = c.sma(0, input.length-1, input.data, period, begin, length, out);
-        return new DoubleMatrix(out).reshape(1, input.length);
+        double[] out=new double[m.length];
+        int[] indices=m.ne(ReservedValues.EMPTY).findIndices();
+        DoubleMatrix input1=MatrixMethods.getSubSetVector(m, indices);
+        retCode = c.sma(0, input1.length-1, input1.data, period, begin, length, out);
+        double[] out1=Arrays.copyOfRange(out, 0, length.value);
+        double[] na=Utilities.range(ReservedValues.EMPTY, 0, begin.value);
+        double []out2=com.google.common.primitives.Doubles.concat(na,out1);
+        DoubleMatrix mout1=new DoubleMatrix(out2).reshape(1, out2.length);
+        mout.put(indices, mout1);
+        return mout;
     }
     
-    public static DoubleMatrix rsi(DoubleMatrix input, int period){
+    public static DoubleMatrix rsi(DoubleMatrix m, int period){
+        DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c=new Core();
         RetCode retCode;
         MInteger begin = new MInteger();
         MInteger length = new MInteger();
-        double[] out=new double[input.length];
-        retCode=c.rsi(0, input.length-1, input.data, period, begin, length, out);
-        return new DoubleMatrix(out).reshape(1, input.length);
+        double[] out=new double[m.length];
+        int[] indices=m.ne(ReservedValues.EMPTY).findIndices();
+        DoubleMatrix input1=MatrixMethods.getSubSetVector(m, indices);
+        retCode=c.rsi(0, input1.length-1, input1.data, period, begin, length, out);
+        double[] out1=Arrays.copyOfRange(out, 0, length.value);
+        double[] na=Utilities.range(ReservedValues.EMPTY, 0, begin.value);
+        double []out2=com.google.common.primitives.Doubles.concat(na,out1);
+        DoubleMatrix mout1=new DoubleMatrix(out2).reshape(1, out2.length);
+        mout.put(indices, mout1);
+        return mout;
     }
-    public static DoubleMatrix zscore(DoubleMatrix input, int period){
-                DoubleMatrix dma=Indicators.ma(input, period);
-                DoubleMatrix dstd=Indicators.stddev(input, period);
-                DoubleMatrix out=(input.sub(dma)).div(dstd);
-                return out;
+    
+    /**
+     * Calculates Z Score.Returned size = input size, with gaps filled by NA.
+     * @param m
+     * @param period
+     * @return 
+     */
+    public static DoubleMatrix zscore(DoubleMatrix m, int period) {
+        DoubleMatrix out = MatrixMethods.create(ReservedValues.EMPTY, m.length);
+        DoubleMatrix dma = Indicators.ma(m, period);
+        DoubleMatrix dstd = Indicators.stddev(m, period);
+        int[] indices = MatrixMethods.getValidIndices(dma, dstd);
+        dma=MatrixMethods.getSubSetVector(dma, indices);
+        dstd=MatrixMethods.getSubSetVector(dstd, indices);
+        m=MatrixMethods.getSubSetVector(m, indices);
+        DoubleMatrix out1 = (m.sub(dma)).div(dstd);
+        out.put(indices, out1);
+        return out;
     }
     
     

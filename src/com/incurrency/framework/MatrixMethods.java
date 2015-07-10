@@ -37,10 +37,21 @@ public class MatrixMethods {
         DoubleMatrix m3=m.getRange(0, m.rows, range[0], m.columns);
         out=DoubleMatrix.concatHorizontally(out, m3);    
         }
-        
         return out;
     }
     
+    public static DoubleMatrix getSubSetVector(DoubleMatrix m, int[] subsetIndices){
+        DoubleMatrix out= m.get(subsetIndices);
+        return out.reshape(1, out.length);
+    }
+    
+    public static int[] getValidIndices(DoubleMatrix... matrices){
+        int[] indices=new int[0];
+        for(DoubleMatrix m:matrices){
+             indices=Utilities.addArraysNoDuplicates(indices, m.ne(ReservedValues.EMPTY).findIndices());
+        }
+        return indices;
+    }
     
     public static DoubleMatrix range(DoubleMatrix m,int range,double step){
         DoubleMatrix out=DoubleMatrix.zeros(m.length);

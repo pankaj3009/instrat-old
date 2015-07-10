@@ -192,6 +192,9 @@ public class MainAlgorithm extends Algorithm {
                 //Launch.setMessage("No License. If you are only executing on IB paper accounts, please register. If you have a real account setup for trading, please contact support@incurrency.com");
             }
             logger.log(Level.INFO, "100,License Check Failed");
+            while(true){
+                
+            }
         }
     }
 

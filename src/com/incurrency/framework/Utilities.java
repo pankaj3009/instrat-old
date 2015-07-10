@@ -29,10 +29,12 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -597,7 +599,8 @@ public class Utilities {
         return copy;
     }
 
-    public static int[] addArrays(int[] input1, int[] input2) {
+    public static int[] addArraysNoDuplicates(int[] input1, int[] input2) {
+        /*
         TreeSet t1 = new <Integer>TreeSet(Arrays.asList(input1));
         TreeSet t2 = new <Integer>TreeSet(Arrays.asList(input2));
         t1.add(t2);
@@ -607,9 +610,14 @@ public class Utilities {
         for (int i = 0; i < out.length; i++) {
             out2[i] = out[i];
         }
-        return out2;
         //    String[] countries1 = t1.toArray(new String[t1.size()]);
-
+*/
+        int[] arraycopy=com.google.common.primitives.Ints.concat(input1,input2);
+        List <Integer>copy=com.google.common.primitives.Ints.asList(arraycopy);
+        TreeSet<Integer> t=new TreeSet<>(copy);
+        return com.google.common.primitives.Ints.toArray(t);
+        
+        
     }
 
     /**
@@ -657,12 +665,11 @@ public class Utilities {
             Preconditions.checkNotNull(zone);
 
             TimeZone timeZone = TimeZone.getTimeZone(zone);
-            Calendar iStartTime = Calendar.getInstance();
+            Calendar iStartTime = Calendar.getInstance(timeZone);
+            //start=1436332571000L;
             iStartTime.setTimeInMillis(start);
-            iStartTime.setTimeZone(timeZone);
-            Calendar iEndTime = Calendar.getInstance();
+            Calendar iEndTime = Calendar.getInstance(timeZone);
             iEndTime.setTimeInMillis(end);
-            iEndTime.setTimeZone(timeZone);
             /*
              * VALIDATE THAT start AND end ARE CORRECT TIME VALUES. SPECIFICALLY, SET start TO openHour and end to closeHour, if needed
              */
@@ -763,6 +770,7 @@ public class Utilities {
             }
 
         } catch (NullPointerException | IllegalArgumentException e) {
+            
         } finally {
             return out;
         }
@@ -1031,6 +1039,12 @@ public class Utilities {
             }
         }
         return -1;
+    }
+    
+    public static int getReferenceID(List<BeanSymbol> symbols,int id,String referenceType){
+        String symbol=symbols.get(id).getSymbol();
+        String type=referenceType;
+        return getIDFromSymbol(symbols,symbol,type,"","","");
     }
 
     /**
