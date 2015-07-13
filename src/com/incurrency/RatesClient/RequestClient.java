@@ -237,7 +237,6 @@ public class RequestClient implements Runnable {
                 barSize = RequestClient.reqbarMapping.get(Integer.valueOf(reqid));
                 identifier = response.split(":")[1];
                 String value = response.split(":")[5];
-                symbol = identifier.split("_");
                 //System.out.println(value);
                 if (requestid == Integer.valueOf(reqid)) {
                     if (response.contains("finished")) {
