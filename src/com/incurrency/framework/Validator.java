@@ -212,7 +212,7 @@ public class Validator {
                 //check columnCount
                 if(!symbolline.equals("")){
                 String[] input = symbolline.split(",");
-                if (!checkColumnSize(symbolline, 13)) {
+                if (!checkColumnSize(symbolline, 15)) {
                     correctFormat = correctFormat && false;
                     logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnSize_" + i});
                     //check for unique value in serial no
@@ -239,36 +239,36 @@ public class Validator {
                     correctFormat = correctFormat && false;
                     logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_3"});
                     } else {
-                        String  ud=input[2]+"_"+input[3]+"_"+input[7]+"_"+input[8]+"_"+input[9];
+                        String  ud=input[1]+"_"+input[4]+"_"+input[8]+"_"+input[9]+"_"+input[10];
                         uniqueDisplayName.put(ud, input);
                     }
-                    if (input[3] == null) {//type
+                    if (input[4] == null) {//type
                     correctFormat = correctFormat && false;
-                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_4"});
-                    } else if (input[3].equals("")) {
+                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_5"});
+                    } else if (input[4].equals("")) {
                     correctFormat = correctFormat && false;
-                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_4"});
+                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_5"});
 
                     }
                     //Integer values are needed in size and streaming priority
-                    if (input[12] == null) {//streaming
+                    if (input[13] == null) {//streaming
                     correctFormat = correctFormat && false;
-                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_13"});
+                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_14"});
                     } else if (input[12].equals("") || !TradingUtil.isInteger(input[12])) {
                     correctFormat = correctFormat && false;
-                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_13"});
+                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_14"});
                     }
-                    if (input[10] == null) {//size
+                    if (input[11] == null) {//size
                     correctFormat = correctFormat && false;
-                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_11"});
+                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_12"});
                     } else if (input[10].equals("") || !TradingUtil.isInteger(input[10])) {
                     correctFormat = correctFormat && false;
-                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_11"});
+                    logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_12"});
                     }
-                    if(!input[11].equals("")){
-                        if(!input[11].contains("?") ||(input[11].contains("?") && input[11].split("?").length!=3)){
+                    if(!input[12].equals("")){
+                        if(!input[12].contains("?") ||(input[12].contains("?") && input[12].split("?").length!=3)){
                     correctFormat = correctFormat && false;
-                      logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_12"});                            
+                      logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_13"});                            
                         }
                     }
                     i = i + 1;
