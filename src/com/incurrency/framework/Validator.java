@@ -254,14 +254,14 @@ public class Validator {
                     if (input[13] == null) {//streaming
                     correctFormat = correctFormat && false;
                     logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_14"});
-                    } else if (input[12].equals("") || !TradingUtil.isInteger(input[12])) {
+                    } else if (input[13].equals("") || !TradingUtil.isInteger(input[13])) {
                     correctFormat = correctFormat && false;
                     logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_14"});
                     }
                     if (input[11] == null) {//size
                     correctFormat = correctFormat && false;
                     logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_12"});
-                    } else if (input[10].equals("") || !TradingUtil.isInteger(input[10])) {
+                    } else if (input[11].equals("") || !TradingUtil.isInteger(input[11])) {
                     correctFormat = correctFormat && false;
                     logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_12"});
                     }
