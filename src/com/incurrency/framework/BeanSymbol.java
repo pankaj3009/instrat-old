@@ -147,7 +147,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.type = "COMBO";
         this.setSerialno(Parameters.symbol.size() + 1);
         this.setBrokerSymbol(comboString);
-        this.setHappyName(happyName);
+        this.happyName=happyName;
+        this.setDisplayname(happyName);
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
@@ -218,9 +219,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             this.expiry = input[8].equals("") || type.equals("COMBO") ? null : input[8].trim().toUpperCase();
             this.option = input[9].equals("") || type.equals("COMBO") ? null : input[9].trim().toUpperCase();
             this.right = input[10].equals("") || type.equals("COMBO") ? null : input[10].trim().toUpperCase();
-            this.happyName = input[3].equals("") ? this.brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option : input[3].trim().toUpperCase();
-            this.displayName=brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option ;
-            displayName=displayName.replaceAll("[^_A-Za-z0-9]", "").trim().toUpperCase();
+            this.happyName = input[3].equals("") ?null: input[3].trim().toUpperCase();
+            this.displayName=happyName==null?brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option:this.happyName ;
+//            displayName=displayName.replaceAll("[^_A-Za-z0-9]", "").trim().toUpperCase();
             this.minsize = input[11].equals("") ? 1 : Integer.parseInt(input[11]);;
             this.barsstarttime = input[12].equals("") ? null : input[12].trim().toUpperCase();
             this.streamingpriority = input[13].equals("") ? 1 : Integer.parseInt(input[13].trim().toUpperCase());
@@ -950,8 +951,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         propertySupport.removePropertyChangeListener(listener);
     }
 
-    public void saveToExternalFile(EnumBarSize barSize) {
-        String filename = getHappyName().toUpperCase() + "_" + barSize.toString() + ".csv";
+    public void saveToExternalFile(EnumBarSize barSize,String filename) {
+        //String filename = this.getDisplayname().toUpperCase() + "_" + barSize.toString() + ".csv";
         Utilities.deleteFile(filename);
         String[] headerarray = initData.get("0");
         String header = Utilities.concatStringArray(headerarray);
@@ -2003,19 +2004,5 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setExchangeSymbol(String exchangeSymbol) {
         this.exchangeSymbol = exchangeSymbol;
-    }
-
-    /**
-     * @return the happyName
-     */
-    public String getHappyName() {
-        return happyName;
-    }
-
-    /**
-     * @param happyName the happyName to set
-     */
-    public void setHappyName(String happyName) {
-        this.happyName = happyName;
     }
 }

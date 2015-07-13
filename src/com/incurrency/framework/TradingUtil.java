@@ -1281,7 +1281,7 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
     
     public static int getEntryIDFromDisplayName(Trade tr,ArrayList<BeanSymbol> symbolList) {
         for (BeanSymbol symb : symbolList) {
-            if(symb.getHappyName().equals(tr.getEntrySymbol())){
+            if(symb.getDisplayname().equals(tr.getEntrySymbol())){
                 return symb.getSerialno() - 1;
             }            
         }
@@ -1290,7 +1290,7 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
 
         public static int getExitIDFromSymbol(Trade tr) {
         for (BeanSymbol symb : Parameters.symbol) {
-            if(symb.getHappyName().equals(tr.getExitSymbol())){
+            if(symb.getDisplayname().equals(tr.getExitSymbol())){
                 return symb.getSerialno() - 1;
             }            
         }

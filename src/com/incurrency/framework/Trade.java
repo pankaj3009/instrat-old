@@ -90,7 +90,7 @@ public class Trade implements ReaderWriterInterface {
 
 
     public Trade(int id, int parentid, EnumOrderReason reason,EnumOrderSide side, double price, int size, int internalid,int orderid,String timeZone,String accountName){
-        this.entrySymbol=Parameters.symbol.get(id).getHappyName();
+        this.entrySymbol=Parameters.symbol.get(id).getDisplayname();
         this.parentSymbol=Parameters.symbol.get(parentid).getBrokerSymbol();
         this.entryReason=reason;
         this.entrySymbolID=id;
@@ -109,7 +109,7 @@ public class Trade implements ReaderWriterInterface {
 
     public void updateEntry(int id, EnumOrderSide side, double price, int size, int internalid, int orderid, String timeZone, String accountName) {
         
-        this.setEntrySymbol(Parameters.symbol.get(id).getHappyName());
+        this.setEntrySymbol(Parameters.symbol.get(id).getDisplayname());
         this.setEntrySymbolID(id);
         this.setEntrySide(side);
         this.setEntryPrice(price);
@@ -125,7 +125,7 @@ public class Trade implements ReaderWriterInterface {
     }
 
     public void updateExit(int id,EnumOrderReason reason, EnumOrderSide side, double price, int size, int internalid, int orderid, String timeZone, String accountName) {
-        this.setExitSymbol(Parameters.symbol.get(id).getHappyName());
+        this.setExitSymbol(Parameters.symbol.get(id).getDisplayname());
         this.setExitSymbolID(id);
         this.exitReason=reason;
         this.setExitSide(side);

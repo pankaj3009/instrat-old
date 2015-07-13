@@ -1019,14 +1019,6 @@ public class Utilities {
         return -1;
     }
     
-    public static int getIDFromHappyName(List<BeanSymbol> symbols, String displayName) {
-        for (BeanSymbol symb : symbols) {
-            if (symb.getHappyName().equals(displayName)) {
-                return symb.getSerialno() - 1;
-            }
-        }
-        return -1;
-    }
     
     public static int getReferenceID(List<BeanSymbol> symbols,int id,String referenceType){
         String symbol=symbols.get(id).getBrokerSymbol();

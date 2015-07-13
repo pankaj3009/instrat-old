@@ -91,7 +91,7 @@ public class TableModelPositions extends AbstractTableModel {
             case 0:
                 if (Parameters.connection.get(display).getPositions().size() > 0) {
                     BeanSymbol s = Parameters.symbol.get(ind.getSymbolID());
-                    String symbol = s.getHappyName();
+                    String symbol = s.getDisplayname();
                     return symbol;
                 } else {
                     return "";

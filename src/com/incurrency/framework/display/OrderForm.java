@@ -51,7 +51,7 @@ public class OrderForm extends javax.swing.JFrame {
         this.notify=notification;
 //        String[] symbolComponents;
 //        symbolComponents=symbol.split("_");
-        int id=Utilities.getIDFromHappyName(Parameters.symbol,symbol);
+        int id=Utilities.getIDFromDisplayName(Parameters.symbol,symbol);
         symbolid=id;
         this.lblSymbol.setText(symbol);
         this.lblSide.setText(side.toString());

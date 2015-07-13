@@ -2485,7 +2485,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
         Collections.sort(allTrades, new TradesCompare());
-        String symbol = Parameters.symbol.get(id).getHappyName();
+        String symbol = Parameters.symbol.get(id).getDisplayname();
         String type = Parameters.symbol.get(id).getType();
         String expiry = Parameters.symbol.get(id).getExpiry() == null ? "" : Parameters.symbol.get(id).getExpiry();
         String right = Parameters.symbol.get(id).getRight() == null ? "" : Parameters.symbol.get(id).getRight();

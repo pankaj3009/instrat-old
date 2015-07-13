@@ -640,12 +640,12 @@ public class Validator {
                     HashMap<BeanSymbol, Integer> comboLegs = getComboLegsFromComboString(t.getParentSymbol());
                     if (lastPosition.isEmpty()) {
                         for (Map.Entry<BeanSymbol, Integer> comboLeg : comboLegs.entrySet()) {
-                            lastPosition.put(comboLeg.getKey().getHappyName(), netSize * comboLeg.getValue());
+                            lastPosition.put(comboLeg.getKey().getDisplayname(), netSize * comboLeg.getValue());
                         }
                     } else {
                         for (Map.Entry<BeanSymbol, Integer> comboLeg : comboLegs.entrySet()) {
                             int positionValue = lastPosition.get(comboLeg.getKey().getBrokerSymbol());
-                            lastPosition.put(comboLeg.getKey().getHappyName(), positionValue + netSize * comboLeg.getValue());
+                            lastPosition.put(comboLeg.getKey().getDisplayname(), positionValue + netSize * comboLeg.getValue());
                         }
                     }
                     comboPosition.put(t.getEntrySymbol(), lastPosition);
@@ -657,8 +657,8 @@ public class Validator {
             if (child.getAccountName().equals(tradeAccount)) {
                 HashMap<String, Integer> lastPosition = new HashMap<>();
                 int parentid = TradingUtil.getIDFromComboLongName(child.getParentSymbol());
-                if (childPosition.get(Parameters.symbol.get(parentid).getHappyName()) != null) {
-                    lastPosition = childPosition.get(Parameters.symbol.get(parentid).getHappyName());
+                if (childPosition.get(Parameters.symbol.get(parentid).getDisplayname()) != null) {
+                    lastPosition = childPosition.get(Parameters.symbol.get(parentid).getDisplayname());
                 }
                 int entrySize = child.getEntrySide().equals(EnumOrderSide.BUY) || child.getEntrySide().equals(EnumOrderSide.COVER) ? child.getEntrySize() : -child.getEntrySize();
                 int exitSize = child.getExitSide().equals(EnumOrderSide.BUY) || child.getExitSide().equals(EnumOrderSide.COVER) ? child.getExitSize() : -child.getExitSize();
@@ -673,7 +673,7 @@ public class Validator {
                     }
                     String comboLongName = child.getParentSymbol();
                     int comboid = TradingUtil.getIDFromComboLongName(comboLongName);
-                    childPosition.put(Parameters.symbol.get(comboid).getHappyName(), lastPosition);
+                    childPosition.put(Parameters.symbol.get(comboid).getDisplayname(), lastPosition);
                 }
 
             }
@@ -751,7 +751,7 @@ public class Validator {
             s.setRight(components[3] == null ? "" : components[3]);
             s.setOption(components[4] == null ? "" : components[4]);
             int id = Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), s.getType(), s.getExpiry(), s.getRight(), s.getOption());
-            s.setDisplayname(Parameters.symbol.get(id).getHappyName());
+            s.setDisplayname(Parameters.symbol.get(id).getDisplayname());
             out.put(s, Integer.parseInt(components[5]));
         }
         return out;

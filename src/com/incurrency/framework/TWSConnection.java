@@ -1384,10 +1384,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getHappyName(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
                 }
@@ -1396,10 +1396,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getHappyName(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
                 }
@@ -1510,11 +1510,11 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getHappyName(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
                             //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.equity.s1.tick.volume", Parameters.symbol.get(id).getServicename(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.future.s1.tick.volume", Parameters.symbol.get(id).getServicename(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
@@ -1525,11 +1525,11 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getHappyName(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
                             //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.equity.s1.tick.volume", Parameters.symbol.get(id).getServicename(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.future.s1.tick.volume", Parameters.symbol.get(id).getServicename(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
@@ -1543,10 +1543,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getHappyName(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
                 }
@@ -1555,10 +1555,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getHappyName(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
                 }

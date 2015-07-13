@@ -555,7 +555,7 @@ public class Strategy implements NotificationListener {
             }
         }
         Collections.sort(allTrades, new TradesCompare());
-        String symbol = Parameters.symbol.get(id).getHappyName();
+        String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
         for (Trade tr : allTrades) {
             if (tr.getEntrySymbol().compareTo(symbol) == 0 && tr.getEntrySide() == entrySide) {
