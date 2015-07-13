@@ -952,7 +952,7 @@ public class Utilities {
      * @param option
      * @return
      */
-    public static int getIDFromSymbol(List<BeanSymbol> symbols, String symbol, String type, String expiry, String right, String option) {
+    public static int getIDFromBrokerSymbol(List<BeanSymbol> symbols, String symbol, String type, String expiry, String right, String option) {
         for (BeanSymbol symb : symbols) {
             String s = symb.getBrokerSymbol() == null ? "" : symb.getBrokerSymbol();
             String t = symb.getType() == null ? "" : symb.getType();
@@ -1001,7 +1001,7 @@ public class Utilities {
      * @param symbol
      * @return
      */
-    public static int getIDFromSymbol(List<BeanSymbol> symbols, String[] symbol) {
+    public static int getIDFromBrokerSymbol(List<BeanSymbol> symbols, String[] symbol) {
 
         String si = symbol[0] == null || symbol[0].equalsIgnoreCase("null") ? "" : symbol[0];
         String ti = symbol[1] == null || symbol[1].equalsIgnoreCase("null") ? "" : symbol[1];
@@ -1042,7 +1042,7 @@ public class Utilities {
     public static int getReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {
         String symbol = symbols.get(id).getBrokerSymbol();
         String type = referenceType;
-        return getIDFromSymbol(symbols, symbol, type, "", "", "");
+        return getIDFromBrokerSymbol(symbols, symbol, type, "", "", "");
     }
 
     public static int getFutureIDFromSymbol(List<BeanSymbol> symbols, int id, String expiry) {
@@ -1051,7 +1051,7 @@ public class Utilities {
         String e = expiry;
         String r = "";
         String o = "";
-        return getIDFromSymbol(symbols, s, t, e, r, o);
+        return getIDFromBrokerSymbol(symbols, s, t, e, r, o);
     }
 
     public static int getIDFromFuture(List<BeanSymbol> symbols, int futureID) {
@@ -1060,7 +1060,7 @@ public class Utilities {
         String e = "";
         String r = "";
         String o = "";
-        return getIDFromSymbol(symbols, s, t, e, r, o);
+        return getIDFromBrokerSymbol(symbols, s, t, e, r, o);
     }
 
     /**

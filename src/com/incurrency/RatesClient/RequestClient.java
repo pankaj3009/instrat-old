@@ -197,16 +197,16 @@ public class RequestClient implements Runnable {
             String identifier = response.split(":")[1];
             String[] symbol = identifier.split("_");
                 if (symbol.length >= 5) {
-                    int id = Utilities.getIDFromSymbol(Parameters.symbol,symbol[0],symbol[1],symbol[2],symbol[3],symbol[4]);
+                    int id = Utilities.getIDFromExchangeSymbol(Parameters.symbol,symbol[0],symbol[1],symbol[2],symbol[3],symbol[4]);
                     if (id >= 0) {
                         int length = symbol.length;
                         switch (length) {
-                            case 2:
-                                Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[1]));
+                            case 6:
+                                Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[5]));
                                 break;
-                            case 3:
-                                Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[1]));
-                                Parameters.symbol.get(id).setTickSize(Double.parseDouble(symbol[2]));
+                            case 7:
+                                Parameters.symbol.get(id).setContractID(Integer.parseInt(symbol[5]));
+                                Parameters.symbol.get(id).setTickSize(Double.parseDouble(symbol[6]));
                                 break;
                             default:
                                 break;

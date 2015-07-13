@@ -750,7 +750,7 @@ public class Validator {
             s.setExpiry(components[2] == null ? "" : components[2]);
             s.setRight(components[3] == null ? "" : components[3]);
             s.setOption(components[4] == null ? "" : components[4]);
-            int id = Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), s.getType(), s.getExpiry(), s.getRight(), s.getOption());
+            int id = Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), s.getType(), s.getExpiry(), s.getRight(), s.getOption());
             s.setDisplayname(Parameters.symbol.get(id).getDisplayname());
             out.put(s, Integer.parseInt(components[5]));
         }

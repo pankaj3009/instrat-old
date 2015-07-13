@@ -165,7 +165,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         for (int i = 0; i < symbols.length; i++) {
             String[] parameters = symbols[i].split("_");
-            int id = Utilities.getIDFromSymbol(Parameters.symbol,parameters[0], parameters[1], parameters[2], parameters[3], parameters[4]);
+            int id = Utilities.getIDFromExchangeSymbol(Parameters.symbol,parameters[0], parameters[1], parameters[2], parameters[3], parameters[4]);
             if (id >= 0) {
                 this.combo.put(Parameters.symbol.get(id), Integer.parseInt(parameters[5]));
             } else {
@@ -238,7 +238,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             this.option = input[9].equals("") || type.equals("COMBO") ? null : input[9].trim().toUpperCase();
             this.right = input[10].equals("") || type.equals("COMBO") ? null : input[10].trim().toUpperCase();
             this.happyName = input[3].equals("") ?null: input[3].trim().toUpperCase();
-            this.displayName=happyName==null?brokerSymbol+"_"+type+"_"+(expiry==null?"":expiry)+"_"+(right==null?"":right)+"_"+(option==null?"":option):this.happyName ;
+            this.displayName=happyName==null?exchangeSymbol+"_"+type+"_"+(expiry==null?"":expiry)+"_"+(right==null?"":right)+"_"+(option==null?"":option):this.happyName ;
 //            displayName=displayName.replaceAll("[^_A-Za-z0-9]", "").trim().toUpperCase();
             this.minsize = input[11].equals("") ? 1 : Integer.parseInt(input[11]);;
             this.barsstarttime = input[12].equals("") ? null : input[12].trim().toUpperCase();
