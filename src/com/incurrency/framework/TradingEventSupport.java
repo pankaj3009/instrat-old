@@ -154,7 +154,7 @@ public class TradingEventSupport {
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
                             +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())});
-        logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getSymbol()});
+        logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
        Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
@@ -170,7 +170,7 @@ public class TradingEventSupport {
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
                             +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())}); 
-       logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getSymbol()});
+       logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
        Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
@@ -186,7 +186,7 @@ public class TradingEventSupport {
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
                             +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())});
-        logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getSymbol()});
+        logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
        Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);

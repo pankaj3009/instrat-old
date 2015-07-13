@@ -58,7 +58,7 @@ public class FundamentalData implements Runnable, FundamentalDataListener {
            int connectionCount=Parameters.connection.size();
            int i=0;
            for (BeanSymbol s : Parameters.symbol) {
-                System.out.println("Requesting Fundamental Data. Symbol: "+s.getSymbol());
+                System.out.println("Requesting Fundamental Data. Symbol: "+s.getBrokerSymbol());
                 Parameters.connection.get(i).getWrapper().requestFundamentalData(s, "snapshot");
                 if(s.getFundamental().takeSummary()){
                 Parameters.connection.get(i).getWrapper().cancelFundamentalData(s.getFundamental().getSnapshotRequestID());}

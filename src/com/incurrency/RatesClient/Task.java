@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static com.incurrency.framework.Algorithm.*;
+import com.incurrency.framework.Utilities;
 
 /**
  *
@@ -40,64 +41,36 @@ public class Task implements Runnable {
                 long date = Long.parseLong(data[1]);
                 String value = data[2];
                 String symbol = data[3];
-                String[] symbolArray = symbol.split("_");
-                int id;
+                int id = -1;
                 if (value != null) {
-                    switch (symbolArray.length) {
-                        case 1:
-                            id = TradingUtil.getIDFromSymbol(symbolArray[0], "STK", "", "", "");
-                            if (id == -1) {
-                                id = TradingUtil.getIDFromDisplayName(symbolArray[0], "STK", "", "", "");
-                            }
-                            break;
-                        case 2:
-                            id = TradingUtil.getIDFromSymbol(symbolArray[0], symbolArray[1], "", "", "");
-                            if (id == -1) {
-                                id = TradingUtil.getIDFromDisplayName(symbolArray[0], symbolArray[1], "", "", "");
-                            }
-                            break;
-                        case 3:
-                            id = TradingUtil.getIDFromSymbol(symbolArray[0], symbolArray[1], symbolArray[2], "", "");
-                            if (id == -1) {
-                                id = TradingUtil.getIDFromDisplayName(symbolArray[0], symbolArray[1], symbolArray[2], "", "");
-                            }
-                            break;
-                        case 5:
-                            id = TradingUtil.getIDFromSymbol(symbolArray[0], symbolArray[1], symbolArray[2], symbolArray[3], symbolArray[4]);
-                            if (id == -1) {
-                                id = TradingUtil.getIDFromDisplayName(symbolArray[0], symbolArray[1], symbolArray[2], symbolArray[3], symbolArray[4]);
-                            }
-                            break;
-                        default:
-                            id = -1;
-                            break;
-                    }
-                    if (id >= 0) {
-                        switch (type) {
-                            case 0: //bidsize
+                    id = Utilities.getIDFromDisplayName(Parameters.symbol, symbol);
+                }
+                if (id >= 0) {
+                    switch (type) {
+                        case 0: //bidsize
                                 Parameters.symbol.get(id).setBidSize((int) Double.parseDouble(value));
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "BidSize," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "BidSize," + value);
                                 }
                                 break;
                             case 1: //bidprice
                                 Parameters.symbol.get(id).setBidPrice(Double.parseDouble(value));
                                 tes.fireBidAskChange(id);
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Bid," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Bid," + value);
                                 }
                                 break;
                             case 2://askprice
                                 Parameters.symbol.get(id).setAskPrice(Double.parseDouble(value));
                                 tes.fireBidAskChange(id);
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Bid," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Bid," + value);
                                 }
                                 break;
                             case 3: //ask size
                                 Parameters.symbol.get(id).setAskSize((int) Double.parseDouble(value));
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "AskSize," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "AskSize," + value);
                                 }
                                 break;
                             case 4: //last price
@@ -115,7 +88,7 @@ public class Task implements Runnable {
                                 //logger.log(Level.FINER,"Task Data Received, Symbol:{1},Time:{0},Price:{2}",new Object[]{new Date(date),Parameters.symbol.get(id).getDisplayname(),price});
 
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "LastPrice," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "LastPrice," + value);
                                 }
                                 if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
                                     Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(TradingUtil.getAlgoDate().getTime(), com.ib.client.TickType.LAST, String.valueOf(price));
@@ -154,7 +127,7 @@ public class Task implements Runnable {
                                     tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                                 }
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "LastSize," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "LastSize," + value);
                                 }
                                 break;
                             case 6:
@@ -173,7 +146,7 @@ public class Task implements Runnable {
                                 Parameters.symbol.get(id).setVolume(size);
                                 tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Volume," + size);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Volume," + size);
                                 }
 
                                 break;
@@ -182,7 +155,7 @@ public class Task implements Runnable {
                                 Parameters.symbol.get(id).setLastPriceTime(date);
                                 tes.fireTradeEvent(id, com.ib.client.TickType.CLOSE);
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Close," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Close," + value);
                                 }
                                 break;
                             case 14: //open
@@ -202,7 +175,7 @@ public class Task implements Runnable {
                 } else {
                     logger.log(Level.INFO, "Null Value received from dataserver");
                 }
-            }
+            
         } catch (Exception ex) {
             logger.log(Level.INFO, "101", ex);
         }

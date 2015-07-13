@@ -66,8 +66,6 @@ public class Utilities {
             SimpleDateFormat sdfExtendedTimeFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
             Date startDate = sdfExtendedTimeFormat.parse(startTime);
             Date endDate = sdfExtendedTimeFormat.parse(endTime);
-            String symbol = null;
-            symbol = s.getDisplayname().replaceAll(" ", "").replaceAll("&", "").toLowerCase() + "_" + s.getType();
             String path = Algorithm.globalProperties.getProperty("historicaldataserver").toString().toLowerCase();
             RequestClient rc = new RequestClient(path);
             String concatMetrics = null;
@@ -957,7 +955,7 @@ public class Utilities {
      */
     public static int getIDFromSymbol(List<BeanSymbol> symbols, String symbol, String type, String expiry, String right, String option) {
         for (BeanSymbol symb : symbols) {
-            String s = symb.getSymbol() == null ? "" : symb.getSymbol();
+            String s = symb.getBrokerSymbol() == null ? "" : symb.getBrokerSymbol();
             String t = symb.getType() == null ? "" : symb.getType();
             String e = symb.getExpiry() == null ? "" : symb.getExpiry();
             String r = symb.getRight() == null ? "" : symb.getRight();
@@ -984,35 +982,15 @@ public class Utilities {
      * @return
      */
     public static int getIDFromSymbol(List<BeanSymbol> symbols, String[] symbol) {
-        String si = "", ti = "", ei = "", ri = "", oi = "";
-        switch (symbol.length) {
-            case 2:
-                si = symbol[0];
-                ti = symbol[1];
-                ei = "";
-                ri = "";
-                oi = "";
-                break;
-            case 3:
-                si = symbol[0];
-                ti = symbol[1];
-                ei = symbol[2];
-                ri = "";
-                oi = "";
-                break;
-            case 5:
-                si = symbol[0];
-                ti = symbol[1];
-                ei = symbol[2];
-                ri = symbol[3];
-                oi = symbol[4];
-                break;
-            default:
-                break;
-        }
+
+        String si=symbol[0]==null||symbol[0].equalsIgnoreCase("null")?"":symbol[0];
+        String ti=symbol[1]==null||symbol[1].equalsIgnoreCase("null")?"":symbol[1];
+        String ei=symbol[2]==null||symbol[2].equalsIgnoreCase("null")?"":symbol[2];
+        String ri=symbol[3]==null||symbol[3].equalsIgnoreCase("null")?"":symbol[3];
+        String oi=symbol[4]==null||symbol[4].equalsIgnoreCase("null")?"":symbol[4];
 
         for (BeanSymbol symb : symbols) {
-            String s = symb.getSymbol() == null ? "" : symb.getDisplayname().replace("&", "");
+            String s = symb.getBrokerSymbol() == null ? "" : symb.getDisplayname().replace("&", "");
             String t = symb.getType() == null ? "" : symb.getType();
             String e = symb.getExpiry() == null ? "" : symb.getExpiry();
             String r = symb.getRight() == null ? "" : symb.getRight();
@@ -1041,12 +1019,38 @@ public class Utilities {
         return -1;
     }
     
+    public static int getIDFromHappyName(List<BeanSymbol> symbols, String displayName) {
+        for (BeanSymbol symb : symbols) {
+            if (symb.getHappyName().equals(displayName)) {
+                return symb.getSerialno() - 1;
+            }
+        }
+        return -1;
+    }
+    
     public static int getReferenceID(List<BeanSymbol> symbols,int id,String referenceType){
-        String symbol=symbols.get(id).getSymbol();
+        String symbol=symbols.get(id).getBrokerSymbol();
         String type=referenceType;
         return getIDFromSymbol(symbols,symbol,type,"","","");
     }
 
+        public static int getFutureIDFromSymbol(List<BeanSymbol> symbols,int id, String expiry) {
+        String s = Parameters.symbol.get(id).getBrokerSymbol();
+        String t = "FUT";
+        String e = expiry;
+        String r = "";
+        String o = "";
+        return getIDFromSymbol(symbols,s, t, e, r, o);
+    }
+
+    public static int getIDFromFuture(List<BeanSymbol> symbols,int futureID) {
+        String s = Parameters.symbol.get(futureID).getBrokerSymbol();
+        String t = "STK";
+        String e = "";
+        String r = "";
+        String o = "";
+        return getIDFromSymbol(symbols,s, t, e, r, o);
+    }
     /**
      * Write split information to file
      *

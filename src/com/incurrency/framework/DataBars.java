@@ -79,7 +79,7 @@ public class DataBars {
                 break;
         }
         if(timerDuration>0){
-            Timer triggerBars = new Timer("Timer: " + s.getSymbol() + " DataBars");
+            Timer triggerBars = new Timer("Timer: " + s.getBrokerSymbol() + " DataBars");
             Date currDate=TradingUtil.getAlgoDate();
             DateFormat df = new SimpleDateFormat("yyyyMMdd");
             df.setTimeZone(TimeZone.getTimeZone(timeZone));

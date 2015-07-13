@@ -7,6 +7,7 @@ package com.incurrency.framework.rateserver;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.TWSConnection;
 import com.incurrency.framework.TradingUtil;
+import com.incurrency.framework.Utilities;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -74,7 +75,7 @@ public class ServerResponse implements Runnable {
         switch (args[0]) {
             case "contractid":
                 String components[] = args[1].split("_");
-                int id = TradingUtil.getIDFromDisplayName(components[0]);
+                int id = Utilities.getIDFromDisplayName(Parameters.symbol,components[0]);
                 /*
                 if (components.length == 2) {//STK
                     id = TradingUtil.getIDFromSymbol(components[0], components[1], "", "", "");
@@ -101,22 +102,17 @@ public class ServerResponse implements Runnable {
                         HistoricalDataRequest hd = new HistoricalDataRequest();
                         switch (symbolArray.length) {
                             case 1:
-                                hd = new HistoricalDataRequest(symbolArray[0], "STK", "", "", "", args[2].split(",")[0], args[2].split(",")[1], args[2].split(",")[2],args[2].split(",")[3]);
-                                break;
                             case 2:
-                                hd = new HistoricalDataRequest(symbolArray[0], "IND", "", "", "", args[2].split(",")[0], args[2].split(",")[1], args[2].split(",")[2],args[2].split(",")[3]);
-                                break;
                             case 3:
-                                hd = new HistoricalDataRequest(symbolArray[0], symbolArray[1], symbolArray[2], "", "", args[2].split(",")[0], args[2].split(",")[1], args[2].split(",")[2],args[2].split(",")[3]);
-                                break;
                             case 5:
                             case 7:
-                                hd = new HistoricalDataRequest(symbolArray[0], symbolArray[1], symbolArray[2], symbolArray[3], symbolArray[4], args[2].split(",")[0], args[2].split(",")[1], args[2].split(",")[2],args[2].split(",")[3]);
+                                hd = new HistoricalDataRequest(args[1], args[2].split(",")[0], args[2].split(",")[1], args[2].split(",")[2],args[2].split(",")[3]);
                                 break;
                             default:
                                 return "-1";
+                            
                         }
-                        hd.fullname = args[1];
+                        hd.displayName = args[1];
                         hd.topic=args[2].split(",")[4];
                         hdSymbols.add(hd);
                         break;
@@ -136,14 +132,7 @@ public class ServerResponse implements Runnable {
               return ":"+String.valueOf(requestid.addAndGet(1));
             case "snapshot":
                 components = args[1].split("_");
-                id = -1;
-                if (components.length == 2) {//STK
-                    id = TradingUtil.getIDFromSymbol(components[0], components[1], "", "", "");
-                } else if (components.length == 3) {//FUT
-                    id = TradingUtil.getIDFromSymbol(components[0], components[1], components[2], "", "");
-                } else if (components.length == 5) {//OPT
-                    id = TradingUtil.getIDFromSymbol(components[0], components[1], components[2], components[3], components[4]);
-                }
+                 id = Utilities.getIDFromSymbol(Parameters.symbol,components);
                  if (id >= 0) {
                     return "_"+TWSConnection.marketData[id][com.ib.client.TickType.OPEN] + "_"+TWSConnection.marketData[id][com.ib.client.TickType.HIGH]+"_"+TWSConnection.marketData[id][com.ib.client.TickType.LOW]+"_"+TWSConnection.marketData[id][com.ib.client.TickType.CLOSE]+"_"+TWSConnection.marketData[id][com.ib.client.TickType.LAST]+"_"+TWSConnection.marketData[id][com.ib.client.TickType.VOLUME]; 
                 } else {

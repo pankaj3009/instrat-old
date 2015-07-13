@@ -30,7 +30,7 @@ public class MarketDataForm extends javax.swing.JFrame {
         initComponents();
         this.rowno=rowno;
         BeanSymbol s=Parameters.symbol.get(rowno);
-        String symbol=s.getSymbol()+"_"+s.getType()+"_"+s.getExchange();
+        String symbol=s.getBrokerSymbol()+"_"+s.getType()+"_"+s.getExchange();
         if(s.getExpiry()!=null){
             symbol=symbol+"_"+s.getExpiry();
         }

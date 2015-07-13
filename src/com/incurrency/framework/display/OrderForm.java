@@ -13,6 +13,7 @@ import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.ExecutionManager;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.TradingUtil;
+import com.incurrency.framework.Utilities;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -50,7 +51,7 @@ public class OrderForm extends javax.swing.JFrame {
         this.notify=notification;
 //        String[] symbolComponents;
 //        symbolComponents=symbol.split("_");
-        int id=TradingUtil.getIDFromDisplayName(symbol);
+        int id=Utilities.getIDFromHappyName(Parameters.symbol,symbol);
         symbolid=id;
         this.lblSymbol.setText(symbol);
         this.lblSide.setText(side.toString());

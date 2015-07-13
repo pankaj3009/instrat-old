@@ -90,7 +90,7 @@ public class TableModelOpenOrders extends AbstractTableModel{
                 return orderid==-100?"":Parameters.connection.get(display).getOrders().get(orderid).getOrderReference();        
             case 1:
                 BeanSymbol s = Parameters.symbol.get(id);
-                String symbol = s.getDisplayname();
+                String symbol = s.getHappyName();
                 return id==-100?"": symbol;
             case 2:
                 return orderid==-100?"":Parameters.connection.get(display).getOrders().get(orderid).getOrderID();

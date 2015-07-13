@@ -105,11 +105,11 @@ public class HistoricalDataPublisher implements Runnable {
                 if (nextStartDate.get(Calendar.DAY_OF_MONTH) > now.get(Calendar.DAY_OF_MONTH) || nextStartDate.get(Calendar.MONTH) > now.get(Calendar.MONTH)) {
                     Thread.sleep(20000);//wait for 10 seconds to ensure all tick for today has been sent
                     for (HistoricalDataRequest h : symbols) {
-                        String close = 99 + "," + 1 + "," + 1 + "," + h.name;
-                        String lastsize = 99 + "," + 1 + "," + 1 + "," + h.name;
+                        String close = 99 + "," + 1 + "," + 1 + "," + h.displayName;
+                        String lastsize = 99 + "," + 1 + "," + 1 + "," + h.displayName;
                         Rates.rateServer.send(symbols.get(0).topic, close);
                         Rates.rateServer.send(symbols.get(0).topic, lastsize);
-                        logger.log(Level.FINE, "Published: {0}", new Object[]{h.name + "_" + close});
+                        logger.log(Level.FINE, "Published: {0}", new Object[]{h.displayName + "_" + close});
                     }
                 }
 
@@ -129,17 +129,19 @@ public class HistoricalDataPublisher implements Runnable {
         TreeMultimap<Long, OHLCV> timeKey = TreeMultimap.create();
 
         for (HistoricalDataRequest symbol : symbols) {
-            logger.log(Level.FINE, "Requesting Historical Data: {0}", new Object[]{symbol.fullname});
+            logger.log(Level.FINE, "Requesting Historical Data: {0}", new Object[]{symbol.displayName});
             long start = new Date().getTime();
             HashMap<Long, OHLCV> symbolData = new HashMap<>();
             for (int i = startCounter; i < 2; i++) {
-                switch (symbol.type) {
+                switch (symbol.type) {//get type
                     case "STK":
                     case "IND":
                         metricnew = metric + ".equity" + ".s1." + periodicity;
                         break;
                     case "FUT":
                         metricnew = metric + ".future" + ".s1." + periodicity;
+                        break;
+                    default:
                         break;
                 }
                 switch (i) {
@@ -178,14 +180,14 @@ public class HistoricalDataPublisher implements Runnable {
                     //System.out.println("Date:" + new Date(lastTime) + ",Value:" + value.toString());
                     switch (i) {
                         case 0:
-                            symbolData.put(lastTime, new OHLCV(lastTime, value.toString(), symbol.fullname));
+                            symbolData.put(lastTime, new OHLCV(lastTime, value.toString(), symbol.displayName));
                             //data.setClose(value.toString());
                             break;
                         case 1:
                             try {
                                 symbolData.get(lastTime).setVolume(value.toString());
                             } catch (Exception e) {
-                                symbolData.put(lastTime, new OHLCV(lastTime, symbol.fullname));
+                                symbolData.put(lastTime, new OHLCV(lastTime, symbol.displayName));
 
                             }
                             break;
@@ -202,7 +204,7 @@ public class HistoricalDataPublisher implements Runnable {
                 }
                 long timetaken = (new Date().getTime() - start) / 1000;
                 if (symbolData.size() > 0) {
-                    logger.log(Level.FINE, "HD:{0}", new Object[]{symbol.fullname + "_" + new Date(t)});
+                    logger.log(Level.FINE, "HD:{0}", new Object[]{symbol.displayName + "_" + new Date(t)});
 //                logger.log(Level.INFO,"Finished historical data for {0}",new Object[]{symbol.fullname+"_"+timetaken});
                 } else {
                     break;
@@ -242,7 +244,7 @@ public class HistoricalDataPublisher implements Runnable {
         int startCounter = 0;
         TreeMultimap<Long, OHLCV> timeKey = TreeMultimap.create();
         for (HistoricalDataRequest symbol : symbols) {
-            logger.log(Level.FINE, "Requesting Close Data: {0}", new Object[]{symbol.fullname});
+            logger.log(Level.FINE, "Requesting Close Data: {0}", new Object[]{symbol.displayName});
             long start = new Date().getTime();
             HashMap<Long, OHLCV> symbolData = new HashMap<>();
             for (int i = startCounter; i < 1; i++) {
@@ -290,7 +292,7 @@ public class HistoricalDataPublisher implements Runnable {
                     //System.out.println("Date:" + new Date(lastTime) + ",Value:" + value.toString());
                     switch (i) {
                         case 0:
-                            symbolData.put(lastTime, new OHLCV(lastTime, value.toString(), symbol.fullname));
+                            symbolData.put(lastTime, new OHLCV(lastTime, value.toString(), symbol.displayName));
                             //data.setClose(value.toString());
                             break;
                         default:
@@ -305,7 +307,7 @@ public class HistoricalDataPublisher implements Runnable {
                 }
                 long timetaken = (new Date().getTime() - start) / 1000;
                 if (symbolData.size() > 0) {
-                    logger.log(Level.FINE, "HD:{0}", new Object[]{symbol.fullname + "_" + new Date(t)});
+                    logger.log(Level.FINE, "HD:{0}", new Object[]{symbol.displayName + "_" + new Date(t)});
 //                logger.log(Level.INFO,"Finished historical data for {0}",new Object[]{symbol.fullname+"_"+timetaken});
                 } else {
                     break;

@@ -27,6 +27,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -250,12 +251,12 @@ public class MainAlgorithm extends Algorithm {
                 for (BeanSymbol s : Parameters.symbol) {
                     if (s.getType().compareTo("OPT") == 0 && s.getOption() == null) {
                         optionsRequiringATMStrike.add(s);
-                        int id = TradingUtil.getIDFromSymbol(s.getSymbol(), "STK", "", "", "") >= 0 ? TradingUtil.getIDFromSymbol(s.getSymbol(), "STK", "", "", "") : TradingUtil.getIDFromSymbol(s.getSymbol(), "IND", "", "", "");
+                        int id = Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "IND", "", "", "");
                         if (id >= 0) {
                             underlyingRequiringClosePrice.add(Parameters.symbol.get(id));
                             //tempC.getWrapper().requestSingleSnapshot(Parameters.symbol.get(id));
                         } else {
-                            logger.log(Level.INFO, "101,NoATMStrike,{0}", new Object[]{s.getSymbol()});
+                            logger.log(Level.INFO, "101,NoATMStrike,{0}", new Object[]{s.getBrokerSymbol()});
                         }
                     }
                 }
@@ -272,7 +273,7 @@ public class MainAlgorithm extends Algorithm {
 
                 for (BeanSymbol s : optionsRequiringATMStrike) {
                     tempC.getWrapper().getContractDetails(s, "");
-                    System.out.print("ContractDetails Requested:" + s.getSymbol());
+                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol());
                 }
 
                 while (TWSConnection.mTotalATMChecks > 0) {
@@ -286,13 +287,13 @@ public class MainAlgorithm extends Algorithm {
                 //update strikes in Parameters.symbols
                 for (BeanSymbol s : optionsRequiringATMStrike) {
                     int optionid = s.getSerialno() - 1;
-                    int underlyingid = TradingUtil.getIDFromSymbol(s.getSymbol(), "STK", "", "", "") >= 0 ? TradingUtil.getIDFromSymbol(s.getSymbol(), "STK", "", "", "") : TradingUtil.getIDFromSymbol(s.getSymbol(), "IND", "", "", "");
+                    int underlyingid = Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "IND", "", "", "");
                     Parameters.symbol.get(optionid).setOption(String.valueOf(Parameters.symbol.get(underlyingid).getAtmStrike()));
                 }
 
                 for (BeanSymbol s : Parameters.symbol) {
                     tempC.getWrapper().getContractDetails(s, "");
-                    System.out.print("ContractDetails Requested:" + s.getSymbol());
+                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol());
                 }
 
                 while (TWSConnection.mTotalSymbols > 0) {
@@ -467,31 +468,18 @@ public class MainAlgorithm extends Algorithm {
             t1.start();
             int j=0;
             for (BeanSymbol s : Parameters.symbol) {
-                String symbol = "";
+                String symbol = s.getDisplayname();
                 String[] expiries = null;
-                switch (s.getType()) {
-                    case "STK":
-                        symbol = s.getDisplayname();
-                        break;
-                    case "IND":
-                        symbol = s.getDisplayname() + "_" + s.getType();
-                        break;
-                    case "FUT":
-                        expiries = s.getExpiry().split(":");
-                        symbol = s.getDisplayname() + "_" + s.getType() + "_" + s.getExpiry();
-                        break;
-                    case "OPT":
-                        symbol = s.getDisplayname() + "_" + s.getType() + "_" + s.getExpiry() + "_" + s.getRight() + "_" + s.getOption();
-                    default:
-                        break;
-                }
+
                 while (!requestClientList.get(j).isAvailableForNewRequest()) {
                     Thread.sleep(100);
                 }
                 j++;
                 if (expiries != null) {
                     for (String exp : expiries) {
-                        symbol = s.getDisplayname() + "_" + s.getType() + "_" + exp;
+                        String[] split=s.getDisplayname().split("_");
+                        split[2]=exp;
+                        symbol=StringUtils.join(split, "_");
                         requestClient.sendRequest("historicaldata", s, new String[]{backtestStartDate, backtestEndDate, backtestCloseReferenceDate, backtestBarSize}, null, null, false);
                         logger.log(Level.INFO, "100,HistoricalRequestSent,{0}", new Object[]{symbol});
                         boolean complete = false;

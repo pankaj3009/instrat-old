@@ -116,8 +116,11 @@ public class MarketData implements Runnable {
                     contract.m_strike = symb.get(row).getOption() == null ? 0 : Double.parseDouble(symb.get(row).getOption());
                     contract.m_right = symb.get(row).getRight();
                     contract.m_expiry = symb.get(row).getExpiry();
-                    contract.m_symbol = symb.get(row).getSymbol();
+                    contract.m_symbol = symb.get(row).getBrokerSymbol();
                     contract.m_exchange = symb.get(row).getExchange();
+                    if(symb.get(row).getExchangeSymbol()!=null){
+                        contract.m_localSymbol=symb.get(row).getExchangeSymbol();
+                    }
                     contract.m_primaryExch = symb.get(row).getPrimaryexchange();
                     contract.m_secType = symb.get(row).getType();
                     contract.m_currency = symb.get(row).getCurrency();

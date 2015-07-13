@@ -219,7 +219,6 @@ public class HistoricalDataResponse implements Runnable {
         }
 
         for (String s : nameChanges) {
-
             for (int i = startCounter; i < metric.length; i++) {
                 metricnew = metric[i];
                 QueryBuilder builder = QueryBuilder.getInstance();

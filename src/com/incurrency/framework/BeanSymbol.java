@@ -49,8 +49,10 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     private final static Logger logger = Logger.getLogger(BeanSymbol.class.getName());
     private int serialno;
-    private String symbol;
+    private String brokerSymbol;
+    private String exchangeSymbol;
     private String displayName;
+    private String happyName;
     private String type;
     private String exchange;
     private String primaryexchange;
@@ -98,7 +100,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private ConcurrentHashMap<EnumBarSize, DoubleMatrix> timeSeries = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<EnumBarSize, List<Long>> columnLabels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<EnumBarSize, List<String>> rowLabels = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<EnumBarSize,BeanOHLC> databars=new ConcurrentHashMap<>();
+    private ConcurrentHashMap<EnumBarSize, BeanOHLC> databars = new ConcurrentHashMap<>();
     private boolean active;
     public TreeMap<String, String[]> initData = new TreeMap<>();
     //properties
@@ -130,7 +132,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private LimitedQueue<Double> tradedPrices;
     private LimitedQueue<Integer> tradedVolumes;
     private LimitedQueue<Long> tradedDateTime;
-    private HashMap<BeanSymbol, Integer> combo = new HashMap<>(); //holds symbol and corresponding size
+    private HashMap<BeanSymbol, Integer> combo = new HashMap<>(); //holds brokerSymbol and corresponding size
     private Fundamental fundamental = new Fundamental();
 
     public BeanSymbol() {
@@ -144,8 +146,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         //set mandatory fields
         this.type = "COMBO";
         this.setSerialno(Parameters.symbol.size() + 1);
-        this.setSymbol(comboString);
-        this.setDisplayname(happyName);
+        this.setBrokerSymbol(comboString);
+        this.setHappyName(happyName);
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
@@ -158,25 +160,25 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         for (int i = 0; i < symbols.length; i++) {
             String[] parameters = symbols[i].split("_");
-            int id = TradingUtil.getIDFromSymbol(parameters[0], parameters[1], parameters[2], parameters[3], parameters[4]);
+            int id = Utilities.getIDFromSymbol(Parameters.symbol,parameters[0], parameters[1], parameters[2], parameters[3], parameters[4]);
             if (id >= 0) {
                 this.combo.put(Parameters.symbol.get(id), Integer.parseInt(parameters[5]));
             } else {
-                //setup symbol for removal
+                //setup brokerSymbol for removal
                 comboSetupFailed = true;
             }
         }
-        //add listeners to each symbol
+        //add listeners to each brokerSymbol
         for (Map.Entry<BeanSymbol, Integer> entry : combo.entrySet()) {//add listeners
             entry.getKey().addPropertyChangeListener(this);
         }
     }
 
     /**
-     * Provided to create a symbol within the program.
+     * Provided to create a brokerSymbol within the program.
      *
-     * @param symbol
-     * @param displayName
+     * @param brokerSymbol
+     * @param happyName
      * @param type
      * @param exchange
      * @param currency
@@ -185,12 +187,12 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param right
      * @param minsize
      */
-    public BeanSymbol(String symbol, String displayName, String type, String exchange, String currency, String expiry, String option, String right, int minsize) {
+    public BeanSymbol(String symbol, String happyName, String type, String exchange, String currency, String expiry, String option, String right, int minsize) {
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
-        this.symbol = symbol;
-        this.displayName = displayName;
+        this.brokerSymbol = symbol;
+        this.happyName = happyName;
         this.type = type;
         this.exchange = exchange;
         this.currency = currency;
@@ -202,38 +204,35 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     public BeanSymbol(String[] input) {
         try {
-                    tradedPrices = new LimitedQueue(10);
-        tradedVolumes = new LimitedQueue(10);
-        tradedDateTime = new LimitedQueue(10);
+            tradedPrices = new LimitedQueue(10);
+            tradedVolumes = new LimitedQueue(10);
+            tradedDateTime = new LimitedQueue(10);
             propertySupport = new PropertyChangeSupport(this);
 //          this.serialno = Integer.parseInt(input[0]);
-            this.symbol = input[1].equals("") ? null : input[1];
-            this.displayName = input[2].equals("") ? null : input[2];
-            this.type = input[3].equals("") ? null : input[3];
-            this.exchange = input[4].equals("") || type.equals("COMBO") ? null : input[4];
-            this.primaryexchange = input[5].equals("") || type.equals("COMBO") ? null : input[5];
-            this.currency = input[6].equals("") || type.equals("COMBO") ? null : input[6];
-            this.expiry = input[7].equals("") || type.equals("COMBO") ? null : input[7];
-            this.option = input[8].equals("") || type.equals("COMBO") ? null : input[8];
-            this.right = input[9].equals("") || type.equals("COMBO") ? null : input[9];
-            this.minsize = input[10].equals("") ? 1 : Integer.parseInt(input[10]);;
-            this.barsstarttime = input[11].equals("") ? null : input[11];
-            this.streamingpriority = input[12].equals("") ? 1 : Integer.parseInt(input[12]);
-            if (input.length <= 13) {
+            this.brokerSymbol = input[1].equals("") ? null : input[1];
+            this.exchangeSymbol = input[2].equals("") ? null : input[2];
+            this.type = input[4].equals("") ? null : input[4].trim().toUpperCase();
+            this.exchange = input[5].equals("") || type.equals("COMBO") ? null : input[5].trim().toUpperCase();
+            this.primaryexchange = input[6].equals("") || type.equals("COMBO") ? null : input[6].trim().toUpperCase();
+            this.currency = input[7].equals("") || type.equals("COMBO") ? null : input[7].trim().toUpperCase();
+            this.expiry = input[8].equals("") || type.equals("COMBO") ? null : input[8].trim().toUpperCase();
+            this.option = input[9].equals("") || type.equals("COMBO") ? null : input[9].trim().toUpperCase();
+            this.right = input[10].equals("") || type.equals("COMBO") ? null : input[10].trim().toUpperCase();
+            this.happyName = input[3].equals("") ? this.brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option : input[3].trim().toUpperCase();
+            this.displayName=brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option ;
+            displayName=displayName.replaceAll("[^_A-Za-z0-9]", "").trim().toUpperCase();
+            this.minsize = input[11].equals("") ? 1 : Integer.parseInt(input[11]);;
+            this.barsstarttime = input[12].equals("") ? null : input[12].trim().toUpperCase();
+            this.streamingpriority = input[13].equals("") ? 1 : Integer.parseInt(input[13].trim().toUpperCase());
+            if (input.length <= 14) {
                 this.strategy = "";
             } else {
-                this.strategy = input[13].equals("") ? "" : input[13];
+                this.strategy = input[14].equals("") ? "" : input[14].trim().toUpperCase();
             }
-            if (input.length <= 14) {
+            if (input.length <= 15) {
                 this.active = true;
             } else {
-                this.active = input[14].equals("") ? false : Boolean.parseBoolean(input[14]);
-            }
-            String barSource=globalProperties.getProperty("bars","tick");
-            if (this.getBarsstarttime() != null && !"realtimebars".equals(barSource)) {
-                intraDayBarsFromTick = new DataBars(this, EnumBarSize.ONEMINUTE);
-            } else if (this.getBarsstarttime() != null) {
-                OneMinuteBarFromRealTimeBars = new DataBars(this, EnumBarSize.ONEMINUTE);
+                this.active = input[15].equals("") ? false : Boolean.parseBoolean(input[15].trim().toUpperCase());
             }
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
@@ -258,7 +257,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 if (timeLength > 0 && getColumnLabels().get(barSize).indexOf(incrementalTime.get(0)) == -1 && getColumnLabels().get(barSize).indexOf(incrementalTime.get(timeLength - 1)) == -1
                         && current) {
                     getColumnLabels().get(barSize).addAll(incrementalTime);
-                    Collections.sort(getColumnLabels().get(barSize),null);
+                    Collections.sort(getColumnLabels().get(barSize), null);
                     for (BeanSymbol s : symbols) {
                         s.addEmptyMatrixValues(barSize, incrementalTime);
                     }
@@ -282,9 +281,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     private void addEmptyMatrixValues(EnumBarSize barSize, List<Long> time) {
         int colCount = time.size();
-        int[]range=new int[2];
-        range[0]=this.getColumnLabels().get(barSize).indexOf(time.get(0));
-        range[1]=this.getColumnLabels().get(barSize).indexOf(time.get(colCount-1));
+        int[] range = new int[2];
+        range[0] = this.getColumnLabels().get(barSize).indexOf(time.get(0));
+        range[1] = this.getColumnLabels().get(barSize).indexOf(time.get(colCount - 1));
         int rowCount = this.getRowLabels().get(barSize).size();
         if (rowCount > 0) {
             double[] values = Utilities.range(ReservedValues.EMPTY, 0, colCount * rowCount);
@@ -468,7 +467,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     public BeanSymbol clone(BeanSymbol orig) {
         BeanSymbol b = new BeanSymbol();
-        b.symbol = orig.symbol;
+        b.brokerSymbol = orig.brokerSymbol;
         b.displayName = orig.displayName;
         b.type = orig.type;
         b.exchange = orig.exchange;
@@ -515,13 +514,13 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         BeanSymbol that = (BeanSymbol) other;
 
         // Custom equality check here.
-        String symbol1 = this.symbol;
+        String symbol1 = this.brokerSymbol;
         String type1 = this.type;
         String expiry1 = this.expiry == null ? "" : this.expiry;
         String option1 = this.option == null ? "" : this.option;
         String right1 = this.right == null ? "" : this.right;
 
-        String symbol2 = that.symbol;
+        String symbol2 = that.brokerSymbol;
         String type2 = that.type;
         String expiry2 = that.expiry == null ? "" : this.expiry;
         String option2 = that.option == null ? "" : this.option;
@@ -649,7 +648,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     @Override
     public int hashCode() {
         int hashCode = 0;
-        String symbol1 = this.symbol;
+        String symbol1 = this.brokerSymbol;
         String type1 = this.type;
         String expiry1 = this.expiry == null ? "" : this.expiry;
         String option1 = this.option == null ? "" : this.option;
@@ -725,27 +724,27 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 int existingTimeSize = getColumnLabels().get(size).size();
                 if (existingTimeSize > 0) {//time bar has some values
                     //startTime = getColumnLabels().get(size).get(existingTimeSize - 1); //To comply with C3, mak sure that there are no gaps in time    
-                    startTime=time.get(0);
+                    startTime = time.get(0);
                     /*
-                    switch (size) {
-                        case DAILY:
-                        case ONEMINUTE:
-                            startTime = Utilities.nextGoodDay(new Date(startTime), shift, timeZone, openHour, openMinute, closeHour, closeMinute, Algorithm.holidays, true).getTime();
-                            break;
-                        case WEEKLY:
-                            startTime = Utilities.beginningOfWeek(startTime, openHour, openMinute, timeZone, 1);
-                            break;
-                        case MONTHLY:
-                            startTime = Utilities.beginningOfMonth(startTime, openHour, openMinute, timeZone, 1);
-                            break;
-                        case ANNUAL:
-                            startTime = Utilities.beginningOfYear(startTime, openHour, openMinute, timeZone, 1);
-                            break;
-                        default:
-                            break;
+                     switch (size) {
+                     case DAILY:
+                     case ONEMINUTE:
+                     startTime = Utilities.nextGoodDay(new Date(startTime), shift, timeZone, openHour, openMinute, closeHour, closeMinute, Algorithm.holidays, true).getTime();
+                     break;
+                     case WEEKLY:
+                     startTime = Utilities.beginningOfWeek(startTime, openHour, openMinute, timeZone, 1);
+                     break;
+                     case MONTHLY:
+                     startTime = Utilities.beginningOfMonth(startTime, openHour, openMinute, timeZone, 1);
+                     break;
+                     case ANNUAL:
+                     startTime = Utilities.beginningOfYear(startTime, openHour, openMinute, timeZone, 1);
+                     break;
+                     default:
+                     break;
 
-                    }
-                  */
+                     }
+                     */
                 } else {
                     startTime = time.get(time.size() - 1);
                     Calendar startCal = Calendar.getInstance(TimeZone.getTimeZone(timeZone));
@@ -814,7 +813,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                             MainAlgorithm.tes.fireTradeEvent(serialno - 1, com.ib.client.TickType.LAST);
                         }
                         if (MainAlgorithm.getCollectTicks()) {
-                            TradingUtil.writeToFile("tick_" + this.getDisplayname() + ".csv", "Trade," + lastPrice);
+                            TradingUtil.writeToFile("tick_" + this.getDisplayname()+ ".csv", "Trade," + lastPrice);
                         }
                     }
 
@@ -822,7 +821,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 case PROP_BIDPRICE:
                     double tempBidPrice = 0;
                     if (getCombo().get(source) > 0) {
-                        //bidprice receieved and i am buying this symbol.
+                        //bidprice receieved and i am buying this brokerSymbol.
                         //change in bidprice will reflect change in bidprice of the combo
                         for (Map.Entry<BeanSymbol, Integer> entry : getCombo().entrySet()) {
                             int id = entry.getKey().getSerialno() - 1;
@@ -842,17 +841,17 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                         }
 
                     } else {
-                        //bidprice receieved and i am selling this symbol.
+                        //bidprice receieved and i am selling this brokerSymbol.
                         //change in bidprice will not affect price of combo                            
                     }
                     break;
                 case PROP_ASKPRICE:
                     double tempAskPrice = 0;
                     if (getCombo().get(source) > 0) {
-                        //askprice receieved and i am buying this symbol.
+                        //askprice receieved and i am buying this brokerSymbol.
                         //change in askprice will not impact my market making price
                     } else {
-                        //askprice receieved and i am selling this symbol.
+                        //askprice receieved and i am selling this brokerSymbol.
                         //change in askprice will not affect price of combo
                         for (Map.Entry<BeanSymbol, Integer> entry : getCombo().entrySet()) {
                             int id = entry.getKey().getSerialno() - 1;
@@ -950,8 +949,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertySupport.removePropertyChangeListener(listener);
     }
+
     public void saveToExternalFile(EnumBarSize barSize) {
-        String filename = getDisplayname().toUpperCase() + "_" + barSize.toString() + ".csv";
+        String filename = getHappyName().toUpperCase() + "_" + barSize.toString() + ".csv";
         Utilities.deleteFile(filename);
         String[] headerarray = initData.get("0");
         String header = Utilities.concatStringArray(headerarray);
@@ -1033,17 +1033,17 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     //***************** GETTER/ SETTER **************************************
     //***********************************************************************
     /**
-     * @return the symbol
+     * @return the brokerSymbol
      */
-    public String getSymbol() {
-        return symbol;
+    public String getBrokerSymbol() {
+        return brokerSymbol;
     }
 
     /**
-     * @param symbol the symbol to set
+     * @param brokerSymbol the brokerSymbol to set
      */
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
+    public void setBrokerSymbol(String brokerSymbol) {
+        this.brokerSymbol = brokerSymbol;
     }
 
     /**
@@ -1165,7 +1165,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             this.lastPrice = lastPrice;
             if (lastPrice > this.getHighPrice()) {
                 this.setHighPrice(lastPrice);
-            } else if (lastPrice < this.getLowPrice()||getLowPrice()==0 ) {
+            } else if (lastPrice < this.getLowPrice() || getLowPrice() == 0) {
                 this.setLowPrice(lastPrice);
             }
 
@@ -1918,7 +1918,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     }
 
     /**
-     * @param OneMinuteBarFromRealTimeBars the OneMinuteBarFromRealTimeBars to set
+     * @param OneMinuteBarFromRealTimeBars the OneMinuteBarFromRealTimeBars to
+     * set
      */
     public void setOneMinuteBarFromRealTimeBars(DataBars OneMinuteBarFromRealTimeBars) {
         this.OneMinuteBarFromRealTimeBars = OneMinuteBarFromRealTimeBars;
@@ -1955,7 +1956,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @return the databars
      */
-    public ConcurrentHashMap<EnumBarSize,BeanOHLC> getDatabars() {
+    public ConcurrentHashMap<EnumBarSize, BeanOHLC> getDatabars() {
         return databars;
     }
 
@@ -1963,7 +1964,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param databars the databars to set
      */
     public void setDatabars(EnumBarSize barSize, int duration) {
-        final EnumBarSize barSizeLocal=barSize;
+        final EnumBarSize barSizeLocal = barSize;
         databars.put(barSize, new BeanOHLC(this.getSerialno() - 1, duration));
         if (Algorithm.databarSetup.get(barSize) == null) {
             Algorithm.databarSetup.put(barSize, DateUtil.getNextPeriodStartTime(barSize));
@@ -1973,9 +1974,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 public Object call() throws Exception {
                     for (BeanSymbol s : Parameters.symbol) {
                         BeanOHLC ohlc = s.getDatabars().get(barSizeLocal);
-                        long time=Algorithm.databarSetup.get(barSizeLocal);
-                        if(ohlc.getOpen()!=0){
-                            s.addTimeSeries(barSizeLocal, new String[]{"open","high","low","close","volume"}, time, new double[]{ohlc.getOpen(),ohlc.getHigh(),ohlc.getLow(),ohlc.getClose(),ohlc.getVolume()});
+                        long time = Algorithm.databarSetup.get(barSizeLocal);
+                        if (ohlc.getOpen() != 0) {
+                            s.addTimeSeries(barSizeLocal, new String[]{"open", "high", "low", "close", "volume"}, time, new double[]{ohlc.getOpen(), ohlc.getHigh(), ohlc.getLow(), ohlc.getClose(), ohlc.getVolume()});
                             ohlc.setVolume(0);
                         }
                     }
@@ -1988,5 +1989,33 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
 
         this.databars = databars;
+    }
+
+    /**
+     * @return the exchangeSymbol
+     */
+    public String getExchangeSymbol() {
+        return exchangeSymbol;
+    }
+
+    /**
+     * @param exchangeSymbol the exchangeSymbol to set
+     */
+    public void setExchangeSymbol(String exchangeSymbol) {
+        this.exchangeSymbol = exchangeSymbol;
+    }
+
+    /**
+     * @return the happyName
+     */
+    public String getHappyName() {
+        return happyName;
+    }
+
+    /**
+     * @param happyName the happyName to set
+     */
+    public void setHappyName(String happyName) {
+        this.happyName = happyName;
     }
 }

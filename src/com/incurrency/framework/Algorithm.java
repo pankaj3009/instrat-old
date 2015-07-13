@@ -44,8 +44,7 @@ public class Algorithm {
             if (inputFile.exists() && !inputFile.isDirectory()) {
                 holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
             }
-        }
-        
+        }        
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
         openHour = Integer.valueOf(globalProperties.getProperty("openhour", "9").toString().trim());

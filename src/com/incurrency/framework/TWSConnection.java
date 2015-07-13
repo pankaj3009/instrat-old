@@ -137,7 +137,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public void getContractDetails() {
         Contract con = new Contract();
         for (BeanSymbol s : Parameters.symbol) {
-            con.m_symbol = s.getSymbol();
+            con.m_symbol = s.getBrokerSymbol();
             con.m_currency = s.getCurrency();
             con.m_exchange = s.getExchange();
             con.m_expiry = s.getExpiry();
@@ -155,7 +155,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     eClientSocket.reqContractDetails(mRequestId, con);
                 } else {
-                    System.out.println("### Error getting handle while requesting market data for contract Name: " + s.getSymbol());
+                    System.out.println("### Error getting handle while requesting market data for contract Name: " + s.getBrokerSymbol());
                 }
             }
         }
@@ -163,7 +163,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public void getContractDetails(BeanSymbol s, String overrideType) {
         Contract con = new Contract();
-        con.m_symbol = s.getSymbol();
+        con.m_symbol = s.getBrokerSymbol();
         con.m_currency = s.getCurrency();
         con.m_exchange = s.getExchange();
         con.m_expiry = s.getExpiry();
@@ -207,7 +207,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
             //c.getmSnapShotReqID().put(mRequestId, s.getSerialno());
             Contract con = new Contract();
-            con.m_symbol = s.getSymbol();
+            con.m_symbol = s.getBrokerSymbol();
             con.m_secType = s.getType();
             con.m_exchange = s.getExchange();
             con.m_currency = s.getCurrency();
@@ -276,14 +276,14 @@ public class TWSConnection extends Thread implements EWrapper {
                     logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
                 }
             } else {
-                System.out.println("### Error getting handle while requesting snapshot data for contract " + contract.m_conId + " Name: " + s.getSymbol());
+                System.out.println("### Error getting handle while requesting snapshot data for contract " + contract.m_conId + " Name: " + s.getBrokerSymbol());
             }
         }
     }
 
     public void getRealTimeBars(BeanSymbol s) {
         Contract con = new Contract();
-        con.m_symbol = s.getSymbol();
+        con.m_symbol = s.getBrokerSymbol();
         con.m_currency = s.getCurrency();
         con.m_exchange = s.getExchange();
         con.m_expiry = s.getExpiry();
@@ -306,7 +306,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 logger.log(Level.FINER, "403,RealTimeBarsRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
 
             } else {
-                System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getSymbol());
+                System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getBrokerSymbol());
             }
         }
     }
@@ -805,14 +805,33 @@ public class TWSConnection extends Thread implements EWrapper {
         ArrayList<Contract> out = new ArrayList<>();
         if (!Parameters.symbol.get(id).getType().equals("COMBO")) {
             Contract contract = new Contract();
-            contract.m_conId = Parameters.symbol.get(id).getContractID();
+                if(Parameters.symbol.get(id).getContractID()>0){
+                contract.m_conId = Parameters.symbol.get(id).getContractID();                    
+                }
+            contract.m_currency=Parameters.symbol.get(id).getCurrency();
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
+            contract.m_symbol=Parameters.symbol.get(id).getBrokerSymbol();
+            if(Parameters.symbol.get(id).getBrokerSymbol()!=null){
+                contract.m_localSymbol=Parameters.symbol.get(id).getBrokerSymbol();
+            }
+            if(Parameters.symbol.get(id).getExchangeSymbol()!=null){
+                contract.m_localSymbol=Parameters.symbol.get(id).getExchangeSymbol();
+            }
             out.add(contract);
         } else {
             for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(id).getCombo().entrySet()) { //ordering of orders and combo should be the same. This appears to be a correct assumption
                 Contract contract = new Contract();
-                contract.m_conId = Parameters.symbol.get(entry.getKey().getSerialno() - 1).getContractID();
+                if(Parameters.symbol.get(entry.getKey().getSerialno() - 1).getContractID()>0){
+                contract.m_conId = Parameters.symbol.get(entry.getKey().getSerialno() - 1).getContractID();                    
+                }
+                contract.m_currency=Parameters.symbol.get(entry.getKey().getSerialno() - 1).getCurrency();
                 contract.m_exchange = Parameters.symbol.get(entry.getKey().getSerialno() - 1).getExchange();
+             if(Parameters.symbol.get(id).getBrokerSymbol()!=null){
+                contract.m_localSymbol=Parameters.symbol.get(id).getBrokerSymbol();
+            }
+            if(Parameters.symbol.get(id).getExchangeSymbol()!=null){
+                contract.m_localSymbol=Parameters.symbol.get(id).getExchangeSymbol();
+            }   
                 out.add(contract);
 
             }
@@ -822,11 +841,18 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public Contract createContract(BeanSymbol s) {
         Contract contract = new Contract();
-        int id = TradingUtil.getIDFromSymbol(s.getSymbol(), s.getType(), s.getExpiry() == null ? "" : s.getExpiry(), s.getRight() == null ? "" : s.getRight(), s.getOption() == null ? "" : s.getOption());
+        int id = Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), s.getType(), s.getExpiry() == null ? "" : s.getExpiry(), s.getRight() == null ? "" : s.getRight(), s.getOption() == null ? "" : s.getOption());
         if (id >= 0) {
+                            if(s.getContractID()>0){
+                contract.m_conId =s.getContractID();                    
+                }
+
             contract.m_conId = Parameters.symbol.get(id).getContractID();
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
-            contract.m_symbol = Parameters.symbol.get(id).getSymbol();
+            contract.m_symbol = Parameters.symbol.get(id).getBrokerSymbol();
+            if(s.getExchangeSymbol()!=null){
+                contract.m_localSymbol=s.getExchangeSymbol();
+            }
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
             contract.m_primaryExch = Parameters.symbol.get(id).getPrimaryexchange();
             contract.m_currency = Parameters.symbol.get(id).getCurrency();
@@ -1073,7 +1099,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public void requestFundamentalData(BeanSymbol s, String reportType) {
         Contract con = new Contract();
-        con.m_symbol = s.getSymbol();
+        con.m_symbol = s.getBrokerSymbol();
         con.m_currency = s.getCurrency();
         con.m_exchange = s.getExchange();
         con.m_expiry = s.getExpiry();
@@ -1096,11 +1122,14 @@ public class TWSConnection extends Thread implements EWrapper {
     
     public void requestDailyBar(BeanSymbol s, String duration) {
         Contract con = new Contract();
-        con.m_symbol = s.getSymbol();
+        con.m_symbol = s.getBrokerSymbol();
         con.m_currency = s.getCurrency();
         con.m_exchange = s.getExchange();
         con.m_expiry = s.getExpiry();
         con.m_primaryExch = s.getPrimaryexchange();
+        if (s.getExchangeSymbol() != null) {
+            con.m_localSymbol = s.getExchangeSymbol();
+        }
         con.m_right = s.getRight();
         con.m_secType = s.getType();
         if (!eClientSocket.isConnected()) {
@@ -1121,7 +1150,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 eClientSocket.reqHistoricalData(mRequestId, con, endDateStr, duration, "1 day", "TRADES", 1, 2);
                 logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + "1 day"});
             } else {
-                System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getSymbol());
+                System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getBrokerSymbol());
             }
         }
     }
@@ -1145,13 +1174,16 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public void requestHistoricalData(BeanSymbol s, String endDate, String duration, String barSize) {
         Contract con = new Contract();
-        con.m_symbol = s.getSymbol();
+        con.m_symbol = s.getBrokerSymbol();
         con.m_currency = s.getCurrency();
         con.m_exchange = s.getExchange();
         con.m_expiry = s.getExpiry();
         con.m_primaryExch = s.getPrimaryexchange();
         con.m_right = s.getRight();
         con.m_secType = s.getType();
+        if (s.getExchangeSymbol() != null) {
+            con.m_localSymbol = s.getExchangeSymbol();
+        }
         if (s.getType().equals("FUT") || s.getType().equals("OPT")) {
             con.m_includeExpired = true;
         }
@@ -1187,7 +1219,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
                 
             } else {
-                System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getSymbol());
+                System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getBrokerSymbol());
             }
         }
     }
@@ -1261,13 +1293,13 @@ public class TWSConnection extends Thread implements EWrapper {
                 if (field == 1) {
                     Parameters.symbol.get(id).setBidPrice(price);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Bid," + price);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Bid," + price);
                     }
                     tes.fireBidAskChange(id);
                 } else if (field == 2) {
                     Parameters.symbol.get(id).setAskPrice(price);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Ask," + price);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Ask," + price);
                     }
                     tes.fireBidAskChange(id);
                 } else if (field == 4) {
@@ -1278,7 +1310,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     Parameters.symbol.get(id).getTradedPrices().add(price);
                     Parameters.symbol.get(id).getTradedDateTime().add(System.currentTimeMillis());
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Trade," + price);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Trade," + price);
                     }
                     tes.fireTradeEvent(id, com.ib.client.TickType.LAST);
                     if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
@@ -1321,24 +1353,8 @@ public class TWSConnection extends Thread implements EWrapper {
 
         String type = Parameters.symbol.get(id).getType();
         String header = topic + ":" + type + ":" + "ALL";
-        String symbol;
-        switch (type) {
-            case "STK":
-                symbol = Parameters.symbol.get(id).getSymbol();
-                break;
-            case "IND":
-                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType();
-                break;
-            case "FUT":
-                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType() + "_" + Parameters.symbol.get(id).getExpiry();
-                break;
-            case "OPT":
-                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType() + "_" + Parameters.symbol.get(id).getExpiry() + "_" + Parameters.symbol.get(id).getRight() + "_" + Parameters.symbol.get(id).getOption();
-                break;
-            default:
-                symbol = "";
-                break;
-        }
+        String symbol=Parameters.symbol.get(id).getDisplayname();
+
         if (field == com.ib.client.TickType.CLOSE) {
             Parameters.symbol.get(id).setClosePrice(price);
         } else if (field == com.ib.client.TickType.OPEN) {
@@ -1368,10 +1384,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getHappyName(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
                 }
@@ -1380,10 +1396,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getHappyName(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
                 }
@@ -1414,17 +1430,17 @@ public class TWSConnection extends Thread implements EWrapper {
                 if (field == 0) {
                     Parameters.symbol.get(id).setBidSize(size);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "BidSize," + size);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "BidSize," + size);
                     }
                 } else if (field == 3) {
                     Parameters.symbol.get(id).setAskSize(size);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "AskSize," + size);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "AskSize," + size);
                     }
                 } else if (field == 5) {
                     //Parameters.symbol.get(id).setLastSize(size);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "LastSize," + size);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "LastSize," + size);
                     }
 
                 } else if (field == 8) {
@@ -1448,8 +1464,8 @@ public class TWSConnection extends Thread implements EWrapper {
                         Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
                     }
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Volume," + size);
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getSymbol() + ".csv", "Calculated LastSize," + calculatedLastSize);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Volume," + size);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Calculated LastSize," + calculatedLastSize);
                     }
                 }
             }
@@ -1479,24 +1495,7 @@ public class TWSConnection extends Thread implements EWrapper {
         }
         String type = Parameters.symbol.get(id).getType();
         String header = Rates.country + ":" + type + ":" + "ALL";
-        String symbol;
-        switch (type) {
-            case "STK":
-                symbol = Parameters.symbol.get(id).getSymbol();
-                break;
-            case "IND":
-                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType();
-                break;
-            case "FUT":
-                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType() + "_" + Parameters.symbol.get(id).getExpiry();
-                break;
-            case "OPT":
-                symbol = Parameters.symbol.get(id).getSymbol() + "_" + Parameters.symbol.get(id).getType() + "_" + Parameters.symbol.get(id).getExpiry() + "_" + Parameters.symbol.get(id).getRight() + "_" + Parameters.symbol.get(id).getOption();
-                break;
-            default:
-                symbol = "";
-                break;
-        }
+        String symbol=Parameters.symbol.get(id).getDisplayname();
         if (field == com.ib.client.TickType.BID_SIZE || field == com.ib.client.TickType.ASK_SIZE) {
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
         }
@@ -1511,11 +1510,11 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getHappyName(), null, output)).start();
                             //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.equity.s1.tick.volume", Parameters.symbol.get(id).getServicename(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.future.s1.tick.volume", Parameters.symbol.get(id).getServicename(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
@@ -1526,11 +1525,11 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getHappyName(), null, output)).start();
                             //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.equity.s1.tick.volume", Parameters.symbol.get(id).getServicename(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.future.s1.tick.volume", Parameters.symbol.get(id).getServicename(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
@@ -1544,10 +1543,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getHappyName(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
                 }
@@ -1556,10 +1555,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     switch (type) {
                         case "STK":
                         case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getHappyName(), null, output)).start();
                             break;
                         case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
+                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getHappyName(), Parameters.symbol.get(id).getExpiry(), output)).start();
                             break;
                     }
                 }
@@ -1712,7 +1711,7 @@ public class TWSConnection extends Thread implements EWrapper {
             if (Parameters.symbol.get(id).getType().compareTo("OPT") == 0 && Parameters.symbol.get(id).getOption() == null) {
                 //this request is checking for ATM strike
                 //get underlying id
-                int underlyingid = TradingUtil.getIDFromSymbol(Parameters.symbol.get(id).getSymbol(), "STK", "", "", "") >= 0 ? TradingUtil.getIDFromSymbol(Parameters.symbol.get(id).getSymbol(), "STK", "", "", "") : TradingUtil.getIDFromSymbol(Parameters.symbol.get(id).getSymbol(), "IND", "", "", "");
+                int underlyingid = Utilities.getIDFromSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "IND", "", "", "");
                 if (underlyingid >= 0) {
                     BeanSymbol underlyingSymbol = Parameters.symbol.get(underlyingid);
                     double oldATM = underlyingSymbol.getAtmStrike();
@@ -2019,7 +2018,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     Node nNode = nList.item(temp);
                     if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                         Element eElement = (Element) nNode;
-                        String symbol = getRequestDetails().get(reqId+delimiter+c.getAccountName()).symbol.getSymbol();
+                        String symbol = getRequestDetails().get(reqId+delimiter+c.getAccountName()).symbol.getBrokerSymbol();
                         String sharesOutstanding = eElement.getElementsByTagName("SharesOut").item(0).getTextContent();
                         String floatShares = ((Element) eElement.getElementsByTagName("SharesOut").item(0)).getAttribute("TotalFloat");
                         String effectiveDate = ((Element) eElement.getElementsByTagName("SharesOut").item(0)).getAttribute("Date");
@@ -2105,10 +2104,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     String symbol = getRequestDetails().get(id+delimiter+c.getAccountName()) != null ? getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.getDisplayname() : "";
                     logger.log(Level.INFO, "103,FundamentalDataNotReceived,{0}", new Object[]{symbol});
                     BeanSymbol s = getRequestDetails().get(id+delimiter+c.getAccountName()).symbol;
-                    s.getFundamental().putSummary(s.getSymbol() + "," + errorMsg);
+                    s.getFundamental().putSummary(s.getBrokerSymbol() + "," + errorMsg);
                     break;
                 case 200: //No security definition has been found for the request
-                    symbol = getRequestDetails().get(id+delimiter+c.getAccountName()) != null ? getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.getSymbol() : "";
+                    symbol = getRequestDetails().get(id+delimiter+c.getAccountName()) != null ? getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.getBrokerSymbol() : "";
                     getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.setStatus(false);
                     TWSConnection.skipsymbol=true;
                     if (symbol.compareTo("") != 0) {

@@ -1215,20 +1215,20 @@ public class TradingUtil {
         out=new ArrayList<Integer>() {{for (String s : inputArray) add(new Integer(s.trim()));}}.toArray(new Integer[inputArray.length]);
         return out;
     }
-
+/*
     public static int getIDFromSymbol(String symbol, String type, String expiry, String right, String option) {
         for (BeanSymbol symb : Parameters.symbol) {
-            String s = symb.getSymbol() == null ? "" : symb.getSymbol();
+            String s = symb.getBrokerSymbol() == null ? "" : symb.getBrokerSymbol();
             String t = symb.getType() == null ? "" : symb.getType();
             String e = symb.getExpiry() == null ? "" : symb.getExpiry();
             String r = symb.getRight() == null ? "" : symb.getRight();
             String o = symb.getOption() == null ? "" : symb.getOption();
             
-            String si=symbol== null ? "" : symbol;
-            String ti = type== null ? "" : type;
-            String ei = expiry == null ? "" : expiry;
-            String ri = right == null ? "" : right;
-            String oi = option== null ? "" : option;
+            String si=symbol== null ||symbol.equalsIgnoreCase("null")? "" : symbol;
+            String ti = type== null||type.equalsIgnoreCase("null") ? "" : type;
+            String ei = expiry == null ||expiry.equalsIgnoreCase("null")? "" : expiry;
+            String ri = right == null||right.equalsIgnoreCase("null") ? "" : right;
+            String oi = option== null||option.equalsIgnoreCase("null") ? "" : option;
             if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei)==0 
                     && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
                 return symb.getSerialno() - 1;
@@ -1236,7 +1236,8 @@ public class TradingUtil {
         }
         return -1;
     }
-    
+  */  
+    /*
         public static int getIDFromDisplayName(String symbol, String type, String expiry, String right, String option) {
         for (BeanSymbol symb : Parameters.symbol) {
             String s = symb.getDisplayname() == null ? "" : symb.getDisplayname();
@@ -1257,7 +1258,9 @@ public class TradingUtil {
         }
         return -1;
     }
+    */
     
+    /*
     public static int getIDFromDisplayName(String displayName) {
         for (BeanSymbol symb : Parameters.symbol) {
             if (symb.getDisplayname().equals(displayName)) {
@@ -1266,10 +1269,10 @@ public class TradingUtil {
         }
         return -1;
     }
-    
+    */
     public static int getIDFromComboLongName(String comboLongName) {
         for (BeanSymbol symb : Parameters.symbol) {
-if(symb.getSymbol().equals(comboLongName) && symb.getType().equals("COMBO")){
+if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO")){
             return symb.getSerialno() - 1;
             }
         }
@@ -1278,7 +1281,7 @@ if(symb.getSymbol().equals(comboLongName) && symb.getType().equals("COMBO")){
     
     public static int getEntryIDFromDisplayName(Trade tr,ArrayList<BeanSymbol> symbolList) {
         for (BeanSymbol symb : symbolList) {
-            if(symb.getDisplayname().equals(tr.getEntrySymbol())){
+            if(symb.getHappyName().equals(tr.getEntrySymbol())){
                 return symb.getSerialno() - 1;
             }            
         }
@@ -1287,30 +1290,14 @@ if(symb.getSymbol().equals(comboLongName) && symb.getType().equals("COMBO")){
 
         public static int getExitIDFromSymbol(Trade tr) {
         for (BeanSymbol symb : Parameters.symbol) {
-            if(symb.getDisplayname().equals(tr.getExitSymbol())){
+            if(symb.getHappyName().equals(tr.getExitSymbol())){
                 return symb.getSerialno() - 1;
             }            
         }
         return -1;
     }
         
-    public static int getFutureIDFromSymbol(int id, String expiry) {
-        String s = Parameters.symbol.get(id).getSymbol();
-        String t = "FUT";
-        String e = expiry;
-        String r = "";
-        String o = "";
-        return getIDFromSymbol(s, t, e, r, o);
-    }
 
-    public static int getIDFromFuture(int futureID) {
-        String s = Parameters.symbol.get(futureID).getSymbol();
-        String t = "STK";
-        String e = "";
-        String r = "";
-        String o = "";
-        return getIDFromSymbol(s, t, e, r, o);
-    }
 
     public static String padRight(String s, int n) {
      return String.format("%1$-" + n + "s", s);  

@@ -1129,21 +1129,21 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Equity with Loan Value")) { //insufficient margin
             int id = event.getConnection().getOrders().get(event.getId()).getParentSymbolID() - 1;
             int orderid = event.getId();
-            logger.log(Level.INFO, "103,InsufficientMargin,{0}", new Object[]{event.getConnection().getAccountName()+delimiter+ orderReference+delimiter+ Parameters.symbol.get(id).getSymbol()+delimiter+ event.getErrorCode()+delimiter+ event.getId()+delimiter+ event.getErrorMessage()});
+            logger.log(Level.INFO, "103,InsufficientMargin,{0}", new Object[]{event.getConnection().getAccountName()+delimiter+ orderReference+delimiter+ Parameters.symbol.get(id).getBrokerSymbol()+delimiter+ event.getErrorCode()+delimiter+ event.getId()+delimiter+ event.getErrorMessage()});
             //generate cancellation of order id
             event.getConnection().getOrdersToBeFastTracked().remove(orderid);
             //this.getActiveOrders().remove(id); //commented this as activeorders is a part of OMS and impacts all accounts. Insufficient margin is related to a specific account
         } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:The order price is outside of the allowable price limits")) {
             int id = event.getConnection().getOrders().get(event.getId()).getParentSymbolID() - 1;
             //send email
-            Thread t = new Thread(new Mail("Order placed by inStrat for symbol" + Parameters.symbol.get(id).getSymbol() + " over strategy " + s.getStrategy() + "was outside permissible range. Please check inStrat status", "Algorithm SEVERE ALERT"));
+            Thread t = new Thread(new Mail("Order placed by inStrat for symbol" + Parameters.symbol.get(id).getBrokerSymbol() + " over strategy " + s.getStrategy() + "was outside permissible range. Please check inStrat status", "Algorithm SEVERE ALERT"));
             t.start();
-            logger.log(Level.INFO, "103,OrderCancelled,{0}", new Object[]{event.getConnection().getAccountName()+delimiter+ orderReference+delimiter+ Parameters.symbol.get(id).getSymbol()+delimiter+ event.getErrorCode()+delimiter+ event.getId()+delimiter+ event.getErrorMessage()});
+            logger.log(Level.INFO, "103,OrderCancelled,{0}", new Object[]{event.getConnection().getAccountName()+delimiter+ orderReference+delimiter+ Parameters.symbol.get(id).getBrokerSymbol()+delimiter+ event.getErrorCode()+delimiter+ event.getId()+delimiter+ event.getErrorMessage()});
             this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
         } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:")) {
             if (event.getConnection().getOrders().get(event.getId()) != null) {
                 int id = event.getConnection().getOrders().get(event.getId()).getParentSymbolID() - 1;
-                logger.log(Level.INFO, "103,OrderCancelled,{0}", new Object[]{event.getConnection().getAccountName()+delimiter+ orderReference+delimiter+ Parameters.symbol.get(id).getSymbol()+delimiter+ event.getErrorCode()+delimiter+ event.getId()+delimiter+ event.getErrorMessage()});
+                logger.log(Level.INFO, "103,OrderCancelled,{0}", new Object[]{event.getConnection().getAccountName()+delimiter+ orderReference+delimiter+ Parameters.symbol.get(id).getBrokerSymbol()+delimiter+ event.getErrorCode()+delimiter+ event.getId()+delimiter+ event.getErrorMessage()});
                 this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
             }
         }
@@ -1822,10 +1822,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
             //send email
             if (!combo) {
-                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Completely Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Symbol: " + Parameters.symbol.get(parentid).getSymbol() + ", Fill Size: " + fill + ", Symbol Position: " + p.getPosition() + ", Fill Price: " + avgFillPrice, "Algorithm Alert - " + strategy.toUpperCase()));
+                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Completely Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Symbol: " + Parameters.symbol.get(parentid).getBrokerSymbol() + ", Fill Size: " + fill + ", Symbol Position: " + p.getPosition() + ", Fill Price: " + avgFillPrice, "Algorithm Alert - " + strategy.toUpperCase()));
                 t.start();
             } else {
-                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Completely Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Combo Symbol: " + Parameters.symbol.get(parentid).getSymbol() + ",Filled Child: " + Parameters.symbol.get(childid).getSymbol() + ", Child Fill Size: " + fill + ", Child Position: " + p.getChildPosition().get(cpid).getPosition() + ", Child Fill Price: " + avgFillPrice + ", Combo Position: " + p.getPosition() + ",Combo Price: " + p.getPrice(), "Algorithm Alert - " + strategy.toUpperCase()));
+                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Completely Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Combo Symbol: " + Parameters.symbol.get(parentid).getBrokerSymbol() + ",Filled Child: " + Parameters.symbol.get(childid).getBrokerSymbol() + ", Child Fill Size: " + fill + ", Child Position: " + p.getChildPosition().get(cpid).getPosition() + ", Child Fill Price: " + avgFillPrice + ", Combo Position: " + p.getPosition() + ",Combo Price: " + p.getPrice(), "Algorithm Alert - " + strategy.toUpperCase()));
                 t.start();
             }
             synchronized (c.lockOrdersToBeCancelled) {
@@ -2108,10 +2108,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
             //send email
             if (!combo) {
-                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Partially Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Symbol: " + Parameters.symbol.get(parentid).getSymbol() + ", Fill Size: " + fill + ", Symbol Position: " + p.getPosition() + ", Fill Price: " + avgFillPrice, "Algorithm Alert - " + strategy.toUpperCase()));
+                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Partially Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Symbol: " + Parameters.symbol.get(parentid).getBrokerSymbol() + ", Fill Size: " + fill + ", Symbol Position: " + p.getPosition() + ", Fill Price: " + avgFillPrice, "Algorithm Alert - " + strategy.toUpperCase()));
                 t.start();
             } else {
-                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Partially Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Combo Symbol: " + Parameters.symbol.get(parentid).getSymbol() + ",Filled Child: " + Parameters.symbol.get(childid).getSymbol() + ", Child Fill Size: " + fill + ", Child Position: " + p.getChildPosition().get(cpid).getPosition() + ", Child Fill Price: " + avgFillPrice + ", Combo Position: " + p.getPosition() + ",Combo Price: " + p.getPrice(), "Algorithm Alert - " + strategy.toUpperCase()));
+                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Partially Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Combo Symbol: " + Parameters.symbol.get(parentid).getBrokerSymbol() + ",Filled Child: " + Parameters.symbol.get(childid).getBrokerSymbol() + ", Child Fill Size: " + fill + ", Child Position: " + p.getChildPosition().get(cpid).getPosition() + ", Child Fill Price: " + avgFillPrice + ", Combo Position: " + p.getPosition() + ",Combo Price: " + p.getPrice(), "Algorithm Alert - " + strategy.toUpperCase()));
                 t.start();
             }
 
@@ -2485,7 +2485,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
         Collections.sort(allTrades, new TradesCompare());
-        String symbol = Parameters.symbol.get(id).getDisplayname();
+        String symbol = Parameters.symbol.get(id).getHappyName();
         String type = Parameters.symbol.get(id).getType();
         String expiry = Parameters.symbol.get(id).getExpiry() == null ? "" : Parameters.symbol.get(id).getExpiry();
         String right = Parameters.symbol.get(id).getRight() == null ? "" : Parameters.symbol.get(id).getRight();
