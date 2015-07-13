@@ -1181,7 +1181,7 @@ public class TWSConnection extends Thread implements EWrapper {
         con.m_primaryExch = s.getPrimaryexchange();
         con.m_right = s.getRight();
         con.m_secType = s.getType();
-        if (s.getExchangeSymbol() != null) {
+        if (s.getExchangeSymbol() != null && s.getType().equals("STK")) {
             con.m_localSymbol = s.getExchangeSymbol();
         }
         if (s.getType().equals("FUT") || s.getType().equals("OPT")) {
