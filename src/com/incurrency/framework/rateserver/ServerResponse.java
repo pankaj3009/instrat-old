@@ -75,7 +75,7 @@ public class ServerResponse implements Runnable {
         switch (args[0]) {
             case "contractid":
                 String components[] = args[1].split("_");
-                int id = Utilities.getIDFromDisplayName(Parameters.symbol,components[0]);
+                int id = Utilities.getIDFromDisplayName(Parameters.symbol,args[1]);
                 /*
                 if (components.length == 2) {//STK
                     id = TradingUtil.getIDFromSymbol(components[0], components[1], "", "", "");
