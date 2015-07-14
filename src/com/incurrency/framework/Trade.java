@@ -91,7 +91,7 @@ public class Trade implements ReaderWriterInterface {
 
     public Trade(int id, int parentid, EnumOrderReason reason,EnumOrderSide side, double price, int size, int internalid,int orderid,String timeZone,String accountName){
         this.entrySymbol=Parameters.symbol.get(id).getDisplayname();
-        this.parentSymbol=Parameters.symbol.get(parentid).getBrokerSymbol();
+        this.parentSymbol=Parameters.symbol.get(parentid).getDisplayname();
         this.entryReason=reason;
         this.entrySymbolID=id;
         this.entrySide=side;

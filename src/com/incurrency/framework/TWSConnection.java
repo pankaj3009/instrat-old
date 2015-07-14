@@ -841,7 +841,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public Contract createContract(BeanSymbol s) {
         Contract contract = new Contract();
-        int id = Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), s.getType(), s.getExpiry() == null ? "" : s.getExpiry(), s.getRight() == null ? "" : s.getRight(), s.getOption() == null ? "" : s.getOption());
+        int id = Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), s.getType(), s.getExpiry() == null ? "" : s.getExpiry(), s.getRight() == null ? "" : s.getRight(), s.getOption() == null ? "" : s.getOption());
         if (id >= 0) {
                             if(s.getContractID()>0){
                 contract.m_conId =s.getContractID();                    
@@ -1181,7 +1181,7 @@ public class TWSConnection extends Thread implements EWrapper {
         con.m_primaryExch = s.getPrimaryexchange();
         con.m_right = s.getRight();
         con.m_secType = s.getType();
-        if (s.getExchangeSymbol() != null) {
+        if (s.getExchangeSymbol() != null && s.getType().equals("STK")) {
             con.m_localSymbol = s.getExchangeSymbol();
         }
         if (s.getType().equals("FUT") || s.getType().equals("OPT")) {
@@ -1711,7 +1711,7 @@ public class TWSConnection extends Thread implements EWrapper {
             if (Parameters.symbol.get(id).getType().compareTo("OPT") == 0 && Parameters.symbol.get(id).getOption() == null) {
                 //this request is checking for ATM strike
                 //get underlying id
-                int underlyingid = Utilities.getIDFromSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "IND", "", "", "");
+                int underlyingid = Utilities.getIDFromBrokerSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromBrokerSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromBrokerSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "IND", "", "", "");
                 if (underlyingid >= 0) {
                     BeanSymbol underlyingSymbol = Parameters.symbol.get(underlyingid);
                     double oldATM = underlyingSymbol.getAtmStrike();

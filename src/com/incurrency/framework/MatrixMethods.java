@@ -53,6 +53,11 @@ public class MatrixMethods {
         return indices;
     }
     
+     public static double lValue(DoubleMatrix m){
+        int length=m.length;
+        return m.data[length-1];
+    }
+    
     public static DoubleMatrix range(DoubleMatrix m,int range,double step){
         DoubleMatrix out=DoubleMatrix.zeros(m.length);
         DoubleMatrix hhv=hhv(m,range);

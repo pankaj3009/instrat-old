@@ -251,7 +251,7 @@ public class MainAlgorithm extends Algorithm {
                 for (BeanSymbol s : Parameters.symbol) {
                     if (s.getType().compareTo("OPT") == 0 && s.getOption() == null) {
                         optionsRequiringATMStrike.add(s);
-                        int id = Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "IND", "", "", "");
+                        int id = Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "IND", "", "", "");
                         if (id >= 0) {
                             underlyingRequiringClosePrice.add(Parameters.symbol.get(id));
                             //tempC.getWrapper().requestSingleSnapshot(Parameters.symbol.get(id));
@@ -287,7 +287,7 @@ public class MainAlgorithm extends Algorithm {
                 //update strikes in Parameters.symbols
                 for (BeanSymbol s : optionsRequiringATMStrike) {
                     int optionid = s.getSerialno() - 1;
-                    int underlyingid = Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromSymbol(Parameters.symbol,s.getBrokerSymbol(), "IND", "", "", "");
+                    int underlyingid = Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "IND", "", "", "");
                     Parameters.symbol.get(optionid).setOption(String.valueOf(Parameters.symbol.get(underlyingid).getAtmStrike()));
                 }
 
