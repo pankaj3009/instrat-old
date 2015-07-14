@@ -599,23 +599,23 @@ public class Utilities {
 
     public static int[] addArraysNoDuplicates(int[] input1, int[] input2) {
         /*
-        TreeSet t1 = new <Integer>TreeSet(Arrays.asList(input1));
-        TreeSet t2 = new <Integer>TreeSet(Arrays.asList(input2));
-        t1.add(t2);
-        Integer[] out = new Integer[t1.size()];
-        t1.toArray(out);
-        int[] out2 = new int[t1.size()];
-        for (int i = 0; i < out.length; i++) {
-            out2[i] = out[i];
-        }
-        //    String[] countries1 = t1.toArray(new String[t1.size()]);
-*/
-        int[] arraycopy=com.google.common.primitives.Ints.concat(input1,input2);
-        List <Integer>copy=com.google.common.primitives.Ints.asList(arraycopy);
-        TreeSet<Integer> t=new TreeSet<>(copy);
+         TreeSet t1 = new <Integer>TreeSet(Arrays.asList(input1));
+         TreeSet t2 = new <Integer>TreeSet(Arrays.asList(input2));
+         t1.add(t2);
+         Integer[] out = new Integer[t1.size()];
+         t1.toArray(out);
+         int[] out2 = new int[t1.size()];
+         for (int i = 0; i < out.length; i++) {
+         out2[i] = out[i];
+         }
+         //    String[] countries1 = t1.toArray(new String[t1.size()]);
+         */
+        int[] arraycopy = com.google.common.primitives.Ints.concat(input1, input2);
+        List<Integer> copy = com.google.common.primitives.Ints.asList(arraycopy);
+        TreeSet<Integer> t = new TreeSet<>(copy);
         return com.google.common.primitives.Ints.toArray(t);
-        
-        
+
+
     }
 
     /**
@@ -768,7 +768,6 @@ public class Utilities {
             }
 
         } catch (NullPointerException | IllegalArgumentException e) {
-            
         } finally {
             return out;
         }
@@ -974,6 +973,27 @@ public class Utilities {
         return -1;
     }
 
+    public static int getIDFromExchangeSymbol(List<BeanSymbol> symbols, String symbol, String type, String expiry, String right, String option) {
+        for (BeanSymbol symb : symbols) {
+            String s = symb.getExchangeSymbol() == null ? "" : symb.getExchangeSymbol();
+            String t = symb.getType() == null ? "" : symb.getType();
+            String e = symb.getExpiry() == null ? "" : symb.getExpiry();
+            String r = symb.getRight() == null ? "" : symb.getRight();
+            String o = symb.getOption() == null ? "" : symb.getOption();
+
+            String si = symbol == null ? "" : symbol;
+            String ti = type == null ? "" : type;
+            String ei = expiry == null ? "" : expiry;
+            String ri = right == null ? "" : right;
+            String oi = option == null ? "" : option;
+            if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei) == 0
+                    && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
+                return symb.getSerialno() - 1;
+            }
+        }
+        return -1;
+    }
+
     /**
      * Returns symbol id from a String[] containing values as
      * symbol,type,expiry,right,optionstrike.Order is important.
@@ -983,11 +1003,11 @@ public class Utilities {
      */
     public static int getIDFromSymbol(List<BeanSymbol> symbols, String[] symbol) {
 
-        String si=symbol[0]==null||symbol[0].equalsIgnoreCase("null")?"":symbol[0];
-        String ti=symbol[1]==null||symbol[1].equalsIgnoreCase("null")?"":symbol[1];
-        String ei=symbol[2]==null||symbol[2].equalsIgnoreCase("null")?"":symbol[2];
-        String ri=symbol[3]==null||symbol[3].equalsIgnoreCase("null")?"":symbol[3];
-        String oi=symbol[4]==null||symbol[4].equalsIgnoreCase("null")?"":symbol[4];
+        String si = symbol[0] == null || symbol[0].equalsIgnoreCase("null") ? "" : symbol[0];
+        String ti = symbol[1] == null || symbol[1].equalsIgnoreCase("null") ? "" : symbol[1];
+        String ei = symbol[2] == null || symbol[2].equalsIgnoreCase("null") ? "" : symbol[2];
+        String ri = symbol[3] == null || symbol[3].equalsIgnoreCase("null") ? "" : symbol[3];
+        String oi = symbol[4] == null || symbol[4].equalsIgnoreCase("null") ? "" : symbol[4];
 
         for (BeanSymbol symb : symbols) {
             String s = symb.getBrokerSymbol() == null ? "" : symb.getDisplayname().replace("&", "");
@@ -1018,31 +1038,31 @@ public class Utilities {
         }
         return -1;
     }
-    
-    
-    public static int getReferenceID(List<BeanSymbol> symbols,int id,String referenceType){
-        String symbol=symbols.get(id).getBrokerSymbol();
-        String type=referenceType;
-        return getIDFromSymbol(symbols,symbol,type,"","","");
+
+    public static int getReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {
+        String symbol = symbols.get(id).getBrokerSymbol();
+        String type = referenceType;
+        return getIDFromSymbol(symbols, symbol, type, "", "", "");
     }
 
-        public static int getFutureIDFromSymbol(List<BeanSymbol> symbols,int id, String expiry) {
+    public static int getFutureIDFromSymbol(List<BeanSymbol> symbols, int id, String expiry) {
         String s = Parameters.symbol.get(id).getBrokerSymbol();
         String t = "FUT";
         String e = expiry;
         String r = "";
         String o = "";
-        return getIDFromSymbol(symbols,s, t, e, r, o);
+        return getIDFromSymbol(symbols, s, t, e, r, o);
     }
 
-    public static int getIDFromFuture(List<BeanSymbol> symbols,int futureID) {
+    public static int getIDFromFuture(List<BeanSymbol> symbols, int futureID) {
         String s = Parameters.symbol.get(futureID).getBrokerSymbol();
         String t = "STK";
         String e = "";
         String r = "";
         String o = "";
-        return getIDFromSymbol(symbols,s, t, e, r, o);
+        return getIDFromSymbol(symbols, s, t, e, r, o);
     }
+
     /**
      * Write split information to file
      *
@@ -1182,7 +1202,14 @@ public class Utilities {
     }
 
     public static void deleteFile(String filename) {
-        File dir = new File("logs");
+        File file = new File(filename);
+        if (file.exists()) {
+            file.delete();
+        }
+    }
+
+    public static void deleteFile(String directory, String filename) {
+        File dir = new File(directory);
         File file = new File(dir, filename);
         if (file.exists()) {
             file.delete();

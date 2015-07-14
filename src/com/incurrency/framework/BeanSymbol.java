@@ -34,6 +34,9 @@ import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jblas.DoubleMatrix;
 import static com.incurrency.framework.Algorithm.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
@@ -48,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbol>, PropertyChangeListener {
 
     private final static Logger logger = Logger.getLogger(BeanSymbol.class.getName());
+    private String longName;
     private int serialno;
     private String brokerSymbol;
     private String exchangeSymbol;
@@ -201,6 +205,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.option = option;
         this.right = right;
         this.minsize = minsize;
+    }
+
+    public BeanSymbol(String brokerSymbol,String exchangeSymbol, String type, String expiry, String right,String option) {
+        tradedPrices = new LimitedQueue(10);
+        tradedVolumes = new LimitedQueue(10);
+        tradedDateTime = new LimitedQueue(10);
+        this.brokerSymbol = brokerSymbol;
+        this.exchangeSymbol=exchangeSymbol;
+        this.type = type;
+        this.expiry = expiry;
+        this.option = option;
+        this.right = right;
+       // this.displayName=brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option;
     }
 
     public BeanSymbol(String[] input) {
@@ -468,7 +485,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     public BeanSymbol clone(BeanSymbol orig) {
         BeanSymbol b = new BeanSymbol();
+        b.longName=orig.longName;
         b.brokerSymbol = orig.brokerSymbol;
+        b.exchangeSymbol=orig.exchangeSymbol;
         b.displayName = orig.displayName;
         b.type = orig.type;
         b.exchange = orig.exchange;
@@ -484,7 +503,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         b.minsize = orig.minsize;
         b.preopen = orig.preopen;
         b.streamingpriority = orig.streamingpriority;
-        b.strategy = orig.strategy.toLowerCase();
+        b.strategy = orig.strategy;
         return b;
     }
 
@@ -953,7 +972,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     public void saveToExternalFile(EnumBarSize barSize,String filename) {
         //String filename = this.getDisplayname().toUpperCase() + "_" + barSize.toString() + ".csv";
-        Utilities.deleteFile(filename);
+        Utilities.deleteFile("logs",filename);
         String[] headerarray = initData.get("0");
         String header = Utilities.concatStringArray(headerarray);
         header = "," + "," + header;
@@ -1028,6 +1047,22 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     @Override
     public void writer(String fileName) {
+                File f = new File(fileName);
+        try {
+            if (!f.exists() || f.isDirectory()) {
+                String header = "Long Name" + ",IB Symbol" + ",Exchange Symbol" + ",Currency" + ",Contract ID" + ",Exchange" + ",Type";
+                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
+                out.println(header);
+                out.close();
+            } 
+                String data = this.getLongName() + "," + this.getBrokerSymbol() + "," + this.getExchangeSymbol() + "," + this.getCurrency() + "," + this.contractID + "," + this.getExchange() + "," + this.getType();
+                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
+                out.println(data);
+                out.close();
+            
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
     }
 
     //*************************************************************************
@@ -2004,5 +2039,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setExchangeSymbol(String exchangeSymbol) {
         this.exchangeSymbol = exchangeSymbol;
+    }
+
+    /**
+     * @return the longName
+     */
+    public String getLongName() {
+        return longName;
+    }
+
+    /**
+     * @param longName the longName to set
+     */
+    public void setLongName(String longName) {
+        this.longName = longName;
     }
 }
