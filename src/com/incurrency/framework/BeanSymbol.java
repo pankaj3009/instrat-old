@@ -1274,9 +1274,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void setVolume(int volume) {
         synchronized (lockVolume) {
             double oldValue = this.volume;
-            this.volume = volume;
-            if (propertySupport != null) {
-                propertySupport.firePropertyChange(PROP_VOLUME, oldValue, volume);
+            if (oldValue < volume) {
+                this.volume = volume;
+                if (propertySupport != null) {
+                    propertySupport.firePropertyChange(PROP_VOLUME, oldValue, volume);
+                }
             }
         }
     }
@@ -1467,7 +1469,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setOpenPrice(double openPrice) {
         synchronized (lockOpenPrice) {
-            this.openPrice = openPrice;
+            if (openPrice != 0) {
+                this.openPrice = openPrice;
+            }
         }
     }
 
@@ -1589,7 +1593,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param lowPrice the lowPrice to set
      */
     public void setLowPrice(double lowPrice) {
-        this.lowPrice = lowPrice;
+        if (this.lowPrice==0 ||(lowPrice < this.lowPrice && lowPrice != 0)) {
+            this.lowPrice = lowPrice;
+        }
     }
 
     /**
@@ -1603,7 +1609,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param highPrice the highPrice to set
      */
     public void setHighPrice(double highPrice) {
-        this.highPrice = highPrice;
+        if (highPrice > this.highPrice) {
+            this.highPrice = highPrice;
+        }
     }
 
     /**

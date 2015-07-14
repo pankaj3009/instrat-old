@@ -201,8 +201,10 @@ public class DashBoardNew extends javax.swing.JFrame {
         popQuotes = new JPopupMenu();
         final JMenuItem menuItemRequestMarketData = new JMenuItem("Request Market Data");
         final JMenuItem menuItemCancelMarketData = new JMenuItem("Cancel Market Data");
+        final JMenuItem menuItemUpdatePrices = new JMenuItem("Update Prices");
         popQuotes.add(menuItemRequestMarketData);
         popQuotes.add(menuItemCancelMarketData);
+        popQuotes.add(menuItemUpdatePrices);
         tblQuotes.setComponentPopupMenu(popQuotes);
 
         tblQuotes.addMouseListener(new MouseAdapter() {
@@ -310,6 +312,17 @@ public class DashBoardNew extends javax.swing.JFrame {
                     MarketDataForm.stopVisible(true);
                     MarketDataForm.snapShotVisible(false);
                     MarketDataForm.streamingVisible(false);
+                    form.setVisible(true);
+                }
+            }
+        });
+        
+                menuItemUpdatePrices.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JMenuItem menu = (JMenuItem) e.getSource();
+                if (menu == menuItemUpdatePrices) {
+                    PricesForm form = new PricesForm(symbolForMarketData);
                     form.setVisible(true);
                 }
             }
