@@ -812,7 +812,7 @@ public class TWSConnection extends Thread implements EWrapper {
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
             contract.m_symbol=Parameters.symbol.get(id).getBrokerSymbol();
             if(Parameters.symbol.get(id).getBrokerSymbol()!=null){
-                contract.m_localSymbol=Parameters.symbol.get(id).getBrokerSymbol();
+                contract.m_symbol=Parameters.symbol.get(id).getBrokerSymbol();
             }
             if(Parameters.symbol.get(id).getExchangeSymbol()!=null && Parameters.symbol.get(id).getType().equals("STK")){
                 contract.m_localSymbol=Parameters.symbol.get(id).getExchangeSymbol();
@@ -827,9 +827,9 @@ public class TWSConnection extends Thread implements EWrapper {
                 contract.m_currency=Parameters.symbol.get(entry.getKey().getSerialno() - 1).getCurrency();
                 contract.m_exchange = Parameters.symbol.get(entry.getKey().getSerialno() - 1).getExchange();
              if(Parameters.symbol.get(id).getBrokerSymbol()!=null){
-                contract.m_localSymbol=Parameters.symbol.get(id).getBrokerSymbol();
+                contract.m_symbol=Parameters.symbol.get(id).getBrokerSymbol();
             }
-            if(Parameters.symbol.get(id).getExchangeSymbol()!=null){
+            if(Parameters.symbol.get(id).getExchangeSymbol()!=null && Parameters.symbol.get(id).getType().equals("STK")){
                 contract.m_localSymbol=Parameters.symbol.get(id).getExchangeSymbol();
             }   
                 out.add(contract);
@@ -850,7 +850,7 @@ public class TWSConnection extends Thread implements EWrapper {
             contract.m_conId = Parameters.symbol.get(id).getContractID();
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
             contract.m_symbol = Parameters.symbol.get(id).getBrokerSymbol();
-            if(s.getExchangeSymbol()!=null){
+            if(s.getExchangeSymbol()!=null && Parameters.symbol.get(id).getType().equals("STK")){
                 contract.m_localSymbol=s.getExchangeSymbol();
             }
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
