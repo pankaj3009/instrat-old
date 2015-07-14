@@ -814,7 +814,7 @@ public class TWSConnection extends Thread implements EWrapper {
             if(Parameters.symbol.get(id).getBrokerSymbol()!=null){
                 contract.m_localSymbol=Parameters.symbol.get(id).getBrokerSymbol();
             }
-            if(Parameters.symbol.get(id).getExchangeSymbol()!=null){
+            if(Parameters.symbol.get(id).getExchangeSymbol()!=null && Parameters.symbol.get(id).getType().equals("STK")){
                 contract.m_localSymbol=Parameters.symbol.get(id).getExchangeSymbol();
             }
             out.add(contract);
