@@ -1282,6 +1282,14 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             }
         }
     }
+    
+    public void setVolume(int volume, boolean override) {
+        if (override) {
+            this.volume = volume;
+        } else {
+            setVolume(volume);
+        }
+    }
 
     /**
      * @return the lastPriceTime
@@ -1598,6 +1606,13 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
     }
 
+    public void setLowPrice(double lowPrice, boolean override) {
+        if (override) {
+            this.lowPrice = lowPrice;
+        } else {
+            setLowPrice(lowPrice);
+        }
+    }
     /**
      * @return the highPrice
      */
@@ -1611,6 +1626,15 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void setHighPrice(double highPrice) {
         if (highPrice > this.highPrice) {
             this.highPrice = highPrice;
+        }
+    }
+    
+    public void setHighPrice(double highPrice,boolean override) {
+        if(override){
+        this.highPrice = highPrice;
+        }
+        else{
+            setHighPrice(highPrice);
         }
     }
 

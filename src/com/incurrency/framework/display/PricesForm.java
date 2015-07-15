@@ -205,9 +205,9 @@ public class PricesForm extends javax.swing.JFrame {
         BeanSymbol s=Parameters.symbol.get(rowno);
         s.setClosePrice(Double.valueOf(txtClose.getText()));
         s.setOpenPrice(Double.valueOf(txtOpen.getText()));
-        s.setHighPrice(Double.valueOf(txtHigh.getText()));
-        s.setLowPrice(Double.valueOf(txtLow.getText()));
-        s.setVolume(Integer.valueOf(txtVolume.getText()));
+        s.setHighPrice(Double.valueOf(txtHigh.getText()),true);
+        s.setLowPrice(Double.valueOf(txtLow.getText()),true);
+        s.setVolume(Integer.valueOf(txtVolume.getText()),true);
         dispose();
     }//GEN-LAST:event_btnSaveActionPerformed
 
