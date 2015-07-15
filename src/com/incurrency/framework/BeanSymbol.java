@@ -1477,8 +1477,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setOpenPrice(double openPrice) {
         synchronized (lockOpenPrice) {
-            if (openPrice != 0) {
-                this.openPrice = openPrice;
+            if(openPrice!=0){
+            this.openPrice = openPrice;
             }
         }
     }
