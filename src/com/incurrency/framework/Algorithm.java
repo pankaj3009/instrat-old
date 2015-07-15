@@ -8,13 +8,17 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
@@ -34,6 +38,7 @@ public class Algorithm {
     public static int closeHour;
     public static int closeMinute;
     public static boolean useForTrading;
+    public static AtomicBoolean marketOpen=new AtomicBoolean(false);
     public static ConcurrentHashMap<EnumBarSize,Long> databarSetup=new ConcurrentHashMap<>();
 
     public Algorithm(HashMap<String, String> args) throws Exception {
@@ -53,6 +58,18 @@ public class Algorithm {
         closeMinute = Integer.valueOf(globalProperties.getProperty("closeminute", "30").toString().trim());
         boolean symbolfileneeded = Boolean.parseBoolean(globalProperties.getProperty("symbolfileneeded", "false"));
         boolean connectionfileneeded = Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false"));
+        Calendar marketOpenTime=Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+        marketOpenTime.set(Calendar.HOUR_OF_DAY, openHour);
+        marketOpenTime.set(Calendar.MINUTE, openMinute);
+        marketOpenTime.set(Calendar.SECOND, 0);
+        marketOpenTime.set(Calendar.MILLISECOND,0);
+        Date now=new Date();
+        if(now.compareTo(marketOpenTime.getTime())>0){
+            Algorithm.marketOpen=new AtomicBoolean(true);
+        }else{
+            //start time to set atomic boolean
+        }
+        
         if (symbolfileneeded) {
             String symbolFileName = globalProperties.getProperty("symbolfile", "symbols.csv").toString().trim();
             File symbolFile = new File(symbolFileName);
@@ -69,6 +86,7 @@ public class Algorithm {
                 System.exit(0);
             }
         }
+        
             if (connectionfileneeded) {
                 String connectionFileName = globalProperties.getProperty("connectionfile", "connections.csv").toString().trim();
                 File connectionFile = new File(connectionFileName);

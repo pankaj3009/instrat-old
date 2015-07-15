@@ -1317,9 +1317,9 @@ public class TWSConnection extends Thread implements EWrapper {
                         Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.LAST, String.valueOf(price));
                     }
                 } else if (field == 6) {
-                    Parameters.symbol.get(id).setHighPrice(price);
+                    Parameters.symbol.get(id).setHighPrice(price,false);
                 } else if (field == 7) {
-                    Parameters.symbol.get(id).setLowPrice(price);
+                    Parameters.symbol.get(id).setLowPrice(price,false);
                 } else if (field == 9) {
                     Parameters.symbol.get(id).setClosePrice(price);
                     tes.fireTradeEvent(id, com.ib.client.TickType.CLOSE);
@@ -1361,10 +1361,10 @@ public class TWSConnection extends Thread implements EWrapper {
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
             Parameters.symbol.get(id).setOpenPrice(price);
         } else if (field == com.ib.client.TickType.HIGH) {
-            Parameters.symbol.get(id).setHighPrice(price);
+            Parameters.symbol.get(id).setHighPrice(price,false);
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
         } else if (field == com.ib.client.TickType.LOW) {
-            Parameters.symbol.get(id).setLowPrice(price);
+            Parameters.symbol.get(id).setLowPrice(price,false);
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
         } else if (field == com.ib.client.TickType.BID || field == com.ib.client.TickType.ASK) {
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
@@ -1457,7 +1457,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     //int calculatedLastSize=prevLastPrice==Parameters.symbol.get(id).getLastPrice()?Parameters.symbol.get(id).getLastSize()+incrementalSize:incrementalSize;
                     Parameters.symbol.get(id).setLastSize(calculatedLastSize);
-                    Parameters.symbol.get(id).setVolume(size);
+                    Parameters.symbol.get(id).setVolume(size,false);
                     tes.fireTradeEvent(id, com.ib.client.TickType.LAST_SIZE);
                     tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                     if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
@@ -1505,7 +1505,7 @@ public class TWSConnection extends Thread implements EWrapper {
             if ((useRTVolume && snapshot) || !useRTVolume) {
                 //Rates.rateServer.send(header, com.ib.client.TickType.LAST_SIZE + "," + new Date().getTime() + "," + lastSize + "," + symbol);
                 Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
-                Parameters.symbol.get(id).setVolume(size);
+                Parameters.symbol.get(id).setVolume(size,false);
                 if (saveToCassandra) {
                     switch (type) {
                         case "STK":

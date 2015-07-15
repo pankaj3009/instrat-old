@@ -367,8 +367,8 @@ public class Indicators {
                     dayLow = close[i] < dayLow && close[i] > 0 ? (close[i] != ReservedValues.EMPTY ? close[i] : dayLow) : dayLow;
                     intradayVol = intradayVol + Math.abs(close[i + 1] - close[i]);
                 }
-                s.setHighPrice(dayHigh);
-                s.setLowPrice(dayLow);
+                s.setHighPrice(dayHigh,false);
+                s.setLowPrice(dayLow,false);
                 s.setTimeSeries(EnumBarSize.DAILY, time, new String[]{"intradayvol"}, new double[]{intradayVol});
             }
         }

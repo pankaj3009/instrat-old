@@ -119,6 +119,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private final Object lockBidPrice = new Object();
     private final Object lockAskPrice = new Object();
     private final Object lockVolume = new Object();
+    private final Object lockHighPrice=new Object();
+    private final Object lockLowPrice=new Object();
     private final Object lockLastPriceTime = new Object();
     private final Object lockLastSize = new Object();
     private final Object lockOpenPrice = new Object();
@@ -1201,9 +1203,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             double oldValue = this.lastPrice;
             this.lastPrice = lastPrice;
             if (lastPrice > this.getHighPrice()) {
-                this.setHighPrice(lastPrice);
+                this.setHighPrice(lastPrice,false);
             } else if (lastPrice < this.getLowPrice() || getLowPrice() == 0) {
-                this.setLowPrice(lastPrice);
+                this.setLowPrice(lastPrice,false);
             }
 
             if (propertySupport != null) {
@@ -1271,23 +1273,21 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @param volume the volume to set
      */
-    public void setVolume(int volume) {
-        synchronized (lockVolume) {
-            double oldValue = this.volume;
-            if (oldValue < volume) {
-                this.volume = volume;
-                if (propertySupport != null) {
-                    propertySupport.firePropertyChange(PROP_VOLUME, oldValue, volume);
-                }
-            }
-        }
-    }
+
     
     public void setVolume(int volume, boolean override) {
-        if (override) {
-            this.volume = volume;
-        } else {
-            setVolume(volume);
+        synchronized (lockVolume) {
+            if (override) {
+                this.volume = volume;
+            } else {
+                double oldValue = this.volume;
+                if (oldValue < volume) {
+                    this.volume = volume;
+                    if (propertySupport != null) {
+                        propertySupport.firePropertyChange(PROP_VOLUME, oldValue, volume);
+                    }
+                }
+            }
         }
     }
 
@@ -1600,17 +1600,16 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @param lowPrice the lowPrice to set
      */
-    public void setLowPrice(double lowPrice) {
-        if (this.lowPrice==0 ||(lowPrice < this.lowPrice && lowPrice != 0)) {
-            this.lowPrice = lowPrice;
-        }
-    }
 
     public void setLowPrice(double lowPrice, boolean override) {
-        if (override) {
-            this.lowPrice = lowPrice;
-        } else {
-            setLowPrice(lowPrice);
+        synchronized (lockLowPrice) {
+            if (override) {
+                this.lowPrice = lowPrice;
+            } else {
+                if (this.lowPrice == 0 || (lowPrice < this.lowPrice && lowPrice != 0)) {
+                    this.lowPrice = lowPrice;
+                }
+            }
         }
     }
     /**
@@ -1623,18 +1622,16 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @param highPrice the highPrice to set
      */
-    public void setHighPrice(double highPrice) {
-        if (highPrice > this.highPrice) {
-            this.highPrice = highPrice;
-        }
-    }
-    
-    public void setHighPrice(double highPrice,boolean override) {
-        if(override){
-        this.highPrice = highPrice;
-        }
-        else{
-            setHighPrice(highPrice);
+  
+    public void setHighPrice(double highPrice, boolean override) {
+        synchronized (lockHighPrice) {
+            if (override) {
+                this.highPrice = highPrice;
+            } else {
+                if (highPrice > this.highPrice) {
+                    this.highPrice = highPrice;
+                }
+            }
         }
     }
 

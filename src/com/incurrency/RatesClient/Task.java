@@ -122,7 +122,7 @@ public class Task implements Runnable {
                                     
                                     Parameters.symbol.get(id).setLastSize(size1);
                                     int volume = Parameters.symbol.get(id).getVolume() + size1;
-                                    Parameters.symbol.get(id).setVolume(volume);
+                                    Parameters.symbol.get(id).setVolume(volume,false);
                                     tes.fireTradeEvent(id, com.ib.client.TickType.LAST_SIZE);
                                     tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                                 }
@@ -131,10 +131,10 @@ public class Task implements Runnable {
                                 }
                                 break;
                             case 6:
-                                 Parameters.symbol.get(id).setHighPrice(Double.parseDouble(value)); 
+                                 Parameters.symbol.get(id).setHighPrice(Double.parseDouble(value),false); 
                                 break;
                             case 7:
-                                 Parameters.symbol.get(id).setLowPrice(Double.parseDouble(value)); 
+                                 Parameters.symbol.get(id).setLowPrice(Double.parseDouble(value),false); 
                                 break;
                             case 8: //volume
                                 int size = (int) Double.parseDouble(value);
@@ -143,7 +143,7 @@ public class Task implements Runnable {
                                     Parameters.symbol.get(id).setLastSize(calculatedLastSize);
                                     tes.fireTradeEvent(id, com.ib.client.TickType.LAST_SIZE);
                                 }
-                                Parameters.symbol.get(id).setVolume(size);
+                                Parameters.symbol.get(id).setVolume(size,false);
                                 tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                                 if (MainAlgorithm.getCollectTicks()) {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Volume," + size);
