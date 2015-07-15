@@ -38,7 +38,6 @@ public class Algorithm {
     public static int closeHour;
     public static int closeMinute;
     public static boolean useForTrading;
-    public static AtomicBoolean marketOpen=new AtomicBoolean(false);
     public static ConcurrentHashMap<EnumBarSize,Long> databarSetup=new ConcurrentHashMap<>();
 
     public Algorithm(HashMap<String, String> args) throws Exception {
@@ -63,12 +62,6 @@ public class Algorithm {
         marketOpenTime.set(Calendar.MINUTE, openMinute);
         marketOpenTime.set(Calendar.SECOND, 0);
         marketOpenTime.set(Calendar.MILLISECOND,0);
-        Date now=new Date();
-        if(now.compareTo(marketOpenTime.getTime())>0){
-            Algorithm.marketOpen=new AtomicBoolean(true);
-        }else{
-            //start time to set atomic boolean
-        }
         
         if (symbolfileneeded) {
             String symbolFileName = globalProperties.getProperty("symbolfile", "symbols.csv").toString().trim();
