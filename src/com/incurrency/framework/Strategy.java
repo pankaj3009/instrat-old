@@ -150,8 +150,10 @@ public class Strategy implements NotificationListener {
                 //remove any child orders
                 ArrayList<Integer> childEntryOrders = new ArrayList<>();
                 for (Trade tr : allOrders) {
-                    if (Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO")) {
-                        childEntryOrders.add(tr.getEntryID());
+                    if (tr.getEntrySymbolID() > -1) {
+                        if (Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO")) {
+                            childEntryOrders.add(tr.getEntryID());
+                        }
                     }
                 }
                 Iterator iter1 = allOrders.iterator();
