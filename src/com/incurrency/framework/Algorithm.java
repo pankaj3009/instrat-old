@@ -33,10 +33,10 @@ public class Algorithm {
     public static Properties globalProperties;
     public static List<String> holidays;
     public static String timeZone;
-    public static int openHour;
-    public static int openMinute;
-    public static int closeHour;
-    public static int closeMinute;
+    public static int openHour=9;
+    public static int openMinute=15;
+    public static int closeHour=15;
+    public static int closeMinute=30;
     public static boolean useForTrading;
     public static ConcurrentHashMap<EnumBarSize,Long> databarSetup=new ConcurrentHashMap<>();
 
