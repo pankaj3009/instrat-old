@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,6 +41,7 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -90,6 +92,98 @@ public class Utilities {
         }
     }
 
+    public static int openPositionCount(ArrayList<BeanSymbol> symbols, String orderFileName, String strategy, double pointValue, boolean longPositionOnly) {
+        int out = 0;
+        HashMap<Integer, BeanPosition> position = new HashMap<>();
+        for (BeanSymbol s : symbols) {
+            position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
+        }
+        ArrayList<Trade> allOrders = new ArrayList<>();
+        new Trade().reader(orderFileName, allOrders);
+
+        //remove any child orders
+        ArrayList<Integer> childEntryOrders = new ArrayList<>();
+        for (Trade tr : allOrders) {
+            if (tr.getEntrySymbolID() > -1) {
+                if (Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO")) {
+                    childEntryOrders.add(tr.getEntryID());
+                }
+            }
+        }
+        Iterator iter1 = allOrders.iterator();
+        while (iter1.hasNext()) {
+            Trade trchild = (Trade) iter1.next();
+            if (childEntryOrders.contains(Integer.valueOf(trchild.getEntryID())) && !Parameters.symbol.get(trchild.getEntryID()).getType().equals("COMBO")) {
+                iter1.remove();
+            }
+        }
+
+        for (Trade or : allOrders) {
+            int tempPosition = 0;
+            double tempPositionPrice = 0D;
+            int id = TradingUtil.getEntryIDFromDisplayName(or, Parameters.symbol);
+            if (id >= 0) {
+                if (or.getAccountName().equals("Order")) {
+                    BeanPosition p = position.get(id) == null ? new BeanPosition(id, strategy) : position.get(id);
+                    tempPosition = p.getPosition();
+                    tempPositionPrice = p.getPrice();
+                    switch (or.getEntrySide()) {
+                        case BUY:
+                            tempPositionPrice = or.getEntrySize() + tempPosition != 0 ? (tempPosition * tempPositionPrice + or.getEntrySize() * or.getEntryPrice()) / (or.getEntrySize() + tempPosition) : 0D;
+                            tempPosition = tempPosition + or.getEntrySize();
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            position.put(id, p);
+                            break;
+                        case SHORT:
+                            tempPositionPrice = or.getEntrySize() + tempPosition != 0 ? (tempPosition * tempPositionPrice - or.getEntrySize() * or.getEntryPrice()) / (-or.getEntrySize() + tempPosition) : 0D;
+                            tempPosition = tempPosition - or.getEntrySize();
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            position.put(id, p);
+                            break;
+                        default:
+                            break;
+                    }
+                    switch (or.getExitSide()) {
+                        case COVER:
+                            tempPositionPrice = or.getEntrySize() + tempPosition != 0 ? (tempPosition * tempPositionPrice + or.getEntrySize() * or.getEntryPrice()) / (or.getEntrySize() + tempPosition) : 0D;
+                            tempPosition = tempPosition + or.getEntrySize();
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            position.put(id, p);
+                            break;
+                        case SELL:
+                            tempPositionPrice = -or.getEntrySize() + tempPosition != 0 ? (tempPosition * tempPositionPrice - or.getEntrySize() * or.getEntryPrice()) / (-or.getEntrySize() + tempPosition) : 0D;
+                            tempPosition = tempPosition - or.getEntrySize();
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            position.put(id, p);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+
+        for (BeanPosition p : position.values()) {
+            if (longPositionOnly && p.getPosition() > 0) {
+                out = out + 1;
+            } else if (!longPositionOnly && p.getPosition() < 0) {
+                out = out + 1;
+            }
+        }
+
+        return out;
+    }
+    
+    
+    
     /**
      * Prints data in an ExtendedHashMap to a file.
      *

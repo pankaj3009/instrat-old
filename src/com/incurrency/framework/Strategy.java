@@ -96,7 +96,7 @@ public class Strategy implements NotificationListener {
     private final Object lockPLManager = new Object();
     private final Object lockPL = new Object();
     private boolean validation = true;
-    private final String delimiter = "_";
+    public final String delimiter = "_";
     private boolean strategyLog;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
