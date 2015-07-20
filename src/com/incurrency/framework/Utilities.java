@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -1045,6 +1046,14 @@ public class Utilities {
         return getIDFromBrokerSymbol(symbols, symbol, type, "", "", "");
     }
 
+    public static int getNextExpiryID(List<BeanSymbol> symbols, int id, String expiry) {
+        String symbol = symbols.get(id).getBrokerSymbol();
+        String type = symbols.get(id).getType();
+        String option = symbols.get(id).getOption();
+        String right = symbols.get(id).getRight();
+        return getIDFromBrokerSymbol(symbols, symbol, type, expiry, right, option);
+    }
+    
     public static int getFutureIDFromSymbol(List<BeanSymbol> symbols, int id, String expiry) {
         String s = Parameters.symbol.get(id).getBrokerSymbol();
         String t = "FUT";
@@ -1220,5 +1229,62 @@ public class Utilities {
         if (file.exists()) {
             file.delete();
         }
+    }
+    
+        /**
+     * Returns the next expiration date, given today's date.It assumes that the
+     * program is run EOD, so the next expiration date is calculated after the
+     * completion of today.
+     *
+     * @param currentDay
+     * @return
+     */
+    public static String getNextExpiry(String currentDay)  {
+        String out=null;
+        try {
+            SimpleDateFormat sdf_yyyMMdd = new SimpleDateFormat("yyyyMMdd");
+            Date today = sdf_yyyMMdd.parse(currentDay);
+            Calendar cal_today = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+            cal_today.setTime(today);
+            int year = Utilities.getInt(currentDay.substring(0, 4), 0);
+            int month = Utilities.getInt(currentDay.substring(4, 6), 0) - 1;//calendar month starts at 0
+            Date expiry = getLastThursday(month, year);
+            expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
+            Calendar cal_expiry = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+            cal_expiry.setTime(expiry);
+            if (cal_expiry.get(Calendar.DAY_OF_MONTH) > cal_today.get(Calendar.DAY_OF_MONTH)) {
+                out=sdf_yyyMMdd.format(expiry);
+                return out;
+            } else {
+                if (cal_today.get(Calendar.MONTH) == 11) {//we are in decemeber
+                    expiry = getLastThursday(month, year + 1);
+                    expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
+                    out=sdf_yyyMMdd.format(expiry);
+                    return out;
+                } else {
+                    expiry = getLastThursday(month + 1, year);
+                    expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
+                    out=sdf_yyyMMdd.format(expiry);
+                    return out;
+                }
+            }
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }finally{
+            return out;
+        }
+    }
+
+    public static Date getLastThursday(int month, int year) {
+        //http://stackoverflow.com/questions/76223/get-last-friday-of-month-in-java
+        Calendar cal = Calendar.getInstance();
+        cal.set(year, month, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(GregorianCalendar.DAY_OF_WEEK, Calendar.THURSDAY);
+        cal.set(GregorianCalendar.DAY_OF_WEEK_IN_MONTH, -1);
+        return cal.getTime();
     }
 }

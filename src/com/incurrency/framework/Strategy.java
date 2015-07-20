@@ -634,7 +634,7 @@ public class Strategy implements NotificationListener {
      */
     //used by adr
     public synchronized void entry(int id, EnumOrderSide side, int size, EnumOrderType orderType, double limitPrice, double triggerPrice, EnumOrderReason reason, EnumOrderStage stage, int duration, int dynamicDuration, double slippage, String orderGroup, String validity, String effectiveTime, boolean scalein, boolean transmit) {
-//  public synchronized void entry(int id, EnumOrderSide side, EnumOrderType orderType, double limitPrice, double triggerPrice, boolean scalein, EnumOrderReason reason, String orderGroup, int size) {
+        if(id>=0){
         size = size == 0 && getNumberOfContracts() == 0 ? (int) (getExposure() / limitPrice) : getNumberOfContracts() * Parameters.symbol.get(id).getMinsize();
         if (side == EnumOrderSide.BUY) {
             BeanPosition pd = getPosition().get(id);
@@ -662,58 +662,11 @@ public class Strategy implements NotificationListener {
         if (MainAlgorithm.isUseForTrading()) {
             oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
         }
+        }
     }
 
-    /*
-     public synchronized void exit(int id, EnumOrderSide side, EnumOrderType orderType, double limitPrice, double triggerPrice, String link, boolean transmit, String validity, boolean scaleout, EnumOrderReason notify, String passToOrderObject, int tradeSize) {
-     int internalorderid = getInternalOrderID();
-     logger.log(Level.INFO, "310,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
-     switch (notify) {
-     case REGULARENTRY:
-     case REGULAREXIT:
-     if (side == EnumOrderSide.COVER) {
-     BeanPosition pd = getPosition().get(id);
-     double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-     int symbolPosition = pd.getPosition() + tradeSize;
-     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-     pd.setPosition(symbolPosition);
-     pd.setPositionInitDate(TradingUtil.getAlgoDate());
-     pd.setPrice(positionPrice);
-     getPosition().put(id, pd);
-     } else {
-     BeanPosition pd = getPosition().get(id);
-     double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-     int symbolPosition = pd.getPosition() - tradeSize;
-     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-     pd.setPosition(symbolPosition);
-     pd.setPositionInitDate(TradingUtil.getAlgoDate());
-     pd.setPrice(positionPrice);
-     getPosition().put(id, pd);
-     }
-     break;
-     case SL:
-
-     break;
-     case TP:
-
-     break;
-     default:
-     break;
-     }
-
-     int tempinternalOrderID = internalOpenOrders.get(id);
-     Trade tempTrade = getTrades().get(new OrderLink(tempinternalOrderID, 0, "Order"));
-     //int internalorderid = getInternalOrderID();
-     tempTrade.updateExit(id, EnumOrderReason.REGULAREXIT, side, Parameters.symbol.get(id).getLastPrice(), tradeSize, internalorderid, 0, getTimeZone(), "Order");
-     getTrades().put(new OrderLink(tempinternalOrderID, 0, "Order"), tempTrade);
-     if (MainAlgorithm.isUseForTrading()) {
-     oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, notify, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), maxOrderDuration, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, link, transmit, validity, scaleout, passToOrderObject, "", null);
-     }
-     }
-     */
-    //used by adr
-//    public synchronized void exit (int id, EnumOrderSide side, EnumOrderType orderType, double limitPrice, double triggerPrice, boolean scaleout,boolean transmit, EnumOrderReason notify, String passToOrderObject,String validity, int size,int duration,int dynamicDuration,double slippage,EnumOrderStage stage,String effectiveTime) {
     public synchronized void exit(int id, EnumOrderSide side, int size, EnumOrderType orderType, double limitPrice, double triggerPrice, EnumOrderReason reason, EnumOrderStage stage, int duration, int dynamicDuration, double slippage, String orderGroup, String validity, String effectiveTime, boolean scaleout, boolean transmit) {
+     if(id>=0){
         int internalorderid = getInternalOrderID();
         logger.log(Level.INFO, "310,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
         int tradeSize = scaleout == false ? Math.abs(getPosition().get(id).getPosition()) : size;
@@ -767,6 +720,7 @@ public class Strategy implements NotificationListener {
         } else {
             logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side + tempinternalOrderID});
         }
+     }
     }
 
     @Override
