@@ -5,6 +5,7 @@
 package com.incurrency.framework;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -12,15 +13,15 @@ import java.util.HashMap;
  */
 public class ExtendedHashMap<J, K, V> {
 
-    public HashMap<J, HashMap<K, V>> store = new HashMap<>();
+    public ConcurrentHashMap<J, ConcurrentHashMap<K, V>> store = new ConcurrentHashMap<>();
 
-    public void put(J key, HashMap<K,V> map) {
+    public void put(J key, ConcurrentHashMap<K,V> map) {
             store.put(key, map);            
     }
     
     public void add(J key, K subkey, V value) {
         if (store.get(key) == null) {
-            HashMap<K, V> temp = new HashMap<>();
+            ConcurrentHashMap<K, V> temp = new ConcurrentHashMap<>();
             temp.put(subkey, value);
             store.put(key, temp);
         } else {
@@ -37,7 +38,7 @@ public class ExtendedHashMap<J, K, V> {
         }
     }
     
-    public HashMap <K,V> get(J key) {
+    public ConcurrentHashMap <K,V> get(J key) {
         if (store.get(key) == null) {
             return null;
         } else {
