@@ -4,211 +4,171 @@
  */
 package com.incurrency.framework;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
-import java.util.logging.Level;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
  *
  * @author pankaj
  */
-public class Trade implements ReaderWriterInterface {
+public class Trade {
 
-    private String entrySymbol = "";
-    private int entrySymbolID = -1;
-    private String parentSymbol="";
-    private EnumOrderSide entrySide = EnumOrderSide.UNDEFINED;
-    private double entryPrice;
-    private int entrySize;
-    private String entryTime = "";
-    private int entryID;
-    private int entryOrderID;
-    private EnumOrderReason entryReason;
-    private double entryBrokerage;
-    private boolean filtered;
-    private String exitSymbol = "";
-    private int exitSymbolID = -1;
-    private EnumOrderSide exitSide = EnumOrderSide.UNDEFINED;
-    private double exitPrice;
-    private int exitSize;
-    private String exitTime = "";
-    private int exitID;
-    private int exitOrderID;
-    private EnumOrderReason exitReason=EnumOrderReason.UNDEFINED;;
-    private double exitBrokerage;
-    private double mtmToday;
-    private double mtmYesterday;
-    private double mtmPriorMonth;
-    private String todayDate = "";
-    private String yesterdayDate = "";
-    private String accountName = "";
+    //public static ExtendedHashMap <String,String,String> trades=new ExtendedHashMap<>();
     private static final Logger logger = Logger.getLogger(Trade.class.getName());
 
     public Trade() {
     }
 
-    public Trade(String[] input) {
-        this.entrySymbol = input[0];
-        this.parentSymbol = input[1];
-        //this.entrySymbolID=Integer.parseInt(input[1]);
-        this.entrySymbolID=TradingUtil.getEntryIDFromDisplayName(this,Parameters.symbol);
-        this.entrySide = input[2].equals("")?EnumOrderSide.UNDEFINED:EnumOrderSide.valueOf(input[2]);
-        this.entryPrice = Double.parseDouble(input[3]);
-        this.entrySize = Integer.parseInt(input[4]);
-        this.entryTime = input[5];
-        this.entryID = Integer.parseInt(input[6]);
-        this.entryOrderID=Integer.parseInt(input[7]);
-        this.entryReason=(input[8].equals("")||input[8]==null)?EnumOrderReason.UNDEFINED: EnumOrderReason.valueOf(input[8]);
-        this.entryBrokerage = (input[9].equals("")||input[9]==null)?0D:Double.parseDouble(input[9]);
-        this.exitSymbol = input[10]!=null?input[10]:"";
-        this.exitSymbolID=TradingUtil.getExitIDFromSymbol(this);
-        this.exitSide = (input[11].equals("")||input[11]==null)?EnumOrderSide.UNDEFINED:EnumOrderSide.valueOf(input[11]);
-        this.exitPrice = (input[12].equals("")||input[12]==null)?0D:Double.parseDouble(input[12]);
-        this.exitSize =  (input[13].equals("")||input[13]==null)?0:Integer.parseInt(input[13]);
-        this.exitTime = input[14]!=null?input[14]:"";
-        this.exitID =  (input[15].equals("")||input[15]==null)?-1:Integer.parseInt(input[15]);
-        this.exitOrderID=Integer.parseInt(input[16]);
-        this.exitReason=(input[17].equals("")||input[17]==null)?EnumOrderReason.UNDEFINED: EnumOrderReason.valueOf(input[17]);
-        this.exitBrokerage = (input[18].equals("")||input[18]==null)?0D:Double.parseDouble(input[18]);
-        this.mtmToday=input[19].equals("")?0D:Double.parseDouble(input[19]);
-        this.mtmYesterday=input[20].equals("")?0D:Double.parseDouble(input[20]);
-        this.mtmPriorMonth=input[21].equals("")?0D:Double.parseDouble(input[21]);
-        this.todayDate=input[22];
-        this.yesterdayDate=input[23];
-        this.accountName = input[24];
-    }
-
-
-    public Trade(int id, int parentid, EnumOrderReason reason,EnumOrderSide side, double price, int size, int internalid,int orderid,String timeZone,String accountName){
-        this.entrySymbol=Parameters.symbol.get(id).getDisplayname();
-        this.parentSymbol=Parameters.symbol.get(parentid).getDisplayname();
-        this.entryReason=reason;
-        this.entrySymbolID=id;
-        this.entrySide=side;
-        this.entryPrice=price;
-        this.entrySize=size;
-                if(timeZone.compareTo("")==0){
-            this.entryTime=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
+    public Trade(ExtendedHashMap <String,String,String> trades,String[] input) {     
+        //the names are all display names
+        ConcurrentHashMap<String, String> tr;
+        if (trades.get(input[6]) != null) {
+            tr = (ConcurrentHashMap<String,String>)trades.get(input[6]);
         } else {
-            this.entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+            tr = new ConcurrentHashMap<>();
         }
-        this.entryID = internalid;
-        this.entryOrderID = orderid;
-        this.accountName = accountName;
-    }
-
-    public void updateEntry(int id, EnumOrderSide side, double price, int size, int internalid, int orderid, String timeZone, String accountName) {
+        tr.put("entrysymbol", input[0]);
+        tr.put("parentsymbol", input[1]);
+        tr.put("entrysymbolid", String.valueOf(Utilities.getIDFromDisplayName(Parameters.symbol,input[0])));
+        tr.put("entryside", String.valueOf(input[2].equals("")?EnumOrderSide.UNDEFINED:EnumOrderSide.valueOf(input[2])));
+        tr.put("entryprice", input[3]);
+        tr.put("entrysize", input[4]);
+        tr.put("entrytime", input[5]);
+        tr.put("entryorderidint", input[6]);
+        tr.put("entryorderidext", input[7]);
+        tr.put("entryreason", String.valueOf((input[8].equals("")||input[8]==null)?EnumOrderReason.UNDEFINED: EnumOrderReason.valueOf(input[8])));
+        tr.put("entrybrokerage", String.valueOf((input[9].equals("")||input[9]==null)?0D:Double.parseDouble(input[9])));
         
-        this.setEntrySymbol(Parameters.symbol.get(id).getDisplayname());
-        this.setEntrySymbolID(id);
-        this.setEntrySide(side);
-        this.setEntryPrice(price);
-        this.setEntrySize(size);
-        if (timeZone.compareTo("") == 0) {
-            this.setEntryTime(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault()));
+        tr.put("exitsymbol", input[10]!=null?input[10]:"");
+        tr.put("exitsymbolid", String.valueOf(Utilities.getIDFromDisplayName(Parameters.symbol,input[10])));
+        tr.put("exitside", String.valueOf((input[11].equals("")||input[11]==null)?EnumOrderSide.UNDEFINED:EnumOrderSide.valueOf(input[11])));
+        tr.put("exitprice", String.valueOf((input[12].equals("")||input[12]==null)?0D:Double.parseDouble(input[12])));
+        tr.put("exitsize", String.valueOf((input[13].equals("")||input[13]==null)?0:Integer.parseInt(input[13])));
+        tr.put("exittime", String.valueOf(input[14]!=null?input[14]:""));
+        tr.put("exitorderidint", String.valueOf((input[15].equals("")||input[15]==null)?-1:Integer.parseInt(input[15])));
+        tr.put("exitorderidext", input[16]);
+        tr.put("exitreason", String.valueOf((input[17].equals("")||input[17]==null)?EnumOrderReason.UNDEFINED: EnumOrderReason.valueOf(input[17])));
+        tr.put("exitbrokerage", String.valueOf((input[18].equals("")||input[18]==null)?0D:Double.parseDouble(input[18])));
+
+        tr.put("mtmtoday", String.valueOf(input[19].equals("")?0D:Double.parseDouble(input[19])));
+        tr.put("mtmyesterday", String.valueOf(input[19].equals("")?0D:Double.parseDouble(input[19])));
+        tr.put("mtmpriormonth", String.valueOf(input[21].equals("")?0D:Double.parseDouble(input[21])));
+        tr.put("todaydate", String.valueOf(input[22]));
+        tr.put("yesterdaydate", String.valueOf(input[23]));
+        tr.put("accountname", input[24]);
+        trades.put(input[7], tr);
+    }
+
+    public  Trade(ExtendedHashMap <String,String,String> trades,int id, int parentid, EnumOrderReason reason,EnumOrderSide side, double price, int size, int internalid,int orderid,String timeZone,String accountName){
+        ConcurrentHashMap<String, String> tr;
+        if (trades.get(String.valueOf(internalid)) != null) {
+            tr = (ConcurrentHashMap<String,String>)trades.get(String.valueOf(internalid));
         } else {
-            this.setEntryTime(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone)));
+            tr = new ConcurrentHashMap<>();
         }
-        this.setEntryID(internalid);
-        this.setEntryOrderID(orderid);
-        this.setAccountName(accountName);
-    }
-
-    public void updateExit(int id,EnumOrderReason reason, EnumOrderSide side, double price, int size, int internalid, int orderid, String timeZone, String accountName) {
-        this.setExitSymbol(Parameters.symbol.get(id).getDisplayname());
-        this.setExitSymbolID(id);
-        this.exitReason=reason;
-        this.setExitSide(side);
-        this.setExitPrice(price);
-        this.setExitSize(size);
-        if (timeZone.compareTo("") == 0) {
-            this.setExitTime(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault()));
+        tr.put("entrysymbol", Parameters.symbol.get(id).getDisplayname());
+        tr.put("parentsymbol", Parameters.symbol.get(parentid).getDisplayname());
+        tr.put("entrysymbolid", String.valueOf(id));
+        tr.put("entryside", String.valueOf(side));
+        tr.put("entryprice", String.valueOf(price));
+        tr.put("entrysize", String.valueOf(size));
+        String entryTime;
+        if(timeZone.compareTo("")==0){
+            entryTime=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
         } else {
-            this.setExitTime(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone)));
+            entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         }
-        this.setExitID(internalid);
-        this.setExitOrderID(orderid);
-        this.setAccountName(accountName);
-    }
-   
-    @Override
-    public void reader(String inputfile, ArrayList target) {
-        File inputFile = new File(inputfile);
-        if (inputFile.exists() && !inputFile.isDirectory()) {
-            try {
-                List<String> existingTradesLoad = Files.readAllLines(Paths.get(inputfile), StandardCharsets.UTF_8);
-                existingTradesLoad.remove(0);//remove header
-                for (String Trade : existingTradesLoad) {
-                    if (!Trade.equals("")) {//attempt to split if its not a blank line
-                        String[] input = Trade.split(",");
-                        target.add(new Trade(input));
-                    }
-                }
-            } catch (Exception ex) {
-                logger.log(Level.INFO, "101", ex);
-            }
-        }
+        tr.put("entryreason", reason.toString());
+        tr.put("entrytime", entryTime);
+        tr.put("entryorderidint", String.valueOf(internalid));
+        tr.put("entryorderidext", String.valueOf(orderid));
+        tr.put("accountname", accountName);
+        trades.put(String.valueOf(internalid), tr);
     }
 
-    @Override
-    public void writer(String fileName) {
-        File f = new File(fileName);
-
-        try {
-
-            if (!f.exists() || f.isDirectory()) {
-                String header = "EntrySymbol,ParentSymbol,EntrySide,EntryPrice,EntrySize,EntryTime,EntryID,EntryOrderID,EntryReason,EntryBrokerage,ExitSymbol,ExitSide,ExitPrice,ExitSize,ExitTime,ExitID,ExitOrderID,ExitReason,ExitBrokerage,MTMToday,MTMYesterday,MTMPriorMonth,TodayDate, YesterdayDate,AccountName";
-                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
-                out.println(header);
-                out.close();
-            }
-
-            String data = entrySymbol + "," + getParentSymbol()+ "," + entrySide + "," + entryPrice + "," + entrySize + "," + entryTime + "," + entryID + "," + entryOrderID + "," + entryReason+","+entryBrokerage + "," + exitSymbol + "," + exitSide + "," + exitPrice + "," + exitSize + "," + exitTime + "," + exitID + "," + exitOrderID + "," +exitReason+","+ exitBrokerage + "," + mtmToday + "," + mtmYesterday + "," + mtmPriorMonth + "," + todayDate + "," + yesterdayDate + "," + accountName;
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
-            out.println(data);
-            out.close();
-
-        } catch (Exception e) {
-            logger.log(Level.INFO, "101", e);
+    public static void updateEntry(ExtendedHashMap <String,String,String> trades,int id, EnumOrderSide side, double price, int size, int internalid, int orderid, String timeZone, String accountName) {
+     
+        ConcurrentHashMap<String, String> tr;
+        if (trades.get(String.valueOf(internalid)) != null) {
+            tr = (ConcurrentHashMap<String,String>)trades.get(String.valueOf(internalid));
+        } else {
+            tr = new ConcurrentHashMap<>();
         }
+        tr.put("entrysymbol", Parameters.symbol.get(id).getDisplayname());
+        tr.put("entrysymbolid", String.valueOf(id));
+        tr.put("entryside", String.valueOf(side));
+        tr.put("entryprice", String.valueOf(price));
+        tr.put("entrysize", String.valueOf(size));
+        String entryTime;
+        if(timeZone.compareTo("")==0){
+            entryTime=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
+        } else {
+            entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+        }
+        
+        tr.put("entrytime", entryTime);
+        tr.put("entryorderidint", String.valueOf(internalid));
+        tr.put("entryorderidext", String.valueOf(orderid));
+        tr.put("accountname", accountName);
+        trades.put(String.valueOf(internalid), tr);
     }
+
+    public static void updateExit(ExtendedHashMap <String,String,String> trades,int id,EnumOrderReason reason, EnumOrderSide side, double price, int size, int internalid, int orderid, String timeZone, String accountName) {
+        ConcurrentHashMap<String, String> tr;
+        if (trades.get(String.valueOf(internalid)) != null) {
+            tr = (ConcurrentHashMap<String,String>)trades.get(String.valueOf(internalid));
+        } else {
+            tr = new ConcurrentHashMap<>();
+        }
+
+        tr.put("exitsymbol", Parameters.symbol.get(id).getDisplayname());
+        tr.put("exitsymbolid", String.valueOf(id));
+
+        tr.put("exitside", String.valueOf(side));
+        tr.put("exitprice", String.valueOf(price));
+        tr.put("exitsize", String.valueOf(size));
+        String exitTime;
+        if (timeZone.compareTo("") == 0) {
+            exitTime=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
+        } else {
+            exitTime=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+        }
+        tr.put("exittime", String.valueOf(exitTime));
+        tr.put("exitorderidint", String.valueOf(internalid));
+        tr.put("exitorderidext", String.valueOf(orderid));
+        tr.put("accountname", accountName);
+        tr.put("exitreason", String.valueOf(reason));
+        trades.put(String.valueOf(internalid), tr);
+    }
+  
 
     /**
      * @return the entrySymbol
      */
-    public String getEntrySymbol() {
-        return entrySymbol;
+    public static String getEntrySymbol(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return trades.get(internalOrderID.toString(), "entrysymbol");
     }
 
     /**
      * @param entrySymbol the entrySymbol to set
      */
-    public void setEntrySymbol(String entrySymbol) {
-        this.entrySymbol = entrySymbol;
+    public static void setEntrySymbol(ExtendedHashMap <String,String,String> trades,Object internalOrderID,String entrySymbol) {
+        trades.add(internalOrderID.toString(), "entrysymbol", entrySymbol);
     }
 
     /**
      * @return the entrySide
      */
-    public EnumOrderSide getEntrySide() {
-        return entrySide;
+    public static EnumOrderSide getEntrySide(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return EnumOrderSide.valueOf(trades.get(internalOrderID.toString(), "entryside"));
     }
 
     /**
      * @param entrySide the entrySide to set
      */
-    public void setEntrySide(EnumOrderSide entrySide) {
-        this.entrySide = entrySide;
+    public static void setEntrySide(ExtendedHashMap <String,String,String> trades,Object internalOrderID,EnumOrderSide entrySide) {
+        trades.add(internalOrderID.toString(), "entryside", entrySide.toString());
     }
     /*
      public void setEntrySide(String entrySide){
@@ -219,85 +179,86 @@ public class Trade implements ReaderWriterInterface {
     /**
      * @return the entryPrice
      */
-    public double getEntryPrice() {
-        return entryPrice;
+    public static double getEntryPrice(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Double.valueOf(trades.get(internalOrderID.toString(), "entryprice"));
     }
 
     /**
      * @param entryPrice the entryPrice to set
      */
-    public void setEntryPrice(double entryPrice) {
-        this.entryPrice = entryPrice;
+    public static void setEntryPrice(ExtendedHashMap <String,String,String> trades,Object internalOrderID,double entryPrice) {
+        trades.add(internalOrderID.toString(), "entryprice", String.valueOf(entryPrice));
     }
 
     /**
      * @return the entrySize
      */
-    public int getEntrySize() {
-        return entrySize;
+    public static int getEntrySize(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Integer.valueOf(trades.get(internalOrderID.toString(), "entrysize"));
+
     }
 
     /**
      * @param entrySize the entrySize to set
      */
-    public void setEntrySize(int entrySize) {
-        this.entrySize = entrySize;
-    }
+    public static void setEntrySize(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int entrySize) {
+            trades.add(internalOrderID.toString(), "entrysize", String.valueOf(entrySize));    }
 
     /**
      * @return the entryTime
      */
-    public String getEntryTime() {
-        return entryTime;
+    public static String getEntryTime(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return trades.get(internalOrderID.toString(), "entrytime");
     }
 
     /**
      * @param entryTime the entryTime to set
      */
-    public void setEntryTime(String entryTime) {
-        this.entryTime = entryTime;
-    }
+    public static void setEntryTime(ExtendedHashMap <String,String,String> trades,Object internalOrderID,String entryTime) {
+            trades.add(internalOrderID.toString(), "entrytime", entryTime);    }
 
     /**
      * @return the entryID
      */
-    public int getEntryID() {
-        return entryID;
+    public static int getEntryID(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Integer.valueOf(trades.get(internalOrderID.toString(), "entryorderidext"));
+
     }
 
     /**
      * @param entryID the entryID to set
      */
-    public void setEntryID(int entryID) {
-        this.entryID = entryID;
+    public static void setEntryID(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int entryID) {
+            trades.add(internalOrderID.toString(), "entryorderidext", String.valueOf(entryID));
     }
 
     /**
      * @return the exitSymbol
      */
-    public String getExitSymbol() {
-        return exitSymbol;
+    public static String getExitSymbol(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return trades.get(internalOrderID.toString(), "exitsymbol");
+
     }
 
     /**
      * @param exitSymbol the exitSymbol to set
      */
-    public void setExitSymbol(String exitSymbol) {
-        this.exitSymbol = exitSymbol;
+    public static void setExitSymbol(ExtendedHashMap <String,String,String> trades,Object internalOrderID,String exitSymbol) {
+        trades.add(internalOrderID.toString(), "exitsymbol", exitSymbol);
     }
 
     /**
      * @return the exitSide
      */
-    public EnumOrderSide getExitSide() {
-        return exitSide;
+    public static EnumOrderSide getExitSide(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return EnumOrderSide.valueOf(trades.get(internalOrderID.toString(), "exitside"));
     }
 
     /**
      * @param exitSide the exitSide to set
      */
-    public void setExitSide(EnumOrderSide exitSide) {
-        this.exitSide = exitSide;
+    public static void setExitSide(ExtendedHashMap <String,String,String> trades,Object internalOrderID,EnumOrderSide exitSide) {
+        trades.add(internalOrderID.toString(), "exitSide", exitSide.toString());
     }
     /*
      public void setExitSide(String exitSide){
@@ -308,280 +269,267 @@ public class Trade implements ReaderWriterInterface {
     /**
      * @return the exitPrice
      */
-    public double getExitPrice() {
-        return exitPrice;
-    }
+    public static double getExitPrice(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+         return Double.valueOf(trades.get(internalOrderID.toString(), "exitprice"));
+   }
 
     /**
      * @param exitPrice the exitPrice to set
      */
-    public void setExitPrice(double exitPrice) {
-        this.exitPrice = exitPrice;
+    public static void setExitPrice(ExtendedHashMap <String,String,String> trades,Object internalOrderID,double exitPrice) {
+        trades.add(internalOrderID.toString(), "exitprice", String.valueOf(exitPrice));
     }
 
     /**
      * @return the exitSize
      */
-    public int getExitSize() {
-        return exitSize;
+    public static int getExitSize(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Integer.valueOf(trades.get(internalOrderID.toString(), "exitside"));
     }
 
     /**
      * @param exitSize the exitSize to set
      */
-    public void setExitSize(int exitSize) {
-        this.exitSize = exitSize;
+    public static void setExitSize(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int exitSize) {
+        trades.add(internalOrderID.toString(), "exitsize", String.valueOf(exitSize));    
     }
 
     /**
      * @return the exitTime
      */
-    public String getExitTime() {
-        return exitTime;
+    public static String getExitTime(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return trades.get(internalOrderID.toString(), "exittime");
     }
 
     /**
      * @param exitTime the exitTime to set
      */
-    public void setExitTime(String exitTime) {
-        this.exitTime = exitTime;
+    public static void setExitTime(ExtendedHashMap <String,String,String> trades,Object internalOrderID, String exitTime) {
+        trades.add(internalOrderID.toString(), "exittime", exitTime);
     }
 
     /**
      * @return the exitID
      */
-    public int getExitID() {
-        return exitID;
+    public static int getExitID(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Integer.valueOf(trades.get(internalOrderID.toString(), "exitorderidint"));
     }
 
     /**
      * @param exitID the exitID to set
      */
-    public void setExitID(int exitID) {
-        this.exitID = exitID;
+    public static void setExitID(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int exitID) {
+        trades.add(internalOrderID.toString(), "exitorderidint", String.valueOf(exitID));
     }
 
-    /**
-     * @return the filtered
-     */
-    public boolean isFiltered() {
-        return filtered;
-    }
-
-    /**
-     * @param filtered the filtered to set
-     */
-    public void setFiltered(boolean filtered) {
-        this.filtered = filtered;
-    }
 
     /**
      * @return the exitBrokerage
      */
-    public double getExitBrokerage() {
-        return exitBrokerage;
+    public static double getExitBrokerage(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Double.valueOf(trades.get(internalOrderID.toString(), "exitbrokerage"));
     }
 
     /**
      * @param exitBrokerage the exitBrokerage to set
      */
-    public void setExitBrokerage(double exitBrokerage) {
-        this.exitBrokerage = exitBrokerage;
+    public static void setExitBrokerage(ExtendedHashMap <String,String,String> trades,Object internalOrderID,double exitBrokerage) {
+        trades.add(internalOrderID.toString(), "exitbrokerage", String.valueOf(exitBrokerage));
     }
 
     /**
      * @return the entryBrokerage
      */
-    public double getEntryBrokerage() {
-        return entryBrokerage;
+    public static double getEntryBrokerage(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Double.valueOf(trades.get(internalOrderID.toString(), "entrybrokerage"));
     }
 
     /**
      * @param entryBrokerage the entryBrokerage to set
      */
-    public void setEntryBrokerage(double entryBrokerage) {
-        this.entryBrokerage = entryBrokerage;
+    public static void setEntryBrokerage(ExtendedHashMap <String,String,String> trades,Object internalOrderID,double entryBrokerage) {
+trades.add(internalOrderID.toString(), "entrybrokerage", String.valueOf(entryBrokerage));
     }
 
     /**
      * @return the accountName
      */
-    public String getAccountName() {
-        return accountName;
+    public static String getAccountName(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return trades.get(internalOrderID.toString(), "accountname");
     }
 
     /**
      * @param accountName the accountName to set
      */
-    public void setAccountName(String accountName) {
-        this.accountName = accountName;
+    public static void setAccountName(ExtendedHashMap <String,String,String> trades,Object internalOrderID,String accountName) {
+    trades.add(internalOrderID.toString(), "accountname", accountName);
     }
 
     /**
      * @return the mtmToday
      */
-    public double getMtmToday() {
-        return mtmToday;
+    public static double getMtmToday(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Double.valueOf(trades.get(internalOrderID.toString(), "mtmtoday"));
+
     }
 
     /**
      * @param mtmToday the mtmToday to set
      */
-    public void setMtmToday(double mtmToday) {
-        this.mtmToday = mtmToday;
+    public static void setMtmToday(ExtendedHashMap <String,String,String> trades,Object internalOrderID,double mtmToday) {
+trades.add(internalOrderID.toString(), "mtmtoday", String.valueOf(mtmToday));
     }
 
     /**
      * @return the mtmYesterday
      */
-    public double getMtmYesterday() {
-        return mtmYesterday;
+    public static double getMtmYesterday(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Double.valueOf(trades.get(internalOrderID.toString(), "mtmyesterday"));
     }
 
     /**
      * @param mtmYesterday the mtmYesterday to set
      */
-    public void setMtmYesterday(double mtmYesterday) {
-        this.mtmYesterday = mtmYesterday;
+    public static void setMtmYesterday(ExtendedHashMap <String,String,String> trades,Object internalOrderID,double mtmYesterday) {
+     trades.add(internalOrderID.toString(), "mtmyesterday", String.valueOf(mtmYesterday));
     }
 
     /**
      * @return the mtmPriorMonth
      */
-    public double getMtmPriorMonth() {
-        return mtmPriorMonth;
+    public static double getMtmPriorMonth(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Double.valueOf(trades.get(internalOrderID.toString(), "mtmpriormonth"));
     }
 
     /**
      * @param mtmPriorMonth the mtmPriorMonth to set
      */
-    public void setMtmPriorMonth(double mtmPriorMonth) {
-        this.mtmPriorMonth = mtmPriorMonth;
+    public static void setMtmPriorMonth(ExtendedHashMap <String,String,String> trades,Object internalOrderID,double mtmPriorMonth) {
+    trades.add(internalOrderID.toString(), "mtmpriormonth", String.valueOf(mtmPriorMonth));
     }
 
     /**
      * @return the todayDate
      */
-    public String getTodayDate() {
-        return todayDate;
+    public static String getTodayDate(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return trades.get(internalOrderID.toString(), "todaydate");
     }
 
     /**
      * @param todayDate the todayDate to set
      */
-    public void setTodayDate(String todayDate) {
-        this.todayDate = todayDate;
-    }
+    public static void setTodayDate(ExtendedHashMap <String,String,String> trades,Object internalOrderID,String todayDate) {
+        trades.add(internalOrderID.toString(), "todaydate", todayDate);    }
 
     /**
      * @return the yesterdayDate
      */
-    public String getYesterdayDate() {
-        return yesterdayDate;
+    public static String getYesterdayDate(ExtendedHashMap <String,String,String> trades,String internalOrderID) {
+        return trades.get(internalOrderID.toString(), "yesterdaydate");
     }
 
     /**
      * @param yesterdayDate the yesterdayDate to set
      */
-    public void setYesterdayDate(String yesterdayDate) {
-        this.yesterdayDate = yesterdayDate;
-    }
+    public static void setYesterdayDate(ExtendedHashMap <String,String,String> trades,Object internalOrderID,String yesterdayDate) {
+        trades.add(internalOrderID.toString(), "yesterdayday", yesterdayDate);    }
 
     /**
      * @return the exitOrderID
      */
-    public int getExitOrderID() {
-        return exitOrderID;
+    public static int getExitOrderID(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Integer.valueOf(trades.get(internalOrderID.toString(), "exitorderidext"));
     }
 
     /**
      * @param exitOrderID the exitOrderID to set
      */
-    public void setExitOrderID(int exitOrderID) {
-        this.exitOrderID = exitOrderID;
+    public static void setExitOrderID(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int exitOrderID) {
+trades.add(internalOrderID.toString(), "exitorderidext", String.valueOf(exitOrderID));
     }
 
     /**
      * @return the entryOrderID
      */
-    public int getEntryOrderID() {
-        return entryOrderID;
+    public static int getEntryOrderID(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Integer.valueOf(trades.get(internalOrderID.toString(), "entryorderidint"));
     }
 
     /**
      * @param entryOrderID the entryOrderID to set
      */
-    public void setEntryOrderID(int entryOrderID) {
-        this.entryOrderID = entryOrderID;
-    }
+    public static void setEntryOrderID(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int entryOrderID) {
+trades.add(internalOrderID.toString(), "entryorderidint", String.valueOf(entryOrderID));    }
 
     /**
      * @return the entrySymbolID
      */
-    public int getEntrySymbolID() {
-        return entrySymbolID;
+    public static int getEntrySymbolID(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Integer.valueOf(trades.get(internalOrderID.toString(), "entrysymbolid"));
     }
 
     /**
      * @param entrySymbolID the entrySymbolID to set
      */
-    public void setEntrySymbolID(int entrySymbolID) {
-        this.entrySymbolID = entrySymbolID;
+    public static void setEntrySymbolID(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int entrySymbolID) {
+     trades.add(internalOrderID.toString(), "entrysymbolid", String.valueOf(entrySymbolID));
     }
 
     /**
      * @return the exitSymbolID
      */
-    public int getExitSymbolID() {
-        return exitSymbolID;
+    public static int getExitSymbolID(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return Integer.valueOf(trades.get(internalOrderID.toString(), "exitsymbolid"));
     }
 
     /**
      * @param exitSymbolID the exitSymbolID to set
      */
-    public void setExitSymbolID(int exitSymbolID) {
-        this.exitSymbolID = exitSymbolID;
+    public static void setExitSymbolID(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int exitSymbolID) {
+    trades.add(internalOrderID.toString(), "exitsymbolid", String.valueOf(exitSymbolID));
     }
 
     /**
      * @return the parentSymbol
      */
-    public String getParentSymbol() {
-        return parentSymbol;
+    public static String getParentSymbol(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return trades.get(internalOrderID.toString(), "parentsymbol");
     }
 
     /**
      * @param parentSymbol the parentSymbol to set
      */
-    public void setParentSymbol(String parentSymbol) {
-        this.parentSymbol = parentSymbol;
+    public static void setParentSymbol(ExtendedHashMap <String,String,String> trades,Object internalOrderID,String parentSymbol) {
+trades.add(internalOrderID.toString(), "parentsymbol", parentSymbol);
     }
 
     /**
      * @return the exitReason
      */
-    public EnumOrderReason getExitReason() {
-        return exitReason;
+    public static EnumOrderReason getExitReason(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return EnumOrderReason.valueOf(trades.get(internalOrderID.toString(), "exitreason"));
     }
 
     /**
      * @param exitReason the exitReason to set
      */
-    public void setExitReason(EnumOrderReason exitReason) {
-        this.exitReason = exitReason;
+    public static void setExitReason(ExtendedHashMap <String,String,String> trades,Object internalOrderID,EnumOrderReason exitReason) {
+    trades.add(internalOrderID.toString(), "exitreason", exitReason.toString());
     }
 
     /**
      * @return the entryReason
      */
-    public EnumOrderReason getEntryReason() {
-        return entryReason;
+    public static EnumOrderReason getEntryReason(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
+        return EnumOrderReason.valueOf(trades.get(internalOrderID.toString(), "entryreason"));
     }
 
     /**
      * @param entryReason the entryReason to set
      */
-    public void setEntryReason(EnumOrderReason entryReason) {
-        this.entryReason = entryReason;
+    public static void setEntryReason(ExtendedHashMap <String,String,String> trades,Object internalOrderID,EnumOrderReason entryReason) {
+        trades.add(internalOrderID.toString(), "entryreason", entryReason.toString());    
     }
+    
+
 }

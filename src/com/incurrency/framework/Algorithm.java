@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
 
@@ -39,7 +40,8 @@ public class Algorithm {
     public static int closeMinute=30;
     public static boolean useForTrading;
     public static ConcurrentHashMap<EnumBarSize,Long> databarSetup=new ConcurrentHashMap<>();
-
+    public static AtomicInteger orderidint=new AtomicInteger(0);
+    
     public Algorithm(HashMap<String, String> args) throws Exception {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
         String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();

@@ -1126,12 +1126,21 @@ public class Utilities {
      * @return
      */
     public static int getIDFromDisplayName(List<BeanSymbol> symbols, String displayName) {
+        if(displayName!=null){
         for (BeanSymbol symb : symbols) {
             if (symb.getDisplayname().equals(displayName)) {
                 return symb.getSerialno() - 1;
             }
         }
+        }
         return -1;
+    }
+    
+    public String incrementString(String value, double increment){
+        double doubleValue=Utilities.getDouble(value,-1);
+        doubleValue=doubleValue+increment;
+        return String.format("%.1f",doubleValue);
+        
     }
 
     public static int getReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {

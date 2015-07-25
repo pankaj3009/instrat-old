@@ -1340,7 +1340,7 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
     
 
 
-    public static double[] applyBrokerage(HashMap<OrderLink, Trade> trades, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName) {
+    public static double[] applyBrokerage(ExtendedHashMap<String,String,String> trades, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName) {
         double[] profitGrid = new double[10];
         ArrayList<Double> dailyEquity = new ArrayList();
         ArrayList<Date> tradeDate = new ArrayList();
