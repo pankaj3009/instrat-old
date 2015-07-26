@@ -4,6 +4,8 @@
  */
 package com.incurrency.framework;
 
+import com.cedarsoftware.util.io.JsonReader;
+import com.cedarsoftware.util.io.JsonWriter;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
@@ -35,6 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -98,47 +101,69 @@ public class Utilities {
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
-        ArrayList<Trade> allOrders = new ArrayList<>();
-        new Trade().reader(orderFileName, allOrders);
-
+               ExtendedHashMap<String, String, String> allOrders = new ExtendedHashMap<>();
+               try{
+                InputStream initialStream = new FileInputStream(new File(orderFileName));
+                JsonReader jr = new JsonReader(initialStream);
+                allOrders = (ExtendedHashMap<String, String, String>) jr.readObject();
+                jr.close();
+               }catch (Exception e){
+                   logger.log(Level.SEVERE,null,e);
+               }
         //remove any child orders
         ArrayList<Integer> childEntryOrders = new ArrayList<>();
-        for (Trade tr : allOrders) {
-            if (tr.getEntrySymbolID() > -1) {
-                if (Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO")) {
-                    childEntryOrders.add(tr.getEntryID());
+        Set<Entry>entries=allOrders.entrySet();
+        for(Entry entry:entries){
+            String key=(String)entry.getKey();
+            int childid=Trade.getEntrySymbolID(allOrders, key);
+            int entryorderidint=Trade.getEntryOrderIDInternal(allOrders, key);
+            if (childid>= 0) {
+                if (Parameters.symbol.get(childid).getType().equals("COMBO")) {
+                    childEntryOrders.add(entryorderidint);
                 }
             }
         }
-        Iterator iter1 = allOrders.iterator();
+        Iterator iter1 = entries.iterator();
         while (iter1.hasNext()) {
-            Trade trchild = (Trade) iter1.next();
-            if (childEntryOrders.contains(Integer.valueOf(trchild.getEntryID())) && !Parameters.symbol.get(trchild.getEntryID()).getType().equals("COMBO")) {
+              Map.Entry trchild = (Map.Entry) iter1.next();
+              String key = (String) trchild.getKey();
+            if (childEntryOrders.contains(Integer.valueOf(Trade.getEntryOrderIDInternal(allOrders, key))) && !Parameters.symbol.get(Trade.getEntryOrderIDInternal(allOrders, key)).getType().equals("COMBO")) {
+                //check above rule after requiring unique internalorderid for child orders.
                 iter1.remove();
             }
         }
 
-        for (Trade or : allOrders) {
+        for (Entry entry : entries) {
+            String key = (String) entry.getKey();
             int tempPosition = 0;
             double tempPositionPrice = 0D;
-            int id = TradingUtil.getEntryIDFromDisplayName(or, Parameters.symbol);
+            String childdisplayname=Trade.getEntrySymbol(allOrders, key);
+            String account=Trade.getAccountName(allOrders, key);
+            int entrySize=Trade.getEntrySize(allOrders, key);
+            int exitSize=Trade.getExitSize(allOrders, key);
+            double entryPrice=Trade.getEntryPrice(allOrders, key);
+            double exitPrice=Trade.getExitPrice(allOrders, key);
+            EnumOrderSide entrySide=Trade.getEntrySide(allOrders, key);
+            EnumOrderSide exitSide=Trade.getExitSide(allOrders, key);
+
+            int id = Utilities.getIDFromDisplayName(symbols, childdisplayname);
             if (id >= 0) {
-                if (or.getAccountName().equals("Order")) {
+                if (account.equals("Order")) {
                     BeanPosition p = position.get(id) == null ? new BeanPosition(id, strategy) : position.get(id);
                     tempPosition = p.getPosition();
                     tempPositionPrice = p.getPrice();
-                    switch (or.getEntrySide()) {
+                    switch (entrySide) {
                         case BUY:
-                            tempPositionPrice = or.getEntrySize() + tempPosition != 0 ? (tempPosition * tempPositionPrice + or.getEntrySize() * or.getEntryPrice()) / (or.getEntrySize() + tempPosition) : 0D;
-                            tempPosition = tempPosition + or.getEntrySize();
+                            tempPositionPrice = entrySize+ tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
+                            tempPosition = tempPosition + entrySize;
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
                             p.setPointValue(pointValue);
                             position.put(id, p);
                             break;
                         case SHORT:
-                            tempPositionPrice = or.getEntrySize() + tempPosition != 0 ? (tempPosition * tempPositionPrice - or.getEntrySize() * or.getEntryPrice()) / (-or.getEntrySize() + tempPosition) : 0D;
-                            tempPosition = tempPosition - or.getEntrySize();
+                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice - entrySize * entryPrice) / (-entrySize + tempPosition) : 0D;
+                            tempPosition = tempPosition - entrySize;
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
                             p.setPointValue(pointValue);
@@ -147,18 +172,18 @@ public class Utilities {
                         default:
                             break;
                     }
-                    switch (or.getExitSide()) {
+                    switch (exitSide) {
                         case COVER:
-                            tempPositionPrice = or.getEntrySize() + tempPosition != 0 ? (tempPosition * tempPositionPrice + or.getEntrySize() * or.getEntryPrice()) / (or.getEntrySize() + tempPosition) : 0D;
-                            tempPosition = tempPosition + or.getEntrySize();
+                            tempPositionPrice = exitSize+ tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
+                            tempPosition = tempPosition + exitSize;
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
                             p.setPointValue(pointValue);
                             position.put(id, p);
                             break;
                         case SELL:
-                            tempPositionPrice = -or.getEntrySize() + tempPosition != 0 ? (tempPosition * tempPositionPrice - or.getEntrySize() * or.getEntryPrice()) / (-or.getEntrySize() + tempPosition) : 0D;
-                            tempPosition = tempPosition - or.getEntrySize();
+                            tempPositionPrice = -exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice - exitSize * exitPrice) / (-exitSize + tempPosition) : 0D;
+                            tempPosition = tempPosition - exitSize;
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
                             p.setPointValue(pointValue);
@@ -1275,6 +1300,25 @@ public class Utilities {
         }
     }
 
+    public static <T> T convertInstanceOfObject(Object o, Class<T> clazz) {
+    try {
+        return clazz.cast(o);
+    } catch(ClassCastException e) {
+        return null;
+    }
+}
+    /*
+     * Serialize an object to json
+     */
+    public static void writeJson(String fileName,Object o){
+        Class clazz=o.getClass();
+        clazz.cast(o);
+            String out=JsonWriter.objectToJson(clazz.cast(o));
+            Utilities.writeToFile(new File(fileName), out);
+        
+    }
+    
+    
     /**
      * Writes to filename, the values in String[].
      *

@@ -5,10 +5,13 @@
 package com.incurrency.framework;
 
 
+import com.cedarsoftware.util.io.JsonReader;
 import static com.incurrency.framework.Algorithm.globalProperties;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -17,6 +20,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
@@ -45,8 +50,8 @@ public class Validator {
         String orderFileFullName = "logs" + File.separator + prefix + orderFile;
         HashMap<String, ArrayList<Integer>> singleLegReconIssue = getPositionMismatch(orderFileFullName, tradeFileFullName, account, "SingleLeg");
         HashMap<String, ArrayList<Integer>> comboReconIssue = getPositionMismatch(orderFileFullName, tradeFileFullName, account, "Combo");
-        ArrayList<Trade> comboParents = returnComboParent(tradeFileFullName);
-        ArrayList<Trade> comboChildren = returnComboChildren(tradeFileFullName);
+        ExtendedHashMap<String,String,String> comboParents = returnComboParent(tradeFileFullName);
+        ExtendedHashMap<String,String,String> comboChildren = returnComboChildren(tradeFileFullName);
         HashMap<String, HashMap<String, ArrayList<Integer>>> comboChildrenReconIssue = reconComboChildren(comboParents, comboChildren, account);
         String singleLegIssues = "";
         String comboIssues = "";
@@ -119,31 +124,51 @@ public class Validator {
         HashMap<String,Integer> openPosition=new HashMap();
         //String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
         try{
-        ArrayList<Trade> tradeList = new ArrayList<>();
-        for (Trade tr : s.getOms().getTrades().values()) {
-            tradeList.add(tr);
+        ArrayList<String> tradeList = new ArrayList<>();
+        Set<Entry>entries=s.getOms().getTrades().entrySet();
+        for(Entry entry:entries){
+            String key=(String)entry.getKey();
+            tradeList.add(key);
         }
-        ArrayList<Trade> singleLegTrades = returnSingleLegTrades((ArrayList<Trade>) tradeList.clone(), account);
-        ArrayList<Trade> comboTrades = returnComboParent((ArrayList<Trade>) tradeList.clone(), account);
+        ArrayList<String> singleLegTrades = returnSingleLegTrades(s.getOms().getTrades(),(ArrayList<String>) tradeList.clone(), account);
+        ArrayList<String> comboTrades = returnComboParent(s.getOms().getTrades(),(ArrayList<String>) tradeList.clone(), account);
         boolean headerWritten = false;
-        for (Trade tr : singleLegTrades) {
+        for (String key : singleLegTrades) {
             if (!headerWritten) {
                 out = out + "List of OpenPositions" + newline;
                 out = out + TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10)+","+TradingUtil.padRight("Position", 10)+newline;
                 headerWritten = true;
             }
-            if (tr.getEntrySize()-tr.getExitSize() !=0 ) {
-                out = out + TradingUtil.padRight(tr.getEntryTime(), 25) + "," + TradingUtil.padRight(tr.getEntrySymbol(), 20) + "," + TradingUtil.padRight(String.valueOf(tr.getEntrySide()), 10) + TradingUtil.padRight(String.valueOf(tr.getEntryPrice()), 10) + "," + TradingUtil.padRight(String.valueOf(tr.getEntryBrokerage()), 10) + "," + TradingUtil.padRight(String.valueOf(tr.getMtmToday()), 10)+","+TradingUtil.padRight(String.valueOf(tr.getEntrySize()-tr.getExitSize()), 10)+newline;
+            int entrySize=Trade.getEntrySize(s.getOms().getTrades(),key);
+            int exitSize=Trade.getExitSize(s.getOms().getTrades(),key);
+            String entryTime=Trade.getEntryTime(s.getOms().getTrades(),key);
+            String childdisplayname=Trade.getEntrySymbol(s.getOms().getTrades(),key);
+            EnumOrderSide entrySide=Trade.getEntrySide(s.getOms().getTrades(),key);
+            double entryPrice=Trade.getEntryPrice(s.getOms().getTrades(),key);
+            double entryBrokerage=Trade.getEntryBrokerage(s.getOms().getTrades(),key);
+            double mtmToday=Trade.getMtmToday(s.getOms().getTrades(),key);
+            if (entrySize-exitSize!=0 ) {
+                out = out + TradingUtil.padRight(entryTime, 25) + "," + TradingUtil.padRight(childdisplayname, 20) + "," + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + "," + TradingUtil.padRight(String.valueOf(entryBrokerage), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10)+","+TradingUtil.padRight(String.valueOf(entrySize-exitSize), 10)+newline;
             }
         }
-        for (Trade tr : comboTrades) {
+        for (String key : comboTrades) {
             if (!headerWritten) {
                 out = out + "List of OpenPositions" + newline;
-                out = out + TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10)+","+TradingUtil.padRight("Position", 10)+","+TradingUtil.padRight(String.valueOf(tr.getEntrySize()-tr.getExitSize()), 10)+newline;
+            int entrySize=Trade.getEntrySize(s.getOms().getTrades(),key);
+            int exitSize=Trade.getExitSize(s.getOms().getTrades(),key);
+                out = out + TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10)+","+TradingUtil.padRight("Position", 10)+","+TradingUtil.padRight(String.valueOf(entrySize-exitSize), 10)+newline;
                 headerWritten = true;
             }
-            if (tr.getEntrySize()-tr.getExitSize() !=0 ) {
-                out = out + TradingUtil.padRight(tr.getEntryTime(), 25) + "," + TradingUtil.padRight(tr.getEntrySymbol(), 20) + "," + TradingUtil.padRight(String.valueOf(tr.getEntrySide()), 10) + TradingUtil.padRight(String.valueOf(tr.getEntryPrice()), 10) + "," + TradingUtil.padRight(String.valueOf(tr.getEntryBrokerage()), 10) + "," + TradingUtil.padRight(String.valueOf(tr.getMtmToday()), 10)+newline;
+            int entrySize=Trade.getEntrySize(s.getOms().getTrades(),key);
+            int exitSize=Trade.getExitSize(s.getOms().getTrades(),key);
+            String entryTime=Trade.getEntryTime(s.getOms().getTrades(),key);
+            String childdisplayname=Trade.getEntrySymbol(s.getOms().getTrades(),key);
+            EnumOrderSide entrySide=Trade.getEntrySide(s.getOms().getTrades(),key);
+            double entryPrice=Trade.getEntryPrice(s.getOms().getTrades(),key);
+            double entryBrokerage=Trade.getEntryBrokerage(s.getOms().getTrades(),key);
+            double mtmToday=Trade.getMtmToday(s.getOms().getTrades(),key);
+            if (entrySize-exitSize!=0 ) {
+                out = out + TradingUtil.padRight(entryTime, 25) + "," + TradingUtil.padRight(childdisplayname, 20) + "," + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + "," + TradingUtil.padRight(String.valueOf(entryBrokerage), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10)+newline;
             }
         }
         }catch (Exception e){
@@ -163,26 +188,33 @@ public class Validator {
         try {
             String out = "";
             String orderFileFullName = "logs" + File.separator + prefix + orderFile;
-            ArrayList<Trade> comboTrades = new ArrayList<>();
+            ArrayList<String> comboTrades = new ArrayList<>();
             ArrayList<BeanSymbol> symbolList = new ArrayList<>();
-            ArrayList<Trade> orderList = new ArrayList<>();
-            new Trade().reader(orderFileFullName, orderList);
+                ExtendedHashMap<String, String, String> orderList = new ExtendedHashMap<>();
+                InputStream initialStream = new FileInputStream(new File(orderFileFullName));
+                JsonReader jr = new JsonReader(initialStream);
+                orderList = (ExtendedHashMap<String, String, String>) jr.readObject();
+                jr.close();
             boolean symbolfileneeded = Boolean.parseBoolean(globalProperties.getProperty("symbolfileneeded", "false"));
          if (symbolfileneeded) {
             String symbolFileName = globalProperties.getProperty("symbolfile", "symbols.csv").toString().trim();
             new BeanSymbol().completeReader(symbolFileName, symbolList);
-            //for (Trade tr : s.getTrades().values()) {
-            for(Trade tr:orderList){
-            if (tr.getParentSymbol().contains(":")) {//only combo trades should contain :
-                    comboTrades.add(tr);
+            Set<Entry>entries=orderList.entrySet();
+            for(Entry entry:entries){
+                String key=(String)entry.getKey();
+            if (Trade.getParentSymbol(orderList, key).contains(":")) {//only combo trades should contain :
+                    comboTrades.add(key);
                 }
             }
             fileWriter = new FileWriter(symbolFileName, true);
-            for (Trade tr : comboTrades) {
-                if (TradingUtil.getEntryIDFromDisplayName(tr, symbolList) == -1) {
+            for (String key : comboTrades) {
+                String childdisplayname=Trade.getEntrySymbol(orderList, key);
+                String parentdisplayname=Trade.getParentSymbol(orderList, key);
+                int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+                if (childid== -1) {
                     //add combo symbol to symbols file
-                    fileWriter.write(newline+Parameters.symbol.size() + "," + tr.getParentSymbol() + "," + tr.getEntrySymbol() + ",COMBO" + ",,,,,,,1,,1," + parentStrategy);
-                    Parameters.symbol.add(new BeanSymbol(tr.getParentSymbol(), tr.getEntrySymbol(), "CSV"));
+                    fileWriter.write(newline+Parameters.symbol.size() + "," + parentdisplayname+ "," + childdisplayname + ",COMBO" + ",,,,,,,1,,1," + parentStrategy);
+                    Parameters.symbol.add(new BeanSymbol(parentdisplayname, childdisplayname, "CSV"));
                 }
             }
             fileWriter.close();
@@ -394,13 +426,30 @@ public class Validator {
     }
 
     public static HashMap<String, ArrayList<Integer>> getPositionMismatch(String orderFileFullName, String tradeFileFullName, String account, String reconType) {
-        HashMap<String, ArrayList<Integer>> out = new HashMap<>();
-        ArrayList<Trade> allorderlist = new ArrayList<>();
-        ArrayList<Trade> alltradelist = new ArrayList<>();
-        new Trade().reader(tradeFileFullName, alltradelist);
-        new Trade().reader(orderFileFullName, allorderlist);
-        ArrayList<Trade> t = new ArrayList<>();
-        ArrayList<Trade> o = new ArrayList<>();
+                HashMap<String, ArrayList<Integer>> out = new HashMap<>();
+                ExtendedHashMap<String, String, String> alltradelist = new ExtendedHashMap<>();
+                try{
+                InputStream initialStream = new FileInputStream(new File(tradeFileFullName));
+                JsonReader jr = new JsonReader(initialStream);
+                alltradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                jr.close();
+                }catch (Exception e){
+                    logger.log(Level.INFO,null,e);
+                }
+                ExtendedHashMap<String, String, String> allorderlist = new ExtendedHashMap<>();
+                try{
+                  InputStream initialStream = new FileInputStream(new File(tradeFileFullName));
+                
+                JsonReader jr = new JsonReader(initialStream);
+                allorderlist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                jr.close();
+                }catch (Exception e){
+                    logger.log(Level.INFO,null,e);
+                }
+                
+
+        ExtendedHashMap<String,String,String> t = new ExtendedHashMap<>();
+        ExtendedHashMap<String,String,String>  o = new ExtendedHashMap<>();
 
         switch (reconType) {
             case "SingleLeg":
@@ -421,38 +470,61 @@ public class Validator {
         return out;
     }
 
-    private static ArrayList<Trade> returnSingleLegTrades(String fileName) {
-        ArrayList<Trade> tradelist = new ArrayList<>();
-        ArrayList<Integer> childEntryOrders = new ArrayList<>();
-        new Trade().reader(fileName, tradelist);
+    private static ExtendedHashMap<String,String,String> returnSingleLegTrades(String fileName) {
         
+        ArrayList<Integer> childEntryOrders = new ArrayList<>();
+                ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
+                InputStream initialStream;
+                try{
+                    initialStream = new FileInputStream(new File(fileName));
+                JsonReader jr = new JsonReader(initialStream);
+                tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                jr.close();
+                }catch (Exception e){
+                    logger.log(Level.SEVERE,null,e);
+                }
+                
         //Remove orders that are not in symbolist
-        Iterator iter1=tradelist.iterator();
+        Set<Entry>entries=tradelist.entrySet();
+                Iterator iter1=entries.iterator();
         while(iter1.hasNext()){
-            Trade tr = (Trade) iter1.next();
-            if(tr.getEntrySymbolID()<0){
+            Map.Entry pair = (Map.Entry)iter1.next();
+            String key=(String)pair.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if(childid<0){
                 iter1.remove();
             }
         }
         
-        for (Trade tr : tradelist) {
-            if (Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO")) {
-                childEntryOrders.add(tr.getEntryID());
+        for (Entry entry : entries) {
+            String key=(String)entry.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if (Parameters.symbol.get(childid).getType().equals("COMBO")) {
+                childEntryOrders.add(Trade.getEntryOrderIDInternal(tradelist, key));
             }
         }
 
-        Iterator iter2 = tradelist.iterator();
+        Iterator iter2 = entries.iterator();
         while (iter2.hasNext()) {
-            Trade trchild = (Trade) iter2.next();
-            if (childEntryOrders.contains(Integer.valueOf(trchild.getEntryID())) && !Parameters.symbol.get(trchild.getEntrySymbolID()).getType().equals("COMBO")) {
+            Map.Entry pair = (Map.Entry) iter2.next();
+            String key=(String)pair.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            int entryorderidint=Trade.getEntryOrderIDInternal(tradelist, key);
+            if (childEntryOrders.contains(Integer.valueOf(entryorderidint)) && !Parameters.symbol.get(childid).getType().equals("COMBO")) {
                 iter2.remove();
             }
         }
 
-        Iterator iter3 = tradelist.iterator();
+        Iterator iter3 = entries.iterator();
         while (iter3.hasNext()) {
-            Trade trcombo = (Trade) iter3.next();
-            if (Parameters.symbol.get(trcombo.getEntrySymbolID()).getType().equals("COMBO")) {
+            Map.Entry pair = (Map.Entry) iter2.next();
+            String key=(String)pair.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if (Parameters.symbol.get(childid).getType().equals("COMBO")) {
                 iter3.remove();
             }
         }
@@ -460,104 +532,159 @@ public class Validator {
 
     }
 
-    private static ArrayList<Trade> returnSingleLegTrades(ArrayList<Trade> tradelist, String account) {
+    private static ArrayList<String> returnSingleLegTrades(ExtendedHashMap<String,String,String> trades,ArrayList<String> keys, String accountName) {
         //Remove orders that are not in symbolist
-        Iterator iter1=tradelist.iterator();
+        Iterator iter1=keys.iterator();
         while(iter1.hasNext()){
-            Trade tr = (Trade) iter1.next();
-            if(tr.getEntrySymbolID()<0){
+             Map.Entry pair = (Map.Entry) iter1.next();
+             String key = (String) pair.getKey();
+             String childdisplayname=Trade.getEntrySymbol(trades, key);
+             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if(childid<0){
                 iter1.remove();
             }
         }
         ArrayList<Integer> childEntryOrders = new ArrayList<>();
-        for (Trade tr : tradelist) { //identify combo orders
-            if (Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO") && tr.getAccountName().equals(account)) {
-                childEntryOrders.add(tr.getEntryID());
+        for (String key : keys) { //identify combo orders
+            String childdisplayname=Trade.getEntrySymbol(trades, key);
+             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            String account=Trade.getAccountName(trades, key);
+            int entryorderidint=Trade.getEntryOrderIDInternal(trades, key);
+            if (Parameters.symbol.get(childid).getType().equals("COMBO") && account.equals(accountName)) {
+                childEntryOrders.add(entryorderidint);
             }
         }
 
-        Iterator iter2 = tradelist.iterator();
+        Iterator iter2 = keys.iterator();
         while (iter2.hasNext()) { //remove orders that are linked to the combo and are not combo themselves. i.e. combo child orders will be removed
-            Trade trchild = (Trade) iter2.next();
-            if (childEntryOrders.contains(Integer.valueOf(trchild.getEntryID())) && !Parameters.symbol.get(trchild.getEntrySymbolID()).getType().equals("COMBO") || !trchild.getAccountName().equals(account)) {
+            String key = (String) iter2.next();
+            int entryorderidint=Trade.getEntryOrderIDInternal(trades, key);
+            String childdisplayname=Trade.getEntrySymbol(trades, key);
+             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            String account=Trade.getAccountName(trades, key);
+            if (childEntryOrders.contains(Integer.valueOf(entryorderidint)) && !Parameters.symbol.get(childid).getType().equals("COMBO") || !account.equals(accountName)) {
                 iter2.remove();
             }
         }
 
-        Iterator iter3 = tradelist.iterator();
+        Iterator iter3 = keys.iterator();
         while (iter3.hasNext()) {
-            Trade trcombo = (Trade) iter3.next();
-            if (Parameters.symbol.get(trcombo.getEntrySymbolID()).getType().equals("COMBO") || !trcombo.getAccountName().equals(account)) {
+            String key = (String) iter2.next();
+            int entryorderidint=Trade.getEntryOrderIDInternal(trades, key);
+            String childdisplayname=Trade.getEntrySymbol(trades, key);
+             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            String account=Trade.getAccountName(trades, key);
+            if (Parameters.symbol.get(childid).getType().equals("COMBO") || !account.equals(accountName)) {
                 iter3.remove();
             }
         }
-        return tradelist;
+        return keys;
 
     }
 
-    private static ArrayList<Trade> returnComboParent(String fileName) {
-        ArrayList<Trade> tradelist = new ArrayList<>();
-        new Trade().reader(fileName, tradelist);
+    private static ExtendedHashMap<String,String,String> returnComboParent(String fileName) {
+                ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
+                InputStream initialStream;
+                try{
+                    initialStream = new FileInputStream(new File(fileName));
+                JsonReader jr = new JsonReader(initialStream);
+                tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                jr.close();
+                }catch (Exception e){
+                    logger.log(Level.SEVERE,null,e);
+                }
                 //Remove orders that are not in symbolist
-        Iterator iter1=tradelist.iterator();
+        Set<Entry>entries=tradelist.entrySet();
+                Iterator iter1=entries.iterator();
         while(iter1.hasNext()){
-            Trade tr = (Trade) iter1.next();
-            if(tr.getEntrySymbolID()<0){
+            Map.Entry pair = (Map.Entry)iter1.next();
+            String key=(String)pair.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if(childid<0){
                 iter1.remove();
             }
         }
-        Iterator iter2 = tradelist.iterator();
+        Iterator iter2 = entries.iterator();
         while (iter2.hasNext()) {
-            Trade tr = (Trade) iter2.next();
-            if (!Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO")) {
+            Map.Entry pair = (Map.Entry)iter1.next();
+            String key=(String)pair.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if (!Parameters.symbol.get(childid).getType().equals("COMBO")) {
                 iter2.remove();
             }
         }
         return tradelist;
     }
 
-    private static ArrayList<Trade> returnComboParent(ArrayList<Trade> tradelist, String account) {
+    private static ArrayList<String> returnComboParent(ExtendedHashMap<String,String,String> trades,ArrayList<String> tradelist, String accountName) {
                 //Remove orders that are not in symbolist
         Iterator iter1=tradelist.iterator();
         while(iter1.hasNext()){
-            Trade tr = (Trade) iter1.next();
-            if(tr.getEntrySymbolID()<0){
+            String key = (String) iter1.next();
+                        String childdisplayname=Trade.getEntrySymbol(trades, key);
+             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+
+            if(childid<0){
                 iter1.remove();
             }
         }
         
         Iterator iter2 = tradelist.iterator();
         while (iter2.hasNext()) {
-            Trade tr = (Trade) iter2.next();
-            if (!Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO") || !tr.getAccountName().equals(account)) {
+            String key = (String) iter2.next();
+            String childdisplayname=Trade.getEntrySymbol(trades, key);
+             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            String account=Trade.getAccountName(trades, key);
+            if (!Parameters.symbol.get(childid).getType().equals("COMBO") || !account.equals(accountName)) {
                 iter2.remove();
             }
         }
         return tradelist;
     }
 
-    private static ArrayList<Trade> returnComboChildren(String fileName) {
-        ArrayList<Trade> tradelist = new ArrayList<>();
+    private static ExtendedHashMap<String,String,String> returnComboChildren(String fileName) {
         ArrayList<Integer> comboOrders = new ArrayList<>();
-        new Trade().reader(fileName, tradelist);
-                //Remove orders that are not in symbolist
-        Iterator iter1=tradelist.iterator();
+              ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
+                try{
+                    InputStream initialStream = new FileInputStream(new File(fileName));
+                JsonReader jr = new JsonReader(initialStream);
+                tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                jr.close();
+                }catch (Exception e){
+                    logger.log(Level.SEVERE,null,e);
+                }
+        //Remove orders that are not in symbolist
+        Set<Entry>entries=tradelist.entrySet();
+                Iterator iter1=entries.iterator();
         while(iter1.hasNext()){
-            Trade tr = (Trade) iter1.next();
-            if(tr.getEntrySymbolID()<0){
+            Map.Entry pair = (Map.Entry)iter1.next();
+            String key=(String)pair.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if(childid<0){
                 iter1.remove();
             }
         }
         
-        for (Trade tr : tradelist) {
-            if (Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO")) {
-                comboOrders.add(tr.getEntryID());
+        for (Entry entry : entries) {
+            String key=(String)entry.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int entryorderidint=Trade.getEntryOrderIDInternal(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if (Parameters.symbol.get(childid).getType().equals("COMBO")) {
+                comboOrders.add(entryorderidint);
             }
         }
-        Iterator iter2 = tradelist.iterator();
+        Iterator iter2 = entries.iterator();
         while (iter2.hasNext()) {
-            Trade trchild = (Trade) iter2.next();
-            if (!comboOrders.contains(Integer.valueOf(trchild.getEntryID())) || comboOrders.contains(Integer.valueOf(trchild.getEntryID())) && Parameters.symbol.get(trchild.getEntrySymbolID()).getType().equals("COMBO")) {
+            Map.Entry pair = (Map.Entry)iter1.next();
+            String key=(String)pair.getKey();
+            String childdisplayname=Trade.getEntrySymbol(tradelist, key);
+            int entryorderidint=Trade.getEntryOrderIDInternal(tradelist, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            if (!comboOrders.contains(Integer.valueOf(entryorderidint)) || comboOrders.contains(Integer.valueOf(entryorderidint)) && Parameters.symbol.get(childid).getType().equals("COMBO")) {
                 iter2.remove();
             }
         }
@@ -565,36 +692,53 @@ public class Validator {
 
     }
 
-    private static HashMap<String, ArrayList<Integer>> reconTrades(ArrayList<Trade> tr, ArrayList<Trade> or, String tradeAccount, String orderAccount) {
+    private static HashMap<String, ArrayList<Integer>> reconTrades(ExtendedHashMap<String,String,String> tr, ExtendedHashMap<String,String,String> or, String tradeAccount, String orderAccount) {
         HashMap<String, ArrayList<Integer>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, Integer> tradePosition = new TreeMap<>();
         SortedMap<String, Integer> orderPosition = new TreeMap<>();
-        for (Trade t : tr) {
-            if (t.getAccountName().equals(tradeAccount)) {
-                int lastPosition = tradePosition.get(t.getEntrySymbol()) == null ? 0 : tradePosition.get(t.getEntrySymbol());
-                int entrySize = t.getEntrySide().equals(EnumOrderSide.BUY) || t.getEntrySide().equals(EnumOrderSide.COVER) ? t.getEntrySize() : -t.getEntrySize();
-                int exitSize = t.getExitSide().equals(EnumOrderSide.BUY) || t.getExitSide().equals(EnumOrderSide.COVER) ? t.getExitSize() : -t.getExitSize();
+        Set<Entry>entryTR=tr.entrySet();
+        for (Entry entry : entryTR) {
+            String key=(String)entry.getKey();
+            String accountName=Trade.getAccountName(tr, key);
+            String childdisplayname=Trade.getEntrySymbol(tr, key);
+            EnumOrderSide entrySide=Trade.getEntrySide(tr, key);
+            EnumOrderSide exitSide=Trade.getExitSide(tr, key);
+            int entrySize=Trade.getEntrySize(tr, key);
+            int exitSize=Trade.getExitSize(tr, key);
+            if (accountName.equals(tradeAccount)) {
+                int lastPosition = tradePosition.get(childdisplayname) == null ? 0 : tradePosition.get(childdisplayname);
+                entrySize = entrySide.equals(EnumOrderSide.BUY) || entrySide.equals(EnumOrderSide.COVER) ? entrySize : -entrySize;
+                exitSize = exitSide.equals(EnumOrderSide.BUY) || exitSide.equals(EnumOrderSide.COVER) ? exitSize : -exitSize;
                 int netSize = entrySize + exitSize;
                 if (netSize != 0) {
                     if (lastPosition == 0) {
-                        tradePosition.put(t.getEntrySymbol(), netSize);
+                        tradePosition.put(childdisplayname, netSize);
                     } else {
-                        tradePosition.put(t.getEntrySymbol(), lastPosition + netSize);
+                        tradePosition.put(childdisplayname, lastPosition + netSize);
                     }
                 }
             }
         }
-        for (Trade o : or) {
-            if (o.getAccountName().equals(orderAccount)) {
-                int lastPosition = orderPosition.get(o.getEntrySymbol()) == null ? 0 : orderPosition.get(o.getEntrySymbol());
-                int entrySize = o.getEntrySide().equals(EnumOrderSide.BUY) || o.getEntrySide().equals(EnumOrderSide.COVER) ? o.getEntrySize() : -o.getEntrySize();
-                int exitSize = o.getExitSide().equals(EnumOrderSide.BUY) || o.getExitSide().equals(EnumOrderSide.COVER) ? o.getExitSize() : -o.getExitSize();
+        Set<Entry>entryOR=or.entrySet();
+        for (Entry entry : entryOR) {
+            String key=(String)entry.getKey();
+            String accountName=Trade.getAccountName(tr, key);
+            String childdisplayname=Trade.getEntrySymbol(tr, key);
+            EnumOrderSide entrySide=Trade.getEntrySide(tr, key);
+            EnumOrderSide exitSide=Trade.getExitSide(tr, key);
+            int entrySize=Trade.getEntrySize(tr, key);
+            int exitSize=Trade.getExitSize(tr, key);
+        
+            if (accountName.equals(orderAccount)) {
+                int lastPosition = orderPosition.get(childdisplayname) == null ? 0 : orderPosition.get(childdisplayname);
+                entrySize = entrySide.equals(EnumOrderSide.BUY) || entrySide.equals(EnumOrderSide.COVER) ? entrySize : -entrySize;
+                exitSize = exitSide.equals(EnumOrderSide.BUY) || exitSide.equals(EnumOrderSide.COVER) ? exitSize : -exitSize;
                 int netSize = entrySize + exitSize;
                 if (netSize != 0) {
                     if (lastPosition == 0) {
-                        orderPosition.put(o.getEntrySymbol(), netSize);
+                        orderPosition.put(childdisplayname, netSize);
                     } else {
-                        orderPosition.put(o.getEntrySymbol(), lastPosition + netSize);
+                        orderPosition.put(childdisplayname, lastPosition + netSize);
                     }
                 }
             }
@@ -622,22 +766,31 @@ public class Validator {
         return out;
     }
 
-    private static HashMap<String, HashMap<String, ArrayList<Integer>>> reconComboChildren(ArrayList<Trade> combos, ArrayList<Trade> children, String tradeAccount) {
+    private static HashMap<String, HashMap<String, ArrayList<Integer>>> reconComboChildren(ExtendedHashMap<String,String,String> combos, ExtendedHashMap<String,String,String> children, String tradeAccount) {
         HashMap<String, HashMap<String, ArrayList<Integer>>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, HashMap<String, Integer>> comboPosition = new TreeMap<>();
         SortedMap<String, HashMap<String, Integer>> childPosition = new TreeMap<>();
-        for (Trade t : combos) {
-            if (t.getAccountName().equals(tradeAccount)) {
+        Set<Entry> entryCombos=combos.entrySet();
+        for (Entry entry : entryCombos) {
+            String key=(String)entry.getKey();
+            String accountName=Trade.getAccountName(combos, key);
+            String childdisplayname=Trade.getEntrySymbol(combos, key);
+            String parentdisplayname=Trade.getParentSymbol(combos, key);
+            EnumOrderSide entrySide=Trade.getEntrySide(combos, key);
+            EnumOrderSide exitSide=Trade.getExitSide(combos, key);
+            int entrySize=Trade.getEntrySize(combos, key);
+            int exitSize=Trade.getExitSize(combos, key);
+            if (accountName.equals(tradeAccount)) {
                 HashMap<String, Integer> lastPosition = new HashMap<>();
-                if (comboPosition.get(t.getEntrySymbol()) != null) {
-                    lastPosition = comboPosition.get(t.getEntrySymbol());
+                if (comboPosition.get(childdisplayname) != null) {
+                    lastPosition = comboPosition.get(childdisplayname);
                 }
-                int entrySize = t.getEntrySide().equals(EnumOrderSide.BUY) || t.getEntrySide().equals(EnumOrderSide.COVER) ? t.getEntrySize() : -t.getEntrySize();
-                int exitSize = t.getExitSide().equals(EnumOrderSide.BUY) || t.getExitSide().equals(EnumOrderSide.COVER) ? t.getExitSize() : -t.getExitSize();
+                entrySize = entrySide.equals(EnumOrderSide.BUY) || entrySide.equals(EnumOrderSide.COVER) ? entrySize : -entrySize;
+                exitSize = exitSide.equals(EnumOrderSide.BUY) || exitSide.equals(EnumOrderSide.COVER) ? exitSize : -exitSize;
                 int netSize = entrySize + exitSize;
                 //HashMap<String,Integer>childPositions=new HashMap<>();
                 if (netSize != 0) {
-                    HashMap<BeanSymbol, Integer> comboLegs = getComboLegsFromComboString(t.getParentSymbol());
+                    HashMap<BeanSymbol, Integer> comboLegs = getComboLegsFromComboString(parentdisplayname);
                     if (lastPosition.isEmpty()) {
                         for (Map.Entry<BeanSymbol, Integer> comboLeg : comboLegs.entrySet()) {
                             lastPosition.put(comboLeg.getKey().getDisplayname(), netSize * comboLeg.getValue());
@@ -648,30 +801,40 @@ public class Validator {
                             lastPosition.put(comboLeg.getKey().getDisplayname(), positionValue + netSize * comboLeg.getValue());
                         }
                     }
-                    comboPosition.put(t.getEntrySymbol(), lastPosition);
+                    comboPosition.put(childdisplayname, lastPosition);
                 }
 
             }
         }
-        for (Trade child : children) {
-            if (child.getAccountName().equals(tradeAccount)) {
+        Set<Entry> entryChildren=children.entrySet();
+        for (Entry entry : entryChildren) {
+            String key=(String)entry.getKey();
+            String accountName=Trade.getAccountName(combos, key);
+            String childdisplayname=Trade.getEntrySymbol(combos, key);
+            String parentdisplayname=Trade.getParentSymbol(combos, key);
+            EnumOrderSide entrySide=Trade.getEntrySide(combos, key);
+            EnumOrderSide exitSide=Trade.getExitSide(combos, key);
+            int entrySize=Trade.getEntrySize(combos, key);
+            int exitSize=Trade.getExitSize(combos, key);
+            
+            if (accountName.equals(tradeAccount)) {
                 HashMap<String, Integer> lastPosition = new HashMap<>();
-                int parentid = TradingUtil.getIDFromComboLongName(child.getParentSymbol());
+                int parentid = TradingUtil.getIDFromComboLongName(parentdisplayname);
                 if (childPosition.get(Parameters.symbol.get(parentid).getDisplayname()) != null) {
                     lastPosition = childPosition.get(Parameters.symbol.get(parentid).getDisplayname());
                 }
-                int entrySize = child.getEntrySide().equals(EnumOrderSide.BUY) || child.getEntrySide().equals(EnumOrderSide.COVER) ? child.getEntrySize() : -child.getEntrySize();
-                int exitSize = child.getExitSide().equals(EnumOrderSide.BUY) || child.getExitSide().equals(EnumOrderSide.COVER) ? child.getExitSize() : -child.getExitSize();
+                entrySize = entrySide.equals(EnumOrderSide.BUY) || entrySide.equals(EnumOrderSide.COVER) ? entrySize : -entrySize;
+                exitSize = exitSide.equals(EnumOrderSide.BUY) || exitSide.equals(EnumOrderSide.COVER) ? exitSize : -exitSize;
                 int netSize = entrySize + exitSize;
                 //HashMap<String,Integer>childPositionMap=new HashMap<>();
                 if (netSize != 0) {
                     if (lastPosition.isEmpty()) {
-                        lastPosition.put(child.getEntrySymbol(), netSize);
+                        lastPosition.put(childdisplayname, netSize);
                     } else {
-                        int positionValue = lastPosition.get(child.getEntrySymbol()) == null ? 0 : lastPosition.get(child.getEntrySymbol());
-                        lastPosition.put(child.getEntrySymbol(), positionValue + netSize);
+                        int positionValue = lastPosition.get(childdisplayname) == null ? 0 : lastPosition.get(childdisplayname);
+                        lastPosition.put(childdisplayname, positionValue + netSize);
                     }
-                    String comboLongName = child.getParentSymbol();
+                    String comboLongName = parentdisplayname;
                     int comboid = TradingUtil.getIDFromComboLongName(comboLongName);
                     childPosition.put(Parameters.symbol.get(comboid).getDisplayname(), lastPosition);
                 }

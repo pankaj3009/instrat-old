@@ -15,6 +15,7 @@ public class OrderBean implements Serializable {
     private int parentSymbolID;//starts with 1.
     private int childSymbolID;
     private int orderID;
+    private int parentInternalOrderID;
     private int internalOrderID;
     private int internalOrderIDEntry;
     private Long orderDate;
@@ -451,6 +452,20 @@ public class OrderBean implements Serializable {
         synchronized(lockparentlimitprice){
             this.parentLimitPrice = parentLimitPrice;
         }
+    }
+
+    /**
+     * @return the parentInternalOrderID
+     */
+    public int getParentInternalOrderID() {
+        return parentInternalOrderID;
+    }
+
+    /**
+     * @param parentInternalOrderID the parentInternalOrderID to set
+     */
+    public void setParentInternalOrderID(int parentInternalOrderID) {
+        this.parentInternalOrderID = parentInternalOrderID;
     }
 
 

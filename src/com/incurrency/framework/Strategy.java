@@ -158,7 +158,7 @@ public class Strategy implements NotificationListener {
                 InputStream initialStream = new FileInputStream(new File(filename));
                 JsonReader jr = new JsonReader(initialStream);
                 allOrders = (ExtendedHashMap<String, String, String>) jr.readObject();
-
+                jr.close();
                 //There are no child orders in order file. No processing required for handling child orders from orders
                 Set<Entry> entries = allOrders.entrySet();
                 for (Entry entry : entries) {
@@ -242,6 +242,7 @@ public class Strategy implements NotificationListener {
                 ExtendedHashMap<String, String, String> allTrades = new ExtendedHashMap<>();
                 initialStream = new FileInputStream(new File(filename));
                 jr = new JsonReader(initialStream);
+                jr.close();
                 allTrades = (ExtendedHashMap<String, String, String>) jr.readObject();
 
                 //Remove trades that are closed
@@ -558,7 +559,7 @@ public class Strategy implements NotificationListener {
            for(Entry entry:entries){
                String key=(String)entry.getKey();
                if(Trade.getParentSymbol(allTrades, key).equals(symbol) && Trade.getEntrySide(allTrades, key).equals(entrySide) && Trade.getEntrySize(allTrades, key)>Trade.getExitSize(allTrades, key)){
-                   return Trade.getEntryID(allTrades, key);
+                   return Trade.getEntryOrderIDInternal(allTrades, key);
                }
            }
         return 0;
@@ -651,7 +652,7 @@ public class Strategy implements NotificationListener {
             }
             int internalorderid = getInternalOrderID();
             this.internalOpenOrders.put(id, internalorderid);
-            new Trade(getTrades(),id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, getTimeZone(), "Order");
+            new Trade(getTrades(),id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid,getTimeZone(), "Order");
             logger.log(Level.INFO, "310,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
@@ -705,7 +706,7 @@ public class Strategy implements NotificationListener {
                 double exitPrice = Trade.getExitPrice(getTrades(), tempinternalOrderID);
                 int newexitSize = exitSize + tradeSize;
                 double newexitPrice = (exitPrice * exitSize + tradeSize * expectedFillPrice) / (newexitSize);
-                Trade.updateExit(getTrades(),id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, getTimeZone(), "Order");
+                Trade.updateExit(getTrades(),id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0,internalorderid,tempinternalOrderID, getTimeZone(), "Order");
                 logger.log(Level.INFO, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, reason, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scaleout, orderGroup, effectiveTime, null);

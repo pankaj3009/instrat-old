@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework;
 
+import com.cedarsoftware.util.io.JsonReader;
 import com.google.common.base.Preconditions;
 import com.ib.client.TickType;
 import com.verhas.licensor.License;
@@ -11,8 +12,10 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -41,6 +44,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,7 +52,6 @@ import java.util.regex.Pattern;
 import javax.mail.internet.InternetAddress;
 import javax.swing.JOptionPane;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-
 
 /**
  *
@@ -58,15 +61,16 @@ public class TradingUtil {
 
     public final static Logger logger = Logger.getLogger(TradingUtil.class.getName());
     public static String newline = System.getProperty("line.separator");
-    public static License lic=null;
+    public static License lic = null;
     public static byte[] digest;
 
     /**
- * Prints data in an ExtendedHashMap to a file.
- * @param h
- * @param filename
- * @param printOrder 
- */
+     * Prints data in an ExtendedHashMap to a file.
+     *
+     * @param h
+     * @param filename
+     * @param printOrder
+     */
     public static void print(ExtendedHashMap<String, String, Double> h, String filename, String[] printOrder) {
 
         if (h.store.size() > 0) {
@@ -171,7 +175,6 @@ public class TradingUtil {
         return exitCal.getTime();
     }
 
-    
     /**
      * Returns the previous good business day using PB day convention.If
      * weekendHolidays is set to false, weekends are considered as working days
@@ -238,15 +241,17 @@ public class TradingUtil {
     }
 
     /**
-     * Returns the first day of the next week after specified TIME.Date is not adjusted for holidays.
+     * Returns the first day of the next week after specified TIME.Date is not
+     * adjusted for holidays.
+     *
      * @param time
      * @param hour
      * @param minute
      * @param timeZone
-     * @return 
+     * @return
      */
-    public static long beginningOfWeek(long time, int hour, int minute,String timeZone, int jumpAhead){
-        Calendar cal=Calendar.getInstance(TimeZone.getTimeZone(timeZone));
+    public static long beginningOfWeek(long time, int hour, int minute, String timeZone, int jumpAhead) {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(timeZone));
         cal.setTimeInMillis(time);
         cal.add(Calendar.WEEK_OF_YEAR, jumpAhead);
         cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
@@ -255,18 +260,21 @@ public class TradingUtil {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTimeInMillis();
-        
+
     }
+
     /**
-     * Returns the first day of the next month,using specified hour and minute.Dates are not adjusted for holidays.
+     * Returns the first day of the next month,using specified hour and
+     * minute.Dates are not adjusted for holidays.
+     *
      * @param time
      * @param hour
      * @param minute
      * @param timeZone
-     * @return 
+     * @return
      */
-        public static long beginningOfMonth(long time, int hour, int minute,String timeZone, int jumpAhead){
-        Calendar cal=Calendar.getInstance(TimeZone.getTimeZone(timeZone));
+    public static long beginningOfMonth(long time, int hour, int minute, String timeZone, int jumpAhead) {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(timeZone));
         cal.setTimeInMillis(time);
         cal.add(Calendar.MONTH, jumpAhead);
         cal.set(Calendar.DAY_OF_MONTH, 1);
@@ -275,30 +283,31 @@ public class TradingUtil {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTimeInMillis();
-        
+
     }
-    
-        /**
-         * Returns the next year.Returned value is not adjusted for holidays.
-         * @param time
-         * @param hour
-         * @param minute
-         * @param timeZone
-         * @return 
-         */
-        public static long beginningOfYear(long time, int hour, int minute,String timeZone,int jumpAhead){
-        Calendar cal=Calendar.getInstance(TimeZone.getTimeZone(timeZone));
+
+    /**
+     * Returns the next year.Returned value is not adjusted for holidays.
+     *
+     * @param time
+     * @param hour
+     * @param minute
+     * @param timeZone
+     * @return
+     */
+    public static long beginningOfYear(long time, int hour, int minute, String timeZone, int jumpAhead) {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone(timeZone));
         cal.setTimeInMillis(time);
-        cal.add(Calendar.YEAR,jumpAhead);
+        cal.add(Calendar.YEAR, jumpAhead);
         cal.set(Calendar.DAY_OF_YEAR, 1);
         cal.set(Calendar.HOUR_OF_DAY, hour);
         cal.set(Calendar.MINUTE, minute);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTimeInMillis();
-        
+
     }
-        
+
     /**
      * Returns a native array of specified 'size', filled with values starting
      * from 'value', incremented by 'increment'.
@@ -320,12 +329,13 @@ public class TradingUtil {
     }
 
     /**
-     * Returns a native int[] of specified 'size' filled with values starting from 'value', 
-     * incremented by 'increment'.
+     * Returns a native int[] of specified 'size' filled with values starting
+     * from 'value', incremented by 'increment'.
+     *
      * @param startValue
      * @param increment
      * @param size
-     * @return 
+     * @return
      */
     public static int[] range(int startValue, int increment, int size) {
         int[] out = new int[size];
@@ -480,21 +490,21 @@ public class TradingUtil {
                     }
                     break;
                 case WEEKLY:
-                    iStartTime=Calendar.getInstance(timeZone);
+                    iStartTime = Calendar.getInstance(timeZone);
                     iStartTime.setTimeInMillis(start);
                     iStartTime.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
                     iStartTime.set(Calendar.HOUR_OF_DAY, openHour);
                     iStartTime.set(Calendar.MINUTE, openMinute);
                     iStartTime.set(Calendar.SECOND, 0);
                     iStartTime.set(Calendar.MILLISECOND, 0);
-                   // System.out.println(iStartTime.getTimeInMillis()+","+iEndTime.getTimeInMillis());
+                    // System.out.println(iStartTime.getTimeInMillis()+","+iEndTime.getTimeInMillis());
                     while (iStartTime.before(iEndTime) || iStartTime.equals(iEndTime)) {
                         out.add(iStartTime.getTimeInMillis());
-                        iStartTime.setTimeInMillis(beginningOfWeek(iStartTime.getTimeInMillis(), openHour, openMinute, zone,1));
-                    }                    
+                        iStartTime.setTimeInMillis(beginningOfWeek(iStartTime.getTimeInMillis(), openHour, openMinute, zone, 1));
+                    }
                     break;
                 case MONTHLY:
-                    iStartTime=Calendar.getInstance(timeZone);
+                    iStartTime = Calendar.getInstance(timeZone);
                     iStartTime.setTimeInMillis(start);
                     iStartTime.set(Calendar.DAY_OF_MONTH, 1);
                     iStartTime.set(Calendar.HOUR_OF_DAY, openHour);
@@ -503,11 +513,11 @@ public class TradingUtil {
                     iStartTime.set(Calendar.MILLISECOND, 0);
                     while (iStartTime.before(iEndTime) || iStartTime.equals(iEndTime)) {
                         out.add(iStartTime.getTimeInMillis());
-                        iStartTime.setTimeInMillis(beginningOfMonth(iStartTime.getTimeInMillis(), openHour, openMinute, zone,1));
-                    }   
+                        iStartTime.setTimeInMillis(beginningOfMonth(iStartTime.getTimeInMillis(), openHour, openMinute, zone, 1));
+                    }
                     break;
                 case ANNUAL:
-                    iStartTime=Calendar.getInstance(timeZone);
+                    iStartTime = Calendar.getInstance(timeZone);
                     iStartTime.setTimeInMillis(start);
                     iStartTime.set(Calendar.DAY_OF_YEAR, 1);
                     iStartTime.set(Calendar.HOUR_OF_DAY, openHour);
@@ -516,7 +526,7 @@ public class TradingUtil {
                     iStartTime.set(Calendar.MILLISECOND, 0);
                     while (iStartTime.before(iEndTime) || iStartTime.equals(iEndTime)) {
                         out.add(iStartTime.getTimeInMillis());
-                        iStartTime.setTimeInMillis(beginningOfMonth(iStartTime.getTimeInMillis(), openHour, openMinute, zone,1));
+                        iStartTime.setTimeInMillis(beginningOfMonth(iStartTime.getTimeInMillis(), openHour, openMinute, zone, 1));
                     }
                     break;
                 default:
@@ -529,9 +539,7 @@ public class TradingUtil {
         }
     }
 
-
-    
-     public static Properties loadParameters(String parameterFile) {
+    public static Properties loadParameters(String parameterFile) {
         Properties p = new Properties();
         FileInputStream propFile;
         try {
@@ -540,45 +548,42 @@ public class TradingUtil {
 
         } catch (Exception ex) {
             logger.log(Level.INFO, "101", ex);
-            if(!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless","true"))){
-            JOptionPane.showMessageDialog(null, "Parameter file " + parameterFile + " not found. inStrat will close.");
-        }
+            if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
+                JOptionPane.showMessageDialog(null, "Parameter file " + parameterFile + " not found. inStrat will close.");
+            }
             System.exit(0);
         }
         return p;
     }
-        
+
     static String readFile(String path, Charset encoding) {
         byte[] encoded;
         try {
             File f = new File(path);
-            if (f.exists()){
-            encoded = Files.readAllBytes(Paths.get(path));
+            if (f.exists()) {
+                encoded = Files.readAllBytes(Paths.get(path));
 
-            return new String(encoded, encoding);
-            }else{
-            JOptionPane.showMessageDialog(null, "The license file does not exist. inStrat will close.");
-            System.exit(0);
+                return new String(encoded, encoding);
+            } else {
+                JOptionPane.showMessageDialog(null, "The license file does not exist. inStrat will close.");
+                System.exit(0);
                 return null;
             }
-            
+
         } catch (IOException ex) {
             logger.log(Level.INFO, "101", ex);
             return null;
         }
     }
-    
-    
-    
-        public static boolean checkLicense() {
+
+    public static boolean checkLicense() {
         try {
-            digest = new byte[] {
-            (byte)0x42, 
-            (byte)0x2B, (byte)0xB1, (byte)0xBE, (byte)0xD9, (byte)0x04, (byte)0xE1, (byte)0xD1, (byte)0x96, 
-            (byte)0x2E, (byte)0xF1, (byte)0x14, (byte)0x18, (byte)0x5C, (byte)0x8F, (byte)0x19, (byte)0xFF, 
-            (byte)0x6A, (byte)0xFA, (byte)0x98, (byte)0x7D, (byte)0x1E, (byte)0xE9, (byte)0xCF, (byte)0x4C, 
-            (byte)0x49, (byte)0xFF, (byte)0x63, (byte)0x72, (byte)0xE8, (byte)0x38, (byte)0xCE, 
-            };
+            digest = new byte[]{
+                (byte) 0x42,
+                (byte) 0x2B, (byte) 0xB1, (byte) 0xBE, (byte) 0xD9, (byte) 0x04, (byte) 0xE1, (byte) 0xD1, (byte) 0x96,
+                (byte) 0x2E, (byte) 0xF1, (byte) 0x14, (byte) 0x18, (byte) 0x5C, (byte) 0x8F, (byte) 0x19, (byte) 0xFF,
+                (byte) 0x6A, (byte) 0xFA, (byte) 0x98, (byte) 0x7D, (byte) 0x1E, (byte) 0xE9, (byte) 0xCF, (byte) 0x4C,
+                (byte) 0x49, (byte) 0xFF, (byte) 0x63, (byte) 0x72, (byte) 0xE8, (byte) 0x38, (byte) 0xCE,};
             File f = new File("key");
             Charset encoding = Charset.forName("ISO-8859-1");
             String licenseFileName = TradingUtil.readFile("key", encoding);
@@ -592,134 +597,134 @@ public class TradingUtil {
         }
         return false;
     }
-        
-        public static boolean checkValidity() {
+
+    public static boolean checkValidity() {
         boolean check = true;
-        ArrayList <Validity>licenses=new ArrayList<>();
-        for(int i=1;i<100;i++){
-            if(lic.getFeature(String.valueOf(i))!=null){
-            String feature=lic.getFeature(String.valueOf(i));           
-            String[] in=feature.split(",");
-            licenses.add(new Validity(in[0],in[1],in[2],in[3]));
-            
-        }else{
+        ArrayList<Validity> licenses = new ArrayList<>();
+        for (int i = 1; i < 100; i++) {
+            if (lic.getFeature(String.valueOf(i)) != null) {
+                String feature = lic.getFeature(String.valueOf(i));
+                String[] in = feature.split(",");
+                licenses.add(new Validity(in[0], in[1], in[2], in[3]));
+
+            } else {
                 break;
             }
         }
-        if(licenses.size()>0){            
+        if (licenses.size() > 0) {
             for (BeanConnection c : Parameters.connection) {//for each connection string, check if it conforms to license
-                    String products=c.getStrategy();
-                    String product[]=products.split(":");                    
-                    for(String p:product){ //for each product specified in connection file
+                String products = c.getStrategy();
+                String product[] = products.split(":");
+                for (String p : product) { //for each product specified in connection file
                     //create validity
-                    Validity temp=new Validity(c.getAccountName().substring(0, 1).equals("D")?"TRIAL":"PAID",c.getAccountName().toUpperCase(),p.toUpperCase(),DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime()));
+                    Validity temp = new Validity(c.getAccountName().substring(0, 1).equals("D") ? "TRIAL" : "PAID", c.getAccountName().toUpperCase(), p.toUpperCase(), DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime()));
                     //check if the product is licensed
-                    boolean status=validate(temp,licenses);
-                    check=check & status;
-                    }                
+                    boolean status = validate(temp, licenses);
+                    check = check & status;
+                }
             }
             return check;
-            }else{
-            check=check & false;
+        } else {
+            check = check & false;
         }
         /*
-        String expiration = lic.getFeature("Expiry");
-        String licensedStrategies = lic.getFeature("Strategies");
-        Boolean realAccount = Boolean.parseBoolean(lic.getFeature("RealAccount"));
-        String realAccountNames = lic.getFeature("RealAccountNames");
-        HashMap<String,String>realAccountLicenses=new HashMap<>();
-        if(!(realAccountNames.equals("null") || realAccountNames.equals(""))){
-        String[] accounts=realAccountNames.split(",");
-        for(String account: accounts){
-            String[] acc=account.split("-");
-            realAccountLicenses.put(acc[0], acc[1]);
-        }
-        }
+         String expiration = lic.getFeature("Expiry");
+         String licensedStrategies = lic.getFeature("Strategies");
+         Boolean realAccount = Boolean.parseBoolean(lic.getFeature("RealAccount"));
+         String realAccountNames = lic.getFeature("RealAccountNames");
+         HashMap<String,String>realAccountLicenses=new HashMap<>();
+         if(!(realAccountNames.equals("null") || realAccountNames.equals(""))){
+         String[] accounts=realAccountNames.split(",");
+         for(String account: accounts){
+         String[] acc=account.split("-");
+         realAccountLicenses.put(acc[0], acc[1]);
+         }
+         }
 
-        //check for product license
-        if(Pattern.compile(Pattern.quote("inStrat"), Pattern.CASE_INSENSITIVE).matcher(products).find()){
-            check=check && true;
-        }else{
-            check=check && false;
-        }
+         //check for product license
+         if(Pattern.compile(Pattern.quote("inStrat"), Pattern.CASE_INSENSITIVE).matcher(products).find()){
+         check=check && true;
+         }else{
+         check=check && false;
+         }
         
-        //check for real account trading license
-        if (realAccount) {
-            for (BeanConnection c : Parameters.connection) {
-                //if real account, Trading
-                if (c.getAccountName().substring(0, 1).equals("U") && Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find()) {
-                    //check if strategy and account combination exists
-                    String allowedStrategies=realAccountLicenses.get(c.getAccountName())+":"+"NONE";
-                    if(allowedStrategies==null){//if allowed strategies is null, which should not be the case. It should alteast be NONE
-                        check=check && false; //no strategies allowed for the account
-                    }else{
-                        //if strategy is setup for real account
-                        if(Pattern.compile(Pattern.quote(c.getStrategy()), Pattern.CASE_INSENSITIVE).matcher(allowedStrategies).find()){
-                            check=check && true;
-                        }else{
-                            check=check && false;
-                        }
-                    }
-                    check = check && true;
-                    //paper account or real account with no trading permission
-                } else if (c.getAccountName().substring(0, 1).equals("D")||(c.getAccountName().substring(0, 1).equals("U")&& !Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find())){
-                    check = check && true;
-                }else{
-                    check=check & false;
-                }
-            }
-        } else {
-            for (BeanConnection c : Parameters.connection) {
-                if (c.getAccountName().substring(0, 1).equals("U") && Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find()) {
-                    check = check && false;
-                }
-            }
-        }
-        //check for strategy license
-        for (BeanConnection c : Parameters.connection) {
-            String[] licensedStrategy = c.getStrategy().split(":");
-            for (int i = 0; i < licensedStrategy.length; i++) {
-                if (Pattern.compile(Pattern.quote(licensedStrategy[i]), Pattern.CASE_INSENSITIVE).matcher(licensedStrategies).find()||Pattern.compile(Pattern.quote(licensedStrategy[i]), Pattern.CASE_INSENSITIVE).matcher("none").find()) {
-                    check = check && true;
-                } else {
-                    check = check && false;
-                }
-            }
-        }
-        //check for expiration date
-        Date expirationDate = DateUtil.parseDate("yyyy-MM-dd", expiration);
-        if (new Date().after(expirationDate)) {
-            check = check && false;
-        } else {
-            check = check && true;
-        }
-*/
+         //check for real account trading license
+         if (realAccount) {
+         for (BeanConnection c : Parameters.connection) {
+         //if real account, Trading
+         if (c.getAccountName().substring(0, 1).equals("U") && Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find()) {
+         //check if strategy and account combination exists
+         String allowedStrategies=realAccountLicenses.get(c.getAccountName())+":"+"NONE";
+         if(allowedStrategies==null){//if allowed strategies is null, which should not be the case. It should alteast be NONE
+         check=check && false; //no strategies allowed for the account
+         }else{
+         //if strategy is setup for real account
+         if(Pattern.compile(Pattern.quote(c.getStrategy()), Pattern.CASE_INSENSITIVE).matcher(allowedStrategies).find()){
+         check=check && true;
+         }else{
+         check=check && false;
+         }
+         }
+         check = check && true;
+         //paper account or real account with no trading permission
+         } else if (c.getAccountName().substring(0, 1).equals("D")||(c.getAccountName().substring(0, 1).equals("U")&& !Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find())){
+         check = check && true;
+         }else{
+         check=check & false;
+         }
+         }
+         } else {
+         for (BeanConnection c : Parameters.connection) {
+         if (c.getAccountName().substring(0, 1).equals("U") && Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find()) {
+         check = check && false;
+         }
+         }
+         }
+         //check for strategy license
+         for (BeanConnection c : Parameters.connection) {
+         String[] licensedStrategy = c.getStrategy().split(":");
+         for (int i = 0; i < licensedStrategy.length; i++) {
+         if (Pattern.compile(Pattern.quote(licensedStrategy[i]), Pattern.CASE_INSENSITIVE).matcher(licensedStrategies).find()||Pattern.compile(Pattern.quote(licensedStrategy[i]), Pattern.CASE_INSENSITIVE).matcher("none").find()) {
+         check = check && true;
+         } else {
+         check = check && false;
+         }
+         }
+         }
+         //check for expiration date
+         Date expirationDate = DateUtil.parseDate("yyyy-MM-dd", expiration);
+         if (new Date().after(expirationDate)) {
+         check = check && false;
+         } else {
+         check = check && true;
+         }
+         */
         return check;
     }
-        
-        private static boolean validate(Validity v,ArrayList<Validity> licenses){
-            for(Validity license:licenses){
-                if((license.type.equals(v.type) && license.product.equals(v.product)||Pattern.compile(Pattern.quote(v.product),Pattern.CASE_INSENSITIVE).matcher("none").find()) && (license.account.equals("ALL")||license.account.equals(v.account)) && DateUtil.parseDate("yyyy-MM-dd", license.expiry).after(DateUtil.parseDate("yyyy-MM-dd", v.expiry))){
-                    return true;
-                }
+
+    private static boolean validate(Validity v, ArrayList<Validity> licenses) {
+        for (Validity license : licenses) {
+            if ((license.type.equals(v.type) && license.product.equals(v.product) || Pattern.compile(Pattern.quote(v.product), Pattern.CASE_INSENSITIVE).matcher("none").find()) && (license.account.equals("ALL") || license.account.equals(v.account)) && DateUtil.parseDate("yyyy-MM-dd", license.expiry).after(DateUtil.parseDate("yyyy-MM-dd", v.expiry))) {
+                return true;
             }
-            
-            return false;
         }
-        
-        public static Date getAlgoDate(){
-            if(MainAlgorithm.isUseForTrading()){
-                return new Date();
-            }else{
-                if(MainAlgorithm.getAlgoDate()!=null){
+
+        return false;
+    }
+
+    public static Date getAlgoDate() {
+        if (MainAlgorithm.isUseForTrading()) {
+            return new Date();
+        } else {
+            if (MainAlgorithm.getAlgoDate() != null) {
                 return MainAlgorithm.getAlgoDate();
-                }else{
-                    return new Date();
-                    
-                }
+            } else {
+                return new Date();
+
             }
         }
-        
+    }
+
     public static ArrayList<BeanOHLC> getDailyBarsFromOneMinCandle(int lookback, String s) {
         ArrayList<BeanOHLC> output = new ArrayList();
         Connection connect;
@@ -779,7 +784,7 @@ public class TradingUtil {
             rs.close();
 
         } catch (Exception e) {
-            logger.log(Level.INFO,"101",e);
+            logger.log(Level.INFO, "101", e);
             //System.out.println(e.getMessage());
         }
         return output;
@@ -972,7 +977,7 @@ public class TradingUtil {
         } catch (IOException ex) {
         }
     }
-    
+
     public static void writeToFile(String filename, String content, long time) {
         try {
             File dir = new File("logs");
@@ -996,7 +1001,6 @@ public class TradingUtil {
         } catch (IOException ex) {
         }
     }
-    
 
     public static boolean isDouble(String value) {
         //String decimalPattern = "([0-9]*)\\.([0-9]*)";  
@@ -1005,15 +1009,16 @@ public class TradingUtil {
     }
 
     public static boolean isValidEmailAddress(String email) {
-   boolean result = true;
-   try {
-      InternetAddress emailAddr = new InternetAddress(email);
-      emailAddr.validate();
-   } catch (Exception ex) {
-      result = false;
-   }
-   return result;
-}
+        boolean result = true;
+        try {
+            InternetAddress emailAddr = new InternetAddress(email);
+            emailAddr.validate();
+        } catch (Exception ex) {
+            result = false;
+        }
+        return result;
+    }
+
     public static String populateMACID() {
         InetAddress ip;
         StringBuilder sb = new StringBuilder();
@@ -1122,41 +1127,42 @@ public class TradingUtil {
         }
         return ip;
     }
-/*
-    public static Date getExpiryDate(String macID, String accounts, boolean realaccount) {
+    /*
+     public static Date getExpiryDate(String macID, String accounts, boolean realaccount) {
 
-        Date expiryDate = new Date();
-        expiryDate = DateUtil.addDays(expiryDate, -10);
-        try {
-            String testurl = String.format("http://www.incurrency.com:8888/license");
-            Document doc = Jsoup.connect(testurl).timeout(0).data("macid", macID, "accounts", accounts).post();
-            String input = URLDecoder.decode(doc.getElementsByTag("Body").get(0).text(), "UTF-8");
-            String[] expiries = input.split(",");
-            //String[] expiries=new String[namevalue.length];
-            //for(int i=0;i<namevalue.length;i++){
-            //    expiries=namevalue[i].split("=");
-            //}
-            if (macID.compareTo("") != 0 && !realaccount && expiries[0].compareTo("") != 0) {
-                //macID is not empty. Registration date = expiries[0]
-                expiryDate = new SimpleDateFormat("dd/MM/yyyy").parse(expiries[0]);;
-            } else {
-                //find minimum of expiries and set it to expiry date
-                List<Date> list = new ArrayList<>();
-                for (int i = 1; i < expiries.length; i++) {
-                    Date temp = new SimpleDateFormat("dd/MM/yyyy").parse(expiries[i]);
-                    list.add(temp);
-                }
-                Collections.sort(list);
-                expiryDate = list.get(0);
-            }
+     Date expiryDate = new Date();
+     expiryDate = DateUtil.addDays(expiryDate, -10);
+     try {
+     String testurl = String.format("http://www.incurrency.com:8888/license");
+     Document doc = Jsoup.connect(testurl).timeout(0).data("macid", macID, "accounts", accounts).post();
+     String input = URLDecoder.decode(doc.getElementsByTag("Body").get(0).text(), "UTF-8");
+     String[] expiries = input.split(",");
+     //String[] expiries=new String[namevalue.length];
+     //for(int i=0;i<namevalue.length;i++){
+     //    expiries=namevalue[i].split("=");
+     //}
+     if (macID.compareTo("") != 0 && !realaccount && expiries[0].compareTo("") != 0) {
+     //macID is not empty. Registration date = expiries[0]
+     expiryDate = new SimpleDateFormat("dd/MM/yyyy").parse(expiries[0]);;
+     } else {
+     //find minimum of expiries and set it to expiry date
+     List<Date> list = new ArrayList<>();
+     for (int i = 1; i < expiries.length; i++) {
+     Date temp = new SimpleDateFormat("dd/MM/yyyy").parse(expiries[i]);
+     list.add(temp);
+     }
+     Collections.sort(list);
+     expiryDate = list.get(0);
+     }
 
-        } catch (IOException | ParseException ex) {
-            logger.log(Level.SEVERE, null, ex);
-        }
+     } catch (IOException | ParseException ex) {
+     logger.log(Level.SEVERE, null, ex);
+     }
 
-        return expiryDate;
-    }
-*/
+     return expiryDate;
+     }
+     */
+
     public static boolean isValidTime(String time) {
         //http://www.vogella.com/tutorials/JavaRegularExpressions/article.html
         //http://stackoverflow.com/questions/884848/regular-expression-to-validate-valid-time
@@ -1172,29 +1178,29 @@ public class TradingUtil {
     }
 
     public static boolean isInteger(String str) {
-	if (str == null) {
-		return false;
-	}
-	int length = str.length();
-	if (length == 0) {
-		return false;
-	}
-	int i = 0;
-	if (str.charAt(0) == '-') {
-		if (length == 1) {
-			return false;
-		}
-		i = 1;
-	}
-	for (; i < length; i++) {
-		char c = str.charAt(i);
-		if (c <= '/' || c >= ':') {
-			return false;
-		}
-	}
-	return true;
-}
-    
+        if (str == null) {
+            return false;
+        }
+        int length = str.length();
+        if (length == 0) {
+            return false;
+        }
+        int i = 0;
+        if (str.charAt(0) == '-') {
+            if (length == 1) {
+                return false;
+            }
+            i = 1;
+        }
+        for (; i < length; i++) {
+            char c = str.charAt(i);
+            if (c <= '/' || c >= ':') {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static boolean stringContainsItemFromList(String inputString, String[] items) {
         for (int i = 0; i < items.length; i++) {
             if (inputString.contains(items[i])) {
@@ -1203,144 +1209,136 @@ public class TradingUtil {
         }
         return false;
     }
-    
-    public static Double[] convertArrayToDouble(final String inputArray[]){
+
+    public static Double[] convertArrayToDouble(final String inputArray[]) {
         Double[] out;
-        out=new ArrayList<Double>() {{for (String s : inputArray) add(new Double(s.trim()));}}.toArray(new Double[inputArray.length]);
+        out = new ArrayList<Double>() {
+            {
+                for (String s : inputArray) {
+                    add(new Double(s.trim()));
+                }
+            }
+        }.toArray(new Double[inputArray.length]);
         return out;
     }
-    
-        public static Integer[] convertArrayToInteger(final String inputArray[]){
+
+    public static Integer[] convertArrayToInteger(final String inputArray[]) {
         Integer[] out;
-        out=new ArrayList<Integer>() {{for (String s : inputArray) add(new Integer(s.trim()));}}.toArray(new Integer[inputArray.length]);
+        out = new ArrayList<Integer>() {
+            {
+                for (String s : inputArray) {
+                    add(new Integer(s.trim()));
+                }
+            }
+        }.toArray(new Integer[inputArray.length]);
         return out;
     }
-/*
-    public static int getIDFromSymbol(String symbol, String type, String expiry, String right, String option) {
-        for (BeanSymbol symb : Parameters.symbol) {
-            String s = symb.getBrokerSymbol() == null ? "" : symb.getBrokerSymbol();
-            String t = symb.getType() == null ? "" : symb.getType();
-            String e = symb.getExpiry() == null ? "" : symb.getExpiry();
-            String r = symb.getRight() == null ? "" : symb.getRight();
-            String o = symb.getOption() == null ? "" : symb.getOption();
-            
-            String si=symbol== null ||symbol.equalsIgnoreCase("null")? "" : symbol;
-            String ti = type== null||type.equalsIgnoreCase("null") ? "" : type;
-            String ei = expiry == null ||expiry.equalsIgnoreCase("null")? "" : expiry;
-            String ri = right == null||right.equalsIgnoreCase("null") ? "" : right;
-            String oi = option== null||option.equalsIgnoreCase("null") ? "" : option;
-            if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei)==0 
-                    && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
-                return symb.getSerialno() - 1;
-            }
-        }
-        return -1;
-    }
-  */  
     /*
-        public static int getIDFromDisplayName(String symbol, String type, String expiry, String right, String option) {
-        for (BeanSymbol symb : Parameters.symbol) {
-            String s = symb.getDisplayname() == null ? "" : symb.getDisplayname();
-            String t = symb.getType() == null ? "" : symb.getType();
-            String e = symb.getExpiry() == null ? "" : symb.getExpiry();
-            String r = symb.getRight() == null ? "" : symb.getRight();
-            String o = symb.getOption() == null ? "" : symb.getOption();
+     public static int getIDFromSymbol(String symbol, String type, String expiry, String right, String option) {
+     for (BeanSymbol symb : Parameters.symbol) {
+     String s = symb.getBrokerSymbol() == null ? "" : symb.getBrokerSymbol();
+     String t = symb.getType() == null ? "" : symb.getType();
+     String e = symb.getExpiry() == null ? "" : symb.getExpiry();
+     String r = symb.getRight() == null ? "" : symb.getRight();
+     String o = symb.getOption() == null ? "" : symb.getOption();
             
-            String si=symbol== null ? "" : symbol;
-            String ti = type== null ? "" : type;
-            String ei = expiry == null ? "" : expiry;
-            String ri = right == null ? "" : right;
-            String oi = option== null ? "" : option;
-            if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei)==0
-                    && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
-                return symb.getSerialno() - 1;
-            }
-        }
-        return -1;
-    }
-    */
-    
+     String si=symbol== null ||symbol.equalsIgnoreCase("null")? "" : symbol;
+     String ti = type== null||type.equalsIgnoreCase("null") ? "" : type;
+     String ei = expiry == null ||expiry.equalsIgnoreCase("null")? "" : expiry;
+     String ri = right == null||right.equalsIgnoreCase("null") ? "" : right;
+     String oi = option== null||option.equalsIgnoreCase("null") ? "" : option;
+     if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei)==0 
+     && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
+     return symb.getSerialno() - 1;
+     }
+     }
+     return -1;
+     }
+     */
     /*
-    public static int getIDFromDisplayName(String displayName) {
-        for (BeanSymbol symb : Parameters.symbol) {
-            if (symb.getDisplayname().equals(displayName)) {
-                return symb.getSerialno() - 1;
-            }
-        }
-        return -1;
-    }
-    */
+     public static int getIDFromDisplayName(String symbol, String type, String expiry, String right, String option) {
+     for (BeanSymbol symb : Parameters.symbol) {
+     String s = symb.getDisplayname() == null ? "" : symb.getDisplayname();
+     String t = symb.getType() == null ? "" : symb.getType();
+     String e = symb.getExpiry() == null ? "" : symb.getExpiry();
+     String r = symb.getRight() == null ? "" : symb.getRight();
+     String o = symb.getOption() == null ? "" : symb.getOption();
+            
+     String si=symbol== null ? "" : symbol;
+     String ti = type== null ? "" : type;
+     String ei = expiry == null ? "" : expiry;
+     String ri = right == null ? "" : right;
+     String oi = option== null ? "" : option;
+     if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei)==0
+     && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
+     return symb.getSerialno() - 1;
+     }
+     }
+     return -1;
+     }
+     */
+
+    /*
+     public static int getIDFromDisplayName(String displayName) {
+     for (BeanSymbol symb : Parameters.symbol) {
+     if (symb.getDisplayname().equals(displayName)) {
+     return symb.getSerialno() - 1;
+     }
+     }
+     return -1;
+     }
+     */
     public static int getIDFromComboLongName(String comboLongName) {
         for (BeanSymbol symb : Parameters.symbol) {
-if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO")){
-            return symb.getSerialno() - 1;
+            if (symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO")) {
+                return symb.getSerialno() - 1;
             }
         }
         return -1;
     }
-    
-    public static int getEntryIDFromDisplayName(Trade tr,ArrayList<BeanSymbol> symbolList) {
-        for (BeanSymbol symb : symbolList) {
-            if(symb.getDisplayname().equals(tr.getEntrySymbol())){
-                return symb.getSerialno() - 1;
-            }            
-        }
-        return -1;
-    }
-
-        public static int getExitIDFromSymbol(Trade tr) {
-        for (BeanSymbol symb : Parameters.symbol) {
-            if(symb.getDisplayname().equals(tr.getExitSymbol())){
-                return symb.getSerialno() - 1;
-            }            
-        }
-        return -1;
-    }
-        
-
 
     public static String padRight(String s, int n) {
-     return String.format("%1$-" + n + "s", s);  
-}
-    
-    public static void updateMTM(Trade tr, String timeZone) {
+        return String.format("%1$-" + n + "s", s);
+    }
+
+    public static void updateMTM(ExtendedHashMap<String, String, String> trades, String key, String timeZone) {
         String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
-        if (tr.getExitPrice() == 0D) { //set the MTM
-            int id = TradingUtil.getEntryIDFromDisplayName(tr,Parameters.symbol);
+        double mtmToday = Trade.getMtmToday(trades, key);
+        String todayDate = Trade.getTodayDate(trades, key);
+        double mtmYesterday = Trade.getMtmYesterday(trades, key);
+        if (Trade.getExitPrice(trades, key) == 0D) { //set the MTM
+            String parentdisplayname = Trade.getParentSymbol(trades, key);
+            int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
             if (id >= 0) {
-                if (tr.getMtmToday() != 0) {
+                if (mtmToday != 0) {
                     //continuing position. move mtm to yesterday
-                    tr.setMtmYesterday(tr.getMtmToday());
-                    tr.setYesterdayDate(tr.getTodayDate());
+                    Trade.setMtmYesterday(trades, key, mtmToday);
+                    Trade.setYesterdayDate(trades, key, todayDate);
                 }
-                
-                    tr.setMtmToday(Parameters.symbol.get(id).getLastPrice());
-                    tr.setTodayDate(today);
-                
+                Trade.setMtmToday(trades, key, Parameters.symbol.get(id).getLastPrice());
+                Trade.setTodayDate(trades, key, today);
             }
             //change month end mtm.
-            if (tr.getYesterdayDate().length() > 9 && !tr.getYesterdayDate().substring(5, 7).equals(tr.getTodayDate().substring(5, 7))) {
+            if (Trade.getYesterdayDate(trades, key).length() > 9 && !Trade.getYesterdayDate(trades, key).substring(5, 7).equals(Trade.getTodayDate(trades, key).substring(5, 7))) {
                 //month has changed
-                tr.setMtmPriorMonth(tr.getMtmYesterday());
+                Trade.setMtmPriorMonth(trades, key, mtmYesterday);
             }
 
-        }else{
-            if (tr.getMtmToday() != 0) {
-                    //continuing position. move mtm to yesterday
-                    tr.setMtmYesterday(tr.getMtmToday());
-                    tr.setYesterdayDate(tr.getTodayDate());
-                }
-                        //change month end mtm.
-            if (tr.getYesterdayDate().length() > 9 && !tr.getYesterdayDate().substring(5, 7).equals(tr.getTodayDate().substring(5, 7))) {
+        } else {
+            if (Trade.getMtmToday(trades, key) != 0) {
+                //continuing position. move mtm to yesterday
+                Trade.setMtmYesterday(trades, key, mtmToday);
+                Trade.setYesterdayDate(trades, key, todayDate);
+            }
+            //change month end mtm.
+            if (Trade.getYesterdayDate(trades, key).length() > 9 && !Trade.getYesterdayDate(trades, key).substring(5, 7).equals(Trade.getTodayDate(trades, key).substring(5, 7))) {
                 //month has changed
-                tr.setMtmPriorMonth(tr.getMtmYesterday());
+                Trade.setMtmPriorMonth(trades, key, mtmYesterday);
             }
         }
-        }
-    
+    }
 
-
-    public static double[] applyBrokerage(ExtendedHashMap<String,String,String> trades, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName) {
+    public static double[] applyBrokerage(ExtendedHashMap<String, String, String> trades, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName) {
         double[] profitGrid = new double[10];
         ArrayList<Double> dailyEquity = new ArrayList();
         ArrayList<Date> tradeDate = new ArrayList();
@@ -1361,61 +1359,82 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
              */
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             int tradesToday = 0; //Holds the number of trades done today
-            for (Map.Entry<OrderLink, Trade> trade : trades.entrySet()) {
-                Trade tr = trade.getValue();
-                TradingUtil.updateMTM(tr, timeZone);
-                if ((tr.getEntryTime().contains(today) && tr.getAccountName().equals(accountName) && !Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO"))
-                        ){
+            Set<Entry> entries = trades.entrySet();
+            for (Entry entry : entries) {
+                String key = (String) entry.getKey();
+                TradingUtil.updateMTM(trades, key, timeZone);
+                String entryTime = Trade.getEntryTime(trades, key);
+                String exitTime = Trade.getExitTime(trades, key);
+                String account = Trade.getAccountName(trades, key);
+                String childdisplayname = Trade.getEntrySymbol(trades, key);
+                int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+                if ((entryTime.contains(today) && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
                     tradesToday = tradesToday + 1;
                 }
-                if ((!tr.getExitTime().equals("") && tr.getExitTime().contains(today) && !Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO"))
-                    ){
+                if ((!exitTime.equals("") && exitTime.contains(today) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
                     tradesToday = tradesToday + 1;
                 }
-                if((tr.getEntryTime().contains(today) && tr.getAccountName().equals(accountName) && tr.getAccountName().equals("Order") && Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO"))
-                        ){
-                    tradesToday=tradesToday+Parameters.symbol.get(tr.getEntrySymbolID()).getCombo().size();
+                if ((entryTime.contains(today) && account.equals(accountName) && account.equals("Order") && Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    tradesToday = tradesToday + Parameters.symbol.get(childid).getCombo().size();
                 }
-                if( (!tr.getExitTime().equals("") && tr.getExitTime().contains(today) && tr.getAccountName().equals("Order") && Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO"))
-                     ){
-                    tradesToday=tradesToday+Parameters.symbol.get(tr.getEntrySymbolID()).getCombo().size();
+                if ((!exitTime.equals("") && exitTime.contains(today) && account.equals("Order") && Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    tradesToday = tradesToday + Parameters.symbol.get(childid).getCombo().size();
                 }
             }
 
-            for (Map.Entry<OrderLink, Trade> trade : trades.entrySet()) {
-                Trade t = trade.getValue();
-                if (t.getAccountName().equals(accountName)) {
-                    ArrayList<Double> tempBrokerage=calculateBrokerage(trades, t,brokerage, accountName,tradesToday);
-                    t.setEntryBrokerage(tempBrokerage.get(0));
-                    t.setExitBrokerage(tempBrokerage.get(1));
+            for (Entry entry : entries) {
+                String key = (String) entry.getKey();
+                String entryTime = Trade.getEntryTime(trades, key);
+                String exitTime = Trade.getExitTime(trades, key);
+                String account = Trade.getAccountName(trades, key);
+                int childid = Trade.getEntrySymbolID(trades, key);
+
+                if (account.equals(accountName)) {
+                    ArrayList<Double> tempBrokerage = calculateBrokerage(trades, key, brokerage, accountName, tradesToday);
+                    Trade.setEntryBrokerage(trades, key, tempBrokerage.get(0));
+                    Trade.setExitBrokerage(trades,key,tempBrokerage.get(1));
                 }
             }
             //calculate today's profit
-            for (Map.Entry<OrderLink, Trade> trade : trades.entrySet()) {
-                Trade t = trade.getValue();
-                if (t.getAccountName().equals(accountName) && !Parameters.symbol.get(t.getEntrySymbolID()).getType().equals("COMBO")||(t.getAccountName().equals(accountName) && t.getAccountName().equals("Order"))) {
-                    double exitPrice = t.getExitPrice() == 0D ? t.getMtmToday() : t.getExitPrice();
-                    double entryPrice = t.getMtmYesterday() == 0D ? t.getEntryPrice() : t.getMtmYesterday();
+            for (Entry entry:entries) {
+                String key = (String) entry.getKey();
+                String entryTime = Trade.getEntryTime(trades, key);
+                String exitTime = Trade.getExitTime(trades, key);
+                double exitPrice =Trade.getExitPrice(trades, key);
+                double entryPrice=Trade.getEntryPrice(trades, key);
+                double mtmToday=Trade.getMtmToday(trades, key);
+                double mtmYesterday=Trade.getMtmYesterday(trades, key);
+                double entryBrokerage=Trade.getEntryBrokerage(trades, key);
+                double exitBrokerage=Trade.getExitBrokerage(trades, key);
+                
+                EnumOrderSide entrySide =Trade.getEntrySide(trades, key);
+                int entrySize=Trade.getEntrySize(trades, key);
+                
+                String account = Trade.getAccountName(trades, key);
+                int childid = Trade.getEntrySymbolID(trades, key);
+                if (account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
+                    exitPrice = exitPrice== 0D ? mtmToday: exitPrice;
+                    entryPrice = mtmYesterday== 0D ? entryPrice: mtmYesterday;
                     double pnl = 0;
-                    boolean considerEntryBrokerage=false;
-                    boolean considerExitBrokerage=false;
+                    boolean considerEntryBrokerage = false;
+                    boolean considerExitBrokerage = false;
                     if (exitPrice != 0D) {
-                        pnl = t.getEntrySide() == EnumOrderSide.BUY ? t.getEntrySize() * pointValue * (exitPrice - entryPrice) : -t.getEntrySize() * pointValue * (exitPrice - entryPrice);
+                        pnl = entrySide== EnumOrderSide.BUY ? entrySize* pointValue * (exitPrice - entryPrice) : -entrySize * pointValue * (exitPrice - entryPrice);
                     }
                     profitGrid[0] = profitGrid[0] + pnl;
                     //Which brokerage amounts do we pass into today's pnl?
-                    
+
                     //Same day trades
-                    if(t.getEntryTime().contains(today)){
-                        considerEntryBrokerage=true;
-                        considerExitBrokerage=true;
-                    }else if(t.getExitTime().contains(today)){
-                        considerExitBrokerage=true;
-                    }                   
-                    profitGrid[1] = profitGrid[1] - (considerEntryBrokerage?t.getEntryBrokerage():0) - (considerExitBrokerage?t.getExitBrokerage():0);
-                    } 
+                    if (entryTime.contains(today)) {
+                        considerEntryBrokerage = true;
+                        considerExitBrokerage = true;
+                    } else if (exitTime.contains(today)) {
+                        considerExitBrokerage = true;
+                    }
+                    profitGrid[1] = profitGrid[1] - (considerEntryBrokerage ? entryBrokerage: 0) - (considerExitBrokerage ? exitBrokerage : 0);
                 }
-            
+            }
+
             profitGrid[2] = profitGrid[0] + profitGrid[1];
 
             String monthBeginning = today.substring(0, 7);
@@ -1424,76 +1443,95 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
             double monthpnl = 0;
             File dir = new File("logs");
             File file = new File(dir, fileName);
-                ArrayList<Trade> allTrades = new ArrayList<>();
-                if (file.exists()) {
-                //logger.log(Level.INFO, "file loaded: {0}", new Object[]{file});
-//                ArrayList<Trade> allTrades = Parameters.readTradesWithCsvBeanReader(file.getCanonicalPath());
-                new Trade().reader(file.getCanonicalPath(), allTrades);
+            ExtendedHashMap<String, String, String> allTrades = new ExtendedHashMap<>();
+            if (file.exists()) {
+                InputStream initialStream = new FileInputStream(new File(file.getCanonicalPath()));
+                JsonReader jr = new JsonReader(initialStream);
+                allTrades = (ExtendedHashMap<String, String, String>) jr.readObject();
+                jr.close();
                 }
-                if(allTrades.size()>0||trades.size()>0){
-                HashMap<OrderLink, Trade> combinedTrades = new HashMap<>();                
-                for (Trade trade : allTrades) {//add earlier trades
-                combinedTrades.put(new OrderLink(trade.getEntryID(),trade.getEntryOrderID(),trade.getAccountName()),trade);
-            }
-                combinedTrades.putAll(trades);
-                allTrades.clear();
-                for(Trade t:combinedTrades.values()){
-                    allTrades.add(t);
-                }
-                Collections.sort(allTrades, new TradesCompare());
-                for (Trade t : allTrades) { //get pnl of trades that have closed
-                    if (t.getAccountName().equals(accountName) && !Parameters.symbol.get(t.getEntrySymbolID()).getType().equals("COMBO")||(t.getAccountName().equals(accountName) && t.getAccountName().equals("Order"))) {
+                allTrades.putAll(trades);
+                
+                entries=allTrades.entrySet();
+                for(Entry entry:entries){ //calculate MTD pnl
+                    String key=(String)entry.getKey();
+                    String account=Trade.getAccountName(allTrades, key);
+                    int childid=Trade.getEntrySymbolID(allTrades, key);
+                String entryTime = Trade.getEntryTime(allTrades, key);
+                String exitTime = Trade.getExitTime(allTrades, key);
+                double exitPrice =Trade.getExitPrice(allTrades, key);
+                double entryPrice=Trade.getEntryPrice(allTrades, key);
+                double mtmToday=Trade.getMtmToday(allTrades, key);
+                double mtmYesterday=Trade.getMtmYesterday(allTrades, key);
+                double entryBrokerage=Trade.getEntryBrokerage(allTrades, key);
+                double exitBrokerage=Trade.getExitBrokerage(allTrades, key);
+                String todayDate=Trade.getTodayDate(allTrades, key);
+                EnumOrderSide entrySide=Trade.getEntrySide(allTrades, key);
+                int entrySize=Trade.getEntrySize(allTrades, key);
+                    if (account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
                         //logger.log(Level.INFO, "Month Beginning: {0}, Exit Time: {1}", new Object[]{monthBeginning, t.getExitTime().substring(0, 10)});
-                        String exitDate=t.getExitTime().equals("")?t.getTodayDate():t.getExitTime();
+                        String exitDate = exitTime.equals("") ? todayDate: exitTime;
                         if (DateUtil.parseDate("yyyy-MM-dd", exitDate.substring(0, 10)).compareTo(DateUtil.parseDate("yyyy-MM-dd", monthBeginning)) >= 0) {
-                            double exitPrice=t.getExitPrice()==0D?t.getMtmToday():t.getExitPrice();
-                            double pnl = t.getEntrySide() == EnumOrderSide.BUY ? t.getEntrySize() * pointValue * (exitPrice - t.getEntryPrice()) : -t.getEntrySize() * pointValue * (exitPrice - t.getEntryPrice());
-                            monthpnl = monthpnl + pnl - t.getEntryBrokerage() - t.getExitBrokerage();
+                            exitPrice = exitPrice== 0D ? mtmToday: exitPrice;
+                            double pnl = entrySide == EnumOrderSide.BUY ? entrySize* pointValue * (exitPrice - entryPrice) : -entrySize * pointValue * (exitPrice - entryPrice);
+                            monthpnl = monthpnl + pnl - entryBrokerage- exitBrokerage;
                             //logger.log(Level.INFO, "month pnl: {0}, row pnl: {1}", new Object[]{monthpnl, pnl});
                         }
                     }
                 }
-                profitGrid[3]=monthpnl;
+                profitGrid[3] = monthpnl;
                 //logger.log(Level.INFO, "Month P&L: {0}", profitGrid[3]);
                 //calculate yearly pnl
                 double ytdPNL = 0;
                 double tradePNL = 0;
                 double dayPNL = 0;
                 Date entryDate = null;
-                for (Trade t : allTrades) {//get ytd pnl for closed trades till yesterday
-                    if (t.getAccountName().equals(accountName) && !Parameters.symbol.get(t.getEntrySymbolID()).getType().equals("COMBO")||(t.getAccountName().equals(accountName) && t.getAccountName().equals("Order"))){
+                for(Entry entry:entries){ //calculate YTD pnl
+                    String key=(String)entry.getKey();
+                    String account=Trade.getAccountName(allTrades, key);
+                    int childid=Trade.getEntrySymbolID(allTrades, key);
+                String entryTime = Trade.getEntryTime(allTrades, key);
+                String exitTime = Trade.getExitTime(allTrades, key);
+                double exitPrice =Trade.getExitPrice(allTrades, key);
+                double entryPrice=Trade.getEntryPrice(allTrades, key);
+                double mtmToday=Trade.getMtmToday(allTrades, key);
+                double mtmYesterday=Trade.getMtmYesterday(allTrades, key);
+                double entryBrokerage=Trade.getEntryBrokerage(allTrades, key);
+                double exitBrokerage=Trade.getExitBrokerage(allTrades, key);
+                String todayDate=Trade.getTodayDate(allTrades, key);
+                EnumOrderSide entrySide=Trade.getEntrySide(allTrades, key);
+                int entrySize=Trade.getEntrySize(allTrades, key);
+                    if (account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
                         if (entryDate == null) { //set entry date to the first date that trades/orders were executed
-                            entryDate = DateUtil.parseDate("yyyy-MM-dd", t.getEntryTime().substring(0, 10));
+                            entryDate = DateUtil.parseDate("yyyy-MM-dd", entryTime.substring(0, 10));
                         }
-                        if (DateUtil.parseDate("yyyy-MM-dd", t.getEntryTime().substring(0, 10)).compareTo(entryDate) != 0) {
+                        if (DateUtil.parseDate("yyyy-MM-dd", entryTime.substring(0, 10)).compareTo(entryDate) != 0) {
                             //new date has started. Log values for last date
                             dailyEquity.add(ytdPNL + startingEquity); //take snapshot of ytdPNL and add to daily Equity
                             tradeDate.add(entryDate);
-                            entryDate = DateUtil.parseDate("yyyy-MM-dd", t.getEntryTime().substring(0, 10));
+                            entryDate = DateUtil.parseDate("yyyy-MM-dd", entryTime.substring(0, 10));
                             dayPNL = 0; //reset dayPNL to zero for next day
                         }
-                        double exitPrice=t.getExitPrice()==0D?t.getMtmToday():t.getExitPrice();
-                        tradePNL = t.getEntrySide() == EnumOrderSide.BUY ? t.getEntrySize() * pointValue * (exitPrice - t.getEntryPrice()) : -t.getEntrySize() * pointValue * (exitPrice - t.getEntryPrice());
+                        exitPrice = exitPrice== 0D ? mtmToday: exitPrice;
+                        tradePNL = entrySide == EnumOrderSide.BUY ? entrySize * pointValue * (exitPrice - entryPrice) : -entrySize * pointValue * (exitPrice - entryPrice);
                         dayPNL = dayPNL + tradePNL;
                         //ytdPNL=0;
-                        ytdPNL = ytdPNL + tradePNL - t.getEntryBrokerage() - t.getExitBrokerage();
+                        ytdPNL = ytdPNL + tradePNL - entryBrokerage - exitBrokerage;
                     }
                 }
-                //Add equity and date from the last itenration in loop above
-                //dailyEquity.add(startingEquity + ytdPNL);
-                //tradeDate.add(entryDate);
-                profitGrid[4]=ytdPNL;
+                profitGrid[4] = ytdPNL;
+                entries=trades.entrySet();
+                for (Entry entry:entries) {
+                    String key=(String)entry.getKey();
+                    if (Trade.getExitPrice(trades, key)!= 0) {
+                        Trade.setMtmPriorMonth(trades, key, 0D);
+                        Trade.setMtmToday(trades, key, 0D);
+                        Trade.setMtmYesterday(trades, key, 0D);
+                        Trade.setTodayDate(trades, key, "");
+                        Trade.setYesterdayDate(trades, key, "");
+                    }
+                }
 
-                 for (Trade t : trades.values()) {
-                   if(t.getExitPrice()!=0){
-                        t.setMtmPriorMonth(0D);
-                        t.setMtmToday(0D);
-                        t.setMtmYesterday(0D);
-                        t.setTodayDate("");
-                        t.setYesterdayDate("");                        
-                   }  
-                 }
-                                   
                 //Add equity and date for today's trades
                 dailyEquity.add(startingEquity + profitGrid[4]);
                 tradeDate.add(DateUtil.parseDate("yyyy-MM-dd", today));
@@ -1508,12 +1546,11 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
                         //logger.log(Level.INFO, "Writing equity.csv. TradeDate:{0},Equity:{1},fileName:{2},AccountName:{3}", new Object[]{DateUtil.getFormatedDate("yyyy-MM-dd", tradeDate.get(i).getTime()), d, fileName, accountName});
                         TradingUtil.writeToFile(equityFileName, DateUtil.getFormatedDate("yyyy-MM-dd", tradeDate.get(i).getTime()) + "," + d + "," + fileName + "," + accountName);
                         i = i + 1;
-                    }else{
-                        
+                    } else {
                     }
                 }
-            }                 
-                if(allTrades.isEmpty() && !file.exists()) {
+            
+            if (allTrades.isEmpty() && !file.exists()) {
                 profitGrid[3] = 0;
                 profitGrid[4] = 0;
                 profitGrid[5] = 0;
@@ -1528,92 +1565,99 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
         return profitGrid;
     }
 
-    public static ArrayList<Double> calculateBrokerage(HashMap<OrderLink, Trade> trades, Trade t,ArrayList<BrokerageRate> brokerage,String accountName,int tradesToday){
-        ArrayList<Double> brokerageCost=new ArrayList<>();
+    public static ArrayList<Double> calculateBrokerage(ExtendedHashMap<String, String, String> trades, String key, ArrayList<BrokerageRate> brokerage, String accountName, int tradesToday) {
+        ArrayList<Double> brokerageCost = new ArrayList<>();
         brokerageCost.add(0D);
         brokerageCost.add(0D);
-        int internalorderid=t.getEntryID();
-        if(Parameters.symbol.get(t.getEntrySymbolID()).getType().equals("COMBO")){
-            if(!t.getAccountName().equals("Order")){
-            for(Trade tr:trades.values()){
-                if(tr.getEntryID()==internalorderid && !Parameters.symbol.get(tr.getEntrySymbolID()).getType().equals("COMBO")){//only calculate brokerage for child legs
-                    ArrayList<Double> singleLegCost=calculateSingleLegBrokerage(tr,brokerage,tradesToday);
-                    double earlierEntryCost=brokerageCost.get(0);
-                    double earlierExitCost=brokerageCost.get(1);
-                    brokerageCost.set(0, earlierEntryCost+singleLegCost.get(0));
-                    brokerageCost.set(1, earlierExitCost+singleLegCost.get(1));
-                }
-            }                
-            }else{
+        int entryorderidint = Trade.getEntryOrderIDInternal(trades, key);
+        int id = Trade.getEntrySymbolID(trades, key);
+        String account = Trade.getAccountName(trades, key);
+        if (Parameters.symbol.get(id).getType().equals("COMBO")) {
+            if (!account.equals("Order")) {
+                ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(trades, key, brokerage, tradesToday);
+                double earlierEntryCost = brokerageCost.get(0);
+                double earlierExitCost = brokerageCost.get(1);
+                brokerageCost.set(0, earlierEntryCost + singleLegCost.get(0));
+                brokerageCost.set(1, earlierExitCost + singleLegCost.get(1));
+                /*      
+                 Set<Entry>entries=trades.entrySet();
+                 for(Entry entry:entries){
+                 String subkey=(String)entry.getKey();
+                 int sentryorderidint=Trade.getEntryOrderIDInternal(trades, subkey);
+                 int sid=Trade.getEntrySymbolID(trades, key);
+                 if(sentryorderidint==entryorderidint && !Parameters.symbol.get(sid).getType().equals("COMBO")){//only calculate brokerage for child legs
+                 ArrayList<Double> singleLegCost=calculateSingleLegBrokerage(trades,subkey,brokerage,tradesToday);
+                 double earlierEntryCost=brokerageCost.get(0);
+                 double earlierExitCost=brokerageCost.get(1);
+                 brokerageCost.set(0, earlierEntryCost+singleLegCost.get(0));
+                 brokerageCost.set(1, earlierExitCost+singleLegCost.get(1));
+                 }
+                 }                
+                 */
+            } else {
                 //get legs for orders
-                int parentid=TradingUtil.getEntryIDFromDisplayName(t,Parameters.symbol);
-                for(Map.Entry<BeanSymbol,Integer>entry:Parameters.symbol.get(parentid).getCombo().entrySet()){
-                    int childid=entry.getKey().getSerialno()-1;
-                    EnumOrderSide childEntrySide=EnumOrderSide.UNDEFINED;
-                    EnumOrderSide childExitSide=EnumOrderSide.UNDEFINED;
-                    switch(t.getEntrySide()){
-                        case BUY:
-                            childEntrySide=entry.getValue()>0?EnumOrderSide.BUY:EnumOrderSide.SHORT;
-                            childExitSide=entry.getValue()>0?EnumOrderSide.SELL:EnumOrderSide.COVER;
-                            break;
-                        case SELL:
-                            childEntrySide=entry.getValue()>0?EnumOrderSide.SELL:EnumOrderSide.COVER;
-                            childExitSide=entry.getValue()>0?EnumOrderSide.COVER:EnumOrderSide.SELL;
-                            break;
-                        case SHORT:
-                            childEntrySide=entry.getValue()>0?EnumOrderSide.SHORT:EnumOrderSide.BUY;
-                            childExitSide=entry.getValue()>0?EnumOrderSide.BUY:EnumOrderSide.SHORT;
-                            break;
-                        case COVER:
-                            childEntrySide=entry.getValue()>0?EnumOrderSide.COVER:EnumOrderSide.SELL;
-                            childExitSide=entry.getValue()>0?EnumOrderSide.SELL:EnumOrderSide.COVER;
-                            break;
-                        default:
-                            break;                           
+                String parentdisplayname = Trade.getParentSymbol(trades, key);
+                int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
+                int parentEntryOrderIDInt = Trade.getParentExitOrderIDInternal(trades, key);
+                for (Map.Entry<BeanSymbol, Integer> comboComponent : Parameters.symbol.get(parentid).getCombo().entrySet()) {
+                    int childid = comboComponent.getKey().getSerialno() - 1;
+                    Set<Entry> entries = trades.entrySet();
+                    for (Entry entry : entries) {
+                        String subkey = (String) entry.getKey();
+                        int sparentEntryOrderIDInt = Trade.getParentEntryOrderIDInternal(trades, key);
+                        if (sparentEntryOrderIDInt == parentEntryOrderIDInt && !Trade.getEntrySymbol(trades, subkey).equals(Trade.getParentSymbol(trades, subkey))) {
+                            ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(trades, subkey, brokerage, tradesToday);
+                            double earlierEntryCost = brokerageCost.get(0);
+                            double earlierExitCost = brokerageCost.get(1);
+                            brokerageCost.set(0, earlierEntryCost + singleLegCost.get(0));
+                            brokerageCost.set(1, earlierExitCost + singleLegCost.get(1));
+
+                        }
                     }
-                    Trade entryTrade=new Trade(childid,parentid,EnumOrderReason.REGULARENTRY,childEntrySide,Parameters.symbol.get(childid).getLastPrice(),Math.abs(entry.getValue()*t.getEntrySize()),t.getEntryID(),0,"","Order");
-                    if(!t.getExitSide().equals(EnumOrderSide.UNDEFINED)){
-                    entryTrade.updateExit(childid,EnumOrderReason.REGULAREXIT, childExitSide, Parameters.symbol.get(childid).getLastPrice(), Math.abs(entry.getValue()*t.getExitSize()), t.getExitID(), 0, "", "Order");                        
-                    }
-                    ArrayList<Double> singleLegCost=calculateSingleLegBrokerage(entryTrade,brokerage,tradesToday);
-                    double earlierEntryCost=brokerageCost.get(0);
-                    double earlierExitCost=brokerageCost.get(1);
-                    brokerageCost.set(0, earlierEntryCost+singleLegCost.get(0));
-                    brokerageCost.set(1, earlierExitCost+singleLegCost.get(1)); 
                 }
             }
-            
-        }else{
-            brokerageCost=calculateSingleLegBrokerage(t,brokerage,tradesToday);                   
-        } 
-         TradingUtil.writeToFile("brokeragedetails.txt", t.getEntrySymbol()+","+brokerageCost.get(0)+","+brokerageCost.get(1));
-        return brokerageCost;        
+        } else {
+            brokerageCost = calculateSingleLegBrokerage(trades, key, brokerage, tradesToday);
+        }
+//         TradingUtil.writeToFile("brokeragedetails.txt", t.getEntrySymbol()+","+brokerageCost.get(0)+","+brokerageCost.get(1));
+        return brokerageCost;
     }
-    
-    private static ArrayList<Double> calculateSingleLegBrokerage(Trade t, ArrayList<BrokerageRate> brokerage, int tradesToday) {
+
+    private static ArrayList<Double> calculateSingleLegBrokerage(ExtendedHashMap<String, String, String> trades, String key, ArrayList<BrokerageRate> brokerage, int tradesToday) {
         ArrayList<Double> brokerageCost = new ArrayList<>();
         double entryCost = 0;
-        double exitCost = 0;        
+        double exitCost = 0;
+        String parentdisplayname = Trade.getParentSymbol(trades, key);
+        int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
+        double entryPrice = Trade.getEntryPrice(trades, key);
+        double exitPrice = Trade.getExitPrice(trades, key);
+        int entrySize = Trade.getEntrySize(trades, key);
+        int exitSize = Trade.getExitSize(trades, key);
+        String exitTime = Trade.getExitTime(trades, key);
+        String entryTime = Trade.getEntryTime(trades, key);
+        EnumOrderSide entrySide = Trade.getEntrySide(trades, key);
+        EnumOrderSide exitSide = Trade.getExitSide(trades, key);
+
         //calculate entry costs
         for (BrokerageRate b : brokerage) {
             switch (b.primaryRule) {
                 case VALUE:
-                    if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (t.getEntrySide() == EnumOrderSide.BUY || t.getEntrySide() == EnumOrderSide.COVER))) {
-                        entryCost = entryCost + (t.getEntryPrice() * t.getEntrySize() * b.primaryRate / 100) + (t.getEntryPrice() * t.getEntrySize() * b.primaryRate * b.secondaryRate / 10000);
+                    if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (entrySide.equals(EnumOrderSide.BUY) || exitSide.equals(EnumOrderSide.COVER)))) {
+                        entryCost = entryCost + (entryPrice * entrySize * b.primaryRate / 100) + (entryPrice * entrySize * b.primaryRate * b.secondaryRate / 10000);
                     }
                     break;
                 case SIZE:
-                    if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (t.getEntrySide() == EnumOrderSide.BUY || t.getEntrySide() == EnumOrderSide.COVER))) {
-                        entryCost = entryCost + t.getEntrySize() * b.primaryRate + t.getEntrySize() * b.primaryRate * b.secondaryRate;
+                    if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (entrySide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER))) {
+                        entryCost = entryCost + entrySize * b.primaryRate + entrySize * b.primaryRate * b.secondaryRate;
                     }
                     break;
                 case FLAT:
-                    if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (t.getEntrySide() == EnumOrderSide.BUY || t.getEntrySide() == EnumOrderSide.COVER))) {
+                    if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (entrySide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER))) {
                         entryCost = entryCost + b.primaryRate + b.primaryRate * b.secondaryRate;
                     }
                     break;
                 case DISTRIBUTE:
-                    if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (t.getEntrySide() == EnumOrderSide.BUY || t.getEntrySide() == EnumOrderSide.COVER))) {
+                    if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (entrySide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER))) {
                         if (tradesToday > 0) {
                             entryCost = entryCost + b.primaryRate / tradesToday + (b.primaryRate / tradesToday) * b.secondaryRate;
                         }
@@ -1622,27 +1666,28 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
                 default:
                     break;
             }
+
         }
         //calculate exit costs
         for (BrokerageRate b : brokerage) {
             switch (b.primaryRule) {
                 case VALUE:
-                    if (!t.getExitTime().equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (t.getExitSide() == EnumOrderSide.BUY || t.getExitSide() == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && t.getExitTime().contains(t.getEntryTime().substring(0, 10))))) {
-                        exitCost = exitCost + (t.getExitPrice() * t.getEntrySize() * b.primaryRate / 100) + (t.getEntryPrice() * t.getEntrySize() * b.primaryRate * b.secondaryRate / 10000);
+                    if (!exitTime.equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (exitSide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && exitTime.contains(entryTime.substring(0, 10))))) {
+                        exitCost = exitCost + (exitPrice * exitSize * b.primaryRate / 100) + (exitPrice * exitSize * b.primaryRate * b.secondaryRate / 10000);
                     }
                     break;
                 case SIZE:
-                    if (!t.getExitTime().equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (t.getExitSide() == EnumOrderSide.BUY || t.getExitSide() == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && t.getExitTime().contains(t.getEntryTime().substring(0, 10))))) {
-                        exitCost = exitCost + t.getEntrySize() * b.primaryRate + t.getEntrySize() * b.primaryRate * b.secondaryRate;
+                    if (!exitTime.equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (exitSide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && exitTime.contains(entryTime.substring(0, 10))))) {
+                        exitCost = exitCost + exitSize * b.primaryRate + exitSize * b.primaryRate * b.secondaryRate;
                     }
                     break;
                 case FLAT:
-                    if (!t.getExitTime().equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (t.getExitSide() == EnumOrderSide.BUY || t.getExitSide() == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && t.getExitTime().contains(t.getEntryTime().substring(0, 10))))) {
+                    if (!exitTime.equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (exitSide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && exitTime.contains(entryTime.substring(0, 10))))) {
                         exitCost = exitCost + b.primaryRate + b.primaryRate * b.secondaryRate;
                     }
                     break;
                 case DISTRIBUTE:
-                    if (!t.getExitTime().equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (t.getExitSide() == EnumOrderSide.BUY || t.getExitSide() == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && t.getExitTime().contains(t.getEntryTime().substring(0, 10))))) {
+                    if (!exitTime.equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (exitSide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && exitTime.contains(entryTime.substring(0, 10))))) {
                         exitCost = exitCost + b.primaryRate / tradesToday + (b.primaryRate / tradesToday) * b.secondaryRate;
                     }
                     break;
@@ -1650,13 +1695,13 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
                     break;
             }
         }
-        entryCost=t.getEntryBrokerage()==0D?entryCost:t.getEntryBrokerage();
+        entryCost = Trade.getEntryBrokerage(trades, key) == 0D ? entryCost : Trade.getEntryBrokerage(trades, key);
         brokerageCost.add(entryCost);
         brokerageCost.add(exitCost);
         return brokerageCost;
 
     }
-    
+
     public static double maxDrawDownPercentage(ArrayList<Double> dailyEquity) {
         double maxDrawDownAbsolute = 0;
         double maxDrawDownPercentage = 0;
@@ -1751,13 +1796,13 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
 
     //Testing routine
     public static void main(String args[]) {
-        HashMap<OrderLink, Trade> trades = new HashMap<>();
+        ExtendedHashMap<String,String,String> trades = new ExtendedHashMap<>();
         ArrayList<BrokerageRate> brokerage = new ArrayList();
         brokerage.add(new BrokerageRate());
         brokerage.get(0).primaryRate = 0.01;
         brokerage.get(0).primaryRule = EnumPrimaryApplication.VALUE;
         brokerage.get(0).type = "FUT";
-        applyBrokerage(trades, brokerage, 50, "USDADROrders.csv", "", 100000, "DU67768","Equity.csv");
+        applyBrokerage(trades, brokerage, 50, "USDADROrders.csv", "", 100000, "DU67768", "Equity.csv");
         //String out=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss",new Date().getTime(),TimeZone.getTimeZone("GMT-4:00"));
         //System.out.println(out);
 
@@ -1809,47 +1854,44 @@ if(symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO"
         }
         return out;
     }
-    
-/**
- * Returns linked external broker orders. 
- * The integer argument must specify the reference to a broker order.  
- * <p>
- * If the argument is not found as an open order, an empty ArrayList
- * will be returned. If there are no other linked orders, and the 
- * argument is the only order, * the size of the list will be 1 
- * and will contain the argument value
- *
- * @param  orderId  reference to an order for which linked orders are 
- *                  needed
- */
-    
-    static ArrayList<Integer> getLinkedOrderIds(int orderid, BeanConnection c){
-        ArrayList<Integer> out=new ArrayList<>();
-        HashMap<Index,ArrayList<Integer>> orderMapping;
-        synchronized(c.lockOrderMapping){
-            orderMapping=c.getOrderMapping();
+
+    /**
+     * Returns linked external broker orders. The integer argument must specify
+     * the reference to a broker order.
+     * <p>
+     * If the argument is not found as an open order, an empty ArrayList will be
+     * returned. If there are no other linked orders, and the argument is the
+     * only order, * the size of the list will be 1 and will contain the
+     * argument value
+     *
+     * @param orderId reference to an order for which linked orders are needed
+     */
+    static ArrayList<Integer> getLinkedOrderIds(int orderid, BeanConnection c) {
+        ArrayList<Integer> out = new ArrayList<>();
+        HashMap<Index, ArrayList<Integer>> orderMapping;
+        synchronized (c.lockOrderMapping) {
+            orderMapping = c.getOrderMapping();
         }
-        for(Map.Entry<Index,ArrayList<Integer>> arr:orderMapping.entrySet()){
-            if(arr.getValue().contains(Integer.valueOf(orderid))){
-                for(int i:arr.getValue()){
+        for (Map.Entry<Index, ArrayList<Integer>> arr : orderMapping.entrySet()) {
+            if (arr.getValue().contains(Integer.valueOf(orderid))) {
+                for (int i : arr.getValue()) {
                     out.add(i);
-                    //logger.log(Level.FINE, "Debug: GetLinkedOrderIds, Requested Order id: {0},orderid added:{1}, Strategy:{2},InternalOrderID:{3}", new Object[]{orderid,i,arr.getKey().getStrategy(),arr.getKey().getSymbolID()});
+                    //logger.log(Level.FINE, "Debug: GetLinkedOrderIds, Requested Order childid: {0},orderid added:{1}, Strategy:{2},InternalOrderID:{3}", new Object[]{orderid,i,arr.getKey().getStrategy(),arr.getKey().getSymbolID()});
                 }
             }
-        }        
-        return out;        
+        }
+        return out;
     }
-    
-    
-        public static void logProperties() {
+
+    public static void logProperties() {
         Properties p = System.getProperties();
         Enumeration<Object> i = p.keys();
-        logger.log(Level.INFO,"System Properties");
-        logger.log(Level.INFO,"------------------------------------------------------------");
+        logger.log(Level.INFO, "System Properties");
+        logger.log(Level.INFO, "------------------------------------------------------------");
         while (i.hasMoreElements()) {
             String props = (String) i.nextElement();
             logger.log(Level.INFO, ",,Startup,Host System Variables,{0} = {1}", new Object[]{props, (String) p.get(props)});
         }
-        logger.log(Level.INFO,"------------------------------------------------------------");
+        logger.log(Level.INFO, "------------------------------------------------------------");
     }
 }
