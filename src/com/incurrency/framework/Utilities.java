@@ -112,8 +112,7 @@ public class Utilities {
                }
         //remove any child orders
         ArrayList<Integer> childEntryOrders = new ArrayList<>();
-        Set<Entry>entries=allOrders.entrySet();
-        for(Entry entry:entries){
+        for(Entry entry:allOrders.store.entrySet()){
             String key=(String)entry.getKey();
             int childid=Trade.getEntrySymbolID(allOrders, key);
             int entryorderidint=Trade.getEntryOrderIDInternal(allOrders, key);
@@ -123,7 +122,7 @@ public class Utilities {
                 }
             }
         }
-        Iterator iter1 = entries.iterator();
+        Iterator iter1 = allOrders.store.entrySet().iterator();
         while (iter1.hasNext()) {
               Map.Entry trchild = (Map.Entry) iter1.next();
               String key = (String) trchild.getKey();
@@ -133,7 +132,7 @@ public class Utilities {
             }
         }
 
-        for (Entry entry : entries) {
+        for (Entry entry : allOrders.store.entrySet()) {
             String key = (String) entry.getKey();
             int tempPosition = 0;
             double tempPositionPrice = 0D;
@@ -936,18 +935,26 @@ public class Utilities {
         return true;
     }
 
-    public static double getDouble(String input, double defvalue) {
-        if (isDouble(input)) {
-            return Double.parseDouble(input.trim());
-        } else {
+    public static double getDouble(Object input, double defvalue) {
+        try {
+            if (isDouble(input.toString())) {
+                return Double.parseDouble(input.toString().trim());
+            } else {
+                return defvalue;
+            }
+        } catch (Exception e) {
             return defvalue;
         }
     }
 
-    public static int getInt(String input, int defvalue) {
-        if (isInteger(input)) {
-            return Integer.parseInt(input.trim());
+    public static int getInt(Object input, int defvalue) {
+        try{
+        if (isInteger(input.toString())) {
+            return Integer.parseInt(input.toString().trim());
         } else {
+            return defvalue;
+        }
+        }catch (Exception e){
             return defvalue;
         }
     }
@@ -1338,7 +1345,8 @@ public class Utilities {
             BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
             bufferWritter.write(content + newline);
             bufferWritter.close();
-        } catch (IOException ex) {
+        } catch (IOException e) {
+            logger.log(Level.SEVERE,null,e);
         }
     }
 

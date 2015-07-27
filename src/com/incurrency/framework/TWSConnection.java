@@ -101,17 +101,6 @@ public class TWSConnection extends Thread implements EWrapper {
             String orderid=this.getOrderIDSync().take();
             getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
             logger.log(Level.INFO,"Next OrderID Received,{0}_{1}_{2}_{3}",new Object[]{getC().getIp(),getC().getPort(),getC().getClientID(),orderid});
-            /*
-            while (!c.getIdmanager().singleton().isOrderIdInitialized() && (waitCount < MAX_WAIT_COUNT)) {
-                try {
-                    Thread.sleep(WAIT_TIME * 1000); // Pause for 1 second
-                } catch (InterruptedException ex) {
-                    logger.log(Level.INFO, "101" + "," + c.getAccountName() + "_", ex);
-                }
-                System.out.println("Connection waitcount:"+c.getAccountName()+":"+waitCount);
-                waitCount++;
-            }
-           */
             if (eClientSocket.isConnected()) {
                 eClientSocket.reqIds(1);
                 System.out.println(">>> Connected to TWSSend with client id: " + clientID);
@@ -340,9 +329,7 @@ public class TWSConnection extends Thread implements EWrapper {
         String ocaGroup = e.getOrderGroup();
         String effectiveFrom = e.getEffectiveFrom();
         HashMap<Integer, Integer> stubs = e.getStubs();
-
         out = createOrder(id, internalOrderID, size, ordSide, notify, orderType, stage, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, stubs);
-
         return out;
     }
 
@@ -928,7 +915,13 @@ public class TWSConnection extends Thread implements EWrapper {
                         ob.setParentStatus(EnumOrderStatus.SUBMITTED);
                         ob.setOrderValidity(order.m_tif);
                         ob.setOrderReference(order.m_orderRef);
-                        ob.setInternalOrderID(internalOrderID);
+                        ob.setParentInternalOrderID(internalOrderID);
+                        if(orders.size()>1){
+                            //combo order
+                         ob.setInternalOrderID(Algorithm.orderidint.addAndGet(1));
+                        }else{
+                        ob.setInternalOrderID(internalOrderID);                            
+                        }
                         ob.setInternalOrderIDEntry(internalOrderIDEntry);
 
                         ArrayList<Contract> contracts = c.getWrapper().createContract(ob.getChildSymbolID() - 1);

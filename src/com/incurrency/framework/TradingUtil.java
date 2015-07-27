@@ -1359,8 +1359,7 @@ public class TradingUtil {
              */
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             int tradesToday = 0; //Holds the number of trades done today
-            Set<Entry> entries = trades.entrySet();
-            for (Entry entry : entries) {
+            for (Entry entry : trades.store.entrySet()) {
                 String key = (String) entry.getKey();
                 TradingUtil.updateMTM(trades, key, timeZone);
                 String entryTime = Trade.getEntryTime(trades, key);
@@ -1382,7 +1381,7 @@ public class TradingUtil {
                 }
             }
 
-            for (Entry entry : entries) {
+            for (Entry entry : trades.store.entrySet()) {
                 String key = (String) entry.getKey();
                 String entryTime = Trade.getEntryTime(trades, key);
                 String exitTime = Trade.getExitTime(trades, key);
@@ -1396,7 +1395,7 @@ public class TradingUtil {
                 }
             }
             //calculate today's profit
-            for (Entry entry:entries) {
+            for (Entry entry:trades.store.entrySet()) {
                 String key = (String) entry.getKey();
                 String entryTime = Trade.getEntryTime(trades, key);
                 String exitTime = Trade.getExitTime(trades, key);
@@ -1450,10 +1449,9 @@ public class TradingUtil {
                 allTrades = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
                 }
-                allTrades.putAll(trades);
+                allTrades.store.putAll(trades.store);
                 
-                entries=allTrades.entrySet();
-                for(Entry entry:entries){ //calculate MTD pnl
+                for(Entry entry:allTrades.store.entrySet()){ //calculate MTD pnl
                     String key=(String)entry.getKey();
                     String account=Trade.getAccountName(allTrades, key);
                     int childid=Trade.getEntrySymbolID(allTrades, key);
@@ -1486,7 +1484,7 @@ public class TradingUtil {
                 double tradePNL = 0;
                 double dayPNL = 0;
                 Date entryDate = null;
-                for(Entry entry:entries){ //calculate YTD pnl
+                for(Entry entry:allTrades.store.entrySet()){ //calculate YTD pnl
                     String key=(String)entry.getKey();
                     String account=Trade.getAccountName(allTrades, key);
                     int childid=Trade.getEntrySymbolID(allTrades, key);
@@ -1520,8 +1518,7 @@ public class TradingUtil {
                     }
                 }
                 profitGrid[4] = ytdPNL;
-                entries=trades.entrySet();
-                for (Entry entry:entries) {
+                for (Entry entry:trades.store.entrySet()) {
                     String key=(String)entry.getKey();
                     if (Trade.getExitPrice(trades, key)!= 0) {
                         Trade.setMtmPriorMonth(trades, key, 0D);
@@ -1550,7 +1547,7 @@ public class TradingUtil {
                     }
                 }
             
-            if (allTrades.isEmpty() && !file.exists()) {
+            if (allTrades.store.isEmpty() && !file.exists()) {
                 profitGrid[3] = 0;
                 profitGrid[4] = 0;
                 profitGrid[5] = 0;
@@ -1601,8 +1598,7 @@ public class TradingUtil {
                 int parentEntryOrderIDInt = Trade.getParentExitOrderIDInternal(trades, key);
                 for (Map.Entry<BeanSymbol, Integer> comboComponent : Parameters.symbol.get(parentid).getCombo().entrySet()) {
                     int childid = comboComponent.getKey().getSerialno() - 1;
-                    Set<Entry> entries = trades.entrySet();
-                    for (Entry entry : entries) {
+                    for (Entry entry : trades.store.entrySet()) {
                         String subkey = (String) entry.getKey();
                         int sparentEntryOrderIDInt = Trade.getParentEntryOrderIDInternal(trades, key);
                         if (sparentEntryOrderIDInt == parentEntryOrderIDInt && !Trade.getEntrySymbol(trades, subkey).equals(Trade.getParentSymbol(trades, subkey))) {

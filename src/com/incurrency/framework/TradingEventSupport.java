@@ -175,7 +175,16 @@ public class TradingEventSupport {
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
         }
-    }        
+    }  
+       
+    public  void fireOrderEvent(HashMap<String,Object>orderDetails) {
+        OrderEvent order = new OrderEvent(this, orderDetails);
+       logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
+       Iterator itrListeners = orderListeners.iterator();
+        while (itrListeners.hasNext()) {
+            ((OrderListener) itrListeners.next()).orderReceived(order);
+        }
+    }     
 
        //this is fired by profit loss manager. It sets the account for squareoff.
         public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String account, boolean scale,String passToOrderObject) {

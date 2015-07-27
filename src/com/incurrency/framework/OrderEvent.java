@@ -12,8 +12,8 @@ import java.util.HashMap;
  * @author admin
  */
 public class OrderEvent extends EventObject {
-    private int _internalorder;
-    private int _internalorderentry;
+    private int _orderidint;
+    private int _entryorderidint;
     private BeanSymbol _symbolBean;
     private EnumOrderSide _side;
     private int _orderSize;
@@ -43,8 +43,8 @@ public class OrderEvent extends EventObject {
     /*
     public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side, EnumOrderReason reason, EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage stage, int dynamicdur, double slippage, boolean transmit, String validity, boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs){
         super(obj);
-        this._internalorder=internalorder;
-        this._internalorderentry=internalorderentry;
+        this._orderidint=internalorder;
+        this._entryorderidint=internalorderentry;
         this._symbolBean=s;
         this._side=side;
         this._orderType=orderType;
@@ -74,8 +74,8 @@ public class OrderEvent extends EventObject {
     public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side,EnumOrderReason reason,EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicdur, double slippage, boolean transmit, String validity,boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs){
         //after slippage add boolean trasmit,string validity, at end add String effectiveFrom, HashMap<Integer,Integer>stubs
         super(obj);
-        this._internalorder=internalorder;
-        this._internalorderentry=internalorderentry;
+        this._orderidint=internalorder;
+        this._entryorderidint=internalorderentry;
         this._symbolBean=s;
         this._side=side;
         this._orderType=orderType;
@@ -96,6 +96,35 @@ public class OrderEvent extends EventObject {
         this._reason=reason;
         this._orderGroup=orderGroup;
         this._effectiveFrom="";
+        
+    }
+
+    public OrderEvent(Object obj,HashMap<String,Object>order){
+        //after slippage add boolean trasmit,string validity, at end add String effectiveFrom, HashMap<Integer,Integer>stubs
+        super(obj);
+        this._orderidint=Utilities.getInt(order.get("orderidint").toString(),-1);
+        this._entryorderidint=Utilities.getInt(order.get("entryorderidint"),-1);
+        int id=Utilities.getInt(order.get("id"),-1);
+        this._symbolBean=id>=0?Parameters.symbol.get(id):null;
+        this._side=(order.get("side")!=null&&order.get("side")!="")?EnumOrderSide.valueOf(order.get("side").toString()):EnumOrderSide.UNDEFINED;
+        this._orderType=(order.get("type")!=null&&order.get("type")!="")?EnumOrderType.valueOf(order.get("type").toString()):EnumOrderType.UNDEFINED;
+        this._orderSize=Utilities.getInt(order.get("size"),0);
+        this._limitPrice=Utilities.getDouble(order.get("limitprice"),0);
+        this._triggerPrice=Utilities.getDouble(order.get("triggerprice"),0);
+        this._ordReference=(order.get("orderref")!=null&&order.get("orderref")!="")?order.get("orderref").toString().toLowerCase():"NOTSPECIFIED";
+        this._expireTime=Utilities.getInt(order.get("expiretime"),0);
+        this._orderStage=(order.get("orderstage")!=null&&order.get("orderstage")!="")?EnumOrderStage.valueOf(order.get("orderstage").toString()):EnumOrderStage.UNDEFINED;
+        this._dynamicOrderDuration=Utilities.getInt(order.get("dynamicorderduration"),0);
+        this._maxSlippage=Utilities.getDouble(order.get("maxslippage"),0);
+        this._firstLimitPrice=this._limitPrice;
+        this._tag="";
+        this._transmit=(order.get("transmit")!=null&&order.get("transmit")!="")?Boolean.valueOf(order.get("transmit").toString()):Boolean.TRUE;
+        this._validity=(order.get("validity")!=null&&order.get("validity")!="")?order.get("validity").toString():"DAY";
+        this._account="";
+        this._scale=(order.get("scale")!=null&&order.get("scale")!="")?Boolean.valueOf(order.get("scale").toString()):Boolean.FALSE;
+        this._reason=(order.get("reason")!=null&&order.get("reason")!="")?EnumOrderReason.valueOf(order.get("reason").toString()):EnumOrderReason.UNDEFINED;
+        this._orderGroup=(order.get("ordergroup")!=null&&order.get("ordergroup")!="")?order.get("ordergroup").toString():null;
+        this._effectiveFrom=(order.get("effectivefrom")!=null&&order.get("effectivefrom")!="")?order.get("effectivefrom").toString():null;
         
     }
 
@@ -251,31 +280,31 @@ public class OrderEvent extends EventObject {
     }
 
     /**
-     * @return the _internalorder
+     * @return the _orderidint
      */
     public int getInternalorder() {
-        return _internalorder;
+        return _orderidint;
     }
 
     /**
-     * @param internalorder the _internalorder to set
+     * @param internalorder the _orderidint to set
      */
     public void setInternalorder(int internalorder) {
-        this._internalorder = internalorder;
+        this._orderidint = internalorder;
     }
 
     /**
-     * @return the _internalorderentry
+     * @return the _entryorderidint
      */
     public int getInternalorderentry() {
-        return _internalorderentry;
+        return _entryorderidint;
     }
 
     /**
-     * @param internalorderentry the _internalorderentry to set
+     * @param internalorderentry the _entryorderidint to set
      */
     public void setInternalorderentry(int internalorderentry) {
-        this._internalorderentry = internalorderentry;
+        this._entryorderidint = internalorderentry;
     }
 
     /**

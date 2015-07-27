@@ -125,8 +125,7 @@ public class Validator {
         //String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
         try{
         ArrayList<String> tradeList = new ArrayList<>();
-        Set<Entry>entries=s.getOms().getTrades().entrySet();
-        for(Entry entry:entries){
+        for(Entry entry:s.getOms().getTrades().store.entrySet()){
             String key=(String)entry.getKey();
             tradeList.add(key);
         }
@@ -199,8 +198,7 @@ public class Validator {
          if (symbolfileneeded) {
             String symbolFileName = globalProperties.getProperty("symbolfile", "symbols.csv").toString().trim();
             new BeanSymbol().completeReader(symbolFileName, symbolList);
-            Set<Entry>entries=orderList.entrySet();
-            for(Entry entry:entries){
+            for(Entry entry:orderList.store.entrySet()){
                 String key=(String)entry.getKey();
             if (Trade.getParentSymbol(orderList, key).contains(":")) {//only combo trades should contain :
                     comboTrades.add(key);
@@ -429,20 +427,24 @@ public class Validator {
                 HashMap<String, ArrayList<Integer>> out = new HashMap<>();
                 ExtendedHashMap<String, String, String> alltradelist = new ExtendedHashMap<>();
                 try{
+                if(new File(tradeFileFullName).exists()){    
                 InputStream initialStream = new FileInputStream(new File(tradeFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
                 alltradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
+                }
                 }catch (Exception e){
                     logger.log(Level.INFO,null,e);
                 }
                 ExtendedHashMap<String, String, String> allorderlist = new ExtendedHashMap<>();
                 try{
+                    if(new File(tradeFileFullName).exists()){
                   InputStream initialStream = new FileInputStream(new File(tradeFileFullName));
                 
                 JsonReader jr = new JsonReader(initialStream);
                 allorderlist = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
+                    }
                 }catch (Exception e){
                     logger.log(Level.INFO,null,e);
                 }
@@ -476,17 +478,18 @@ public class Validator {
                 ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
                 InputStream initialStream;
                 try{
+                    if(new File(fileName).exists()){
                     initialStream = new FileInputStream(new File(fileName));
                 JsonReader jr = new JsonReader(initialStream);
                 tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
+                    }
                 }catch (Exception e){
                     logger.log(Level.SEVERE,null,e);
                 }
                 
         //Remove orders that are not in symbolist
-        Set<Entry>entries=tradelist.entrySet();
-                Iterator iter1=entries.iterator();
+        Iterator iter1=tradelist.store.entrySet().iterator();
         while(iter1.hasNext()){
             Map.Entry pair = (Map.Entry)iter1.next();
             String key=(String)pair.getKey();
@@ -497,7 +500,7 @@ public class Validator {
             }
         }
         
-        for (Entry entry : entries) {
+        for (Entry entry : tradelist.store.entrySet()) {
             String key=(String)entry.getKey();
             String childdisplayname=Trade.getEntrySymbol(tradelist, key);
             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
@@ -506,7 +509,7 @@ public class Validator {
             }
         }
 
-        Iterator iter2 = entries.iterator();
+        Iterator iter2 = tradelist.store.entrySet().iterator();
         while (iter2.hasNext()) {
             Map.Entry pair = (Map.Entry) iter2.next();
             String key=(String)pair.getKey();
@@ -518,9 +521,9 @@ public class Validator {
             }
         }
 
-        Iterator iter3 = entries.iterator();
+        Iterator iter3 = tradelist.store.entrySet().iterator();
         while (iter3.hasNext()) {
-            Map.Entry pair = (Map.Entry) iter2.next();
+            Map.Entry pair = (Map.Entry) iter3.next();
             String key=(String)pair.getKey();
             String childdisplayname=Trade.getEntrySymbol(tradelist, key);
             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
@@ -586,16 +589,17 @@ public class Validator {
                 ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
                 InputStream initialStream;
                 try{
+                    if(new File(fileName).exists()){
                     initialStream = new FileInputStream(new File(fileName));
                 JsonReader jr = new JsonReader(initialStream);
                 tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
+                    }
                 }catch (Exception e){
                     logger.log(Level.SEVERE,null,e);
                 }
                 //Remove orders that are not in symbolist
-        Set<Entry>entries=tradelist.entrySet();
-                Iterator iter1=entries.iterator();
+                Iterator iter1=tradelist.store.entrySet().iterator();
         while(iter1.hasNext()){
             Map.Entry pair = (Map.Entry)iter1.next();
             String key=(String)pair.getKey();
@@ -605,9 +609,9 @@ public class Validator {
                 iter1.remove();
             }
         }
-        Iterator iter2 = entries.iterator();
+        Iterator iter2 = tradelist.store.entrySet().iterator();
         while (iter2.hasNext()) {
-            Map.Entry pair = (Map.Entry)iter1.next();
+            Map.Entry pair = (Map.Entry)iter2.next();
             String key=(String)pair.getKey();
             String childdisplayname=Trade.getEntrySymbol(tradelist, key);
             int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
@@ -648,16 +652,17 @@ public class Validator {
         ArrayList<Integer> comboOrders = new ArrayList<>();
               ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
                 try{
-                    InputStream initialStream = new FileInputStream(new File(fileName));
-                JsonReader jr = new JsonReader(initialStream);
-                tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
-                jr.close();
+                    if (new File(fileName).exists()) {
+                        InputStream initialStream = new FileInputStream(new File(fileName));
+                        JsonReader jr = new JsonReader(initialStream);
+                        tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                        jr.close();
+                    }
                 }catch (Exception e){
                     logger.log(Level.SEVERE,null,e);
                 }
         //Remove orders that are not in symbolist
-        Set<Entry>entries=tradelist.entrySet();
-                Iterator iter1=entries.iterator();
+                Iterator iter1=tradelist.store.entrySet().iterator();
         while(iter1.hasNext()){
             Map.Entry pair = (Map.Entry)iter1.next();
             String key=(String)pair.getKey();
@@ -668,7 +673,7 @@ public class Validator {
             }
         }
         
-        for (Entry entry : entries) {
+        for (Entry entry : tradelist.store.entrySet()) {
             String key=(String)entry.getKey();
             String childdisplayname=Trade.getEntrySymbol(tradelist, key);
             int entryorderidint=Trade.getEntryOrderIDInternal(tradelist, key);
@@ -677,9 +682,9 @@ public class Validator {
                 comboOrders.add(entryorderidint);
             }
         }
-        Iterator iter2 = entries.iterator();
+        Iterator iter2 = tradelist.store.entrySet().iterator();
         while (iter2.hasNext()) {
-            Map.Entry pair = (Map.Entry)iter1.next();
+            Map.Entry pair = (Map.Entry)iter2.next();
             String key=(String)pair.getKey();
             String childdisplayname=Trade.getEntrySymbol(tradelist, key);
             int entryorderidint=Trade.getEntryOrderIDInternal(tradelist, key);
@@ -696,8 +701,7 @@ public class Validator {
         HashMap<String, ArrayList<Integer>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, Integer> tradePosition = new TreeMap<>();
         SortedMap<String, Integer> orderPosition = new TreeMap<>();
-        Set<Entry>entryTR=tr.entrySet();
-        for (Entry entry : entryTR) {
+        for (Entry entry : tr.store.entrySet()) {
             String key=(String)entry.getKey();
             String accountName=Trade.getAccountName(tr, key);
             String childdisplayname=Trade.getEntrySymbol(tr, key);
@@ -719,15 +723,14 @@ public class Validator {
                 }
             }
         }
-        Set<Entry>entryOR=or.entrySet();
-        for (Entry entry : entryOR) {
+        for (Entry entry : or.store.entrySet()) {
             String key=(String)entry.getKey();
-            String accountName=Trade.getAccountName(tr, key);
-            String childdisplayname=Trade.getEntrySymbol(tr, key);
-            EnumOrderSide entrySide=Trade.getEntrySide(tr, key);
-            EnumOrderSide exitSide=Trade.getExitSide(tr, key);
-            int entrySize=Trade.getEntrySize(tr, key);
-            int exitSize=Trade.getExitSize(tr, key);
+            String accountName=Trade.getAccountName(or, key);
+            String childdisplayname=Trade.getEntrySymbol(or, key);
+            EnumOrderSide entrySide=Trade.getEntrySide(or, key);
+            EnumOrderSide exitSide=Trade.getExitSide(or, key);
+            int entrySize=Trade.getEntrySize(or, key);
+            int exitSize=Trade.getExitSize(or, key);
         
             if (accountName.equals(orderAccount)) {
                 int lastPosition = orderPosition.get(childdisplayname) == null ? 0 : orderPosition.get(childdisplayname);
@@ -770,8 +773,7 @@ public class Validator {
         HashMap<String, HashMap<String, ArrayList<Integer>>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, HashMap<String, Integer>> comboPosition = new TreeMap<>();
         SortedMap<String, HashMap<String, Integer>> childPosition = new TreeMap<>();
-        Set<Entry> entryCombos=combos.entrySet();
-        for (Entry entry : entryCombos) {
+        for (Entry entry : combos.store.entrySet()) {
             String key=(String)entry.getKey();
             String accountName=Trade.getAccountName(combos, key);
             String childdisplayname=Trade.getEntrySymbol(combos, key);
@@ -806,8 +808,7 @@ public class Validator {
 
             }
         }
-        Set<Entry> entryChildren=children.entrySet();
-        for (Entry entry : entryChildren) {
+        for (Entry entry : children.store.entrySet()) {
             String key=(String)entry.getKey();
             String accountName=Trade.getAccountName(combos, key);
             String childdisplayname=Trade.getEntrySymbol(combos, key);

@@ -94,8 +94,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
         //first update combo positions
         ArrayList<Integer> comboOrderids = new ArrayList<>();
-        Set<Entry> entries = trades.entrySet();
-        for (Entry entry : entries) {
+        for (Entry entry : trades.store.entrySet()) {
             String key = (String) entry.getKey();
             String parentdisplayname = Trade.getParentSymbol(trades, key);
             int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
@@ -105,7 +104,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
         //then update single legs
-        for (Entry entry : entries) {
+        for (Entry entry : trades.store.entrySet()) {
             String key = (String) entry.getKey();
             String parentdisplayname = Trade.getParentSymbol(trades, key);
             int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
@@ -154,8 +153,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             double entryCost = 0;
             double exitCost = 0;
             //calculate entry costs
-            Set<Entry> entries = getTrades().entrySet();
-            for (Entry entry : entries) {
+            for (Entry entry : getTrades().store.entrySet()) {
                 String key = (String) entry.getKey();
                 String parentdisplayname = Trade.getParentSymbol(trades, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
@@ -188,7 +186,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 break;
                             case DISTRIBUTE:
                                 if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (entrySide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER))) {
-                                    int tradesToday = getTrades().size() * 2;
+                                    int tradesToday = getTrades().store.size() * 2;
                                     if (tradesToday > 0) {
                                         entryCost = entryCost + b.primaryRate / tradesToday + (b.primaryRate / tradesToday) * b.secondaryRate;
                                     }
@@ -217,7 +215,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 }
                                 break;
                             case DISTRIBUTE:
-                                int tradesToday = getTrades().size() * 2;
+                                int tradesToday = getTrades().store.size() * 2;
                                 if (!exitTime.equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (exitSide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && exitTime.contains(entryTime.substring(0, 10))))) {
                                     exitCost = exitCost + b.primaryRate / tradesToday + (b.primaryRate / tradesToday) * b.secondaryRate;
                                 }
@@ -452,7 +450,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         //for each connection eligible for trading
         // System.out.println(Thread.currentThread().getName());
         try {
-            if (event.getOrdReference().compareTo(orderReference) == 0) {
+            if (event.getOrdReference().compareToIgnoreCase(orderReference) == 0) {
                 //we first handle initial orders given by EnumOrderStage=INIT
                 if (event.getOrderStage() == EnumOrderStage.INIT && (event.getReason() != EnumOrderReason.OCOSL || event.getReason() == EnumOrderReason.OCOTP)) {
                     int id = event.getSymbolBean().getSerialno() - 1;
@@ -763,7 +761,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 //ordersToBeFastTracked - not needed
                 //ordersToBeRetried - not needed
                 //ordersMissed - not needed
-                long tempexpire = event.getEffectiveFrom().equals("") ? System.currentTimeMillis() + event.getExpireTime() * 60 * 1000 : DateUtil.parseDate("yyyyMMdd HH:mm:ss", event.getEffectiveFrom()).getTime() + event.getExpireTime() * 60 * 1000;
+                long tempexpire = (event.getEffectiveFrom()==null|| (event.getEffectiveFrom()!=null &&event.getEffectiveFrom().equals(""))) ? System.currentTimeMillis() + event.getExpireTime() * 60 * 1000 : DateUtil.parseDate("yyyyMMdd HH:mm:ss", event.getEffectiveFrom()).getTime() + event.getExpireTime() * 60 * 1000;
                 if (event.getExpireTime() != 0) {//orders have an expiration time. put them in cancellation queue
                     for (int orderid : orderids) {
                         synchronized (c.lockOrdersToBeCancelled) {
@@ -1048,7 +1046,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             BeanConnection c = event.getC();
             synchronized (event.getC().lockOrders) {
                 OrderBean ob = c.getOrders().get(orderid);
-                if (ob != null && ob.getOrderReference().compareTo(orderReference) == 0) {
+                if (ob != null && ob.getOrderReference().compareToIgnoreCase(orderReference) == 0) {
                     int parentid = ob.getParentSymbolID() - 1;
                     int childid = ob.getChildSymbolID() - 1;
                     EnumOrderStatus fillStatus = EnumOrderStatus.SUBMITTED;
@@ -1719,7 +1717,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int childid = ob.getChildSymbolID() - 1;
         boolean combo = parentid != childid;
         String strategy = ob.getOrderReference();
-        Index ind = new Index(strategy, parentid);
+        Index ind = new Index(strategy.toLowerCase(), parentid);
         ArrayList newComboFills;
         int cpid = 0;
 
@@ -2266,8 +2264,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     //We have parentInternalOrderIDEntry
                     //We need to get the entryorderid for the child order
                     // this information is in orderbean
-                    Set<Entry> entries = trades.entrySet();
-                    for (Entry e : entries) {
+                    for (Entry e : trades.store.entrySet()) {
                         String subkey = (String) e.getKey();
                         if (Trade.getParentEntryOrderIDInternal(trades, subkey) == parentInternalOrderIDEntry) {
                             childInternalOrderIDEntry = Trade.getEntryOrderIDInternal(trades, subkey);
@@ -2466,8 +2463,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
     private int getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
         ExtendedHashMap<String, String, String> allTrades = new ExtendedHashMap<>();
-        Set<Entry> entries = getTrades().entrySet();
-        for (Entry entry : entries) {
+        for (Entry entry : getTrades().store.entrySet()) {
             String key = (String) entry.getKey();
             if (Trade.getAccountName(getTrades(), key).equals(accountName)) {
                 ConcurrentHashMap<String, String> value = (ConcurrentHashMap<String, String>) entry.getValue();
@@ -2476,8 +2472,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
         String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-        entries = allTrades.entrySet();
-        for (Entry entry : entries) {
+        for (Entry entry : allTrades.store.entrySet()) {
             String key = (String) entry.getKey();
             if (Trade.getParentSymbol(allTrades, key).equals(symbol) && Trade.getEntrySide(allTrades, key).equals(entrySide) && Trade.getEntrySize(allTrades, key) > Trade.getExitSize(allTrades, key)) {
                 return Trade.getEntryOrderIDInternal(allTrades, key);

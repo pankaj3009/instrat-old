@@ -14,9 +14,9 @@ import java.util.concurrent.ConcurrentSkipListMap;
  *
  * @author Pankaj
  */
-public class ExtendedHashMap<J, K, V> extends ConcurrentSkipListMap{
+public class ExtendedHashMap<J, K, V> {
 
-    ConcurrentSkipListMap<J, ConcurrentHashMap<K, V>> store = new ConcurrentSkipListMap<>();
+    public ConcurrentSkipListMap<J, ConcurrentHashMap<K, V>> store = new ConcurrentSkipListMap<>();
     private int currentSize;
     
     public void put(J key, ConcurrentHashMap<K,V> map) {

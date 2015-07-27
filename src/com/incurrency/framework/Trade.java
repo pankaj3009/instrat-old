@@ -23,8 +23,8 @@ public class Trade {
     public Trade(ExtendedHashMap <String,String,String> trades,String[] input) {     
         //the names are all display names
         ConcurrentHashMap<String, String> tr;
-        if (trades.get(input[6]) != null) {
-            tr = (ConcurrentHashMap<String,String>)trades.get(input[6]);
+        if (trades.store.get(input[6]) != null) {
+            tr = (ConcurrentHashMap<String,String>)trades.store.get(input[6]);
         } else {
             tr = new ConcurrentHashMap<>();
         }
@@ -60,10 +60,10 @@ public class Trade {
         trades.put(input[7], tr);
     }
 
-    public  Trade(ExtendedHashMap <String,String,String> trades,int id, int parentid, EnumOrderReason reason,EnumOrderSide side, double price, int size, int internalid,int orderid,int parentorderid,String timeZone,String accountName){
+    public  Trade(ExtendedHashMap <String,String,String> trades,int id, int parentid, EnumOrderReason reason,EnumOrderSide side, double price, int size, int entryorderidint,int entryorderidext,int parententryorderidint,String timeZone,String accountName){
         ConcurrentHashMap<String, String> tr;
-        if (trades.get(String.valueOf(internalid)) != null) {
-            tr = (ConcurrentHashMap<String,String>)trades.get(String.valueOf(internalid));
+        if (trades.store.get(String.valueOf(entryorderidint)) != null) {
+            tr = (ConcurrentHashMap<String,String>)trades.store.get(String.valueOf(entryorderidint));
         } else {
             tr = new ConcurrentHashMap<>();
         }
@@ -81,18 +81,18 @@ public class Trade {
         }
         tr.put("entryreason", reason.toString());
         tr.put("entrytime", entryTime);
-        tr.put("entryorderidint", String.valueOf(internalid));
-        tr.put("entryorderidext", String.valueOf(orderid));
-        tr.put("parententryorderidint", String.valueOf(parentorderid));
+        tr.put("entryorderidint", String.valueOf(entryorderidint));
+        tr.put("entryorderidext", String.valueOf(entryorderidext));
+        tr.put("parententryorderidint", String.valueOf(parententryorderidint));
         tr.put("accountname", accountName);
-        trades.put(String.valueOf(internalid), tr);
+        trades.put(String.valueOf(entryorderidint), tr);
     }
 /*
-    public static void updateEntry(ExtendedHashMap <String,String,String> trades,int id, EnumOrderSide side, double price, int size, int internalid, int orderid, String timeZone, String accountName) {
+    public static void updateEntry(ExtendedHashMap <String,String,String> trades,int id, EnumOrderSide side, double price, int size, int exitorderidint, int exitorderidext, String timeZone, String accountName) {
      
         ConcurrentHashMap<String, String> tr;
-        if (trades.get(String.valueOf(internalid)) != null) {
-            tr = (ConcurrentHashMap<String,String>)trades.get(String.valueOf(internalid));
+        if (trades.get(String.valueOf(exitorderidint)) != null) {
+            tr = (ConcurrentHashMap<String,String>)trades.get(String.valueOf(exitorderidint));
         } else {
             tr = new ConcurrentHashMap<>();
         }
@@ -109,20 +109,18 @@ public class Trade {
         }
         
         tr.put("entrytime", entryTime);
-        tr.put("entryorderidint", String.valueOf(internalid));
-        tr.put("entryorderidext", String.valueOf(orderid));
+        tr.put("entryorderidint", String.valueOf(exitorderidint));
+        tr.put("entryorderidext", String.valueOf(exitorderidext));
         tr.put("accountname", accountName);
-        trades.put(String.valueOf(internalid), tr);
+        trades.put(String.valueOf(exitorderidint), tr);
     }
 */
-    public static void updateExit(ExtendedHashMap <String,String,String> trades,int id,EnumOrderReason reason, EnumOrderSide side, double price, int size, int internalid, int orderid, int parentorderid,int entryidint,String timeZone, String accountName) {
-        ConcurrentHashMap<String, String> tr;
-        if (trades.get(String.valueOf(internalid)) != null) {
-            tr = (ConcurrentHashMap<String,String>)trades.get(String.valueOf(internalid));
-        } else {
-            tr = new ConcurrentHashMap<>();
-        }
-
+    public static void updateExit(ExtendedHashMap <String,String,String> trades,int id,EnumOrderReason reason, EnumOrderSide side, double price, int size, int exitorderidint, int exitorderidext, int parentexitorderidint,int keyentryorderid,String timeZone, String accountName) {
+        ConcurrentHashMap<String, String> tr=new ConcurrentHashMap<>();
+        if (trades.store.get(String.valueOf(exitorderidint)) != null) {
+            tr = (ConcurrentHashMap<String,String>)trades.store.get(String.valueOf(exitorderidint));
+        } 
+        if(!tr.isEmpty()){
         tr.put("exitsymbol", Parameters.symbol.get(id).getDisplayname());
         tr.put("exitsymbolid", String.valueOf(id));
 
@@ -136,12 +134,13 @@ public class Trade {
             exitTime=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         }
         tr.put("exittime", String.valueOf(exitTime));
-        tr.put("exitorderidint", String.valueOf(internalid));
-        tr.put("exitorderidext", String.valueOf(orderid));
-        tr.put("exitorderidex", String.valueOf(parentorderid));
+        tr.put("exitorderidint", String.valueOf(exitorderidint));
+        tr.put("exitorderidext", String.valueOf(exitorderidext));
+        tr.put("exitorderidex", String.valueOf(parentexitorderidint));
         tr.put("accountname", accountName);
         tr.put("exitreason", String.valueOf(reason));
-        trades.put(String.valueOf(entryidint), tr);
+        trades.put(String.valueOf(keyentryorderid), tr);
+        }
     }
   
 
@@ -163,7 +162,10 @@ public class Trade {
      * @return the entrySide
      */
     public static EnumOrderSide getEntrySide(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return EnumOrderSide.valueOf(trades.get(internalOrderID.toString(), "entryside"));
+                String side=trades.get(internalOrderID.toString(), "entryside");
+        side=(side==null||(side!=null&&side.equals("")))?"UNDEFINED":side;
+        return EnumOrderSide.valueOf(side);
+
     }
 
     /**
@@ -196,7 +198,7 @@ public class Trade {
      * @return the entrySize
      */
     public static int getEntrySize(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "entrysize"));
+        return Utilities.getInt(trades.get(internalOrderID.toString(), "entrysize"),0);
 
     }
 
@@ -253,7 +255,10 @@ public class Trade {
      * @return the exitSide
      */
     public static EnumOrderSide getExitSide(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return EnumOrderSide.valueOf(trades.get(internalOrderID.toString(), "exitside"));
+        String side= trades.get(internalOrderID.toString(), "exitside");
+        side=(side==null||(side!=null && side.equals("")))?"UNDEFINED":side;
+        return EnumOrderSide.valueOf(side);
+        
     }
 
     /**
@@ -272,7 +277,7 @@ public class Trade {
      * @return the exitPrice
      */
     public static double getExitPrice(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-         return Double.valueOf(trades.get(internalOrderID.toString(), "exitprice"));
+         return Utilities.getDouble(trades.get(internalOrderID.toString(), "exitprice"),0);
    }
 
     /**
@@ -286,7 +291,7 @@ public class Trade {
      * @return the exitSize
      */
     public static int getExitSize(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "exitside"));
+        return Utilities.getInt(trades.get(internalOrderID.toString(),"exitsize"),0);
     }
 
     /**
@@ -314,7 +319,7 @@ public class Trade {
      * @return the exitID
      */
     public static int getExitOrderIDInternal(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "exitorderidint"));
+                return Utilities.getInt(trades.get(internalOrderID.toString(),"exitorderidint"),-1);
     }
 
     /**
@@ -329,7 +334,7 @@ public class Trade {
      * @return the exitBrokerage
      */
     public static double getExitBrokerage(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Double.valueOf(trades.get(internalOrderID.toString(), "exitbrokerage"));
+                return Utilities.getDouble(trades.get(internalOrderID.toString(),"exitbrokerage"),0);
     }
 
     /**
@@ -343,7 +348,7 @@ public class Trade {
      * @return the entryBrokerage
      */
     public static double getEntryBrokerage(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Double.valueOf(trades.get(internalOrderID.toString(), "entrybrokerage"));
+                return Utilities.getDouble(trades.get(internalOrderID.toString(),"entrybrokerage"),0);
     }
 
     /**
@@ -371,7 +376,7 @@ trades.add(internalOrderID.toString(), "entrybrokerage", String.valueOf(entryBro
      * @return the mtmToday
      */
     public static double getMtmToday(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Double.valueOf(trades.get(internalOrderID.toString(), "mtmtoday"));
+                return Utilities.getDouble(trades.get(internalOrderID.toString(),"mtmtoday"),0);
 
     }
 
@@ -386,7 +391,7 @@ trades.add(internalOrderID.toString(), "mtmtoday", String.valueOf(mtmToday));
      * @return the mtmYesterday
      */
     public static double getMtmYesterday(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Double.valueOf(trades.get(internalOrderID.toString(), "mtmyesterday"));
+                return Utilities.getDouble(trades.get(internalOrderID.toString(),"mtmyesterday"),0);
     }
 
     /**
@@ -400,7 +405,7 @@ trades.add(internalOrderID.toString(), "mtmtoday", String.valueOf(mtmToday));
      * @return the mtmPriorMonth
      */
     public static double getMtmPriorMonth(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Double.valueOf(trades.get(internalOrderID.toString(), "mtmpriormonth"));
+        return Utilities.getDouble(trades.get(internalOrderID.toString(),"mtmpriormonth"),0);
     }
 
     /**
@@ -440,7 +445,7 @@ trades.add(internalOrderID.toString(), "mtmtoday", String.valueOf(mtmToday));
      * @return the exitOrderID
      */
     public static int getExitOrderIDExternal(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "exitorderidext"));
+                return Utilities.getInt(trades.get(internalOrderID.toString(),"exitorderidext"),-1);
     }
 
     /**
@@ -454,7 +459,7 @@ trades.add(internalOrderID.toString(), "exitorderidext", String.valueOf(exitOrde
      * @return the entryOrderID
      */
     public static int getEntryOrderIDExternal(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "entryorderidext"));
+                return Utilities.getInt(trades.get(internalOrderID.toString(),"entryorderidext"),-1);
     }
 
     /**
@@ -467,7 +472,7 @@ trades.add(internalOrderID.toString(), "entryorderidext", String.valueOf(entryOr
      * @return the entrySymbolID
      */
     public static int getEntrySymbolID(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "entrysymbolid"));
+                return Utilities.getInt(trades.get(internalOrderID.toString(),"entrysymbolid"),-1);
     }
 
     /**
@@ -481,7 +486,7 @@ trades.add(internalOrderID.toString(), "entryorderidext", String.valueOf(entryOr
      * @return the exitSymbolID
      */
     public static int getExitSymbolID(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "exitsymbolid"));
+        return Utilities.getInt(trades.get(internalOrderID.toString(),"exitsymbolid"),-1);
     }
 
     /**
@@ -509,7 +514,9 @@ trades.add(internalOrderID.toString(), "parentsymbol", parentSymbol);
      * @return the exitReason
      */
     public static EnumOrderReason getExitReason(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return EnumOrderReason.valueOf(trades.get(internalOrderID.toString(), "exitreason"));
+        String reason=trades.get(internalOrderID.toString(), "exitreason");
+        reason=(reason==null||(reason!=null&&reason.equals("")))?"UNDEFINED":reason;
+        return EnumOrderReason.valueOf(reason);
     }
 
     /**
@@ -523,7 +530,9 @@ trades.add(internalOrderID.toString(), "parentsymbol", parentSymbol);
      * @return the entryReason
      */
     public static EnumOrderReason getEntryReason(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return EnumOrderReason.valueOf(trades.get(internalOrderID.toString(), "entryreason"));
+        String reason=trades.get(internalOrderID.toString(), "entryreason");
+        reason=(reason==null||(reason!=null&&reason.equals("")))?"UNDEFINED":reason;
+        return EnumOrderReason.valueOf(reason);
     }
 
     /**
@@ -538,7 +547,7 @@ trades.add(internalOrderID.toString(), "parentsymbol", parentSymbol);
     }
 
      public static int getParentEntryOrderIDInternal(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "parententryorderidint"));    
+        return Utilities.getInt(trades.get(internalOrderID.toString(), "parententryorderidint"),-1);    
     }
 
      public static void setParentExitOrderIDInternal(ExtendedHashMap <String,String,String> trades,Object internalOrderID,int orderid) {
@@ -546,6 +555,6 @@ trades.add(internalOrderID.toString(), "parentsymbol", parentSymbol);
     }
 
      public static int getParentExitOrderIDInternal(ExtendedHashMap <String,String,String> trades,Object internalOrderID) {
-        return Integer.valueOf(trades.get(internalOrderID.toString(), "parentexitorderidint"));    
+        return Utilities.getInt(trades.get(internalOrderID.toString(), "parentexitorderidint"),-1);    
     }
 }
