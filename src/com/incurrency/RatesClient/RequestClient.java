@@ -83,8 +83,9 @@ public class RequestClient implements Runnable {
         }
     }
 
-    public void stop() {
+    public void stop1() {
         end.put("end");
+        logger.log(Level.INFO,"Put end");
         shouldStop = true;
     }
 
@@ -178,8 +179,8 @@ public class RequestClient implements Runnable {
                     }
                     processResponse(response);
                     if (response.contains("finished")) {
-                        logger.log(Level.FINE,"Symbol:{0}, Status: Data complete reported by server",new Object[]{s.getDisplayname()});
-                        stop();
+                        logger.log(Level.INFO,"Symbol:{0}, Status: Data complete reported by server",new Object[]{s.getDisplayname()});
+                        stop1();
                         availableForNewRequest.set(true);
                     }
                 }

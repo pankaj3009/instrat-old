@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework;
 
+import com.incurrency.RatesClient.RequestClient;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -27,11 +28,23 @@ public class HistoricalBars implements Runnable {
     boolean appendAtEnd;
     EnumBarSize barSize;
     private static final Logger logger = Logger.getLogger(HistoricalBars.class.getName());
-
+    BeanSymbol s;
+    
     public HistoricalBars(String strategyFilter, String typeFilter, EnumSource source,String[] timeSeries,String metric,String startTime, String endTime,EnumBarSize barSize, boolean appendAtEnd) {
         this.strategyFilter = strategyFilter;
         this.typeFilter = typeFilter;
         this.source = source;
+        this.timeSeries=timeSeries;
+        this.metric=metric;
+        this.startTime=startTime;
+        this.endTime=endTime;
+        this.appendAtEnd=appendAtEnd;
+        this.barSize=barSize;
+    }
+    
+    public HistoricalBars(BeanSymbol s,EnumSource source,String[] timeSeries,String metric,String startTime, String endTime,EnumBarSize barSize, boolean appendAtEnd ){
+        this.s=s;
+                this.source = source;
         this.timeSeries=timeSeries;
         this.metric=metric;
         this.startTime=startTime;
@@ -45,6 +58,7 @@ public class HistoricalBars implements Runnable {
     @Override
     public void run() {
         try {
+            logger.log(Level.INFO,"Running Run");
             switch (source) {
                 case IB:
                     int connectionCount = Parameters.connection.size();
@@ -74,13 +88,13 @@ public class HistoricalBars implements Runnable {
                     Thread.sleep(11000);
                     break;
                 case CASSANDRA:
-                    for (BeanSymbol s : Parameters.symbol) {
-                        if (s.getTimeSeriesLength(barSize) <= 0 && Pattern.compile(Pattern.quote(strategyFilter), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
-                            if ("".compareTo(typeFilter) != 0 && s.getType().compareTo(typeFilter) == 0) {
+                    //for (BeanSymbol s : Parameters.symbol) {
+                      //  if (s.getTimeSeriesLength(barSize) <= 0 && Pattern.compile(Pattern.quote(strategyFilter), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
+                        //    if ("".compareTo(typeFilter) != 0 && s.getType().compareTo(typeFilter) == 0) {
                                 Utilities.requestHistoricalData(s,timeSeries,metric,startTime,endTime,barSize,appendAtEnd);
-                            }
-                        }
-                    }
+                          //  }
+                       // }
+                    //}
                     break;
                 default:
                     break;
