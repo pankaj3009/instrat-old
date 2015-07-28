@@ -103,10 +103,12 @@ public class Utilities {
         }
                ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
                try{
+                if(Utilities.fileExists("logs", orderFileName)){
                 InputStream initialStream = new FileInputStream(new File(orderFileName));
                 JsonReader jr = new JsonReader(initialStream);
                 allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
+                }
                }catch (Exception e){
                    logger.log(Level.SEVERE,null,e);
                }
