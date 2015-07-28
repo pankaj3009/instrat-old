@@ -60,8 +60,8 @@ public class Strategy implements NotificationListener {
     //--common parameters required for all strategies
     MainAlgorithm m;
     public HashMap<Integer, Integer> internalOpenOrders = new HashMap(); //holds mapping of symbol id to latest initialization internal order
-    private ExtendedHashMap<String, String, String> trades = new ExtendedHashMap<>();
-    private ExtendedHashMap<String, String, String> omsInitTrades = new ExtendedHashMap<>();
+    private ExtendedHashMap<String, String, Object> trades = new ExtendedHashMap<>();
+    private ExtendedHashMap<String, String, Object> omsInitTrades = new ExtendedHashMap<>();
     private HashMap<Integer, BeanPosition> position = new HashMap<>();
     private double tickSize;
     private double pointValue = 1;
@@ -155,16 +155,16 @@ public class Strategy implements NotificationListener {
                 //Initialize open notional orders and positions
                 String filename = "logs" + File.separator + getOrderFile();
                 if(new File(filename).exists()){
-                ExtendedHashMap<String, String, String> allOrders = new ExtendedHashMap<>();
+                ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
                 InputStream initialStream = new FileInputStream(new File(filename));
                 JsonReader jr = new JsonReader(initialStream);
-                allOrders = (ExtendedHashMap<String, String, String>) jr.readObject();
+                allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
                 //There are no child orders in order file. No processing required for handling child orders from orders
                 for (Entry entry : allOrders.store.entrySet()) {
                     String key = (String) entry.getKey();
                     int internalorderid = Integer.valueOf(key);
-                    ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
+                    ConcurrentHashMap value = (ConcurrentHashMap<String, Object>) entry.getValue();
                     trades.put(key, value);
                     String parentsymbolname = Trade.getParentSymbol(allOrders, internalorderid);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
@@ -242,10 +242,10 @@ public class Strategy implements NotificationListener {
                 //Initialize open trades        
                 filename = "logs" + File.separator + getTradeFile();
                 if(new File(filename).exists()){
-                ExtendedHashMap<String, String, String> allTrades = new ExtendedHashMap<>();
+                ExtendedHashMap<String, String, Object> allTrades = new ExtendedHashMap<>();
                 InputStream initialStream = new FileInputStream(new File(filename));
                 JsonReader jr = new JsonReader(initialStream);
-                allTrades = (ExtendedHashMap<String, String, String>) jr.readObject();
+                allTrades = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
                 
                 //Remove trades that are closed
@@ -260,7 +260,7 @@ public class Strategy implements NotificationListener {
 
                 for (Entry entry : allTrades.store.entrySet()) {
                     String key = (String) entry.getKey();
-                    ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
+                    ConcurrentHashMap value = (ConcurrentHashMap<String, Object>) entry.getValue();
                     omsInitTrades.put(key, value);
                 }
                 }
@@ -447,8 +447,8 @@ public class Strategy implements NotificationListener {
             TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
             
                 ExtendedHashMap<String, String, String> oldOrders = new ExtendedHashMap<>();
-                if(new File(orderFileFullName).exists()){
-                InputStream initialStream = new FileInputStream(new File(orderFileFullName));
+                if(Utilities.fileExists("logs", orderFileFullName)){
+                InputStream initialStream = new FileInputStream(new File("logs"+File.separator+orderFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
                 oldOrders = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
@@ -459,12 +459,12 @@ public class Strategy implements NotificationListener {
                     ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
                     oldOrders.put(key, value);
                 }
-            File f = new File(orderFileFullName);
+            File f = new File("logs"+File.separator+orderFileFullName);
             if (f.exists() && !f.isDirectory()) { //delete old file
                 f.delete();
             }
             String out=JsonWriter.objectToJson(oldOrders);
-            Utilities.writeToFile(orderFileFullName, out);
+            Utilities.writeToFile("logs",orderFileFullName, out);
 
             //Now write trade file 
 //            String tradeFileFullName = "logs" + File.separator + prefix + s.getTradeFile();
@@ -517,8 +517,8 @@ public class Strategy implements NotificationListener {
             }
             
                  ExtendedHashMap<String, String, String> oldTrades = new ExtendedHashMap<>();
-                if(new File(tradeFileFullName).exists()){
-                 InputStream initialStream = new FileInputStream(new File(tradeFileFullName));
+                if(Utilities.fileExists("logs", tradeFileFullName)){
+                 InputStream initialStream = new FileInputStream(new File("logs"+File.separator+tradeFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
                 oldTrades = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
@@ -530,13 +530,13 @@ public class Strategy implements NotificationListener {
                     oldTrades.put(key, value);
                 }
 
-            f = new File(tradeFileFullName);
+            f = new File("logs"+File.separator+tradeFileFullName);
             if (f.exists() && !f.isDirectory()) { //delete old file
                 f.delete();
             }
             
             out=JsonWriter.objectToJson(oldTrades);
-            Utilities.writeToFile(tradeFileFullName, out);
+            Utilities.writeToFile("logs",tradeFileFullName, out);
             
             for (BeanConnection c : Parameters.connection) {
                 if (s.accounts.contains(c.getAccountName())) {
@@ -550,11 +550,11 @@ public class Strategy implements NotificationListener {
     }
 
     public int getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
-        ExtendedHashMap<String,String,String>allTrades=new ExtendedHashMap<>();
+        ExtendedHashMap<String,String,Object>allTrades=new ExtendedHashMap<>();
            for(Entry entry:getTrades().store.entrySet()){
                String key=(String)entry.getKey();
                if(Trade.getAccountName(getTrades(), key).equals(accountName)){
-                   ConcurrentHashMap<String,String> value=(ConcurrentHashMap<String,String>)entry.getValue();
+                   ConcurrentHashMap<String,Object> value=(ConcurrentHashMap<String,Object>)entry.getValue();
                    allTrades.put(key, value);
                }
            }
@@ -566,7 +566,7 @@ public class Strategy implements NotificationListener {
                    return Trade.getEntryOrderIDInternal(allTrades, key);
                }
            }
-        return 0;
+        return -1;
     }
 
     //used by CSV orders
@@ -666,7 +666,7 @@ public class Strategy implements NotificationListener {
 
     public synchronized void entry(HashMap<String,Object> order) {
         int id=Integer.valueOf(order.get("id").toString());
-        int size=Integer.valueOf(order.get("size")!=null?order.get("size").toString():"0");
+        int size=Utilities.getInt(order.get("size"),0);
         double limitPrice=Utilities.getDouble(order.get("limitprice").toString(), 0);
         EnumOrderSide side =EnumOrderSide.valueOf(order.get("side")!=null?order.get("side").toString():"UNDEFINED");
         if (id >= 0) {
@@ -691,6 +691,8 @@ public class Strategy implements NotificationListener {
                 getPosition().put(id, pd);
             }
             int internalorderid = getInternalOrderID();
+            order.put("orderidint",internalorderid);
+            order.put("entryorderidint",internalorderid);
             this.internalOpenOrders.put(id, internalorderid);
             new Trade(this.getTrades(),id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid,getTimeZone(), "Order");
             logger.log(Level.INFO, "310,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
@@ -761,13 +763,14 @@ public class Strategy implements NotificationListener {
 
      public synchronized void exit(HashMap<String,Object> order) {
         int id=Integer.valueOf(order.get("id").toString());
-        int size=Integer.valueOf(order.get("size")!=null?order.get("size").toString():"0");
-        double limitPrice=Integer.valueOf(order.get("limitprice")!=null?order.get("limitprice").toString():"0");
+        int size=Utilities.getInt(order.get("size"),0);
+        double limitPrice=Utilities.getDouble(order.get("limitprice"),0);
         EnumOrderSide side =EnumOrderSide.valueOf(order.get("side")!=null?order.get("side").toString():"UNDEFINED");
         Boolean scaleout=order.get("scale")!=null?Boolean.valueOf(order.get("scale").toString()):false;
         EnumOrderReason reason =EnumOrderReason.valueOf(order.get("reason")!=null?order.get("reason").toString():"UNDEFINED");
         if (id >= 0) {
             int internalorderid = getInternalOrderID();
+            order.put("orderidint", internalorderid);
             logger.log(Level.INFO, "310,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
             int tradeSize = scaleout == false ? Math.abs(getPosition().get(id).getPosition()) : size;
             double expectedFillPrice = 0;
@@ -803,14 +806,15 @@ public class Strategy implements NotificationListener {
                 default:
                     break;
             }
-            //int tempinternalOrderID = internalOpenOrders.get(id);
+            //int tempinternalOrderID = Utilities.getInt(order.get("entryorderidint"),-1)>0?Utilities.getInt(order.get("entryorderidint"),-1):getFirstInternalOpenOrder(id, side, "Order");
             int tempinternalOrderID = getFirstInternalOpenOrder(id, side, "Order");
-            boolean entryTrade = Trade.getEntrySize(getTrades(), tempinternalOrderID)>0?true:false;
-            if (entryTrade) {
+            boolean entryTradeExists = Trade.getEntrySize(getTrades(), tempinternalOrderID)>0?true:false;
+            if (entryTradeExists) {
                 int exitSize = Trade.getExitSize(getTrades(), tempinternalOrderID);
                 double exitPrice = Trade.getExitPrice(getTrades(), tempinternalOrderID);
                 int newexitSize = exitSize + tradeSize;
                 double newexitPrice = (exitPrice * exitSize + tradeSize * expectedFillPrice) / (newexitSize);
+                order.put("entryorderidint",tempinternalOrderID);
                 Trade.updateExit(getTrades(),id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0,internalorderid,tempinternalOrderID, getTimeZone(), "Order");
                 logger.log(Level.INFO, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
                 if (MainAlgorithm.isUseForTrading()) {
@@ -1271,14 +1275,14 @@ public class Strategy implements NotificationListener {
     /**
      * @return the trades
      */
-    public ExtendedHashMap<String, String, String> getTrades() {
+    public ExtendedHashMap<String, String, Object> getTrades() {
         return trades;
     }
 
     /**
      * @param trades the trades to set
      */
-    public void setTrades(ExtendedHashMap<String, String, String> trades) {
+    public void setTrades(ExtendedHashMap<String, String, Object> trades) {
         this.trades = trades;
     }
 }

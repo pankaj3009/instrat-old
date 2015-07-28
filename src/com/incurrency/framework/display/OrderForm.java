@@ -11,9 +11,11 @@ import com.incurrency.framework.EnumOrderSide;
 import com.incurrency.framework.EnumOrderType;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.ExecutionManager;
+import com.incurrency.framework.OrderEvent;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.TradingUtil;
 import com.incurrency.framework.Utilities;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -268,13 +270,31 @@ public class OrderForm extends javax.swing.JFrame {
         expireTime = maxOrderDuration;
         maxSlippage = s.getMaxSlippageExit();
         if (oms != null) {
-            if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
-                internalOrderId=s.getInternalOrderID();
-                oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT,  dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
+//                internalOrderId=s.getInternalOrderID();
+                HashMap<String,Object> order=new HashMap<>();
+                order.put("orderidint", "-1");
+                order.put("entryorderidint", internalOrderIdEntry);
+                order.put("id", symbolid);
+                order.put("side", side);
+                order.put("type", EnumOrderType.valueOf(comboType.getSelectedItem().toString()));
+                order.put("size", Math.abs(quantity));
+                order.put("limitprice", Double.valueOf(this.txtLimitPrice.getText()));
+                order.put("triggerprice", Double.valueOf(this.txtTriggerPrice.getText()));
+                order.put("orderref", s.getStrategy());
+                order.put("expiretime", expireTime);
+                order.put("orderstage", EnumOrderStage.INIT);
+                order.put("dynamicorderduration", dynamicOrderDuration);
+                order.put("maxslippage", maxSlippage);
+                order.put("transmit", "true");
+                order.put("reason", EnumOrderReason.REGULAREXIT);
+                if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
+                    s.exit(order);
+//                oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT,  dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
                 dispose();
             } else {
                 oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy());
-                oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
+                s.exit(order);
+                //oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
                 dispose();
             }
         }

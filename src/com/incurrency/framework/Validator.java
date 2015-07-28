@@ -50,8 +50,8 @@ public class Validator {
         String orderFileFullName = "logs" + File.separator + prefix + orderFile;
         HashMap<String, ArrayList<Integer>> singleLegReconIssue = getPositionMismatch(orderFileFullName, tradeFileFullName, account, "SingleLeg");
         HashMap<String, ArrayList<Integer>> comboReconIssue = getPositionMismatch(orderFileFullName, tradeFileFullName, account, "Combo");
-        ExtendedHashMap<String,String,String> comboParents = returnComboParent(tradeFileFullName);
-        ExtendedHashMap<String,String,String> comboChildren = returnComboChildren(tradeFileFullName);
+        ExtendedHashMap<String,String,Object> comboParents = returnComboParent(tradeFileFullName);
+        ExtendedHashMap<String,String,Object> comboChildren = returnComboChildren(tradeFileFullName);
         HashMap<String, HashMap<String, ArrayList<Integer>>> comboChildrenReconIssue = reconComboChildren(comboParents, comboChildren, account);
         String singleLegIssues = "";
         String comboIssues = "";
@@ -189,10 +189,10 @@ public class Validator {
             String orderFileFullName = "logs" + File.separator + prefix + orderFile;
             ArrayList<String> comboTrades = new ArrayList<>();
             ArrayList<BeanSymbol> symbolList = new ArrayList<>();
-                ExtendedHashMap<String, String, String> orderList = new ExtendedHashMap<>();
+                ExtendedHashMap<String, String, Object> orderList = new ExtendedHashMap<>();
                 InputStream initialStream = new FileInputStream(new File(orderFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
-                orderList = (ExtendedHashMap<String, String, String>) jr.readObject();
+                orderList = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
             boolean symbolfileneeded = Boolean.parseBoolean(globalProperties.getProperty("symbolfileneeded", "false"));
          if (symbolfileneeded) {
@@ -450,8 +450,8 @@ public class Validator {
                 }
                 
 
-        ExtendedHashMap<String,String,String> t = new ExtendedHashMap<>();
-        ExtendedHashMap<String,String,String>  o = new ExtendedHashMap<>();
+        ExtendedHashMap<String,String,Object> t = new ExtendedHashMap<>();
+        ExtendedHashMap<String,String,Object>  o = new ExtendedHashMap<>();
 
         switch (reconType) {
             case "SingleLeg":
@@ -472,16 +472,16 @@ public class Validator {
         return out;
     }
 
-    private static ExtendedHashMap<String,String,String> returnSingleLegTrades(String fileName) {
+    private static ExtendedHashMap<String,String,Object> returnSingleLegTrades(String fileName) {
         
         ArrayList<Integer> childEntryOrders = new ArrayList<>();
-                ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
+                ExtendedHashMap<String, String, Object> tradelist = new ExtendedHashMap<>();
                 InputStream initialStream;
                 try{
                     if(new File(fileName).exists()){
                     initialStream = new FileInputStream(new File(fileName));
                 JsonReader jr = new JsonReader(initialStream);
-                tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                tradelist = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
                     }
                 }catch (Exception e){
@@ -535,7 +535,7 @@ public class Validator {
 
     }
 
-    private static ArrayList<String> returnSingleLegTrades(ExtendedHashMap<String,String,String> trades,ArrayList<String> keys, String accountName) {
+    private static ArrayList<String> returnSingleLegTrades(ExtendedHashMap<String,String,Object> trades,ArrayList<String> keys, String accountName) {
         //Remove orders that are not in symbolist
         Iterator iter1=keys.iterator();
         while(iter1.hasNext()){
@@ -585,14 +585,14 @@ public class Validator {
 
     }
 
-    private static ExtendedHashMap<String,String,String> returnComboParent(String fileName) {
-                ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
+    private static ExtendedHashMap<String,String,Object> returnComboParent(String fileName) {
+                ExtendedHashMap<String, String, Object> tradelist = new ExtendedHashMap<>();
                 InputStream initialStream;
                 try{
                     if(new File(fileName).exists()){
                     initialStream = new FileInputStream(new File(fileName));
                 JsonReader jr = new JsonReader(initialStream);
-                tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                tradelist = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
                     }
                 }catch (Exception e){
@@ -622,7 +622,7 @@ public class Validator {
         return tradelist;
     }
 
-    private static ArrayList<String> returnComboParent(ExtendedHashMap<String,String,String> trades,ArrayList<String> tradelist, String accountName) {
+    private static ArrayList<String> returnComboParent(ExtendedHashMap<String,String,Object> trades,ArrayList<String> tradelist, String accountName) {
                 //Remove orders that are not in symbolist
         Iterator iter1=tradelist.iterator();
         while(iter1.hasNext()){
@@ -648,14 +648,14 @@ public class Validator {
         return tradelist;
     }
 
-    private static ExtendedHashMap<String,String,String> returnComboChildren(String fileName) {
+    private static ExtendedHashMap<String,String,Object> returnComboChildren(String fileName) {
         ArrayList<Integer> comboOrders = new ArrayList<>();
-              ExtendedHashMap<String, String, String> tradelist = new ExtendedHashMap<>();
+              ExtendedHashMap<String, String, Object> tradelist = new ExtendedHashMap<>();
                 try{
                     if (new File(fileName).exists()) {
                         InputStream initialStream = new FileInputStream(new File(fileName));
                         JsonReader jr = new JsonReader(initialStream);
-                        tradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                        tradelist = (ExtendedHashMap<String, String, Object>) jr.readObject();
                         jr.close();
                     }
                 }catch (Exception e){
@@ -697,7 +697,7 @@ public class Validator {
 
     }
 
-    private static HashMap<String, ArrayList<Integer>> reconTrades(ExtendedHashMap<String,String,String> tr, ExtendedHashMap<String,String,String> or, String tradeAccount, String orderAccount) {
+    private static HashMap<String, ArrayList<Integer>> reconTrades(ExtendedHashMap<String,String,Object> tr, ExtendedHashMap<String,String,Object> or, String tradeAccount, String orderAccount) {
         HashMap<String, ArrayList<Integer>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, Integer> tradePosition = new TreeMap<>();
         SortedMap<String, Integer> orderPosition = new TreeMap<>();
@@ -769,7 +769,7 @@ public class Validator {
         return out;
     }
 
-    private static HashMap<String, HashMap<String, ArrayList<Integer>>> reconComboChildren(ExtendedHashMap<String,String,String> combos, ExtendedHashMap<String,String,String> children, String tradeAccount) {
+    private static HashMap<String, HashMap<String, ArrayList<Integer>>> reconComboChildren(ExtendedHashMap<String,String,Object> combos, ExtendedHashMap<String,String,Object> children, String tradeAccount) {
         HashMap<String, HashMap<String, ArrayList<Integer>>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, HashMap<String, Integer>> comboPosition = new TreeMap<>();
         SortedMap<String, HashMap<String, Integer>> childPosition = new TreeMap<>();

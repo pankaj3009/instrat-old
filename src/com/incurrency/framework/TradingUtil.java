@@ -1301,7 +1301,7 @@ public class TradingUtil {
         return String.format("%1$-" + n + "s", s);
     }
 
-    public static void updateMTM(ExtendedHashMap<String, String, String> trades, String key, String timeZone) {
+    public static void updateMTM(ExtendedHashMap<String, String, Object> trades, String key, String timeZone) {
         String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         double mtmToday = Trade.getMtmToday(trades, key);
         String todayDate = Trade.getTodayDate(trades, key);
@@ -1338,7 +1338,7 @@ public class TradingUtil {
         }
     }
 
-    public static double[] applyBrokerage(ExtendedHashMap<String, String, String> trades, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName) {
+    public static double[] applyBrokerage(ExtendedHashMap<String, String, Object> trades, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName) {
         double[] profitGrid = new double[10];
         ArrayList<Double> dailyEquity = new ArrayList();
         ArrayList<Date> tradeDate = new ArrayList();
@@ -1442,11 +1442,11 @@ public class TradingUtil {
             double monthpnl = 0;
             File dir = new File("logs");
             File file = new File(dir, fileName);
-            ExtendedHashMap<String, String, String> allTrades = new ExtendedHashMap<>();
+            ExtendedHashMap<String, String, Object> allTrades = new ExtendedHashMap<>();
             if (file.exists()) {
                 InputStream initialStream = new FileInputStream(new File(file.getCanonicalPath()));
                 JsonReader jr = new JsonReader(initialStream);
-                allTrades = (ExtendedHashMap<String, String, String>) jr.readObject();
+                allTrades = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
                 }
                 allTrades.store.putAll(trades.store);
@@ -1562,7 +1562,7 @@ public class TradingUtil {
         return profitGrid;
     }
 
-    public static ArrayList<Double> calculateBrokerage(ExtendedHashMap<String, String, String> trades, String key, ArrayList<BrokerageRate> brokerage, String accountName, int tradesToday) {
+    public static ArrayList<Double> calculateBrokerage(ExtendedHashMap<String, String, Object> trades, String key, ArrayList<BrokerageRate> brokerage, String accountName, int tradesToday) {
         ArrayList<Double> brokerageCost = new ArrayList<>();
         brokerageCost.add(0D);
         brokerageCost.add(0D);
@@ -1619,7 +1619,7 @@ public class TradingUtil {
         return brokerageCost;
     }
 
-    private static ArrayList<Double> calculateSingleLegBrokerage(ExtendedHashMap<String, String, String> trades, String key, ArrayList<BrokerageRate> brokerage, int tradesToday) {
+    private static ArrayList<Double> calculateSingleLegBrokerage(ExtendedHashMap<String, String, Object> trades, String key, ArrayList<BrokerageRate> brokerage, int tradesToday) {
         ArrayList<Double> brokerageCost = new ArrayList<>();
         double entryCost = 0;
         double exitCost = 0;
@@ -1792,7 +1792,7 @@ public class TradingUtil {
 
     //Testing routine
     public static void main(String args[]) {
-        ExtendedHashMap<String,String,String> trades = new ExtendedHashMap<>();
+        ExtendedHashMap<String,String,Object> trades = new ExtendedHashMap<>();
         ArrayList<BrokerageRate> brokerage = new ArrayList();
         brokerage.add(new BrokerageRate());
         brokerage.get(0).primaryRate = 0.01;

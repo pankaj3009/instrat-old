@@ -979,7 +979,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         String[] headerarray = initData.get("0");
         String header = Utilities.concatStringArray(headerarray);
         header = "," + "," + header;
-        Utilities.writeToFile(filename, header);
+        Utilities.writeToFile("logs",filename, header);
         initData.remove("0");
         for (String[] data : initData.values()) {
             Utilities.writeToFile(filename, data, timeZone, true);

@@ -41,7 +41,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     String orderReference;
     Date endDate;
     public TradingEventSupport tes = new TradingEventSupport();
-    private ExtendedHashMap<String, String, String> trades = new ExtendedHashMap<>(); //trades holds internal order id <init>, Trade object
+    private ExtendedHashMap<String, String, Object> trades = new ExtendedHashMap<>(); //trades holds internal order id <init>, Trade object
     private double pointValue;
     private ArrayList<Integer> openPositionCount = new ArrayList<>();
     private ArrayList<Integer> maxOpenPositions = new ArrayList<>();
@@ -59,7 +59,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private final String delimiter = "_";
     private double estimatedBrokerage = 0;
 
-    public ExecutionManager(Strategy s, Boolean aggression, double tickSize, Date endDate, String orderReference, double pointValue, Integer maxOpenPositions, String timeZone, ArrayList<String> accounts, ExtendedHashMap<String, String, String> trades) {
+    public ExecutionManager(Strategy s, Boolean aggression, double tickSize, Date endDate, String orderReference, double pointValue, Integer maxOpenPositions, String timeZone, ArrayList<String> accounts, ExtendedHashMap<String, String, Object> trades) {
         this.s = s;
         this.tickSize = tickSize;
         this.aggression = aggression;
@@ -147,6 +147,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         java.util.Timer orderProcessing = new java.util.Timer("Timer: Periodic Order and Execution Cleanup");
         orderProcessing.schedule(runGetOrderStatus, new Date(), 60000);
     }
+    
     TimerTask runBrokerage = new TimerTask() {
         @Override
         public void run() {
@@ -849,7 +850,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         //ordersToBeRetried - no
         //ordersMissed - no
 
-        long tempexpire = event.getEffectiveFrom().equals("") ? System.currentTimeMillis() + event.getExpireTime() * 60 * 1000 : DateUtil.parseDate("yyyyMMdd HH:mm:ss", event.getEffectiveFrom()).getTime() + event.getExpireTime() * 60 * 1000;
+        long tempexpire = (event.getEffectiveFrom()==null|| (event.getEffectiveFrom()!=null &&event.getEffectiveFrom().equals("")))  ? System.currentTimeMillis() + event.getExpireTime() * 60 * 1000 : DateUtil.parseDate("yyyyMMdd HH:mm:ss", event.getEffectiveFrom()).getTime() + event.getExpireTime() * 60 * 1000;
         if (event.getExpireTime() != 0) {//orders have an expiration time. put them in fasttrack queue
             for (int orderid : orderids) {
                 c.getOrdersToBeFastTracked().put(orderid, new BeanOrderInformation(id, c, orderid, tempexpire, event));
@@ -2215,7 +2216,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (ob.getInternalOrderIDEntry() == -1) {
                 parentInternalOrderIDEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName());
             } else {
-                parentInternalOrderIDEntry = ob.getParentInternalOrderID();
+                parentInternalOrderIDEntry = getEntryParentOrderIDInt(ob);
                 childInternalOrderIDEntry = ob.getInternalOrderIDEntry();
             }
 
@@ -2293,6 +2294,16 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
     }
 
+    private int getEntryParentOrderIDInt(OrderBean ob){
+        if(ob.getParentOrderSide().equals(EnumOrderSide.BUY)||ob.getParentOrderSide().equals(EnumOrderSide.SHORT)){
+            //entry order
+            return ob.getParentInternalOrderID();
+        }else{
+            //exit order
+            int entryOrderIDInt=ob.getInternalOrderIDEntry(); //this is the entry id of a child order
+            return Trade.getParentEntryOrderIDInternal(trades, entryOrderIDInt);
+        }
+    }
     private ArrayList lowerBoundParentPosition(BeanPosition p) {
         ArrayList out = new ArrayList();
         int position = 0;
@@ -2462,11 +2473,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     }
 
     private int getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
-        ExtendedHashMap<String, String, String> allTrades = new ExtendedHashMap<>();
+        ExtendedHashMap<String, String, Object> allTrades = new ExtendedHashMap<>();
         for (Entry entry : getTrades().store.entrySet()) {
             String key = (String) entry.getKey();
-            if (Trade.getAccountName(getTrades(), key).equals(accountName)) {
-                ConcurrentHashMap<String, String> value = (ConcurrentHashMap<String, String>) entry.getValue();
+            String account=Trade.getAccountName(getTrades(), key).toString();
+            if (account.equals(accountName)) {
+                ConcurrentHashMap<String, Object> value = (ConcurrentHashMap<String, Object>) entry.getValue();
                 allTrades.put(key, value);
             }
         }
@@ -2601,14 +2613,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     /**
      * @return the trades
      */
-    public ExtendedHashMap<String, String, String> getTrades() {
+    public ExtendedHashMap<String, String, Object> getTrades() {
         return trades;
     }
 
     /**
      * @param trades the trades to set
      */
-    public void setTrades(ExtendedHashMap<String, String, String> trades) {
+    public void setTrades(ExtendedHashMap<String, String, Object> trades) {
         this.trades = trades;
     }
 }

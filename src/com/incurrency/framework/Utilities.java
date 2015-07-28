@@ -101,11 +101,11 @@ public class Utilities {
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
-               ExtendedHashMap<String, String, String> allOrders = new ExtendedHashMap<>();
+               ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
                try{
                 InputStream initialStream = new FileInputStream(new File(orderFileName));
                 JsonReader jr = new JsonReader(initialStream);
-                allOrders = (ExtendedHashMap<String, String, String>) jr.readObject();
+                allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
                }catch (Exception e){
                    logger.log(Level.SEVERE,null,e);
@@ -249,10 +249,10 @@ public class Utilities {
                 }
                 //}
                 if (!headersWritten) {
-                    writeToFile(filename, headers);
+                    writeToFile("logs",filename, headers);
                     headersWritten = true;
                 }
-                writeToFile(filename, output);
+                writeToFile("logs",filename, output);
                 output = "";
             }
         }
@@ -1332,9 +1332,9 @@ public class Utilities {
      * @param filename
      * @param content
      */
-    public static void writeToFile(String filename, String content) {
+    public static void writeToFile(String relativePath,String filename, String content) {
         try {
-            File dir = new File("logs");
+            File dir = new File(relativePath);
             File file = new File(dir, filename);
             //if file doesnt exists, then create it
             if (!file.exists()) {
@@ -1383,6 +1383,16 @@ public class Utilities {
     public static void deleteFile(File file) {
         if (file.exists()) {
             file.delete();
+        }
+    }
+    
+    public static boolean fileExists(String directory,String filename){
+        File dir = new File(directory);
+        File file = new File(dir, filename);
+        if(file.exists()&& !file.isDirectory()){
+            return true;
+        }else{
+            return false;
         }
     }
     
