@@ -9,7 +9,6 @@ import com.ib.client.Order;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -2211,6 +2210,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             int orderid = ob.getOrderID();
             int childInternalOrderIDEntry = 0;
             int parentInternalOrderIDEntry = 0;
+            String account=c.getAccountName();
             boolean entry = ob.getParentOrderSide() == EnumOrderSide.BUY || ob.getParentOrderSide() == EnumOrderSide.SHORT ? true : false;
             //update trades if order is completely filled. For either combo or regular orders, this will be reflected
             if (ob.getInternalOrderIDEntry() == -1) {
@@ -2220,7 +2220,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 childInternalOrderIDEntry = ob.getInternalOrderIDEntry();
             }
 
-            String key = String.valueOf(childInternalOrderIDEntry);
+            String key = String.valueOf(childInternalOrderIDEntry)+"_"+account;
             if (p.getChildPosition().isEmpty()) {//single leg order
                 if (entry) {
                     new Trade(trades, childid, parentid, ob.getReason(), ob.getParentOrderSide(), avgFillPrice, filled, parentInternalOrderIDEntry, orderid, parentInternalOrderIDEntry, timeZone, c.getAccountName());

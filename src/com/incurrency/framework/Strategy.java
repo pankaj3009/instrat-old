@@ -13,8 +13,6 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -22,16 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -163,10 +155,9 @@ public class Strategy implements NotificationListener {
                 //There are no child orders in order file. No processing required for handling child orders from orders
                 for (Entry entry : allOrders.store.entrySet()) {
                     String key = (String) entry.getKey();
-                    int internalorderid = Integer.valueOf(key);
                     ConcurrentHashMap value = (ConcurrentHashMap<String, Object>) entry.getValue();
                     trades.put(key, value);
-                    String parentsymbolname = Trade.getParentSymbol(allOrders, internalorderid);
+                    String parentsymbolname = Trade.getParentSymbol(allOrders, key);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
 
                     if (id >= 0) {//update internal orders if id exists
@@ -176,13 +167,13 @@ public class Strategy implements NotificationListener {
                     int tempPosition = 0;
                     double tempPositionPrice = 0D;
                     if (id >= 0) {
-                        if (Trade.getAccountName(allOrders, internalorderid).equals("Order")) {
+                        if (Trade.getAccountName(allOrders, key).equals("Order")) {
                             BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
                             tempPosition = p.getPosition();
                             tempPositionPrice = p.getPrice();
-                            int entrySize = Trade.getEntrySize(allOrders, internalorderid);
-                            double entryPrice = Trade.getEntryPrice(allOrders, internalorderid);
-                            switch (Trade.getEntrySide(allOrders, internalorderid)) {
+                            int entrySize = Trade.getEntrySize(allOrders, key);
+                            double entryPrice = Trade.getEntryPrice(allOrders, key);
+                            switch (Trade.getEntrySide(allOrders, key)) {
                                 case BUY:
                                     tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
                                     tempPosition = tempPosition + entrySize;
@@ -202,10 +193,10 @@ public class Strategy implements NotificationListener {
                                 default:
                                     break;
                             }
-                            int exitSize = Trade.getExitSize(allOrders, internalorderid);
-                            double exitPrice = Trade.getExitPrice(allOrders, internalorderid);
+                            int exitSize = Trade.getExitSize(allOrders, key);
+                            double exitPrice = Trade.getExitPrice(allOrders, key);
 
-                            switch (Trade.getExitSide(allOrders, internalorderid)) {
+                            switch (Trade.getExitSide(allOrders, key)) {
                                 case COVER:
                                     tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
                                     tempPosition = tempPosition + exitSize;
@@ -228,7 +219,13 @@ public class Strategy implements NotificationListener {
                         }
                     }
                 }
-                Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), Integer.valueOf(allOrders.store.lastKey())));
+                int maxorderid=0;
+                for(Entry entry:allOrders.store.entrySet()){
+                    String key=(String)entry.getKey();
+                    String intkey=key.split("_")[0];
+                    maxorderid=Math.max(Utilities.getInt(intkey, 0),maxorderid);
+                }
+                Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
                 logger.log(Level.INFO, "100, OpeningInternalOrderID,{0}", new Object[]{getStrategy() + delimiter + Algorithm.orderidint.get()});
 
                 }
@@ -406,6 +403,8 @@ public class Strategy implements NotificationListener {
     public synchronized void printOrders(String prefix, Strategy s) {
         double[] profitGrid = new double[5];
         DecimalFormat df = new DecimalFormat("#.##");
+        Map args=new HashMap<>();
+        args.put(JsonWriter.PRETTY_PRINT, Boolean.TRUE);
         try {
             File dir = new File("logs");
             File file;
@@ -463,7 +462,7 @@ public class Strategy implements NotificationListener {
             if (f.exists() && !f.isDirectory()) { //delete old file
                 f.delete();
             }
-            String out=JsonWriter.objectToJson(oldOrders);
+            String out=JsonWriter.objectToJson(oldOrders,args);
             Utilities.writeToFile("logs",orderFileFullName, out);
 
             //Now write trade file 
@@ -535,7 +534,7 @@ public class Strategy implements NotificationListener {
                 f.delete();
             }
             
-            out=JsonWriter.objectToJson(oldTrades);
+            out=JsonWriter.objectToJson(oldTrades,args);
             Utilities.writeToFile("logs",tradeFileFullName, out);
             
             for (BeanConnection c : Parameters.connection) {

@@ -104,7 +104,7 @@ public class Utilities {
                ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
                try{
                 if(Utilities.fileExists("logs", orderFileName)){
-                InputStream initialStream = new FileInputStream(new File(orderFileName));
+                InputStream initialStream = new FileInputStream(new File("logs"+File.separator+orderFileName));
                 JsonReader jr = new JsonReader(initialStream);
                 allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
