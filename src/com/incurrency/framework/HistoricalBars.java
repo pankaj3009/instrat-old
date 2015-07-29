@@ -58,7 +58,6 @@ public class HistoricalBars implements Runnable {
     @Override
     public void run() {
         try {
-            logger.log(Level.INFO,"Running Run");
             switch (source) {
                 case IB:
                     int connectionCount = Parameters.connection.size();
