@@ -31,7 +31,6 @@ public class Trade {
         }
         tr.put("entrysymbol", input[0]);
         tr.put("parentsymbol", input[1]);
-        tr.put("entrysymbolid", String.valueOf(Utilities.getIDFromDisplayName(Parameters.symbol,input[0])));
         tr.put("entryside", String.valueOf(input[2].equals("")?EnumOrderSide.UNDEFINED:EnumOrderSide.valueOf(input[2])));
         tr.put("entryprice", input[3]);
         tr.put("entrysize", input[4]);
@@ -42,7 +41,6 @@ public class Trade {
         tr.put("entrybrokerage", String.valueOf((input[9].equals("")||input[9]==null)?0D:Double.parseDouble(input[9])));
         
         tr.put("exitsymbol", input[10]!=null?input[10]:"");
-        tr.put("exitsymbolid", String.valueOf(Utilities.getIDFromDisplayName(Parameters.symbol,input[10])));
         tr.put("exitside", String.valueOf((input[11].equals("")||input[11]==null)?EnumOrderSide.UNDEFINED:EnumOrderSide.valueOf(input[11])));
         tr.put("exitprice", String.valueOf((input[12].equals("")||input[12]==null)?0D:Double.parseDouble(input[12])));
         tr.put("exitsize", String.valueOf((input[13].equals("")||input[13]==null)?0:Integer.parseInt(input[13])));
@@ -70,7 +68,6 @@ public class Trade {
         }
         tr.put("entrysymbol", Parameters.symbol.get(id).getDisplayname());
         tr.put("parentsymbol", Parameters.symbol.get(parentid).getDisplayname());
-        tr.put("entrysymbolid", String.valueOf(id));
         tr.put("entryside", String.valueOf(side));
         tr.put("entryprice", String.valueOf(price));
         tr.put("entrysize", String.valueOf(size));
@@ -123,8 +120,6 @@ public class Trade {
         } 
         if(!tr.isEmpty()){
         tr.put("exitsymbol", Parameters.symbol.get(id).getDisplayname());
-        tr.put("exitsymbolid", String.valueOf(id));
-
         tr.put("exitside", String.valueOf(side));
         tr.put("exitprice", String.valueOf(price));
         tr.put("exitsize", String.valueOf(size));
@@ -468,34 +463,6 @@ trades.add(internalOrderID.toString(), "exitorderidext", String.valueOf(exitOrde
      */
     public static void setEntryOrderIDExternal(ExtendedHashMap <String,String,Object> trades,Object internalOrderID,int entryOrderID) {
 trades.add(internalOrderID.toString(), "entryorderidext", String.valueOf(entryOrderID));    }
-
-    /**
-     * @return the entrySymbolID
-     */
-    public static int getEntrySymbolID(ExtendedHashMap <String,String,Object> trades,Object internalOrderID) {
-                return Utilities.getInt(trades.get(internalOrderID.toString(),"entrysymbolid"),-1);
-    }
-
-    /**
-     * @param entrySymbolID the entrySymbolID to set
-     */
-    public static void setEntrySymbolID(ExtendedHashMap <String,String,Object> trades,Object internalOrderID,int entrySymbolID) {
-     trades.add(internalOrderID.toString(), "entrysymbolid", String.valueOf(entrySymbolID));
-    }
-
-    /**
-     * @return the exitSymbolID
-     */
-    public static int getExitSymbolID(ExtendedHashMap <String,String,Object> trades,Object internalOrderID) {
-        return Utilities.getInt(trades.get(internalOrderID.toString(),"exitsymbolid"),-1);
-    }
-
-    /**
-     * @param exitSymbolID the exitSymbolID to set
-     */
-    public static void setExitSymbolID(ExtendedHashMap <String,String,Object> trades,Object internalOrderID,int exitSymbolID) {
-    trades.add(internalOrderID.toString(), "exitsymbolid", String.valueOf(exitSymbolID));
-    }
 
     /**
      * @return the parentSymbol

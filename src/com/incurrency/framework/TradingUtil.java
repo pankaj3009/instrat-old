@@ -1386,7 +1386,8 @@ public class TradingUtil {
                 String entryTime = Trade.getEntryTime(trades, key);
                 String exitTime = Trade.getExitTime(trades, key);
                 String account = Trade.getAccountName(trades, key);
-                int childid = Trade.getEntrySymbolID(trades, key);
+                String childsymbolDisplayName=Trade.getEntrySymbol(trades, key);
+                int childid = Utilities.getIDFromDisplayName(Parameters.symbol,childsymbolDisplayName);
 
                 if (account.equals(accountName)) {
                     ArrayList<Double> tempBrokerage = calculateBrokerage(trades, key, brokerage, accountName, tradesToday);
@@ -1410,8 +1411,9 @@ public class TradingUtil {
                 int entrySize=Trade.getEntrySize(trades, key);
                 
                 String account = Trade.getAccountName(trades, key);
-                int childid = Trade.getEntrySymbolID(trades, key);
-                if (account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
+                String childsymbolDisplayName=Trade.getEntrySymbol(trades, key);
+                int childid = Utilities.getIDFromDisplayName(Parameters.symbol,childsymbolDisplayName);
+                if (childid>=0 && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
                     exitPrice = exitPrice== 0D ? mtmToday: exitPrice;
                     entryPrice = mtmYesterday== 0D ? entryPrice: mtmYesterday;
                     double pnl = 0;
@@ -1454,7 +1456,8 @@ public class TradingUtil {
                 for(Entry entry:allTrades.store.entrySet()){ //calculate MTD pnl
                     String key=(String)entry.getKey();
                     String account=Trade.getAccountName(allTrades, key);
-                    int childid=Trade.getEntrySymbolID(allTrades, key);
+                String childsymbolDisplayName=Trade.getEntrySymbol(trades, key);
+                int childid = Utilities.getIDFromDisplayName(Parameters.symbol,childsymbolDisplayName);
                 String entryTime = Trade.getEntryTime(allTrades, key);
                 String exitTime = Trade.getExitTime(allTrades, key);
                 double exitPrice =Trade.getExitPrice(allTrades, key);
@@ -1466,7 +1469,7 @@ public class TradingUtil {
                 String todayDate=Trade.getTodayDate(allTrades, key);
                 EnumOrderSide entrySide=Trade.getEntrySide(allTrades, key);
                 int entrySize=Trade.getEntrySize(allTrades, key);
-                    if (account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
+                    if (childid>=0 && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
                         //logger.log(Level.INFO, "Month Beginning: {0}, Exit Time: {1}", new Object[]{monthBeginning, t.getExitTime().substring(0, 10)});
                         String exitDate = exitTime.equals("") ? todayDate: exitTime;
                         if (DateUtil.parseDate("yyyy-MM-dd", exitDate.substring(0, 10)).compareTo(DateUtil.parseDate("yyyy-MM-dd", monthBeginning)) >= 0) {
@@ -1487,7 +1490,8 @@ public class TradingUtil {
                 for(Entry entry:allTrades.store.entrySet()){ //calculate YTD pnl
                     String key=(String)entry.getKey();
                     String account=Trade.getAccountName(allTrades, key);
-                    int childid=Trade.getEntrySymbolID(allTrades, key);
+                String childsymbolDisplayName=Trade.getEntrySymbol(trades, key);
+                int childid = Utilities.getIDFromDisplayName(Parameters.symbol,childsymbolDisplayName);
                 String entryTime = Trade.getEntryTime(allTrades, key);
                 String exitTime = Trade.getExitTime(allTrades, key);
                 double exitPrice =Trade.getExitPrice(allTrades, key);
@@ -1499,7 +1503,7 @@ public class TradingUtil {
                 String todayDate=Trade.getTodayDate(allTrades, key);
                 EnumOrderSide entrySide=Trade.getEntrySide(allTrades, key);
                 int entrySize=Trade.getEntrySize(allTrades, key);
-                    if (account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
+                    if (childid>=0 && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
                         if (entryDate == null) { //set entry date to the first date that trades/orders were executed
                             entryDate = DateUtil.parseDate("yyyy-MM-dd", entryTime.substring(0, 10));
                         }
@@ -1567,9 +1571,10 @@ public class TradingUtil {
         brokerageCost.add(0D);
         brokerageCost.add(0D);
         int entryorderidint = Trade.getEntryOrderIDInternal(trades, key);
-        int id = Trade.getEntrySymbolID(trades, key);
+        String childsymboldisplayname=Trade.getEntrySymbol(trades, key);
+        int id = Utilities.getIDFromDisplayName(Parameters.symbol, childsymboldisplayname);
         String account = Trade.getAccountName(trades, key);
-        if (Parameters.symbol.get(id).getType().equals("COMBO")) {
+        if (id>=0 && Parameters.symbol.get(id).getType().equals("COMBO")) {
             if (!account.equals("Order")) {
                 ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(trades, key, brokerage, tradesToday);
                 double earlierEntryCost = brokerageCost.get(0);
