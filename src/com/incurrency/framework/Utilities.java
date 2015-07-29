@@ -116,7 +116,8 @@ public class Utilities {
         ArrayList<Integer> childEntryOrders = new ArrayList<>();
         for(Entry entry:allOrders.store.entrySet()){
             String key=(String)entry.getKey();
-            int childid=Trade.getEntrySymbolID(allOrders, key);
+            String childdisplayname=Trade.getEntrySymbol(allOrders, key);
+            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
             int entryorderidint=Trade.getEntryOrderIDInternal(allOrders, key);
             if (childid>= 0) {
                 if (Parameters.symbol.get(childid).getType().equals("COMBO")) {
