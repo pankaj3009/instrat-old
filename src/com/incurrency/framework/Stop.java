@@ -9,11 +9,11 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public class Stop {
-    EnumStopType stopType=EnumStopType.STOPLOSS;
-    EnumStopMode stopMode=EnumStopMode.PERCENTAGE;
-    double stopValue=1;
-    boolean recalculate=false;
-    double StopLevel;
+    public EnumStopType stopType=EnumStopType.STOPLOSS;
+    public EnumStopMode stopMode=EnumStopMode.PERCENTAGE;
+    public double stopValue=1;
+    public boolean recalculate=false;
+    public double StopLevel;
     
     public Stop(){
         

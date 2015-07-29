@@ -664,7 +664,7 @@ public class Strategy implements NotificationListener {
         }
     }
 
-    public synchronized void entry(HashMap<String,Object> order) {
+    public int entry(HashMap<String,Object> order) {
         int id=Integer.valueOf(order.get("id").toString());
         int size=Utilities.getInt(order.get("size"),0);
         double limitPrice=Utilities.getDouble(order.get("limitprice").toString(), 0);
@@ -700,6 +700,9 @@ public class Strategy implements NotificationListener {
                 oms.tes.fireOrderEvent(order);
                 //oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
             }
+            return internalorderid;
+        }else{
+            return -1;
         }
     }
 
@@ -761,7 +764,7 @@ public class Strategy implements NotificationListener {
         }
     }
 
-     public synchronized void exit(HashMap<String,Object> order) {
+     public synchronized int exit(HashMap<String,Object> order) {
         int id=Integer.valueOf(order.get("id").toString());
         int size=Utilities.getInt(order.get("size"),0);
         double limitPrice=Utilities.getDouble(order.get("limitprice"),0);
@@ -820,9 +823,13 @@ public class Strategy implements NotificationListener {
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(order);
                 }
+                return tempinternalOrderID;
             } else {
                 logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side + tempinternalOrderID});
+                return -1;
             }
+        }else{
+            return -1;
         }
     }
 
