@@ -1698,6 +1698,7 @@ public class TradingUtil {
         }
         entryCost = Trade.getEntryBrokerage(trades, key) == 0D ? entryCost : Trade.getEntryBrokerage(trades, key);
         brokerageCost.add(entryCost);
+        exitCost = Trade.getExitBrokerage(trades, key) == 0D ? exitCost : Trade.getExitBrokerage(trades, key);
         brokerageCost.add(exitCost);
         return brokerageCost;
 
