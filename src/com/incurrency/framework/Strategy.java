@@ -152,6 +152,16 @@ public class Strategy implements NotificationListener {
                 JsonReader jr = new JsonReader(initialStream);
                 allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
+                
+                //Remove orders that are closed
+                Iterator iter = allOrders.store.entrySet().iterator();
+                while (iter.hasNext()) {
+                    Map.Entry pair = (Map.Entry) iter.next();
+                    String key = (String) pair.getKey();
+                    if (Trade.getExitSize(allOrders, key) == Trade.getEntrySize(allOrders, key)) {
+                        iter.remove();
+                    }
+                }
                 //There are no child orders in order file. No processing required for handling child orders from orders
                 for (Entry entry : allOrders.store.entrySet()) {
                     String key = (String) entry.getKey();
