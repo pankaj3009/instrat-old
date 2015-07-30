@@ -666,6 +666,7 @@ public class Strategy implements NotificationListener {
     public int entry(HashMap<String,Object> order) {
         int id=Integer.valueOf(order.get("id").toString());
         int size=Utilities.getInt(order.get("size"),0);
+        order.put("orderref", this.getStrategy());
         double limitPrice=Utilities.getDouble(order.get("limitprice").toString(), 0);
         EnumOrderSide side =EnumOrderSide.valueOf(order.get("side")!=null?order.get("side").toString():"UNDEFINED");
         if (id >= 0) {
@@ -766,6 +767,7 @@ public class Strategy implements NotificationListener {
      public synchronized int exit(HashMap<String,Object> order) {
         int id=Integer.valueOf(order.get("id").toString());
         int size=Utilities.getInt(order.get("size"),0);
+        order.put("orderref", this.getStrategy());
         double limitPrice=Utilities.getDouble(order.get("limitprice"),0);
         EnumOrderSide side =EnumOrderSide.valueOf(order.get("side")!=null?order.get("side").toString():"UNDEFINED");
         Boolean scaleout=order.get("scale")!=null?Boolean.valueOf(order.get("scale").toString()):false;
