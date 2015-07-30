@@ -539,8 +539,8 @@ public class Validator {
         //Remove orders that are not in symbolist
         Iterator iter1=keys.iterator();
         while(iter1.hasNext()){
-             Map.Entry pair = (Map.Entry) iter1.next();
-             String key = (String) pair.getKey();
+//             Map.Entry pair = (Map.Entry) iter1.next();
+             String key = (String) iter1.next();
              String childdisplayname=Trade.getEntrySymbol(trades, key);
              int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
             if(childid<0){
@@ -572,7 +572,7 @@ public class Validator {
 
         Iterator iter3 = keys.iterator();
         while (iter3.hasNext()) {
-            String key = (String) iter2.next();
+            String key = (String) iter3.next();
             int entryorderidint=Trade.getEntryOrderIDInternal(trades, key);
             String childdisplayname=Trade.getEntrySymbol(trades, key);
              int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
