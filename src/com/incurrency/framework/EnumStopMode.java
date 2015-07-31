@@ -8,6 +8,4 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumStopMode {POINT,PERCENTAGE
-    
-}
+public enum EnumStopMode {POINT,PERCENTAGE}

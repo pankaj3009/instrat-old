@@ -8,5 +8,4 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumStopType {STOPLOSS,TAKEPROFIT,TRAILING    
-}
+public enum EnumStopType {STOPLOSS,TAKEPROFIT,TRAILING}
