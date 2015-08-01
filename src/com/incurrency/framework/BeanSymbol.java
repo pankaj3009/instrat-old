@@ -601,17 +601,26 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
         int column = this.getColumnLabels().get(size).indexOf(Long.valueOf(time));
-        if (row >= 0) {
+        if (row >= 0 && column>=0) {
             out = this.getTimeSeries().get(size).get(row, column);
         }
         return out;
     }
 
+    /**
+     * Returns the value of the label.If boolean is set to before,the value just before the time specified 
+     * in the method is returned.
+     * @param size
+     * @param time
+     * @param timeSeriesLabel
+     * @param before
+     * @return 
+     */
     public double getTimeSeriesValue(EnumBarSize size, long time, String timeSeriesLabel, boolean before) {
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
         int column = this.getColumnLabels().get(size).indexOf(Long.valueOf(time));
-        if (row >= 0) {
+        if (row >= 0 && column>=0) {
             DoubleMatrix m = this.getTimeSeries(size, timeSeriesLabel);
             if (before) {
                 m = m.get(Utilities.range(0, 1, column)).reshape(1, column);
@@ -632,6 +641,13 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         return out;
     }
 
+    /**
+     * Returns value specified at the timeIndex
+     * @param size
+     * @param timeIndex
+     * @param timeSeriesLabel
+     * @return 
+     */
     public double getTimeSeriesValue(EnumBarSize size, int timeIndex, String timeSeriesLabel) {
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
@@ -640,8 +656,42 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         return out;
     }
+    
+    /**
+     * Returns the floor from a timeSeriesLabel, given any time.If time is not present in the corresponding
+     * columnlabels, returns the prior low value.
+     * @param size
+     * @param time
+     * @param timeSeriesLabel
+     * @return 
+     */
+   public double getTimeSeriesValueFloor(EnumBarSize size, long time, String timeSeriesLabel) {
+        double out = ReservedValues.EMPTY;
+        int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
+        TreeSet<Long> tempSet=new TreeSet<>(this.getColumnLabels().get(size));
+        long priorTime=tempSet.floor(time);
+        if (row >= 0) {
+            out = this.getTimeSeriesValue(size, priorTime, timeSeriesLabel);
+        }
+        return out;
+    }
 
-    public double getTimeSeriesValue(EnumBarSize size, int timeIndex, String timeSeriesLabel, boolean ignoreEmptyValues) {
+   /**
+    * Returns the floor of the time passed to the method.
+    * @param size
+    * @param time
+    * @param timeSeriesLabel
+    * @return 
+    */
+    public long getTimeFloor(EnumBarSize size, long time, String timeSeriesLabel) {
+        double out = ReservedValues.EMPTY;
+        int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
+        TreeSet<Long> tempSet = new TreeSet<>(this.getColumnLabels().get(size));
+        long priorTime = tempSet.floor(time);
+        return priorTime;
+    }
+   
+   public double getTimeSeriesValue(EnumBarSize size, int timeIndex, String timeSeriesLabel, boolean ignoreEmptyValues) {
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
         if (row >= 0) {
@@ -651,6 +701,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         return out;
     }
 
+    
     public int getTimeStampIndex(EnumBarSize size, long time) {
         if (this.getColumnLabels().get(size) != null) {
             return this.getColumnLabels().get(size).indexOf(time);
