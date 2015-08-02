@@ -239,6 +239,28 @@ public class Indicators {
         return mout;
     }
     
+    public static DoubleMatrix atr(DoubleMatrix high,DoubleMatrix low,DoubleMatrix close, int period){
+        DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, high.length);
+        Core c = new Core();
+        RetCode retCode;
+        MInteger begin = new MInteger();
+        MInteger length = new MInteger();
+        double[] out=new double[high.length];
+        int[] indices=high.ne(ReservedValues.EMPTY).findIndices();
+        indices=Utilities.addArraysNoDuplicates(indices, low.ne(ReservedValues.EMPTY).findIndices());
+        indices=Utilities.addArraysNoDuplicates(indices, close.ne(ReservedValues.EMPTY).findIndices());
+        high=MatrixMethods.getSubSetVector(high, indices);
+        low=MatrixMethods.getSubSetVector(low, indices);
+        close=MatrixMethods.getSubSetVector(close, indices);
+        retCode = c.atr(0, high.length-1, high.data,low.data,close.data,1, begin, length, out);
+        double[] out1=Arrays.copyOfRange(out, 0, length.value);
+        double[] na=Utilities.range(ReservedValues.EMPTY, 0, begin.value);
+        double []out2=com.google.common.primitives.Doubles.concat(na,out1);
+        DoubleMatrix mout1=new DoubleMatrix(out2).reshape(1, out2.length);
+        mout.put(indices, mout1);
+        return ma(mout,period);
+    }
+    
     public static DoubleMatrix rsi(DoubleMatrix m, int period){
         DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c=new Core();
