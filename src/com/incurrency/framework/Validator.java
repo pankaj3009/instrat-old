@@ -111,7 +111,7 @@ public class Validator {
             t.start();
             return reconStatus;
         } else {
-            System.out.println("Trade and Order Files Reconile!");
+            System.out.println("Trade and Order Files Reconile for account "+account+" !");
             return reconStatus;
         }
 
@@ -425,24 +425,23 @@ public class Validator {
 
     public static HashMap<String, ArrayList<Integer>> getPositionMismatch(String orderFileFullName, String tradeFileFullName, String account, String reconType) {
                 HashMap<String, ArrayList<Integer>> out = new HashMap<>();
-                ExtendedHashMap<String, String, String> alltradelist = new ExtendedHashMap<>();
+                ExtendedHashMap<String, String, Object> alltradelist = new ExtendedHashMap<>();
                 try{
                 if(new File(tradeFileFullName).exists()){    
                 InputStream initialStream = new FileInputStream(new File(tradeFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
-                alltradelist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                alltradelist = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
                 }
                 }catch (Exception e){
                     logger.log(Level.INFO,null,e);
                 }
-                ExtendedHashMap<String, String, String> allorderlist = new ExtendedHashMap<>();
+                ExtendedHashMap<String, String, Object> allorderlist = new ExtendedHashMap<>();
                 try{
                     if(new File(tradeFileFullName).exists()){
-                  InputStream initialStream = new FileInputStream(new File(tradeFileFullName));
-                
+                  InputStream initialStream = new FileInputStream(new File(orderFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
-                allorderlist = (ExtendedHashMap<String, String, String>) jr.readObject();
+                allorderlist = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
                     }
                 }catch (Exception e){
@@ -747,6 +746,7 @@ public class Validator {
             }
         }
         //recon positions - 2 way recon
+        //Confirm trades in tradePosition exists in order
         for (Map.Entry<String, Integer> entry : tradePosition.entrySet()) {
             String key = entry.getKey();
             if (!entry.getValue().equals(orderPosition.get(key))) {
@@ -757,6 +757,7 @@ public class Validator {
             }
         }
         //2nd recon
+        //Confirm trades in orderPosition exist in trades
         for (Map.Entry<String, Integer> entry : orderPosition.entrySet()) {
             String key = entry.getKey();
             if (!entry.getValue().equals(tradePosition.get(key))) {

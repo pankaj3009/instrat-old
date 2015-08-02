@@ -596,6 +596,15 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             return getColumnLabels().get(barSize).size();
         }
     }
+    
+    public int getDataLength(EnumBarSize barSize,String timeSeriesLabel){
+        int out=0;
+        DoubleMatrix timeSeries=this.getTimeSeries(barSize, timeSeriesLabel);
+        if(timeSeries!=null && timeSeries.length>0){
+            out=timeSeries.ne(ReservedValues.EMPTY).findIndices().length;
+        }
+        return out;
+    }
 
     public double getTimeSeriesValue(EnumBarSize size, long time, String timeSeriesLabel) {
         double out = ReservedValues.EMPTY;

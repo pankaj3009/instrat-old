@@ -20,6 +20,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -614,8 +616,8 @@ public class Utilities {
             double remainder = input - floor;
             if (remainder >= step / 2) {
                 round += step;
-            }
-            return round;
+            }            
+            return round(round,2);
         }
     }
 
@@ -1014,6 +1016,20 @@ public class Utilities {
         double result = factor * range; // 421.20
         return result;
     }
+ 
+    /**
+     * Rounds a number to specified decimals.
+     * @param value
+     * @param places
+     * @return 
+     */
+    public static double round(double value, int places) {
+    if (places < 0) throw new IllegalArgumentException();
+
+    BigDecimal bd = new BigDecimal(value);
+    bd = bd.setScale(places, RoundingMode.HALF_UP);
+    return bd.doubleValue();
+}
 
     /**
      * Converts a List<Doubles> to double[]
