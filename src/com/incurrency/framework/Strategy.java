@@ -757,10 +757,11 @@ public class Strategy implements NotificationListener {
             }
             //int tempinternalOrderID = internalOpenOrders.get(id);
             int tempinternalOrderID = getFirstInternalOpenOrder(id, side, "Order");
-            boolean entryTrade = Trade.getEntrySize(getTrades(), tempinternalOrderID)>0?true:false;
+            String key=tempinternalOrderID+"_"+"Order";
+            boolean entryTrade = Trade.getEntrySize(getTrades(), key)>0?true:false;
             if (entryTrade) {
-                int exitSize = Trade.getExitSize(getTrades(), tempinternalOrderID);
-                double exitPrice = Trade.getExitPrice(getTrades(), tempinternalOrderID);
+                int exitSize = Trade.getExitSize(getTrades(), key);
+                double exitPrice = Trade.getExitPrice(getTrades(), key);
                 int newexitSize = exitSize + tradeSize;
                 double newexitPrice = (exitPrice * exitSize + tradeSize * expectedFillPrice) / (newexitSize);
                 Trade.updateExit(getTrades(),id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0,internalorderid,tempinternalOrderID, getTimeZone(), "Order");

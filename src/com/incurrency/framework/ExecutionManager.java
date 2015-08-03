@@ -2216,7 +2216,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (ob.getInternalOrderIDEntry() == -1) {
                 parentInternalOrderIDEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName());
             } else {
-                parentInternalOrderIDEntry = getEntryParentOrderIDInt(ob);
+                parentInternalOrderIDEntry = getEntryParentOrderIDInt(ob,account);
                 childInternalOrderIDEntry = ob.getInternalOrderIDEntry();
             }
 
@@ -2235,7 +2235,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         logger.log(Level.INFO, "311,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(trades, key) + delimiter + Trade.getEntrySide(trades, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(trades, key) + delimiter + Trade.getEntryOrderIDExternal(trades, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
                     } else {
                         logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter + orderid});
-
                     }
                 }
             } else {//combo order
@@ -2294,14 +2293,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
     }
 
-    private int getEntryParentOrderIDInt(OrderBean ob){
+    private int getEntryParentOrderIDInt(OrderBean ob,String account){
         if(ob.getParentOrderSide().equals(EnumOrderSide.BUY)||ob.getParentOrderSide().equals(EnumOrderSide.SHORT)){
             //entry order
             return ob.getParentInternalOrderID();
         }else{
             //exit order
             int entryOrderIDInt=ob.getInternalOrderIDEntry(); //this is the entry id of a child order
-            return Trade.getParentEntryOrderIDInternal(trades, entryOrderIDInt);
+            return Trade.getParentEntryOrderIDInternal(trades, entryOrderIDInt+"_"+account);
         }
     }
     private ArrayList lowerBoundParentPosition(BeanPosition p) {
