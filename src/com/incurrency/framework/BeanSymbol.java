@@ -1086,7 +1086,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         double[] values = new double[stringValues.length - 1];
         for (int i = 0; i < values.length; i++) {
-            values[i] = Double.parseDouble(stringValues[i + 1]);
+            values[i] = Utilities.getDouble(stringValues[i + 1],0);
         }
         long time = Long.valueOf(stringValues[0]);
         /*
