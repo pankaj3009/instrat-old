@@ -61,7 +61,7 @@ public class Validator {
             singleLegIssues = TradingUtil.padRight("Flag", 10) + TradingUtil.padRight("Order File", 25) + TradingUtil.padRight("Trade File", 25) + TradingUtil.padRight("Symbol", 25) + TradingUtil.padRight("Expected Pos:Orders", 25) + TradingUtil.padRight("Actual Pos:Trade", 25);
             //singleLegIssues="Symbol\t\t,Expected Position As per Orders\t\t,ActualPosition as per trades";
             for (Map.Entry<String, ArrayList<Integer>> issue : singleLegReconIssue.entrySet()) {
-                int expected = issue.getValue().get(0);
+                int expected = Utilities.getInt(issue.getValue().get(0),0);
                 int actual = issue.getValue().get(1) == null ? 0 : issue.getValue().get(1);
                 String flag = Math.abs(expected) < Math.abs(actual) || Integer.signum(expected) == -Integer.signum(actual) ? "Issue" : "Warn";
                 reconStatus = reconStatus && (flag.equals("Issue") ? false : true);
