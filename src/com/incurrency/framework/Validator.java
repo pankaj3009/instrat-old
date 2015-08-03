@@ -438,8 +438,8 @@ public class Validator {
                 }
                 ExtendedHashMap<String, String, Object> allorderlist = new ExtendedHashMap<>();
                 try{
-                    if(new File(tradeFileFullName).exists()){
-                  InputStream initialStream = new FileInputStream(new File(orderFileFullName));
+                if(new File(orderFileFullName).exists()){
+                InputStream initialStream = new FileInputStream(new File(orderFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
                 allorderlist = (ExtendedHashMap<String, String, Object>) jr.readObject();
                 jr.close();
