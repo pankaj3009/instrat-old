@@ -146,102 +146,102 @@ public class Strategy implements NotificationListener {
             if (validation) {
                 //Initialize open notional orders and positions
                 String filename = "logs" + File.separator + getOrderFile();
-                if(new File(filename).exists()){
-                ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
-                InputStream initialStream = new FileInputStream(new File(filename));
-                JsonReader jr = new JsonReader(initialStream);
-                allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
-                jr.close();
-                
-                //Remove orders that are closed
-                Iterator iter = allOrders.store.entrySet().iterator();
-                while (iter.hasNext()) {
-                    Map.Entry pair = (Map.Entry) iter.next();
-                    String key = (String) pair.getKey();
-                    if (Trade.getExitSize(allOrders, key) == Trade.getEntrySize(allOrders, key)) {
-                        iter.remove();
+                if (new File(filename).exists()) {
+                    ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
+                    InputStream initialStream = new FileInputStream(new File(filename));
+                    JsonReader jr = new JsonReader(initialStream);
+                    allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
+                    jr.close();
+
+                    //Remove orders that are closed
+                    Iterator iter = allOrders.store.entrySet().iterator();
+                    while (iter.hasNext()) {
+                        Map.Entry pair = (Map.Entry) iter.next();
+                        String key = (String) pair.getKey();
+                        if (Trade.getExitSize(allOrders, key) == Trade.getEntrySize(allOrders, key)) {
+                            iter.remove();
+                        }
                     }
-                }
-                //There are no child orders in order file. No processing required for handling child orders from orders
-                for (Entry entry : allOrders.store.entrySet()) {
-                    String key = (String) entry.getKey();
-                    ConcurrentHashMap value = (ConcurrentHashMap<String, Object>) entry.getValue();
-                    trades.put(key, value);
-                    String parentsymbolname = Trade.getParentSymbol(allOrders, key);
-                    int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
+                    //There are no child orders in order file. No processing required for handling child orders from orders
+                    for (Entry entry : allOrders.store.entrySet()) {
+                        String key = (String) entry.getKey();
+                        ConcurrentHashMap value = (ConcurrentHashMap<String, Object>) entry.getValue();
+                        trades.put(key, value);
+                        String parentsymbolname = Trade.getParentSymbol(allOrders, key);
+                        int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
 
-                    if (id >= 0) {//update internal orders if id exists
-                        this.internalOpenOrders.put(id, position.get(id).getPosition());
-                    }
+                        if (id >= 0) {//update internal orders if id exists
+                            this.internalOpenOrders.put(id, position.get(id).getPosition());
+                        }
 
-                    int tempPosition = 0;
-                    double tempPositionPrice = 0D;
-                    if (id >= 0) {
-                        if (Trade.getAccountName(allOrders, key).equals("Order")) {
-                            BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
-                            tempPosition = p.getPosition();
-                            tempPositionPrice = p.getPrice();
-                            int entrySize = Trade.getEntrySize(allOrders, key);
-                            double entryPrice = Trade.getEntryPrice(allOrders, key);
-                            switch (Trade.getEntrySide(allOrders, key)) {
-                                case BUY:
-                                    tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
-                                    tempPosition = tempPosition + entrySize;
-                                    p.setPosition(tempPosition);
-                                    p.setPrice(tempPositionPrice);
-                                    p.setPointValue(pointValue);
-                                    position.put(id, p);
-                                    break;
-                                case SHORT:
-                                    tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice - entrySize * entryPrice) / (-entrySize + tempPosition) : 0D;
-                                    tempPosition = tempPosition - entrySize;
-                                    p.setPosition(tempPosition);
-                                    p.setPrice(tempPositionPrice);
-                                    p.setPointValue(pointValue);
-                                    position.put(id, p);
-                                    break;
-                                default:
-                                    break;
-                            }
-                            int exitSize = Trade.getExitSize(allOrders, key);
-                            double exitPrice = Trade.getExitPrice(allOrders, key);
+                        int tempPosition = 0;
+                        double tempPositionPrice = 0D;
+                        if (id >= 0) {
+                            if (Trade.getAccountName(allOrders, key).equals("Order")) {
+                                BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
+                                tempPosition = p.getPosition();
+                                tempPositionPrice = p.getPrice();
+                                int entrySize = Trade.getEntrySize(allOrders, key);
+                                double entryPrice = Trade.getEntryPrice(allOrders, key);
+                                switch (Trade.getEntrySide(allOrders, key)) {
+                                    case BUY:
+                                        tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
+                                        tempPosition = tempPosition + entrySize;
+                                        p.setPosition(tempPosition);
+                                        p.setPrice(tempPositionPrice);
+                                        p.setPointValue(pointValue);
+                                        position.put(id, p);
+                                        break;
+                                    case SHORT:
+                                        tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice - entrySize * entryPrice) / (-entrySize + tempPosition) : 0D;
+                                        tempPosition = tempPosition - entrySize;
+                                        p.setPosition(tempPosition);
+                                        p.setPrice(tempPositionPrice);
+                                        p.setPointValue(pointValue);
+                                        position.put(id, p);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                int exitSize = Trade.getExitSize(allOrders, key);
+                                double exitPrice = Trade.getExitPrice(allOrders, key);
 
-                            switch (Trade.getExitSide(allOrders, key)) {
-                                case COVER:
-                                    tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
-                                    tempPosition = tempPosition + exitSize;
-                                    p.setPosition(tempPosition);
-                                    p.setPrice(tempPositionPrice);
-                                    p.setPointValue(pointValue);
-                                    position.put(id, p);
-                                    break;
-                                case SELL:
-                                    tempPositionPrice = -exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice - exitSize * exitPrice) / (-exitSize + tempPosition) : 0D;
-                                    tempPosition = tempPosition - exitSize;
-                                    p.setPosition(tempPosition);
-                                    p.setPrice(tempPositionPrice);
-                                    p.setPointValue(pointValue);
-                                    position.put(id, p);
-                                    break;
-                                default:
-                                    break;
+                                switch (Trade.getExitSide(allOrders, key)) {
+                                    case COVER:
+                                        tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
+                                        tempPosition = tempPosition + exitSize;
+                                        p.setPosition(tempPosition);
+                                        p.setPrice(tempPositionPrice);
+                                        p.setPointValue(pointValue);
+                                        position.put(id, p);
+                                        break;
+                                    case SELL:
+                                        tempPositionPrice = -exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice - exitSize * exitPrice) / (-exitSize + tempPosition) : 0D;
+                                        tempPosition = tempPosition - exitSize;
+                                        p.setPosition(tempPosition);
+                                        p.setPrice(tempPositionPrice);
+                                        p.setPointValue(pointValue);
+                                        position.put(id, p);
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                         }
                     }
-                }
-                int maxorderid=0;
-                initialStream = new FileInputStream(new File(filename));
-                jr = new JsonReader(initialStream);
-                allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
-                jr.close();
-                for(Entry entry:allOrders.store.entrySet()){
-                    String key=(String)entry.getKey();
-                    String intkey=key.split("_")[0];
-                    maxorderid=Math.max(Utilities.getInt(intkey, 0),maxorderid);
-                    maxorderid=Math.max(maxorderid, Trade.getExitOrderIDInternal(allOrders, key));
-                }
-                Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
-                logger.log(Level.INFO, "100, OpeningInternalOrderID,{0}", new Object[]{getStrategy() + delimiter + Algorithm.orderidint.get()});
+                    int maxorderid = 0;
+                    initialStream = new FileInputStream(new File(filename));
+                    jr = new JsonReader(initialStream);
+                    allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
+                    jr.close();
+                    for (Entry entry : allOrders.store.entrySet()) {
+                        String key = (String) entry.getKey();
+                        String intkey = key.split("_")[0];
+                        maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
+                        maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(allOrders, key));
+                    }
+                    Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
+                    logger.log(Level.INFO, "100, OpeningInternalOrderID,{0}", new Object[]{getStrategy() + delimiter + Algorithm.orderidint.get()});
                 }
                 //print positions on initialization
                 for (int id : getStrategySymbols()) {
@@ -252,22 +252,22 @@ public class Strategy implements NotificationListener {
 
                 //Initialize open trades        
                 filename = "logs" + File.separator + getTradeFile();
-                if(new File(filename).exists()){
-                ExtendedHashMap<String, String, Object> allTrades = new ExtendedHashMap<>();
-                InputStream initialStream = new FileInputStream(new File(filename));
-                JsonReader jr = new JsonReader(initialStream);
-                allTrades = (ExtendedHashMap<String, String, Object>) jr.readObject();
-                jr.close();
-                
-                //Remove trades that are closed
-                Iterator iter = allTrades.store.entrySet().iterator();
-                while (iter.hasNext()) {
-                    Map.Entry pair = (Map.Entry) iter.next();
-                    String key = (String) pair.getKey();
-                    if (Trade.getExitSize(allTrades, key) == Trade.getEntrySize(allTrades, key)) {
-                        iter.remove();
+                if (new File(filename).exists()) {
+                    ExtendedHashMap<String, String, Object> allTrades = new ExtendedHashMap<>();
+                    InputStream initialStream = new FileInputStream(new File(filename));
+                    JsonReader jr = new JsonReader(initialStream);
+                    allTrades = (ExtendedHashMap<String, String, Object>) jr.readObject();
+                    jr.close();
+
+                    //Remove trades that are closed
+                    Iterator iter = allTrades.store.entrySet().iterator();
+                    while (iter.hasNext()) {
+                        Map.Entry pair = (Map.Entry) iter.next();
+                        String key = (String) pair.getKey();
+                        if (Trade.getExitSize(allTrades, key) == Trade.getEntrySize(allTrades, key)) {
+                            iter.remove();
+                        }
                     }
-                }
 
                     for (Entry entry : allTrades.store.entrySet()) {
                         String key = (String) entry.getKey();
@@ -276,17 +276,17 @@ public class Strategy implements NotificationListener {
                     }
                 }
                 if (MainAlgorithm.isUseForTrading()) {
-                        Thread t = new Thread(oms = new ExecutionManager(this, getAggression(), this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts, omsInitTrades));
-                        t.setName(strategy + ":" + "OMS");
-                        t.start();
-                        plmanager = new ProfitLossManager(this, this.getStrategySymbols(), getPointValue(), getClawProfitTarget(), getDayProfitTarget(), getDayStopLoss(), accounts);
-                    }
-                    if (MainAlgorithm.isUseForTrading()) {
-                        Timer closeProcessing = new Timer("Timer: " + this.strategy + " CloseProcessing");
-                        closeProcessing.schedule(runPrintOrders, com.incurrency.framework.DateUtil.addSeconds(endDate, (this.maxOrderDuration + 1) * 60));
-                    }
+                    Thread t = new Thread(oms = new ExecutionManager(this, getAggression(), this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts, omsInitTrades));
+                    t.setName(strategy + ":" + "OMS");
+                    t.start();
+                    plmanager = new ProfitLossManager(this, this.getStrategySymbols(), getPointValue(), getClawProfitTarget(), getDayProfitTarget(), getDayStopLoss(), accounts);
                 }
-            
+                if (MainAlgorithm.isUseForTrading()) {
+                    Timer closeProcessing = new Timer("Timer: " + this.strategy + " CloseProcessing");
+                    closeProcessing.schedule(runPrintOrders, com.incurrency.framework.DateUtil.addSeconds(endDate, (this.maxOrderDuration + 1) * 60));
+                }
+            }
+
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
@@ -416,7 +416,7 @@ public class Strategy implements NotificationListener {
     public synchronized void printOrders(String prefix, Strategy s) {
         double[] profitGrid = new double[5];
         DecimalFormat df = new DecimalFormat("#.##");
-        Map args=new HashMap<>();
+        Map args = new HashMap<>();
         args.put(JsonWriter.PRETTY_PRINT, Boolean.TRUE);
         try {
             File dir = new File("logs");
@@ -433,123 +433,127 @@ public class Strategy implements NotificationListener {
                 equityFile = new File(dir, equityFileName);
 
             }
-            //if file doesnt exists, then create it
-            if (file.exists()) {
-                file.delete();
-            }
-            if (equityFile.exists()) {
-                equityFile.delete();
-            }
 
+            if (prefix.equals("")) {
+                if (file.exists()) {
+                    file.delete();
+                }
+                if (equityFile.exists()) {
+                    equityFile.delete();
+                }
+            }
             logger.log(Level.INFO, "312,Debugging_StartedPrintOrders,{0}", new Object[]{s.getStrategy()});
             //String orderFileFullName = "logs" + File.separator + prefix + s.getOrderFile();
             String orderFileFullName = s.getOrderFile();
-            
-            profitGrid = TradingUtil.applyBrokerage(s.getTrades(), s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName);
-            TradingUtil.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
-            TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
-            TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
-            TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
-            TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
-            TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
-            TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
-            TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
-            TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
-            TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
-            TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
-            
-                ExtendedHashMap<String, String, String> oldOrders = new ExtendedHashMap<>();
-                if(Utilities.fileExists("logs", orderFileFullName)){
-                InputStream initialStream = new FileInputStream(new File("logs"+File.separator+orderFileFullName));
+            if (prefix.equals("")) {
+                profitGrid = TradingUtil.applyBrokerage(s.getTrades(), s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName);
+                TradingUtil.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
+                TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
+                TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
+                TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
+                TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
+                TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
+                TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
+                TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
+                TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
+                TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
+                TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
+            }
+            ExtendedHashMap<String, String, String> oldOrders = new ExtendedHashMap<>();
+            if (Utilities.fileExists("logs", orderFileFullName)) {
+                InputStream initialStream = new FileInputStream(new File("logs" + File.separator + orderFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
                 oldOrders = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
-                }
-                //Iterate through today's orders and add to oldOrders
-                for (Entry entry : s.getTrades().store.entrySet()) {
-                    String key = (String) entry.getKey();
-                    ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
-                    oldOrders.put(key, value);
-                }
-            File f = new File("logs"+File.separator+orderFileFullName);
-            if (f.exists() && !f.isDirectory()) { //delete old file
-                f.delete();
             }
-            String out=JsonWriter.objectToJson(oldOrders,args);
-            Utilities.writeToFile("logs",orderFileFullName, out);
+            //Iterate through today's orders and add to oldOrders
+            for (Entry entry : s.getTrades().store.entrySet()) {
+                String key = (String) entry.getKey();
+                ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
+                oldOrders.put(key, value);
+            }
+            if (prefix.equals("")) {//delete order file only if eod termination
+                File f = new File("logs" + File.separator + orderFileFullName);
+                if (f.exists() && !f.isDirectory()) { //delete old file
+                    f.delete();
+                }
+            }
+            String out = JsonWriter.objectToJson(oldOrders, args);
+            Utilities.writeToFile("logs", prefix + orderFileFullName, out);
 
             //Now write trade file 
 //            String tradeFileFullName = "logs" + File.separator + prefix + s.getTradeFile();
             String tradeFileFullName = s.getTradeFile();
-            for (BeanConnection c : Parameters.connection) {
-                if (s.accounts.contains(c.getAccountName())) {
-                    profitGrid = TradingUtil.applyBrokerage(s.oms.getTrades(), s.getBrokerageRate(), s.getPointValue(), s.getTradeFile(), s.getTimeZone(), s.getStartingCapital(), c.getAccountName(), equityFileName);
-                    TradingUtil.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
-                    TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
-                    TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
-                    TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
-                    TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
-                    TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
-                    TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
-                    TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
-                    TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
-                    TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
-                    TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
-                    String message =
-                            "Strategy Name:" + s.strategy + Strategy.newline
-                            + "Gross P&L today: " + df.format(profitGrid[0]) + Strategy.newline
-                            + "Brokerage today: " + df.format(profitGrid[1]) + Strategy.newline
-                            + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
-                            + "MTD P&L: " + df.format(profitGrid[3]) + Strategy.newline
-                            + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
-                            + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
-                            + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
-                            + "Avg Drawdown (days): " + df.format(profitGrid[7]) + Strategy.newline
-                            + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
-                            + "# days in history: " + df.format(profitGrid[9]);
+            if (prefix.equals("")) {
+                for (BeanConnection c : Parameters.connection) {
+                    if (s.accounts.contains(c.getAccountName())) {
+                        profitGrid = TradingUtil.applyBrokerage(s.oms.getTrades(), s.getBrokerageRate(), s.getPointValue(), s.getTradeFile(), s.getTimeZone(), s.getStartingCapital(), c.getAccountName(), equityFileName);
+                        TradingUtil.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
+                        TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
+                        TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
+                        TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
+                        TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
+                        TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
+                        TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
+                        TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
+                        TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
+                        TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
+                        TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
+                        String message =
+                                "Strategy Name:" + s.strategy + Strategy.newline
+                                + "Gross P&L today: " + df.format(profitGrid[0]) + Strategy.newline
+                                + "Brokerage today: " + df.format(profitGrid[1]) + Strategy.newline
+                                + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
+                                + "MTD P&L: " + df.format(profitGrid[3]) + Strategy.newline
+                                + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
+                                + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
+                                + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
+                                + "Avg Drawdown (days): " + df.format(profitGrid[7]) + Strategy.newline
+                                + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
+                                + "# days in history: " + df.format(profitGrid[9]);
 
-                 String openPositions = Validator.openPositions(c.getAccountName(), s);
-                    logger.log(Level.INFO, "312,Debugging_CalculatedOpenPositions,{0}", new Object[]{s.getStrategy()});
+                        String openPositions = Validator.openPositions(c.getAccountName(), s);
+                        logger.log(Level.INFO, "312,Debugging_CalculatedOpenPositions,{0}", new Object[]{s.getStrategy()});
 
-                    if (openPositions.equals("")) {
-                        message = message + newline + "No open trade positions";
-                    } else {
-                        message = message + newline + openPositions;
-                    }
-                    logger.log(Level.INFO, "312,Debugging_SendingEmail,{0}", new Object[]{s.getStrategy()});
+                        if (openPositions.equals("")) {
+                            message = message + newline + "No open trade positions";
+                        } else {
+                            message = message + newline + openPositions;
+                        }
+                        logger.log(Level.INFO, "312,Debugging_SendingEmail,{0}", new Object[]{s.getStrategy()});
 
-                    Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
-                    t.start();
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException ex) {
-                        logger.log(Level.INFO, "101", ex);
+                        Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
+                        t.start();
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ex) {
+                            logger.log(Level.INFO, "101", ex);
+                        }
                     }
                 }
             }
-            
-                 ExtendedHashMap<String, String, String> oldTrades = new ExtendedHashMap<>();
-                if(Utilities.fileExists("logs", tradeFileFullName)){
-                 InputStream initialStream = new FileInputStream(new File("logs"+File.separator+tradeFileFullName));
+            ExtendedHashMap<String, String, String> oldTrades = new ExtendedHashMap<>();
+            if (Utilities.fileExists("logs", tradeFileFullName)) {
+                InputStream initialStream = new FileInputStream(new File("logs" + File.separator + tradeFileFullName));
                 JsonReader jr = new JsonReader(initialStream);
                 oldTrades = (ExtendedHashMap<String, String, String>) jr.readObject();
                 jr.close();
-                }
-                //Iterate through today's orders and add to oldOrders
-                for (Entry entry : s.oms.getTrades().store.entrySet()) {
-                    String key = (String) entry.getKey();
-                    ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
-                    oldTrades.put(key, value);
-                }
-
-            f = new File("logs"+File.separator+tradeFileFullName);
-            if (f.exists() && !f.isDirectory()) { //delete old file
-                f.delete();
             }
-            
-            out=JsonWriter.objectToJson(oldTrades,args);
-            Utilities.writeToFile("logs",tradeFileFullName, out);
-            
+            //Iterate through today's orders and add to oldOrders
+            for (Entry entry : s.oms.getTrades().store.entrySet()) {
+                String key = (String) entry.getKey();
+                ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
+                oldTrades.put(key, value);
+            }
+            if (prefix.equals("")) {
+                File f = new File("logs" + File.separator + tradeFileFullName);
+                if (f.exists() && !f.isDirectory()) { //delete old file
+                    f.delete();
+                }
+            }
+            out = JsonWriter.objectToJson(oldTrades, args);
+            Utilities.writeToFile("logs", prefix + tradeFileFullName, out);
+
             for (BeanConnection c : Parameters.connection) {
                 if (s.accounts.contains(c.getAccountName())) {
                     Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), c.getAccountName(), c.getOwnerEmail());
@@ -562,22 +566,22 @@ public class Strategy implements NotificationListener {
     }
 
     public int getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
-        ExtendedHashMap<String,String,Object>allTrades=new ExtendedHashMap<>();
-           for(Entry entry:getTrades().store.entrySet()){
-               String key=(String)entry.getKey();
-               if(Trade.getAccountName(getTrades(), key).equals(accountName)){
-                   ConcurrentHashMap<String,Object> value=(ConcurrentHashMap<String,Object>)entry.getValue();
-                   allTrades.put(key, value);
-               }
-           }
+        ExtendedHashMap<String, String, Object> allTrades = new ExtendedHashMap<>();
+        for (Entry entry : getTrades().store.entrySet()) {
+            String key = (String) entry.getKey();
+            if (Trade.getAccountName(getTrades(), key).equals(accountName)) {
+                ConcurrentHashMap<String, Object> value = (ConcurrentHashMap<String, Object>) entry.getValue();
+                allTrades.put(key, value);
+            }
+        }
         String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-           for(Entry entry:allTrades.store.entrySet()){
-               String key=(String)entry.getKey();
-               if(Trade.getParentSymbol(allTrades, key).equals(symbol) && Trade.getEntrySide(allTrades, key).equals(entrySide) && Trade.getEntrySize(allTrades, key)>Trade.getExitSize(allTrades, key)){
-                   return Trade.getEntryOrderIDInternal(allTrades, key);
-               }
-           }
+        for (Entry entry : allTrades.store.entrySet()) {
+            String key = (String) entry.getKey();
+            if (Trade.getParentSymbol(allTrades, key).equals(symbol) && Trade.getEntrySide(allTrades, key).equals(entrySide) && Trade.getEntrySize(allTrades, key) > Trade.getExitSize(allTrades, key)) {
+                return Trade.getEntryOrderIDInternal(allTrades, key);
+            }
+        }
         return -1;
     }
 
@@ -668,7 +672,7 @@ public class Strategy implements NotificationListener {
             }
             int internalorderid = getInternalOrderID();
             this.internalOpenOrders.put(id, internalorderid);
-            new Trade(getTrades(),id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid,getTimeZone(), "Order");
+            new Trade(getTrades(), id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order");
             logger.log(Level.INFO, "310,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
@@ -676,12 +680,12 @@ public class Strategy implements NotificationListener {
         }
     }
 
-    public int entry(HashMap<String,Object> order) {
-        int id=Integer.valueOf(order.get("id").toString());
-        int size=Utilities.getInt(order.get("size"),0);
+    public int entry(HashMap<String, Object> order) {
+        int id = Integer.valueOf(order.get("id").toString());
+        int size = Utilities.getInt(order.get("size"), 0);
         order.put("orderref", this.getStrategy());
-        double limitPrice=Utilities.getDouble(order.get("limitprice").toString(), 0);
-        EnumOrderSide side =EnumOrderSide.valueOf(order.get("side")!=null?order.get("side").toString():"UNDEFINED");
+        double limitPrice = Utilities.getDouble(order.get("limitprice").toString(), 0);
+        EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
         if (id >= 0) {
             size = size == 0 && getNumberOfContracts() == 0 ? (int) (getExposure() / limitPrice) : getNumberOfContracts() * Parameters.symbol.get(id).getMinsize();
             order.put("size", size);
@@ -705,22 +709,21 @@ public class Strategy implements NotificationListener {
                 getPosition().put(id, pd);
             }
             int internalorderid = getInternalOrderID();
-            order.put("orderidint",internalorderid);
-            order.put("entryorderidint",internalorderid);
+            order.put("orderidint", internalorderid);
+            order.put("entryorderidint", internalorderid);
             this.internalOpenOrders.put(id, internalorderid);
-            new Trade(this.getTrades(),id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid,getTimeZone(), "Order");
+            new Trade(this.getTrades(), id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order");
             logger.log(Level.INFO, "310,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(order);
                 //oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
             }
             return internalorderid;
-        }else{
+        } else {
             return -1;
         }
     }
 
-    
     public synchronized void exit(int id, EnumOrderSide side, int size, EnumOrderType orderType, double limitPrice, double triggerPrice, EnumOrderReason reason, EnumOrderStage stage, int duration, int dynamicDuration, double slippage, String orderGroup, String validity, String effectiveTime, boolean scaleout, boolean transmit) {
         if (id >= 0) {
             int internalorderid = getInternalOrderID();
@@ -761,14 +764,14 @@ public class Strategy implements NotificationListener {
             }
             //int tempinternalOrderID = internalOpenOrders.get(id);
             int tempinternalOrderID = getFirstInternalOpenOrder(id, side, "Order");
-            String key=tempinternalOrderID+"_"+"Order";
-            boolean entryTrade = Trade.getEntrySize(getTrades(), key)>0?true:false;
+            String key = tempinternalOrderID + "_" + "Order";
+            boolean entryTrade = Trade.getEntrySize(getTrades(), key) > 0 ? true : false;
             if (entryTrade) {
                 int exitSize = Trade.getExitSize(getTrades(), key);
                 double exitPrice = Trade.getExitPrice(getTrades(), key);
                 int newexitSize = exitSize + tradeSize;
                 double newexitPrice = (exitPrice * exitSize + tradeSize * expectedFillPrice) / (newexitSize);
-                Trade.updateExit(getTrades(),id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0,internalorderid,tempinternalOrderID, getTimeZone(), "Order");
+                Trade.updateExit(getTrades(), id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order");
                 logger.log(Level.INFO, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, reason, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scaleout, orderGroup, effectiveTime, null);
@@ -779,14 +782,14 @@ public class Strategy implements NotificationListener {
         }
     }
 
-     public synchronized int exit(HashMap<String,Object> order) {
-        int id=Integer.valueOf(order.get("id").toString());
-        int size=Utilities.getInt(order.get("size"),0);
+    public synchronized int exit(HashMap<String, Object> order) {
+        int id = Integer.valueOf(order.get("id").toString());
+        int size = Utilities.getInt(order.get("size"), 0);
         order.put("orderref", this.getStrategy());
-        double limitPrice=Utilities.getDouble(order.get("limitprice"),0);
-        EnumOrderSide side =EnumOrderSide.valueOf(order.get("side")!=null?order.get("side").toString():"UNDEFINED");
-        Boolean scaleout=order.get("scale")!=null?Boolean.valueOf(order.get("scale").toString()):false;
-        EnumOrderReason reason =EnumOrderReason.valueOf(order.get("reason")!=null?order.get("reason").toString():"UNDEFINED");
+        double limitPrice = Utilities.getDouble(order.get("limitprice"), 0);
+        EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
+        Boolean scaleout = order.get("scale") != null ? Boolean.valueOf(order.get("scale").toString()) : false;
+        EnumOrderReason reason = EnumOrderReason.valueOf(order.get("reason") != null ? order.get("reason").toString() : "UNDEFINED");
         if (id >= 0) {
             int internalorderid = getInternalOrderID();
             order.put("orderidint", internalorderid);
@@ -828,15 +831,15 @@ public class Strategy implements NotificationListener {
             }
             //int tempinternalOrderID = Utilities.getInt(order.get("entryorderidint"),-1)>0?Utilities.getInt(order.get("entryorderidint"),-1):getFirstInternalOpenOrder(id, side, "Order");
             int tempinternalOrderID = getFirstInternalOpenOrder(id, side, "Order");
-            String key=tempinternalOrderID+"_"+"Order";
-            boolean entryTradeExists = Trade.getEntrySize(getTrades(), key)>0?true:false;
+            String key = tempinternalOrderID + "_" + "Order";
+            boolean entryTradeExists = Trade.getEntrySize(getTrades(), key) > 0 ? true : false;
             if (entryTradeExists) {
                 int exitSize = Trade.getExitSize(getTrades(), key);
                 double exitPrice = Trade.getExitPrice(getTrades(), key);
                 int newexitSize = exitSize + tradeSize;
                 double newexitPrice = (exitPrice * exitSize + tradeSize * expectedFillPrice) / (newexitSize);
-                order.put("entryorderidint",tempinternalOrderID);
-                Trade.updateExit(getTrades(),id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0,internalorderid,tempinternalOrderID, getTimeZone(), "Order");
+                order.put("entryorderidint", tempinternalOrderID);
+                Trade.updateExit(getTrades(), id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order");
                 logger.log(Level.INFO, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(order);
@@ -846,12 +849,11 @@ public class Strategy implements NotificationListener {
                 logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side + tempinternalOrderID});
                 return -1;
             }
-        }else{
+        } else {
             return -1;
         }
     }
 
-    
     @Override
     public void notificationReceived(NotificationEvent event) {
     }
