@@ -230,10 +230,15 @@ public class Strategy implements NotificationListener {
                     }
                 }
                 int maxorderid=0;
+                initialStream = new FileInputStream(new File(filename));
+                jr = new JsonReader(initialStream);
+                allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
+                jr.close();
                 for(Entry entry:allOrders.store.entrySet()){
                     String key=(String)entry.getKey();
                     String intkey=key.split("_")[0];
                     maxorderid=Math.max(Utilities.getInt(intkey, 0),maxorderid);
+                    maxorderid=Math.max(maxorderid, Trade.getExitOrderIDInternal(allOrders, key));
                 }
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
                 logger.log(Level.INFO, "100, OpeningInternalOrderID,{0}", new Object[]{getStrategy() + delimiter + Algorithm.orderidint.get()});

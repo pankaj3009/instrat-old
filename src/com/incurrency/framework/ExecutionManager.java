@@ -836,9 +836,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         } else if (event.isScale()) {
             orders = c.getWrapper().createOrder(event);
         }
-        ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders);
         logger.log(Level.INFO, "303,ExitOrder, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder() + delimiter + event.getOrderSize()});
-
+        ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders);
+        
         //orderid structures impacted
         //activeOrders - yes
         //ordersInProgress - yes
@@ -852,8 +852,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         long tempexpire = (event.getEffectiveFrom()==null|| (event.getEffectiveFrom()!=null &&event.getEffectiveFrom().equals("")))  ? System.currentTimeMillis() + event.getExpireTime() * 60 * 1000 : DateUtil.parseDate("yyyyMMdd HH:mm:ss", event.getEffectiveFrom()).getTime() + event.getExpireTime() * 60 * 1000;
         if (event.getExpireTime() != 0) {//orders have an expiration time. put them in fasttrack queue
             for (int orderid : orderids) {
-                c.getOrdersToBeFastTracked().put(orderid, new BeanOrderInformation(id, c, orderid, tempexpire, event));
                 logger.log(Level.INFO, "307,ExitOrderCancellationQueueAdded, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder() + delimiter + orderid});
+                c.getOrdersToBeFastTracked().put(orderid, new BeanOrderInformation(id, c, orderid, tempexpire, event));
 
             }
         }
@@ -933,8 +933,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     }
 
                     if (amendedOrders.size() > 0 && (c.getOrders().get(orderids.get(0)).getParentStatus() == EnumOrderStatus.ACKNOWLEDGED || c.getOrders().get(orderids.get(0)).getParentStatus() == EnumOrderStatus.PARTIALFILLED)) {
-                        c.getWrapper().placeOrder(c, event, amendedOrders);
                         logger.log(Level.INFO, "303,AmendmentOrder, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()});
+                        c.getWrapper().placeOrder(c, event, amendedOrders);
                         double parentlimitprice = 0D;
                         for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
                             int cid = entry.getKey().getSerialno() - 1;
@@ -979,8 +979,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 }
                             }
                             if (amendedOrders.size() > 0) {
-                                c.getWrapper().placeOrder(c, event, amendedOrders);
                                 logger.log(Level.INFO, "305,AmendmentOrder, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()});
+                                c.getWrapper().placeOrder(c, event, amendedOrders);
                                 c.getOrders().get(ord.m_orderId).setParentLimitPrice(event.getLimitPrice());
                                 //update orders information. Do we need the two lines below as its already set in TWSConnection.placeOrders
                                 //c.getOrders().get(orderid).setTriggerPrice(ob.m_auxPrice);
@@ -1499,8 +1499,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         }
                         for (int ordersToBeDeleted : temp) {
                             synchronized (c.lockOrdersToBeCancelled) {
-                                c.getOrdersToBeCancelled().remove(ordersToBeDeleted);
                                 logger.log(Level.FINE, "307,ExitOrderCancellationQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + ordersToBeDeleted});
+                                c.getOrdersToBeCancelled().remove(ordersToBeDeleted);
                             }
                             //c.getOrdersInProgress().remove(ordersToBeDeleted); This is being removed once we get acknowledgement of cancellation from api
 
@@ -1851,8 +1851,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
             synchronized (c.lockOrdersToBeCancelled) {
                 if (c.getOrdersToBeCancelled().containsKey(orderid) && c.getOrders().get(orderid).getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-                    c.getOrdersToBeCancelled().remove(orderid); //remove filled orders from cancellation queue
                     logger.log(Level.FINE, "307,ExitOrderCancellationQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
+                    c.getOrdersToBeCancelled().remove(orderid); //remove filled orders from cancellation queue
                 }
             }
             Set<BeanOrderInformation> boiSet = c.getActiveOrders().get(ind);
