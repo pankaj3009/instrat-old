@@ -472,12 +472,10 @@ public class Strategy implements NotificationListener {
                 ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
                 oldOrders.put(key, value);
             }
-            if (prefix.equals("")) {//delete order file only if eod termination
-                File f = new File("logs" + File.separator + orderFileFullName);
+                File f = new File("logs" + File.separator + prefix+orderFileFullName);
                 if (f.exists() && !f.isDirectory()) { //delete old file
                     f.delete();
                 }
-            }
             String out = JsonWriter.objectToJson(oldOrders, args);
             Utilities.writeToFile("logs", prefix + orderFileFullName, out);
 
@@ -545,12 +543,11 @@ public class Strategy implements NotificationListener {
                 ConcurrentHashMap value = (ConcurrentHashMap<String, String>) entry.getValue();
                 oldTrades.put(key, value);
             }
-            if (prefix.equals("")) {
-                File f = new File("logs" + File.separator + tradeFileFullName);
+                f = new File("logs" + File.separator + prefix+tradeFileFullName);
                 if (f.exists() && !f.isDirectory()) { //delete old file
                     f.delete();
                 }
-            }
+                
             out = JsonWriter.objectToJson(oldTrades, args);
             Utilities.writeToFile("logs", prefix + tradeFileFullName, out);
 
