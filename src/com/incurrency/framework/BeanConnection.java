@@ -61,6 +61,8 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     private PropertyChangeSupport propertySupport;
     private double pnlByAccount = 0;
     private HashMap<String, Double> pnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
+    private HashMap<String, Double> mtmByStrategy = new HashMap<>(); //holds pnl by each strategy.
+    private HashMap<Index, Double> mtmBySymbol = new HashMap<>(); //holds pnl by each strategy.
     private HashMap<Index, Double> pnlBySymbol = new HashMap<>(); //holds pnl by each strategy.
     private HashMap<String, Double> maxpnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
     private HashMap<String, Double> minpnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
@@ -119,6 +121,9 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
 
     public void initializeConnection(String strategyName) {
         this.pnlByStrategy.put(strategyName, 0D);
+        if(this.mtmByStrategy.get(strategyName)==null){
+            this.mtmByStrategy.put(strategyName, 0D);
+        }
         this.maxpnlByStrategy.put(strategyName, 0D);
         this.minpnlByStrategy.put(strategyName, 0D);
 
@@ -126,6 +131,9 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
             Index ind = new Index(strategyName, i);
             ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
             pnlBySymbol.put(ind, 0D);
+        if(this.mtmBySymbol.get(ind)==null){
+            this.mtmBySymbol.put(ind, 0D);
+        }
             /*
             for (int j = 0; j <= 5; j++) {
                 ordersSymbols.get(ind).add(new ArrayList<Integer>());
@@ -651,5 +659,33 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      */
     public void setOrderMapping(HashMap<Index,ArrayList<Integer>> orderMapping) {
         this.orderMapping = orderMapping;
+    }
+
+    /**
+     * @return the mtmByStrategy
+     */
+    public HashMap<String, Double> getMtmByStrategy() {
+        return mtmByStrategy;
+    }
+
+    /**
+     * @param mtmByStrategy the mtmByStrategy to set
+     */
+    public void setMtmByStrategy(HashMap<String, Double> mtmByStrategy) {
+        this.mtmByStrategy = mtmByStrategy;
+    }
+
+    /**
+     * @return the mtmBySymbol
+     */
+    public HashMap<Index, Double> getMtmBySymbol() {
+        return mtmBySymbol;
+    }
+
+    /**
+     * @param mtmBySymbol the mtmBySymbol to set
+     */
+    public void setMtmBySymbol(HashMap<Index, Double> mtmBySymbol) {
+        this.mtmBySymbol = mtmBySymbol;
     }
 }

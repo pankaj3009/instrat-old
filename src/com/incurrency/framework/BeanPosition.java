@@ -22,6 +22,7 @@ private double profit;
 private int symbolid; //zero based
 private double pointValue;
 private double brokerage;
+private double unrealizedPNLPriorDay;
 private Date positionInitDate;
 public final Object lock=new Object();
 private ArrayList <BeanChildPosition>childPosition=new ArrayList<>();
@@ -165,6 +166,20 @@ private final static Logger logger = Logger.getLogger(BeanPosition.class.getName
      */
     public void setBrokerage(double brokerage) {
         this.brokerage = brokerage;
+    }
+
+    /**
+     * @return the unrealizedPNLPriorDay
+     */
+    public double getUnrealizedPNLPriorDay() {
+        return unrealizedPNLPriorDay;
+    }
+
+    /**
+     * @param unrealizedPNLPriorDay the unrealizedPNLPriorDay to set
+     */
+    public void setUnrealizedPNLPriorDay(double unrealizedPNLPriorDay) {
+        this.unrealizedPNLPriorDay = unrealizedPNLPriorDay;
     }
   
     

@@ -8,6 +8,7 @@ import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.Index;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.Parameters;
+import com.incurrency.framework.Utilities;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.math.RoundingMode;
@@ -26,7 +27,7 @@ import javax.swing.table.AbstractTableModel;
 public class TableModelPositions extends AbstractTableModel {
 
 //    private String[] headers={"Symbol","Position","PositionPrice","P&L","HH","LL","Market","CumVol","Slope","20PerThreshold","Volume","MA","Strategy"};
-    private String[] headers = {"Symbol", "Position", "EntryPrice", "P&L", "MarketPrice", "Strategy"};
+    private String[] headers = {"Symbol", "Position", "EntryPrice", "P&L","MTM","MarketPrice", "Strategy"};
     private static final Logger logger = Logger.getLogger(TableModelPositions.class.getName());
     int delay = 1000; //milliseconds
     int display = 0;
@@ -132,15 +133,38 @@ public class TableModelPositions extends AbstractTableModel {
                 } else {
                     return 0;
                 }
-
             case 4:
+                if (Parameters.connection.get(display).getPositions().size() > 0) {
+                    double pnl = 0;
+                    double value=0;
+                    //calculate max, min pnl
+                    if (!(Parameters.connection.get(display) == null || Parameters.connection.get(display).getPositions() == null || Parameters.connection.get(display).getPositions().get(ind) == null)) {
+                        if (Parameters.connection.get(display).getPositions().get(ind).getPosition() > 0) {
+                            value= -Parameters.connection.get(display).getPositions().get(ind).getPosition() * Parameters.connection.get(display).getPositions().get(ind).getPointValue()*(Parameters.connection.get(display).getPositions().get(ind).getPrice() - Parameters.symbol.get(ind.getSymbolID()).getLastPrice()) + Parameters.connection.get(display).getPositions().get(ind).getProfit();
+                            return Utilities.round(value-Parameters.connection.get(display).getMtmBySymbol().get(ind), 0);
+                        } else if (Parameters.connection.get(display).getPositions().get(ind).getPosition() < 0) {
+                            value=-Parameters.connection.get(display).getPositions().get(ind).getPosition() * Parameters.connection.get(display).getPositions().get(ind).getPointValue()*(Parameters.connection.get(display).getPositions().get(ind).getPrice() - Parameters.symbol.get(ind.getSymbolID()).getLastPrice()) + Parameters.connection.get(display).getPositions().get(ind).getProfit();
+                            return Utilities.round(value-Parameters.connection.get(display).getMtmBySymbol().get(ind), 0);
+                        } else {
+                            value=Parameters.connection.get(display).getPositions().get(ind).getProfit();
+                            return Utilities.round(value-Parameters.connection.get(display).getMtmBySymbol().get(ind), 0);
+                        }
+                    } else {
+                        value= Parameters.connection.get(display).getPositions().get(ind).getProfit();
+                        return Utilities.round(value-Parameters.connection.get(display).getMtmBySymbol().get(ind), 0);
+                    }
+                } else {
+                    return 0;
+                }
+                
+            case 5:
                 if (Parameters.connection.get(display).getPositions().size() > 0) {
                     return Parameters.symbol.get(ind.getSymbolID()).getLastPrice();
                 } else {
                     return "";
                 }
 
-            case 5:
+            case 6:
                 if (Parameters.connection.get(display).getPositions().size() > 0) {
                     return ind.getStrategy();
 

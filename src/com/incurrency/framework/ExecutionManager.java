@@ -137,6 +137,21 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
          }
          */
 
+        //update connection with mtm data
+        for(BeanConnection c:Parameters.connection){
+            HashMap<Index,BeanPosition>positions=c.getPositions();
+            Iterator it = positions.entrySet().iterator();
+            while(it.hasNext()){
+                Map.Entry<Index,BeanPosition> position=(Map.Entry)it.next();
+                if(position.getKey().getStrategy().equals(orderReference)){
+                    Object object=c.getMtmByStrategy().get(orderReference);
+                    double mtmStrategy=Utilities.getDouble(object, 0);
+                    mtmStrategy=mtmStrategy+position.getValue().getUnrealizedPNLPriorDay();
+                    c.getMtmByStrategy().put(orderReference, mtmStrategy);
+                    c.getMtmBySymbol().put(position.getKey(), position.getValue().getUnrealizedPNLPriorDay());
+                }
+            }
+        }
 
         //Initialize timers
         new Timer(10000, cancelExpiredOrders).start();
@@ -242,6 +257,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int entrySize = Trade.getEntrySize(trades, key);
         double exitPrice = Trade.getExitPrice(trades, key);;
         int exitSize = Trade.getExitSize(trades, key);
+        double mtmPrice=Trade.getMtmToday(trades, key);
         if (childid >= 0 && parentid >= 0 && (!combos.contains(entryorderidint) || Parameters.symbol.get(parentid).getType().equals("COMBO"))) {//single leg trades or combo trade
             Index ind = new Index(orderReference, parentid);
             int i = -1;
@@ -302,6 +318,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         default:
                             break;
                     }
+                    p.setUnrealizedPNLPriorDay(p.getPosition()*(mtmPrice-p.getPrice()));
                     //add childPositions and set it to null
                     for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
                         p.getChildPosition().add(new BeanChildPosition(entry.getKey().getSerialno() - 1, entry.getValue()));

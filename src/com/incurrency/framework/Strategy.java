@@ -242,7 +242,6 @@ public class Strategy implements NotificationListener {
                 }
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
                 logger.log(Level.INFO, "100, OpeningInternalOrderID,{0}", new Object[]{getStrategy() + delimiter + Algorithm.orderidint.get()});
-
                 }
                 //print positions on initialization
                 for (int id : getStrategySymbols()) {
@@ -270,17 +269,16 @@ public class Strategy implements NotificationListener {
                     }
                 }
 
-                for (Entry entry : allTrades.store.entrySet()) {
-                    String key = (String) entry.getKey();
-                    ConcurrentHashMap value = (ConcurrentHashMap<String, Object>) entry.getValue();
-                    omsInitTrades.put(key, value);
-                }
+                    for (Entry entry : allTrades.store.entrySet()) {
+                        String key = (String) entry.getKey();
+                        ConcurrentHashMap value = (ConcurrentHashMap<String, Object>) entry.getValue();
+                        omsInitTrades.put(key, value);
+                    }
                 }
                 if (MainAlgorithm.isUseForTrading()) {
                         Thread t = new Thread(oms = new ExecutionManager(this, getAggression(), this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts, omsInitTrades));
                         t.setName(strategy + ":" + "OMS");
                         t.start();
-
                         plmanager = new ProfitLossManager(this, this.getStrategySymbols(), getPointValue(), getClawProfitTarget(), getDayProfitTarget(), getDayStopLoss(), accounts);
                     }
                     if (MainAlgorithm.isUseForTrading()) {
