@@ -33,7 +33,8 @@ import java.util.Arrays;
 public class Indicators {
     
     private static ExtendedHashMap<String, String, Double> output = new ExtendedHashMap<>();
-
+ private static final Object lockSwing = new Object();
+    
     private static final Logger logger = Logger.getLogger(Indicators.class.getName());
 
     /**
@@ -45,6 +46,7 @@ public class Indicators {
      * @return 
      */
     public static BeanSymbol swing(BeanSymbol s, EnumBarSize barSize) {
+        synchronized(lockSwing){
         try {
             Preconditions.checkArgument(s.getTimeSeries(barSize, "settle").length > 0, "Bar for symbol: %s, Barsize: %s does not have any data", s.getDisplayname(), barSize.toString());
             DoubleMatrix mO = s.getTimeSeries(barSize, "open");
@@ -201,6 +203,7 @@ public class Indicators {
         }
 
         return s;
+        }
     }
 
     public static DoubleMatrix stddev(DoubleMatrix m, int period){
