@@ -32,8 +32,14 @@ import java.util.Arrays;
  */
 public class Indicators {
     
-    private static ExtendedHashMap<String, String, Double> output = new ExtendedHashMap<>();
- private static final Object lockSwing = new Object();
+ private static ExtendedHashMap<String, String, Double> output = new ExtendedHashMap<>();
+ private final Object lockSwing = new Object();
+ private static final Object lockStddev = new Object();
+ private static final Object lockma = new Object();
+ private static final Object lockatr = new Object();
+ private static final Object lockrsi = new Object();
+ private static final Object lockzscore = new Object();
+
     
     private static final Logger logger = Logger.getLogger(Indicators.class.getName());
 
@@ -45,7 +51,7 @@ public class Indicators {
      * @param barSize
      * @return 
      */
-    public static BeanSymbol swing(BeanSymbol s, EnumBarSize barSize) {
+    public BeanSymbol swing(BeanSymbol s, EnumBarSize barSize) {
         synchronized(lockSwing){
         try {
             Preconditions.checkArgument(s.getTimeSeries(barSize, "settle").length > 0, "Bar for symbol: %s, Barsize: %s does not have any data", s.getDisplayname(), barSize.toString());
@@ -206,7 +212,7 @@ public class Indicators {
         }
     }
 
-    public static DoubleMatrix stddev(DoubleMatrix m, int period){
+    public DoubleMatrix stddev(DoubleMatrix m, int period){
         DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c = new Core();
         RetCode retCode;
@@ -224,7 +230,7 @@ public class Indicators {
         return mout;
     }
     
-    public static DoubleMatrix ma(DoubleMatrix m, int period){
+    public  DoubleMatrix ma(DoubleMatrix m, int period){
         DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c = new Core();
         RetCode retCode;
@@ -242,7 +248,7 @@ public class Indicators {
         return mout;
     }
     
-    public static DoubleMatrix atr(DoubleMatrix high,DoubleMatrix low,DoubleMatrix close, int period){
+    public  DoubleMatrix atr(DoubleMatrix high,DoubleMatrix low,DoubleMatrix close, int period){
         DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, high.length);
         Core c = new Core();
         RetCode retCode;
@@ -264,7 +270,7 @@ public class Indicators {
         return ma(mout,period);
     }
     
-    public static DoubleMatrix rsi(DoubleMatrix m, int period){
+    public  DoubleMatrix rsi(DoubleMatrix m, int period){
         DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c=new Core();
         RetCode retCode;
@@ -288,10 +294,10 @@ public class Indicators {
      * @param period
      * @return 
      */
-    public static DoubleMatrix zscore(DoubleMatrix m, int period) {
+    public  DoubleMatrix zscore(DoubleMatrix m, int period) {
         DoubleMatrix out = MatrixMethods.create(ReservedValues.EMPTY, m.length);
-        DoubleMatrix dma = Indicators.ma(m, period);
-        DoubleMatrix dstd = Indicators.stddev(m, period);
+        DoubleMatrix dma = new Indicators().ma(m, period);
+        DoubleMatrix dstd = new Indicators().stddev(m, period);
         int[] indices = MatrixMethods.getValidIndices(dma, dstd);
         dma=MatrixMethods.getSubSetVector(dma, indices);
         dstd=MatrixMethods.getSubSetVector(dstd, indices);
@@ -302,7 +308,7 @@ public class Indicators {
     }
     
     
-    private static DoubleMatrix fnHighSwing(DoubleMatrix conditionArray,DoubleMatrix priceArray){
+    private  DoubleMatrix fnHighSwing(DoubleMatrix conditionArray,DoubleMatrix priceArray){
         DoubleMatrix lowsignal=MatrixMethods.cross(MatrixMethods.create(0D, conditionArray.length), conditionArray);
         DoubleMatrix highsignal=MatrixMethods.cross(conditionArray, MatrixMethods.create(0D, conditionArray.length));
         DoubleMatrix tValues=MatrixMethods.highestSince(highsignal, priceArray, 1);
@@ -319,7 +325,7 @@ public class Indicators {
         return tSignal;
     }
 
-      private static DoubleMatrix fnLowSwing(DoubleMatrix conditionArray,DoubleMatrix priceArray){
+      private  DoubleMatrix fnLowSwing(DoubleMatrix conditionArray,DoubleMatrix priceArray){
         DoubleMatrix lowsignal=MatrixMethods.cross(MatrixMethods.create(0D, conditionArray.length), conditionArray);
         DoubleMatrix highsignal=MatrixMethods.cross(conditionArray, MatrixMethods.create(0D, conditionArray.length));
         DoubleMatrix tValues=MatrixMethods.lowestSince(lowsignal, priceArray, 1);
@@ -336,7 +342,7 @@ public class Indicators {
         return tSignal;
     }
 
-    private static DoubleMatrix fnAlignedShift(DoubleMatrix m){
+    private  DoubleMatrix fnAlignedShift(DoubleMatrix m){
     DoubleMatrix barsSinceTrigger = MatrixMethods.barsSince( m.gt(0)); //bars since array greater than 0.
     DoubleMatrix dataValues = barsSinceTrigger.eq(0);
     DoubleMatrix shift = MatrixMethods.ref( barsSinceTrigger, -1 ).add(1); //Calculate the shift required by adding 1.
@@ -350,7 +356,7 @@ public class Indicators {
      * @param s
      * @return 
      */
-    public static BeanSymbol dailyVol(BeanSymbol s) {
+    public  BeanSymbol dailyVol(BeanSymbol s) {
         Core c = new Core();
         double intradayVol = 0;
         double dayClose = 0;
