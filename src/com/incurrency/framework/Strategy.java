@@ -681,6 +681,7 @@ public class Strategy implements NotificationListener {
         EnumOrderSide side =EnumOrderSide.valueOf(order.get("side")!=null?order.get("side").toString():"UNDEFINED");
         if (id >= 0) {
             size = size == 0 && getNumberOfContracts() == 0 ? (int) (getExposure() / limitPrice) : getNumberOfContracts() * Parameters.symbol.get(id).getMinsize();
+            order.put("size", size);
             if (side == EnumOrderSide.BUY) {
                 BeanPosition pd = getPosition().get(id);
                 double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
@@ -788,6 +789,7 @@ public class Strategy implements NotificationListener {
             order.put("orderidint", internalorderid);
             logger.log(Level.INFO, "310,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
             int tradeSize = scaleout == false ? Math.abs(getPosition().get(id).getPosition()) : size;
+            order.put("size", tradeSize);
             double expectedFillPrice = 0;
             switch (reason) {
                 case REGULARENTRY:
