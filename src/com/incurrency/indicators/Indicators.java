@@ -231,6 +231,9 @@ public class Indicators {
     }
     
     public  DoubleMatrix ma(DoubleMatrix m, int period){
+        if(period==1){
+            return m;
+        }else{
         DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c = new Core();
         RetCode retCode;
@@ -246,6 +249,7 @@ public class Indicators {
         DoubleMatrix mout1=new DoubleMatrix(out2).reshape(1, out2.length);
         mout.put(indices, mout1);
         return mout;
+        }
     }
     
     public  DoubleMatrix atr(DoubleMatrix high,DoubleMatrix low,DoubleMatrix close, int period){
@@ -266,7 +270,7 @@ public class Indicators {
         double[] na=Utilities.range(ReservedValues.EMPTY, 0, begin.value);
         double []out2=com.google.common.primitives.Doubles.concat(na,out1);
         DoubleMatrix mout1=new DoubleMatrix(out2).reshape(1, out2.length);
-        mout.put(indices, mout1);
+        mout.put(indices, mout1).reshape(1, mout.length);
         return ma(mout,period);
     }
     
