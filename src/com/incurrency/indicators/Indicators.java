@@ -265,13 +265,14 @@ public class Indicators {
         high=MatrixMethods.getSubSetVector(high, indices);
         low=MatrixMethods.getSubSetVector(low, indices);
         close=MatrixMethods.getSubSetVector(close, indices);
-        retCode = c.atr(0, high.length-1, high.data,low.data,close.data,1, begin, length, out);
+        retCode = c.atr(0, high.length-1, high.data,low.data,close.data,period, begin, length, out);
         double[] out1=Arrays.copyOfRange(out, 0, length.value);
         double[] na=Utilities.range(ReservedValues.EMPTY, 0, begin.value);
         double []out2=com.google.common.primitives.Doubles.concat(na,out1);
         DoubleMatrix mout1=new DoubleMatrix(out2).reshape(1, out2.length);
         mout.put(indices, mout1).reshape(1, mout.length);
-        return ma(mout,period);
+        return mout;
+//        return ma(mout,period);
     }
     
     public  DoubleMatrix rsi(DoubleMatrix m, int period){
