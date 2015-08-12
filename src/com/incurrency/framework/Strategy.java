@@ -170,9 +170,6 @@ public class Strategy implements NotificationListener {
                         String parentsymbolname = Trade.getParentSymbol(allOrders, key);
                         int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
 
-                        if (id >= 0) {//update internal orders if id exists
-                            this.internalOpenOrders.put(id, position.get(id).getPosition());
-                        }
 
                         int tempPosition = 0;
                         double tempPositionPrice = 0D;
@@ -228,7 +225,11 @@ public class Strategy implements NotificationListener {
                                 }
                             }
                         }
+                        if (id >= 0) {//update internal orders if id exists
+                            this.internalOpenOrders.put(id, position.get(id).getPosition());
+                        }
                     }
+
                     int maxorderid = 0;
                     initialStream = new FileInputStream(new File(filename));
                     jr = new JsonReader(initialStream);
