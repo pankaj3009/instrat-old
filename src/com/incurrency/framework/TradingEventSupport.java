@@ -6,6 +6,8 @@ package com.incurrency.framework;
 
 
 
+import com.incurrency.bars.BarEvent;
+import com.incurrency.bars.BarListener;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,6 +28,7 @@ public class TradingEventSupport {
     private CopyOnWriteArrayList bidaskListeners = new CopyOnWriteArrayList();
     private CopyOnWriteArrayList orderListeners = new CopyOnWriteArrayList();
     private CopyOnWriteArrayList historicalListeners=new CopyOnWriteArrayList();
+    private CopyOnWriteArrayList barListeners=new CopyOnWriteArrayList();
     private static final Logger logger = Logger.getLogger(TradingEventSupport.class.getName());
     private static final String delimiter="_";
 
@@ -78,7 +81,14 @@ public class TradingEventSupport {
     public void removeHistoricalListener(HistoricalBarListener l) {
         historicalListeners.remove(l);
     }
-    
+
+     public void addBarListener(BarListener l) {
+        barListeners.add(l);
+    }
+
+    public void removeBarListener(BarListener l) {
+        barListeners.remove(l);
+    }
     
 //**************EVENT HANDLERS
     public void fireOrderStatus(BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
@@ -105,6 +115,14 @@ public class TradingEventSupport {
         while (itrListeners.hasNext()) {
             ((TWSErrorListener) itrListeners.next()).TWSErrorReceived(twsError);
 
+        }
+    }
+    
+    public void fireBars(int id,long time,EnumBarSize barSize){
+        BarEvent event=new BarEvent(new Object(),id,time,barSize);
+        Iterator itrListeners=barListeners.iterator();
+        while(itrListeners.hasNext()){
+            ((BarListener) itrListeners.next()).barReceived(event);
         }
     }
     

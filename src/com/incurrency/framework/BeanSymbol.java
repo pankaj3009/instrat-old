@@ -381,7 +381,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         propertySupport.addPropertyChangeListener(listener);
     }
 
-    private boolean addTimeSeries(EnumBarSize size, String[] labels, long inittime, double[] values) {
+    public boolean addTimeSeries(EnumBarSize size, String[] labels, long inittime, double[] values) {
         try {
             assert labels.length == values.length;
         } catch (AssertionError e) {
@@ -582,6 +582,24 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         return out;
     }
 
+    public double getBarData(EnumBarSize size, String timeSeriesLabel,int indexFromEnd) {
+        DoubleMatrix m = new DoubleMatrix(0, 0);
+        Double out=0D;
+        if (this.getRowLabels().get(size) == null) {
+            return 0;
+        } else {
+            int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
+            if (row >= 0) {
+                m = this.getTimeSeries().get(size).getRow(row);
+            }
+        }
+        if(m.length>indexFromEnd){
+            return m.data[m.length-1-indexFromEnd];
+        }else{
+            return 0;
+        }
+    }
+
     /**
      * Returns the size of a timeseries.If timeseries is not initialized,returns
      * 1.
@@ -727,7 +745,57 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         return out;
     }
+    
+    /**
+     * Returns 0, if no bar found.
+     * @param size
+     * @return 
+     */
+     public long getLastBarStartTime(EnumBarSize size) {
+        List<Long> out = new ArrayList<>();
+        List<Long> row = this.getColumnLabels().get(size);
+        if (row.size() >= 0) {
+            out = row;
+        }
+        if(out.size()>0){
+        return out.get(out.size()-1);
+        }else{
+            return 0;
+        }
+    }
+     
+    /**
+     * Returns the next bar start time.
+     * @param size
+     * @return 
+     */
+     public long getLastBarEndTime(EnumBarSize size) {
+        long out = 0;
+        long startTime = getLastBarStartTime(size);
+        if (startTime > 0) {
+            switch (size) {
+                case ONEMINUTE:
+                    out = DateUtil.addSeconds(new Date(startTime), 60).getTime();
+                    out = Utilities.nextGoodDay(new Date(out), 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true).getTime();
+                    
+                    break;
+                case FIVEMINUTE:
+                    out = DateUtil.addSeconds(new Date(startTime), 300).getTime();
+                    out = Utilities.nextGoodDay(new Date(out), 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true).getTime();
+                    break;
+                case DAILY:
+                    out = DateUtil.addDays(new Date(startTime), 1).getTime();
+                    out = Utilities.nextGoodDay(new Date(out), 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true).getTime();
+                default:
+                    break;
 
+            }
+            return out;
+        } else {
+            return 0;
+        }
+    }
+     
     @Override
     public int hashCode() {
         int hashCode = 0;
@@ -1107,6 +1175,12 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         initTimeSeries(size, labels, time);
         addTimeSeries(size, labels, time, values);
     }
+
+   public void setTimeSeries(EnumBarSize size, long time, String label, double value) {
+            int colid = getColumnLabels().get(size).indexOf(Long.valueOf(time));
+            int rowid = getRowLabels().get(size).indexOf(label);
+            getTimeSeries().get(size).put(rowid, colid, value);
+        }
 
     @Override
     public void writer(String fileName) {
