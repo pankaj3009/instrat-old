@@ -754,13 +754,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      public long getLastBarStartTime(EnumBarSize size) {
         List<Long> out = new ArrayList<>();
         List<Long> row = this.getColumnLabels().get(size);
-        if (row.size() >= 0) {
+        if (row!=null && row.size() >= 0) {
             out = row;
         }
         if(out.size()>0){
         return out.get(out.size()-1);
         }else{
-            return 0;
+            Calendar c=Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+            c.setTime(TradingUtil.getAlgoDate());
+            c.set(Calendar.HOUR_OF_DAY, Algorithm.openHour);
+            c.set(Calendar.MINUTE, Algorithm.openMinute);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            return c.getTimeInMillis();
         }
     }
      
@@ -792,7 +798,15 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             }
             return out;
         } else {
-            return 0;
+            //return 0;
+            //return BOD
+            Calendar c=Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+            c.setTime(TradingUtil.getAlgoDate());
+            c.set(Calendar.HOUR_OF_DAY, Algorithm.openHour);
+            c.set(Calendar.MINUTE, Algorithm.openMinute);
+            c.set(Calendar.SECOND, 0);
+            c.set(Calendar.MILLISECOND, 0);
+            return c.getTimeInMillis();
         }
     }
      
@@ -1179,6 +1193,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
    public void setTimeSeries(EnumBarSize size, long time, String label, double value) {
             int colid = getColumnLabels().get(size).indexOf(Long.valueOf(time));
             int rowid = getRowLabels().get(size).indexOf(label);
+            //logger.log(Level.INFO,"Method:{0},time:{1},label:{2},colid:{3},rowid:{4}",new Object[]{"SetTimeSeries",time,label,colid,rowid});
             getTimeSeries().get(size).put(rowid, colid, value);
         }
 
