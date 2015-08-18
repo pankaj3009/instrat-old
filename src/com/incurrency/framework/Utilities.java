@@ -1030,6 +1030,11 @@ public class Utilities {
     bd = bd.setScale(places, RoundingMode.HALF_UP);
     return bd.doubleValue();
 }
+    public static double round(double value, double range, int places){
+        double out=round(value,range);
+        out=round(out,places);
+        return out;
+    }
 
     /**
      * Converts a List<Doubles> to double[]
