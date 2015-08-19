@@ -440,22 +440,29 @@ public class MainAlgorithm extends Algorithm {
         if (Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())) {
             connectToTWS();
         }
+        String dataSource = globalProperties.getProperty("datasource").toString().trim();
+            String pubsubPort = globalProperties.getProperty("pubsubport", "5556").toString().trim();
+            String topic = globalProperties.getProperty("topic", "INR").toString().trim();
+            Thread t = new Thread(socketListener = new SocketListener(dataSource, pubsubPort, topic));//5556 is where pubsub posts streaming data
+            t.setName("SocketListener");
+            t.start();
+            
         ArrayList<RequestClient> arrRequestClient = new ArrayList<>();
         int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
         if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) {
             for (int i = 0; i < threadCount; i++) {
-                String dataSource = globalProperties.getProperty("datasource").toString().trim();
+                dataSource = globalProperties.getProperty("datasource").toString().trim();
                 String requestPort = globalProperties.getProperty("requestport", "5555").toString().trim();
-                Thread t = new Thread(requestClient = new RequestClient(dataSource + ":" + requestPort));//5555 is the port where pubsub accepts request
+                Thread t1 = new Thread(requestClient = new RequestClient(dataSource + ":" + requestPort));//5555 is the port where pubsub accepts request
                 arrRequestClient.add(requestClient);
-                t.setName("DataRequester:" + i);
-                t.start();
+                t1.setName("DataRequester:" + i);
+                t1.start();
             }
             backtestBarSize="";
             backtestStartDate=globalProperties.getProperty("BackTestStartDate").toString().trim();
             backtestEndDate=globalProperties.getProperty("BackTestEndDate").toString().trim();
             backtestCloseReferenceDate=globalProperties.getProperty("PriorCloseDate").toString().trim();
-            String topic=globalProperties.getProperty("simtopic").toString().trim();
+            topic=globalProperties.getProperty("simtopic").toString().trim();
             //Request Historical Data
             int j = 0;
             for (BeanSymbol s : Parameters.symbol) {
@@ -493,6 +500,9 @@ public class MainAlgorithm extends Algorithm {
                     complete = complete && r.isAvailableForNewRequest();
                 }
             }
+            BeanSymbol finished=new BeanSymbol();
+            finished.setDisplayname("finished");
+             requestClient.sendRequest("historicaldata", finished, new String[]{},null,null,false);
         }
     }
 
@@ -675,12 +685,12 @@ public class MainAlgorithm extends Algorithm {
      public void registerStrategy(String strategy) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, InstantiationException {
         HashMap<String, ArrayList<String>> initValues = strategyInitValues(strategy);
         boolean trading=Boolean.parseBoolean(globalProperties.getProperty("trading", "false").toString().trim());
-        boolean backtest=Boolean.parseBoolean(globalProperties.getProperty("backtest", "false").toString().trim());
+        boolean simulation=Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim());
         for (Map.Entry<String, ArrayList<String>> entry : initValues.entrySet()) {
             String parameterFile = entry.getKey();
             ArrayList<String> tradingAccounts = entry.getValue();
             Class[] arg;
-            if(backtest==true||trading==true){
+            if(simulation==true||trading==true){
                 arg = new Class[5];
             arg[0] = MainAlgorithm.class;
             arg[1] = Properties.class;
@@ -693,7 +703,7 @@ public class MainAlgorithm extends Algorithm {
             }
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
             Properties p = TradingUtil.loadParameters(parameterFile);
-            if (useForTrading) {
+            if (useForTrading||simulation) {
                 String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-");
                 String strategyName = tempStrategyArray[tempStrategyArray.length - 1];
                 getStrategies().add(strategyName);
@@ -710,7 +720,7 @@ public class MainAlgorithm extends Algorithm {
                 }
                 loadBackTestStrategies(parameterList, constructor, p, parameterFile, tradingAccounts, 0, new ArrayList<String>());
             }else{ //this is a strategy outside trading, like historical data, market data, scanner etc. 
-                //trading=false, backtest=false
+                //trading=false, simulation=false
                constructor.newInstance(parameterFile);             
             }
         }

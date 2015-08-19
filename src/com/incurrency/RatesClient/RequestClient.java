@@ -151,7 +151,7 @@ public class RequestClient implements Runnable {
                         concatParameters = concatParameters + "," + p;
                     }
                 }
-                request = requestType + ":" + s.getDisplayname() + ":" + concatParameters;
+                request = requestType + ":" + s.getDisplayname() + ":" + concatParameters+":"+metric;
                 break;
             default:
                 break;
@@ -213,6 +213,9 @@ public class RequestClient implements Runnable {
                         }
                     }
                 }
+                this.setAvailableForNewRequest(true);
+                break;
+            case "historicaldata":
                 this.setAvailableForNewRequest(true);
                 break;
                 case "requestid":
