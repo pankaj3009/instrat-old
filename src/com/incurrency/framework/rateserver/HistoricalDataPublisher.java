@@ -64,7 +64,7 @@ public class HistoricalDataPublisher implements Runnable {
             tradeOpenMinute = Algorithm.openMinute;
             tradeOpenSecond = 0;
             timeZone = TimeZone.getTimeZone(Algorithm.timeZone);
-            dateFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+            dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
             dateFormat.setTimeZone(timeZone);
             String periodicity = symbols.get(0).periodicity;
             Date startDate = null;
@@ -222,6 +222,7 @@ public class HistoricalDataPublisher implements Runnable {
     private static void getClose(ArrayList<HistoricalDataParameters> symbols, Date closeDate) throws URISyntaxException, IOException {
         HttpClient client = new HttpClient("http://192.187.112.162:8085");
         String metricnew = null;
+        String topic=symbols.get(0).topic;
         int startCounter = 0;
         TreeMultimap<Long, OHLCV> timeKey = TreeMultimap.create();
         for (HistoricalDataParameters symbol : symbols) {
@@ -292,7 +293,7 @@ public class HistoricalDataPublisher implements Runnable {
             SortedSet<OHLCV> s = timeKey.get(key);
             for (OHLCV d : s) {
                 String close = com.ib.client.TickType.CLOSE + "," + d.getTime() + "," + d.getClose() + "," + d.getSymbol();
-                Rates.rateServer.send("HISTORICAL", close);
+                Rates.rateServer.send(topic, close);
                 logger.log(Level.FINE, "PublishedClose: {0}", new Object[]{d.getSymbol() + "_" + close});
             }
 //            timeKey.removeAll(s);

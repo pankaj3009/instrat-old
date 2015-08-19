@@ -115,7 +115,8 @@ public class ServerResponse implements Runnable {
                         hd.displayName = args[1];
                         hd.topic=args[2].split(",")[4];
                         hdSymbols.add(hd);
-                        break;
+                        return(":"+"processed");
+                        //break;
                 }
                 break;
             case "backfill": //one symbol at a time, using request/response
