@@ -94,8 +94,8 @@ public class MainAlgorithm extends Algorithm {
             subscribeMarketData();
             Timer keepAlive = new Timer("Timer: Maintain IB Connection");
             keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
-        } else if (Boolean.parseBoolean(globalProperties.getProperty("backtest", "false").toString().trim())) {
-            runBackTest();
+        } else if (Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim())) {
+            runSimulation();
         }else if(Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
             connectToTWS();
             boolean subscribe=Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
@@ -220,7 +220,6 @@ public class MainAlgorithm extends Algorithm {
                     }
                     arrRequestClient.get(j).sendRequest("contractid", s, null, null, null, false);
                     if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
-                        //   Launch.setMessage("Retrieving contract infomation for symbol: " + argument);
                     }
                     j = j + 1;
 
@@ -436,8 +435,69 @@ public class MainAlgorithm extends Algorithm {
             }
         }
     };
+    
+    private void runSimulation() throws InterruptedException {
+        if (Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())) {
+            connectToTWS();
+        }
+        ArrayList<RequestClient> arrRequestClient = new ArrayList<>();
+        int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
+        if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) {
+            for (int i = 0; i < threadCount; i++) {
+                String dataSource = globalProperties.getProperty("datasource").toString().trim();
+                String requestPort = globalProperties.getProperty("requestport", "5555").toString().trim();
+                Thread t = new Thread(requestClient = new RequestClient(dataSource + ":" + requestPort));//5555 is the port where pubsub accepts request
+                arrRequestClient.add(requestClient);
+                t.setName("DataRequester:" + i);
+                t.start();
+            }
+            backtestBarSize="";
+            backtestStartDate=globalProperties.getProperty("BackTestStartDate").toString().trim();
+            backtestEndDate=globalProperties.getProperty("BackTestEndDate").toString().trim();
+            backtestCloseReferenceDate=globalProperties.getProperty("PriorCloseDate").toString().trim();
+            String topic=globalProperties.getProperty("simtopic").toString().trim();
+            //Request Historical Data
+            int j = 0;
+            for (BeanSymbol s : Parameters.symbol) {
+                j = j < threadCount ? j : 0;
+                while (!arrRequestClient.get(j).isAvailableForNewRequest()) {
+                    Thread.sleep(100);
+                }
+                String metric="";
+                switch(s.getType()){
+                    case "STK":
+                        metric=globalProperties.getProperty("simstk").toString().trim();
+                        break;
+                    case "FUT":
+                        metric=globalProperties.getProperty("simfut").toString().trim();
+                        break;
+                    case "OPT":
+                        metric=globalProperties.getProperty("simopt").toString().trim();
+                        break;
+                    case "IND":
+                        metric=globalProperties.getProperty("simind").toString().trim();
+                        break;
+                    default:
+                        break;                        
+                }
+                requestClient.sendRequest("historicaldata", s, new String[]{backtestBarSize,backtestStartDate, backtestEndDate, backtestCloseReferenceDate,topic}, metric, null, false);
+                logger.log(Level.INFO, "100,HistoricalRequestSent,{0}", new Object[]{s.getDisplayname()});
+                j = j + 1;
+            }
+            boolean complete = false;
+            while (!complete) {
+                Thread.sleep(1000);
+                Thread.yield();
+                complete = true;
+                for (RequestClient r : arrRequestClient) {
+                    complete = complete && r.isAvailableForNewRequest();
+                }
+            }
+        }
+    }
 
-    private void runBackTest() throws ParseException, InterruptedException {
+    /*
+    private void runSimulation() throws ParseException, InterruptedException {
         String backtestVariationFile = globalProperties.getProperty("backtestvariationfile");
         if (backtestVariationFile != null) {
             backtestVariationFile = backtestVariationFile.toString().trim();
@@ -480,7 +540,7 @@ public class MainAlgorithm extends Algorithm {
                         String[] split=s.getDisplayname().split("_");
                         split[2]=exp;
                         symbol=StringUtils.join(split, "_");
-                        requestClient.sendRequest("historicaldata", s, new String[]{backtestStartDate, backtestEndDate, backtestCloseReferenceDate, backtestBarSize}, null, null, false);
+                        requestClient.sendRequest("historicaldata", s, new String[]{backtestBarSize,backtestStartDate, backtestEndDate, backtestCloseReferenceDate}, null, null, false);
                         logger.log(Level.INFO, "100,HistoricalRequestSent,{0}", new Object[]{symbol});
                         boolean complete = false;
                         while (!complete) {
@@ -513,7 +573,7 @@ public class MainAlgorithm extends Algorithm {
 //            requestClient.sendRequest("historicaldata", "finished", new String[]{},null,null,false);
         }
     }
-
+*/
     private void loadBackTestParameters(String parameterFile) throws ParseException {
         Properties p = TradingUtil.loadParameters(parameterFile);
         Enumeration em = p.keys();
@@ -900,8 +960,8 @@ public class MainAlgorithm extends Algorithm {
     /**
      * @param getAlgoDate the getAlgoDate to set
      */
-    public static synchronized void setAlgoDate(Date algoDate) {
-        MainAlgorithm.algoDate = algoDate;
+    public static synchronized void setAlgoDate(long algoDate) {
+        MainAlgorithm.algoDate = new Date(algoDate);
     }
 
     /**

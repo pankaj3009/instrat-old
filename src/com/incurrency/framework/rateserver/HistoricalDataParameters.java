@@ -8,7 +8,7 @@ package com.incurrency.framework.rateserver;
  *
  * @author pankaj
  */
-public class HistoricalDataRequest {
+public class HistoricalDataParameters {
     String name;
     String displayName;
     String expiry;
@@ -20,8 +20,9 @@ public class HistoricalDataRequest {
     String right;
     String strikePrice;
     String topic;
+    String metric;
 
-    public HistoricalDataRequest(String displayName,String startDate, String endDate,String closeReferenceDate, String periodicity) {
+    public HistoricalDataParameters(String displayName, String periodicity,String startDate, String endDate,String closeReferenceDate,String metric) {
         this.displayName=displayName;
         String[] symbol=displayName.split("_");
         this.name=symbol[0]==null||symbol[0].equalsIgnoreCase("null")?"":symbol[0];
@@ -33,8 +34,9 @@ public class HistoricalDataRequest {
         this.endDate = endDate;
         this.closeReferenceDate=closeReferenceDate;
         this.periodicity = periodicity;
+        this.metric=metric;
     }
-    public HistoricalDataRequest(){
+    public HistoricalDataParameters(){
         
     }
     

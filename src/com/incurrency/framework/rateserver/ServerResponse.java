@@ -24,7 +24,7 @@ public class ServerResponse implements Runnable {
     public static ZMQ.Socket responder;
     private AtomicInteger requestid=new AtomicInteger(0);
     private static final Logger logger = Logger.getLogger(ServerPubSub.class.getName());
-    private ArrayList<HistoricalDataRequest> hdSymbols = new ArrayList<>();
+    private ArrayList<HistoricalDataParameters> hdSymbols = new ArrayList<>();
 
     public ServerResponse(int port) {
         responder = context.socket(ZMQ.REP);
@@ -99,14 +99,14 @@ public class ServerResponse implements Runnable {
                         break;
                     default:
                         String[] symbolArray = args[1].split("_");
-                        HistoricalDataRequest hd = new HistoricalDataRequest();
+                        HistoricalDataParameters hd;//= new HistoricalDataParameters();
                         switch (symbolArray.length) {
                             case 1:
                             case 2:
                             case 3:
                             case 5:
                             case 7:
-                                hd = new HistoricalDataRequest(args[1], args[2].split(",")[0], args[2].split(",")[1], args[2].split(",")[2],args[2].split(",")[3]);
+                                hd = new HistoricalDataParameters(args[1], args[2].split(",")[0], args[2].split(",")[1], args[2].split(",")[2],args[2].split(",")[3],args[3]);
                                 break;
                             default:
                                 return "-1";

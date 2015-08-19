@@ -76,7 +76,7 @@ public class Task implements Runnable {
                             case 4: //last price
                                 double price = Double.parseDouble(value);
                                 double prevLastPrice = Parameters.symbol.get(id).getPrevLastPrice() == 0 ? price : Parameters.symbol.get(id).getPrevLastPrice();
-                                MainAlgorithm.setAlgoDate(new Date(date));
+                                MainAlgorithm.setAlgoDate(date);
                                 Parameters.symbol.get(id).setPrevLastPrice(prevLastPrice);
                                 Parameters.symbol.get(id).setLastPrice(price);
                                 Parameters.symbol.get(id).setLastPriceTime(date);

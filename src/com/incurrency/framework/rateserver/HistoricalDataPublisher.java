@@ -31,7 +31,7 @@ import java.util.SortedSet;
  */
 public class HistoricalDataPublisher implements Runnable {
 
-    ArrayList<HistoricalDataRequest> symbols = new ArrayList<>();
+    ArrayList<HistoricalDataParameters> symbols = new ArrayList<>();
     //String startTime;
     //String endTime;
     static TimeZone timeZone;
@@ -44,7 +44,7 @@ public class HistoricalDataPublisher implements Runnable {
     private static final Logger logger = Logger.getLogger(HistoricalDataPublisher.class.getName());
     TreeMultimap<String, OHLCV> nameKey = TreeMultimap.create();
 
-    public HistoricalDataPublisher(ArrayList<HistoricalDataRequest> symbols) {
+    public HistoricalDataPublisher(ArrayList<HistoricalDataParameters> symbols) {
         this.symbols = symbols;
     }
 
@@ -64,7 +64,7 @@ public class HistoricalDataPublisher implements Runnable {
             tradeOpenMinute = Algorithm.openMinute;
             tradeOpenSecond = 0;
             timeZone = TimeZone.getTimeZone(Algorithm.timeZone);
-            dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
+            dateFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
             dateFormat.setTimeZone(timeZone);
             String periodicity = symbols.get(0).periodicity;
             Date startDate = null;
@@ -76,14 +76,6 @@ public class HistoricalDataPublisher implements Runnable {
             String metric = null;
             int increment = 0;
 
-            switch (periodicity) {
-                case "1sec":
-                    metric = "india.nse.equity.s1" + ".1sec";
-                    increment = 1;
-                    break;
-                default:
-                    break;
-            }
             //first publish the close of last trading day
             //getClose(symbols,closeReferenceDate, "india.nse",periodicity);
             //now publish historical data
@@ -95,16 +87,16 @@ public class HistoricalDataPublisher implements Runnable {
                 priorStartDate.setTime(addSeconds(d, -43200, false));//get date 12 hours ago
                 if (priorStartDate.get(Calendar.DAY_OF_MONTH) < now.get(Calendar.DAY_OF_MONTH) || priorStartDate.get(Calendar.MONTH) < now.get(Calendar.MONTH)) {
                     //need to retrieve close data
-                    getClose(symbols, d, "india.nse", periodicity);
+                    getClose(symbols, d);
                 }
 
-                publishTick(symbols, periodicity, d, addSeconds(addSeconds(d, 28800, true), -1, false), "india.nse");
+                publishTick(symbols, periodicity, d, addSeconds(addSeconds(d, 28800, true), -1, false));
                 //If EOD reached send 99 ticktype
                 Calendar nextStartDate = new GregorianCalendar();
                 nextStartDate.setTime(addSeconds(d, 28800, true));
                 if (nextStartDate.get(Calendar.DAY_OF_MONTH) > now.get(Calendar.DAY_OF_MONTH) || nextStartDate.get(Calendar.MONTH) > now.get(Calendar.MONTH)) {
                     Thread.sleep(20000);//wait for 10 seconds to ensure all tick for today has been sent
-                    for (HistoricalDataRequest h : symbols) {
+                    for (HistoricalDataParameters h : symbols) {
                         String close = 99 + "," + 1 + "," + 1 + "," + h.displayName;
                         String lastsize = 99 + "," + 1 + "," + 1 + "," + h.displayName;
                         Rates.rateServer.send(symbols.get(0).topic, close);
@@ -122,28 +114,18 @@ public class HistoricalDataPublisher implements Runnable {
 
     }
 
-    private void publishTick(ArrayList<HistoricalDataRequest> symbols, String periodicity, Date startDate, Date endDate, String metric) throws URISyntaxException, IOException, InterruptedException {
+    private void publishTick(ArrayList<HistoricalDataParameters> symbols, String periodicity, Date startDate, Date endDate) throws URISyntaxException, IOException, InterruptedException {
         HttpClient client = new HttpClient("http://192.187.112.162:8085");
         String metricnew = null;
         int startCounter = 0;
         TreeMultimap<Long, OHLCV> timeKey = TreeMultimap.create();
 
-        for (HistoricalDataRequest symbol : symbols) {
+        for (HistoricalDataParameters symbol : symbols) {
             logger.log(Level.FINE, "Requesting Historical Data: {0}", new Object[]{symbol.displayName});
             long start = new Date().getTime();
             HashMap<Long, OHLCV> symbolData = new HashMap<>();
             for (int i = startCounter; i < 2; i++) {
-                switch (symbol.type) {//get type
-                    case "STK":
-                    case "IND":
-                        metricnew = metric + ".equity" + ".s1." + periodicity;
-                        break;
-                    case "FUT":
-                        metricnew = metric + ".future" + ".s1." + periodicity;
-                        break;
-                    default:
-                        break;
-                }
+                metricnew=symbol.metric;
                 switch (i) {
                     case 1:
                         metricnew = metricnew + ".volume";
@@ -172,7 +154,6 @@ public class HistoricalDataPublisher implements Runnable {
                 long time = new Date().getTime();
                 //System.out.println(symbol.fullname);
                 QueryResponse response = client.query(builder);
-
                 List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
                 for (DataPoint dataPoint : dataPoints) {
                     long lastTime = dataPoint.getTimestamp();
@@ -221,8 +202,8 @@ public class HistoricalDataPublisher implements Runnable {
         for (Long key : timeKey.keySet()) {
             SortedSet<OHLCV> s = timeKey.get(key);
             for (OHLCV d : s) {
-                String close = 4 + "," + d.getTime() + "," + d.getClose() + "," + d.getSymbol();
-                String lastsize = 5 + "," + d.getTime() + "," + d.getVolume() + "," + d.getSymbol();
+                String close = com.ib.client.TickType.LAST + "," + d.getTime() + "," + d.getClose() + "," + d.getSymbol();
+                String lastsize = com.ib.client.TickType.LAST_SIZE + "," + d.getTime() + "," + d.getVolume() + "," + d.getSymbol();
                 Rates.rateServer.send(symbols.get(0).topic, close);
                 Rates.rateServer.send(symbols.get(0).topic, lastsize);
                 logger.log(Level.FINE, "Published: {0}", new Object[]{new Date(d.getTime()) + "_" + d.getSymbol()});
@@ -238,26 +219,17 @@ public class HistoricalDataPublisher implements Runnable {
 
     }
 
-    private static void getClose(ArrayList<HistoricalDataRequest> symbols, Date closeDate, String metric, String periodicity) throws URISyntaxException, IOException {
+    private static void getClose(ArrayList<HistoricalDataParameters> symbols, Date closeDate) throws URISyntaxException, IOException {
         HttpClient client = new HttpClient("http://192.187.112.162:8085");
         String metricnew = null;
         int startCounter = 0;
         TreeMultimap<Long, OHLCV> timeKey = TreeMultimap.create();
-        for (HistoricalDataRequest symbol : symbols) {
+        for (HistoricalDataParameters symbol : symbols) {
             logger.log(Level.FINE, "Requesting Close Data: {0}", new Object[]{symbol.displayName});
             long start = new Date().getTime();
             HashMap<Long, OHLCV> symbolData = new HashMap<>();
             for (int i = startCounter; i < 1; i++) {
-                switch (symbol.type) {
-                    case "STK":
-                    case "IND":
-                        metricnew = metric + ".equity" + ".s1." + periodicity;
-                        break;
-                    case "FUT":
-                        metricnew = metric + ".future" + ".s1." + periodicity;
-                        break;
-
-                }
+                metricnew=symbol.metric;
                 switch (i) {
                     case 0:
                         metricnew = metricnew + ".close";
@@ -319,7 +291,7 @@ public class HistoricalDataPublisher implements Runnable {
         for (Long key : timeKey.keySet()) {
             SortedSet<OHLCV> s = timeKey.get(key);
             for (OHLCV d : s) {
-                String close = 9 + "," + d.getTime() + "," + d.getClose() + "," + d.getSymbol();
+                String close = com.ib.client.TickType.CLOSE + "," + d.getTime() + "," + d.getClose() + "," + d.getSymbol();
                 Rates.rateServer.send("HISTORICAL", close);
                 logger.log(Level.FINE, "PublishedClose: {0}", new Object[]{d.getSymbol() + "_" + close});
             }
