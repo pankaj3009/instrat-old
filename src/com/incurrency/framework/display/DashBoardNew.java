@@ -411,7 +411,6 @@ public class DashBoardNew extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        beanSymbol2 = new com.incurrency.framework.BeanSymbol();
         btngroupTradingState = new javax.swing.ButtonGroup();
         btngroupDynamicState = new javax.swing.ButtonGroup();
         cmdReload = new javax.swing.JPanel();
@@ -442,6 +441,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tblQuotes = new javax.swing.JTable();
+        lblTime = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
         tblPNL = new javax.swing.JTable();
@@ -829,13 +829,25 @@ public class DashBoardNew extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.ipadx = 695;
+        gridBagConstraints.ipady = 269;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        gridBagConstraints.insets = new java.awt.Insets(6, 11, 0, 11);
         jPanel2.add(jScrollPane1, gridBagConstraints);
+
+        lblTime.setText("time");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        jPanel2.add(lblTime, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1332,7 +1344,6 @@ public class DashBoardNew extends javax.swing.JFrame {
     private JPopupMenu popMissed;
     private List<com.incurrency.framework.BeanConnection> beanConnection;
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.incurrency.framework.BeanSymbol beanSymbol2;
     private javax.swing.JRadioButton btnDynamicOff;
     private javax.swing.JRadioButton btnDynamicOn;
     private javax.swing.JRadioButton btnLongOnly;
@@ -1367,6 +1378,7 @@ public class DashBoardNew extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    public static javax.swing.JLabel lblTime;
     private javax.swing.JTable tblMissedOrders;
     private javax.swing.JTable tblOpenOrders;
     private javax.swing.JTable tblPNL;

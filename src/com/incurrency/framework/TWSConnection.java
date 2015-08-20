@@ -343,7 +343,7 @@ public class TWSConnection extends Thread implements EWrapper {
             Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Account: " + getC().getAccountName() + ", Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " has sent " + getC().getOrdersHaltTrading() + " orders in the last two minutes. Trading halted", "Algorithm SEVERE ALERT - " + orderRef.toUpperCase()));
             t.start();
             setStopTrading(true);
-            logger.log(Level.INFO, "303,StopTrading,{0}", new Object[]{getC().getAccountName() + delimiter + this.getRecentOrders().size() + delimiter + DateUtil.getFormatedDate("yyyMMdd HH:mm:ss", (long) this.getRecentOrders().get(0))});
+            logger.log(Level.INFO, "303,StopTrading,{0}", new Object[]{getC().getAccountName() + delimiter + this.getRecentOrders().size() + delimiter + DateUtil.getFormattedDate("yyyMMdd HH:mm:ss", (long) this.getRecentOrders().get(0))});
             return orders;
         } else {
             if (!Parameters.symbol.get(id).getType().equals("COMBO")) {
@@ -1137,7 +1137,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     logger.log(Level.FINER,"HistoricalDataRequestSent_Historical,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
 
                 }
-                String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", Parameters.connection.get(0).getConnectionTime());
+                String currDateStr = DateUtil.getFormattedDate("yyyyMMdd", Parameters.connection.get(0).getConnectionTime());
                 String endDateStr = currDateStr + " " + "23:30:00";
                 //System.out.println(s.getDisplayname()+":"+mRequestId+":"+"DailyBars");
                 eClientSocket.reqHistoricalData(mRequestId, con, endDateStr, duration, "1 day", "TRADES", 1, 2);
@@ -1869,7 +1869,7 @@ public class TWSConnection extends Thread implements EWrapper {
                  return;
                  }
                  */
-//        System.out.println("Symbol:"+ Parameters.symbol.get(id).getSymbol()+":"+DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", Long.parseLong(date)*1000));
+//        System.out.println("Symbol:"+ Parameters.symbol.get(id).getSymbol()+":"+DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", Long.parseLong(date)*1000));
                 switch (getRequestDetails().get(reqId+delimiter+c.getAccountName()).barSize) {
                     case FIVESECOND:
                         if (Parameters.symbol.get(id).getOneMinuteBarFromRealTimeBars() != null) {
@@ -1905,7 +1905,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         break;
                     case ONESECOND:
                         ohlc = new BeanOHLC(Long.valueOf(date)*1000, open, high, low, close, volume, EnumBarSize.ONESECOND);
-                        //System.out.println("Main:"+DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", ohlc.getOpenTime())+":"+ohlc.getClose());
+                        //System.out.println("Main:"+DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", ohlc.getOpenTime())+":"+ohlc.getClose());
                 break;
                     default:
                         break;
@@ -1953,7 +1953,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 r.requestStatus = EnumRequestStatus.SERVICED;
             }
             int id = serialno - 1;
-            //System.out.println("RealTime Bar: Symbol:"+Parameters.symbol.get(id).getSymbol() +"timeMS: "+time*1000+ "time: "+DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", time*1000) +" volume:"+volume);
+            //System.out.println("RealTime Bar: Symbol:"+Parameters.symbol.get(id).getSymbol() +"timeMS: "+time*1000+ "time: "+DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", time*1000) +" volume:"+volume);
             if (id >= 0) {
                 //Parameters.symbol.get(id).getFiveSecondBars().setFiveSecOHLC(time, open, high, low, close, volume);
                 Parameters.symbol.get(id).getOneMinuteBarFromRealTimeBars().setOneMinOHLCFromRealTimeBars(time, open, high, low, close, volume);

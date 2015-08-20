@@ -107,7 +107,8 @@ public class Task implements Runnable {
                                 } else {
                                     //historical bar runs
                                   */
-                                if(!MainAlgorithm.isUseForTrading() && !globalProperties.getProperty("backtestprices", "tick").toString().trim().equals("tick")){
+                                if(!MainAlgorithm.isUseForTrading()){
+//                                if(!MainAlgorithm.isUseForTrading() && !globalProperties.getProperty("backtestprices", "tick").toString().trim().equals("tick")){
                                   prevLastPrice = Parameters.symbol.get(id).getPrevLastPrice();
                                     double lastPrice = Parameters.symbol.get(id).getLastPrice();
                                     int calculatedLastSize;

@@ -175,7 +175,7 @@ TimerTask generateBars = new TimerTask() {
                 initialize(getOhlc());
             }
             if(!historicalBarsRequested && mSymbol.getDailyBar().finished && getHistoricalBars().size()>0 && !Parameters.connection.isEmpty() && Parameters.connection.get(lastConnectionIDUsed.get())!=null){
-                Parameters.connection.get(lastConnectionIDUsed.get()).getWrapper().requestHistoricalData(mSymbol, DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", TradingUtil.getAlgoDate().getTime()), duration, ibBarSizeString);
+                Parameters.connection.get(lastConnectionIDUsed.get()).getWrapper().requestHistoricalData(mSymbol, DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", TradingUtil.getAlgoDate().getTime()), duration, ibBarSizeString);
                 historicalBarsRequested=true;
                 lastConnectionIDUsed.addAndGet(1);
                 if(lastConnectionIDUsed.get()>=Parameters.connection.size()){
@@ -292,7 +292,7 @@ TimerTask generateBars = new TimerTask() {
     }
 
     public void setOneMinBars(long openTime, double open, double high, double low, double close, long volume) {
-        String temp = DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", openTime * 1000);
+        String temp = DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", openTime * 1000);
         if(getStartTime()!=null){//databar has been initialized
         Date startDate = DateUtil.timeToDate(getStartTime(),timeZone);
         if (startDate.compareTo(new Date(openTime * 1000)) <= 0) {
@@ -350,7 +350,7 @@ TimerTask generateBars = new TimerTask() {
     private synchronized void _fireHistoricalBars() {
         
         HistoricalBarEvent bars = new HistoricalBarEvent(this, historicalBars.size(), historicalBars, mSymbol,ohlcHist);
-        logger.log(Level.FINER, "402,HistoricalBars,{0}", new Object[]{mSymbol.getDisplayname()+delimiter+ohlcHist.getPeriodicity()+delimiter+DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", ohlcHist.getOpenTime())+delimiter+ohlcHist.getOpen()+delimiter+ohlcHist.getHigh()+delimiter+ohlcHist.getLow()+delimiter+ohlcHist.getClose()+delimiter+ohlcHist.getVolume()});
+        logger.log(Level.FINER, "402,HistoricalBars,{0}", new Object[]{mSymbol.getDisplayname()+delimiter+ohlcHist.getPeriodicity()+delimiter+DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", ohlcHist.getOpenTime())+delimiter+ohlcHist.getOpen()+delimiter+ohlcHist.getHigh()+delimiter+ohlcHist.getLow()+delimiter+ohlcHist.getClose()+delimiter+ohlcHist.getVolume()});
         Iterator listeners = _listeners.iterator();
         while (listeners.hasNext()) {
             ((HistoricalBarListener) listeners.next()).barsReceived(bars);

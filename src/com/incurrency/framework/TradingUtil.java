@@ -617,7 +617,7 @@ public class TradingUtil {
                 String product[] = products.split(":");
                 for (String p : product) { //for each product specified in connection file
                     //create validity
-                    Validity temp = new Validity(c.getAccountName().substring(0, 1).equals("D") ? "TRIAL" : "PAID", c.getAccountName().toUpperCase(), p.toUpperCase(), DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime()));
+                    Validity temp = new Validity(c.getAccountName().substring(0, 1).equals("D") ? "TRIAL" : "PAID", c.getAccountName().toUpperCase(), p.toUpperCase(), DateUtil.getFormattedDate("yyyy-MM-dd", new Date().getTime()));
                     //check if the product is licensed
                     boolean status = validate(temp, licenses);
                     check = check & status;
@@ -759,7 +759,7 @@ public class TradingUtil {
                     BeanOHLC tempOHLC = new BeanOHLC(priorDate.getTime(), open, high, low, close, volume, EnumBarSize.DAILY);
                     output.add(new BeanOHLC(tempOHLC));
                     priorDate = date;
-                    //String formattedDate = DateUtil.getFormatedDate("yyyyMMdd hh:mm:ss", datetime.getTime());
+                    //String formattedDate = DateUtil.getFormattedDate("yyyyMMdd hh:mm:ss", datetime.getTime());
 
                     volume = rs.getLong("volume");
                     open = rs.getDouble("tickopen");
@@ -1544,8 +1544,8 @@ public class TradingUtil {
                 int i = 0;
                 for (Double d : dailyEquity) {
                     if (tradeDate.get(i) != null) {
-                        //logger.log(Level.INFO, "Writing equity.csv. TradeDate:{0},Equity:{1},fileName:{2},AccountName:{3}", new Object[]{DateUtil.getFormatedDate("yyyy-MM-dd", tradeDate.get(i).getTime()), d, fileName, accountName});
-                        TradingUtil.writeToFile(equityFileName, DateUtil.getFormatedDate("yyyy-MM-dd", tradeDate.get(i).getTime()) + "," + d + "," + fileName + "," + accountName);
+                        //logger.log(Level.INFO, "Writing equity.csv. TradeDate:{0},Equity:{1},fileName:{2},AccountName:{3}", new Object[]{DateUtil.getFormattedDate("yyyy-MM-dd", tradeDate.get(i).getTime()), d, fileName, accountName});
+                        TradingUtil.writeToFile(equityFileName, DateUtil.getFormattedDate("yyyy-MM-dd", tradeDate.get(i).getTime()) + "," + d + "," + fileName + "," + accountName);
                         i = i + 1;
                     } else {
                     }
@@ -1807,7 +1807,7 @@ public class TradingUtil {
         brokerage.get(0).primaryRule = EnumPrimaryApplication.VALUE;
         brokerage.get(0).type = "FUT";
         applyBrokerage(trades, brokerage, 50, "USDADROrders.csv", "", 100000, "DU67768", "Equity.csv");
-        //String out=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss",new Date().getTime(),TimeZone.getTimeZone("GMT-4:00"));
+        //String out=DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss",new Date().getTime(),TimeZone.getTimeZone("GMT-4:00"));
         //System.out.println(out);
 
     }

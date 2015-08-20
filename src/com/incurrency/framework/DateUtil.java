@@ -1,5 +1,6 @@
 package com.incurrency.framework;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Calendar;
@@ -110,10 +111,23 @@ public class DateUtil {
     }
     // Get  date in given format and default timezone
 
-    public static String getFormatedDate(String format, long timeMS) {
+    public static String getFormattedDate(String format, long timeMS) {
         TimeZone tz = TimeZone.getDefault();
         String date = getFormatedDate(format, timeMS, tz);
         return date;
+    }
+    
+    public static Date getFormattedDate(String date,String format, String timeZone){
+        SimpleDateFormat sdf=new SimpleDateFormat(format);
+        Calendar c=Calendar.getInstance(TimeZone.getTimeZone(timeZone));
+        Date d=new Date(0);
+        try {
+            d = sdf.parse(date);
+        } catch (ParseException ex) {
+            Logger.getLogger(DateUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        c.setTime(d);
+        return c.getTime();
     }
     
     // Get  date in given format and timezone

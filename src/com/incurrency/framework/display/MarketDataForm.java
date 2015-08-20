@@ -46,7 +46,7 @@ public class MarketDataForm extends javax.swing.JFrame {
             this.lblCurrentPort.setText(Integer.toString(Parameters.connection.get(s.getDataConnectionID()).getPort()));
             this.lblCurrentClientID.setText(Integer.toString(Parameters.connection.get(s.getDataConnectionID()).getClientID()));
         }
-        this.lblLatestTime.setText(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", s.getLastPriceTime()));
+        this.lblLatestTime.setText(DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", s.getLastPriceTime()));
         for(BeanConnection c: Parameters.connection){
             this.comboNewAccount.addItem(c.getAccountName());        
     }

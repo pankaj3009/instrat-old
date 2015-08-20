@@ -223,7 +223,7 @@ public class TradingEventSupport {
     public synchronized void fireHistoricalBars(int barNumber,TreeMapExtension list, BeanSymbol s,BeanOHLC ohlc) {
         
         HistoricalBarEvent bars = new HistoricalBarEvent(this, 0, list, s,ohlc);
-        logger.log(Level.FINER, "402,HistoricalBars,{0}", new Object[]{s.getDisplayname()+delimiter+ohlc.getPeriodicity()+delimiter+DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", ohlc.getOpenTime())+delimiter+ohlc.getOpen()+delimiter+ohlc.getHigh()+delimiter+ohlc.getLow()+delimiter+ohlc.getClose()+delimiter+ohlc.getVolume()});
+        logger.log(Level.FINER, "402,HistoricalBars,{0}", new Object[]{s.getDisplayname()+delimiter+ohlc.getPeriodicity()+delimiter+DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", ohlc.getOpenTime())+delimiter+ohlc.getOpen()+delimiter+ohlc.getHigh()+delimiter+ohlc.getLow()+delimiter+ohlc.getClose()+delimiter+ohlc.getVolume()});
         Iterator listeners = historicalListeners.iterator();
         while (listeners.hasNext()) {
             ((HistoricalBarListener) listeners.next()).barsReceived(bars);

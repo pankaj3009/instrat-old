@@ -130,10 +130,10 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private final Object lockTradedTime = new Object();
     private final Object lockPrevLastPrice = new Object();
     private static final Object lockTimeSeries = new Object();
-    private int openHour = Integer.valueOf(Algorithm.globalProperties.get("openhour").toString().trim());
-    private int openMinute = Integer.valueOf(Algorithm.globalProperties.get("openminute").toString().trim());
-    private int closeHour = Integer.valueOf(Algorithm.globalProperties.get("closehour").toString().trim());
-    private int closeMinute = Integer.valueOf(Algorithm.globalProperties.get("closeminute").toString().trim());
+    private int openHour = Utilities.getInt(Algorithm.globalProperties.getProperty("openhour", "9").toString().trim(),9);
+    private int openMinute = Utilities.getInt(Algorithm.globalProperties.getProperty("openminute","15").toString().trim(),15);
+    private int closeHour = Utilities.getInt(Algorithm.globalProperties.getProperty("closehour","15").toString().trim(),15);
+    private int closeMinute = Utilities.getInt(Algorithm.globalProperties.getProperty("closeminute","30").toString().trim(),30);
     private String timeZone = Algorithm.globalProperties.get("timezone").toString().trim();
     private LimitedQueue<Double> tradedPrices;
     private LimitedQueue<Integer> tradedVolumes;

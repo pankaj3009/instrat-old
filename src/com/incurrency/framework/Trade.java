@@ -101,9 +101,9 @@ public class Trade {
         tr.put("entrysize", String.valueOf(size));
         String entryTime;
         if(timeZone.compareTo("")==0){
-            entryTime=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
+            entryTime=DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
         } else {
-            entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+            entryTime = DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         }
         
         tr.put("entrytime", entryTime);

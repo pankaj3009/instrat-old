@@ -59,10 +59,10 @@ public class Rates {
 
     private void loadParameters(String ParameterFile) {
 properties=Utilities.loadParameters(ParameterFile);
-        String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime());
+        String currDateStr = DateUtil.getFormattedDate("yyyyMMdd", new Date().getTime());
         String endDateStr;
         if (Boolean.getBoolean(properties.getProperty("historicaldata","false"))) {
-            endDateStr = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime() + 24 * 60 * 60 * 1000);
+            endDateStr = DateUtil.getFormattedDate("yyyyMMdd", new Date().getTime() + 24 * 60 * 60 * 1000);
         } else {
             endDateStr = currDateStr + " " + properties.getProperty("endtime");
         }

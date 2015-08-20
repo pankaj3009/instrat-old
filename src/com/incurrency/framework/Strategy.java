@@ -299,7 +299,7 @@ public class Strategy implements NotificationListener {
 
     private void loadParameters(String strategy, String type, Properties p) {
         setTimeZone(p.getProperty("TradeTimeZone") == null ? "Asia/Kolkata" : p.getProperty("TradeTimeZone"));
-        // String currDateStr = DateUtil.getFormatedDate("yyyyMMddHHmmss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+        // String currDateStr = DateUtil.getFormattedDate("yyyyMMddHHmmss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         //Date currDate=DateUtil.parseDate("yyyyMMddHHmmss", currDateStr, TimeZone.getDefault().toString());
         Date currDate = TradingUtil.getAlgoDate();
         DateFormat df = new SimpleDateFormat("yyyyMMdd");

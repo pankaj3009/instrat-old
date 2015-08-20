@@ -784,7 +784,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         synchronized (c.lockOrdersToBeCancelled) {
                             c.getOrdersToBeCancelled().put(orderid, new BeanOrderInformation(id, c, orderid, tempexpire, event));
                         }
-                        //logger.log(Level.FINE, "Expiration time in object getOrdersToBeCancelled={0}", DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", tempexpire));
+                        //logger.log(Level.FINE, "Expiration time in object getOrdersToBeCancelled={0}", DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", tempexpire));
                     }
                 }
                 ArrayList<SymbolOrderMap> symbolOrders = new ArrayList<>();
@@ -1495,7 +1495,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     ArrayList<Integer> symbols = new ArrayList();
                     synchronized (c.lockOrdersToBeCancelled) {
                         for (Integer key : c.getOrdersToBeCancelled().keySet()) {
-                            //logger.log(Level.FINE, "Expiration Time:{0},System Time:{1}", new Object[]{DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", c.getOrdersToBeCancelled().get(key).getExpireTime()), DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", System.currentTimeMillis())});
+                            //logger.log(Level.FINE, "Expiration Time:{0},System Time:{1}", new Object[]{DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", c.getOrdersToBeCancelled().get(key).getExpireTime()), DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", System.currentTimeMillis())});
                             synchronized (c.lockOrdersToBeCancelled) {
                                 if (c.getOrdersToBeCancelled().get(key).getExpireTime() < System.currentTimeMillis() && c.getOrdersToBeCancelled().get(key).getOrigEvent().getOrdReference().compareTo(orderReference) == 0) {
                                     //logger.log(Level.INFO, "cancelExpiredOrders Account: {0}, Symbol:{1}, OrderID:{2}", new Object[]{c.getAccountName(), Parameters.symbol.get(c.getOrders().get(key).getParentSymbolID() - 1).getSymbol(), key});
@@ -1611,7 +1611,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if ("".compareTo(this.lastExecutionRequestTime) != 0) {
                 filter.m_time = this.lastExecutionRequestTime;
             }
-            this.lastExecutionRequestTime = DateUtil.getFormatedDate("yyyyMMdd-HH:mm:ss", new Date().getTime());
+            this.lastExecutionRequestTime = DateUtil.getFormattedDate("yyyyMMdd-HH:mm:ss", new Date().getTime());
             c.getWrapper().requestOpenOrders();
             c.getWrapper().requestExecutionDetails(filter);
         }
