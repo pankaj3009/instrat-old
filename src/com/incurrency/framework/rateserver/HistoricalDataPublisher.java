@@ -21,6 +21,7 @@ import org.kairosdb.client.builder.QueryMetric;
 import org.kairosdb.client.response.QueryResponse;
 import com.google.common.collect.TreeMultimap;
 import com.incurrency.framework.Algorithm;
+import com.incurrency.framework.Utilities;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.SortedSet;
@@ -202,9 +203,16 @@ public class HistoricalDataPublisher implements Runnable {
         for (Long key : timeKey.keySet()) {
             SortedSet<OHLCV> s = timeKey.get(key);
             for (OHLCV d : s) {
+                double c=Utilities.getDouble(d.getClose(),0);
+                double dbid=c-0.1;
+                double dask=c+0.1;
                 String close = com.ib.client.TickType.LAST + "," + d.getTime() + "," + d.getClose() + "," + d.getSymbol();
+                String bid = com.ib.client.TickType.BID + "," + d.getTime() + "," + dbid + "," + d.getSymbol();
+                String ask = com.ib.client.TickType.ASK + "," + d.getTime() + "," + dask + "," + d.getSymbol();
                 String lastsize = com.ib.client.TickType.LAST_SIZE + "," + d.getTime() + "," + d.getVolume() + "," + d.getSymbol();
                 Rates.rateServer.send(symbols.get(0).topic, close);
+                Rates.rateServer.send(symbols.get(0).topic, bid);
+                Rates.rateServer.send(symbols.get(0).topic, ask);                
                 Rates.rateServer.send(symbols.get(0).topic, lastsize);
                 logger.log(Level.FINE, "Published: {0}", new Object[]{new Date(d.getTime()) + "_" + d.getSymbol()});
             }
