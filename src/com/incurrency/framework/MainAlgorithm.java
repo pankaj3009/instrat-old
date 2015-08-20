@@ -462,7 +462,7 @@ public class MainAlgorithm extends Algorithm {
             backtestStartDate=globalProperties.getProperty("BackTestStartDate").toString().trim();
             backtestEndDate=globalProperties.getProperty("BackTestEndDate").toString().trim();
             backtestCloseReferenceDate=globalProperties.getProperty("PriorCloseDate").toString().trim();
-            topic=globalProperties.getProperty("simtopic").toString().trim();
+            topic=globalProperties.getProperty("topic").toString().trim();
             //Request Historical Data
             int j = 0;
             for (BeanSymbol s : Parameters.symbol) {
@@ -663,7 +663,7 @@ public class MainAlgorithm extends Algorithm {
         if (closeDate!=null) {
             closeProcessing.schedule(closeAlgorithms, closeDate);
         }
-        if (MainAlgorithm.isUseForTrading()) {
+        if (MainAlgorithm.isUseForTrading()||MainAlgorithm.isUseForSimulation()) {
             if (TradingUtil.checkLicense() && !Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                 ui = new com.incurrency.framework.display.DashBoardNew(); //Display main UI
             }
@@ -684,32 +684,31 @@ public class MainAlgorithm extends Algorithm {
      */
      public void registerStrategy(String strategy) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, InstantiationException {
         HashMap<String, ArrayList<String>> initValues = strategyInitValues(strategy);
-        boolean trading=Boolean.parseBoolean(globalProperties.getProperty("trading", "false").toString().trim());
-        boolean simulation=Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim());
+        boolean trading = Boolean.parseBoolean(globalProperties.getProperty("trading", "false").toString().trim());
+        boolean simulation = Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim());
         for (Map.Entry<String, ArrayList<String>> entry : initValues.entrySet()) {
             String parameterFile = entry.getKey();
             ArrayList<String> tradingAccounts = entry.getValue();
             Class[] arg;
-            if(simulation==true||trading==true){
+            if (simulation == true || trading == true) {
                 arg = new Class[5];
-            arg[0] = MainAlgorithm.class;
-            arg[1] = Properties.class;
-            arg[2] = String.class;
-            arg[3] = ArrayList.class;
-            arg[4] = Integer.class;
-            }else{
-                    arg = new Class[1];
-            arg[0] = String.class;
+                arg[0] = MainAlgorithm.class;
+                arg[1] = Properties.class;
+                arg[2] = String.class;
+                arg[3] = ArrayList.class;
+                arg[4] = Integer.class;
+            } else {
+                arg = new Class[1];
+                arg[0] = String.class;
             }
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
             Properties p = TradingUtil.loadParameters(parameterFile);
-            if (useForTrading||simulation) {
+            if (useForTrading || simulation) {
                 String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-");
                 String strategyName = tempStrategyArray[tempStrategyArray.length - 1];
                 getStrategies().add(strategyName);
                 strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts, null));
-                
-            } else if(Boolean.parseBoolean(globalProperties.getProperty("backtest","false"))){
+            } else if (Boolean.parseBoolean(globalProperties.getProperty("backtest", "false"))) {
                 ArrayList<ArrayList<String>> parameterList = new ArrayList<>();
                 for (BackTestParameter b : backtestParameters) {
                     ArrayList<String> s = new ArrayList<>();
@@ -719,9 +718,9 @@ public class MainAlgorithm extends Algorithm {
                     parameterList.add(s);
                 }
                 loadBackTestStrategies(parameterList, constructor, p, parameterFile, tradingAccounts, 0, new ArrayList<String>());
-            }else{ //this is a strategy outside trading, like historical data, market data, scanner etc. 
+            } else { //this is a strategy outside trading, like historical data, market data, scanner etc. 
                 //trading=false, simulation=false
-               constructor.newInstance(parameterFile);             
+                constructor.newInstance(parameterFile);
             }
         }
         this.tradingAlgoInitialized = true;
@@ -980,6 +979,15 @@ public class MainAlgorithm extends Algorithm {
     public static boolean isUseForTrading() {
         synchronized (lockUseForTrading) {
             return Algorithm.useForTrading;
+        }
+    }
+    
+        /**
+     * @return the useForTrading
+     */
+    public static boolean isUseForSimulation() {
+        synchronized (lockUseForTrading) {
+            return Algorithm.useForSimulation;
         }
     }
 

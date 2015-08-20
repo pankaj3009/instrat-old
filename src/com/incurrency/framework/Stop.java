@@ -14,6 +14,8 @@ public class Stop {
     public double stopValue=1;
     public boolean recalculate=false;
     public double StopLevel;
+    public double underlyingEntry;
+    
     
     public Stop(){
         

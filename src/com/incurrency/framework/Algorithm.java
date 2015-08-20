@@ -39,6 +39,7 @@ public class Algorithm {
     public static int closeHour=15;
     public static int closeMinute=30;
     public static boolean useForTrading;
+    public static boolean useForSimulation;
     public static ConcurrentHashMap<EnumBarSize,Long> databarSetup=new ConcurrentHashMap<>();
     public static AtomicInteger orderidint=new AtomicInteger(0);
     
@@ -52,6 +53,7 @@ public class Algorithm {
             }
         }        
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());
+        useForSimulation=Boolean.parseBoolean(globalProperties.getProperty("simulation","false").toString().trim());
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
         openHour = Integer.valueOf(globalProperties.getProperty("openhour", "9").toString().trim());
         openMinute = Integer.valueOf(globalProperties.getProperty("openminute", "15").toString().trim());
