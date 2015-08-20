@@ -99,6 +99,7 @@ public class Strategy implements NotificationListener {
     private boolean validation = true;
     public final String delimiter = "_";
     private boolean strategyLog;
+    private boolean stopOrders=false;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -1309,5 +1310,20 @@ public class Strategy implements NotificationListener {
      */
     public void setTrades(ExtendedHashMap<String, String, Object> trades) {
         this.trades = trades;
+    }
+
+    /**
+     * @return the stopOrders
+     */
+    public boolean isStopOrders() {
+        return stopOrders;
+    }
+
+    /**
+     * @param stopOrders the stopOrders to set
+     */
+    public void setStopOrders(boolean stopOrders) {
+        logger.log(Level.INFO, "StopOrders Set to {0}", new Object[]{stopOrders});
+        this.stopOrders = stopOrders;
     }
 }
