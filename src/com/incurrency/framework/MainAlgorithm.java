@@ -63,11 +63,10 @@ public class MainAlgorithm extends Algorithm {
     private String version = "1.03B-20140826";
     public static boolean instantiated = false;
     private static MainAlgorithm instance = null;
-    public static String backtestStartDate;
-    public static String backtestEndDate;
-    public static String backtestCurrentDate;
-    public static String backtestCloseReferenceDate;
-    public static String backtestBarSize;
+    public static String simulationStartDate;
+    public static String simulationEndDate;
+    public static String simulationCloseReferenceDate;
+    public static String simulationBarSize;
     public static ArrayList<BackTestParameter> backtestParameters = new ArrayList<>();
     public static ArrayList<BackTestFileMap> fileMap = new ArrayList<>();
     private static String backtestOrderFile = null;
@@ -458,10 +457,10 @@ public class MainAlgorithm extends Algorithm {
                 t1.setName("DataRequester:" + i);
                 t1.start();
             }
-            backtestBarSize="";
-            backtestStartDate=globalProperties.getProperty("BackTestStartDate").toString().trim();
-            backtestEndDate=globalProperties.getProperty("BackTestEndDate").toString().trim();
-            backtestCloseReferenceDate=globalProperties.getProperty("PriorCloseDate").toString().trim();
+            simulationBarSize="";
+            simulationStartDate=globalProperties.getProperty("SimulationStartDate").toString().trim();
+            simulationEndDate=globalProperties.getProperty("SimulationEndDate").toString().trim();
+            simulationCloseReferenceDate=globalProperties.getProperty("SimulationPriorCloseDate").toString().trim();
             topic=globalProperties.getProperty("topic").toString().trim();
             //Request Historical Data
             int j = 0;
@@ -487,7 +486,7 @@ public class MainAlgorithm extends Algorithm {
                     default:
                         break;                        
                 }
-                requestClient.sendRequest("historicaldata", s, new String[]{backtestBarSize,backtestStartDate, backtestEndDate, backtestCloseReferenceDate,topic}, metric, null, false);
+                requestClient.sendRequest("historicaldata", s, new String[]{simulationBarSize,simulationStartDate, simulationEndDate, simulationCloseReferenceDate,topic}, metric, null, false);
                 logger.log(Level.INFO, "100,HistoricalRequestSent,{0}", new Object[]{s.getDisplayname()});
                 j = j + 1;
             }
@@ -550,7 +549,7 @@ public class MainAlgorithm extends Algorithm {
                         String[] split=s.getDisplayname().split("_");
                         split[2]=exp;
                         symbol=StringUtils.join(split, "_");
-                        requestClient.sendRequest("historicaldata", s, new String[]{backtestBarSize,backtestStartDate, backtestEndDate, backtestCloseReferenceDate}, null, null, false);
+                        requestClient.sendRequest("historicaldata", s, new String[]{simulationBarSize,simulationStartDate, simulationEndDate, simulationCloseReferenceDate}, null, null, false);
                         logger.log(Level.INFO, "100,HistoricalRequestSent,{0}", new Object[]{symbol});
                         boolean complete = false;
                         while (!complete) {
@@ -565,7 +564,7 @@ public class MainAlgorithm extends Algorithm {
                     }
                     s.setExpiry(expiries[0]);
                 } else {
-                    requestClient.sendRequest("historicaldata", s, new String[]{backtestStartDate, backtestEndDate, backtestCloseReferenceDate, backtestBarSize}, null, null, false);
+                    requestClient.sendRequest("historicaldata", s, new String[]{simulationStartDate, simulationEndDate, simulationCloseReferenceDate, simulationBarSize}, null, null, false);
                     logger.log(Level.INFO, "100,HistoricalRequestSent,{0}", new Object[]{symbol});
                     boolean complete = false;
                     while (!complete) {
@@ -595,16 +594,16 @@ public class MainAlgorithm extends Algorithm {
                     timeZone = (p.getProperty(str) == null ? "Asia/Kolkata" : p.getProperty(str));
                     break;
                 case "BackTestStartDate":
-                    backtestStartDate = p.getProperty(str);
+                    simulationStartDate = p.getProperty(str);
                     break;
                 case "BackTestEndDate":
-                    backtestEndDate = p.getProperty(str);
+                    simulationEndDate = p.getProperty(str);
                     break;
                 case "BackTestCloseReferenceDate":
-                    backtestCloseReferenceDate = p.getProperty(str);
+                    simulationCloseReferenceDate = p.getProperty(str);
                     break;
                 case "BackTestBarSize":
-                    backtestBarSize = p.getProperty(str);
+                    simulationBarSize = p.getProperty(str);
                     break;
                 default:
                     String parameter = str;
@@ -616,7 +615,7 @@ public class MainAlgorithm extends Algorithm {
             }
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-        startDate = sdf.parse(backtestStartDate);
+        startDate = sdf.parse(simulationStartDate);
     }
 
    private void loadBackTestStrategies(ArrayList<ArrayList<String>> parameterList, Constructor constructor, Properties p, String parameterFile, ArrayList<String> tradingAccounts, int n, ArrayList<String> prefix) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -686,11 +685,12 @@ public class MainAlgorithm extends Algorithm {
         HashMap<String, ArrayList<String>> initValues = strategyInitValues(strategy);
         boolean trading = Boolean.parseBoolean(globalProperties.getProperty("trading", "false").toString().trim());
         boolean simulation = Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim());
+        boolean backtest = Boolean.parseBoolean(globalProperties.getProperty("backtest", "false").toString().trim());
         for (Map.Entry<String, ArrayList<String>> entry : initValues.entrySet()) {
             String parameterFile = entry.getKey();
             ArrayList<String> tradingAccounts = entry.getValue();
             Class[] arg;
-            if (simulation == true || trading == true) {
+            if (simulation == true || trading == true||backtest==true) {
                 arg = new Class[5];
                 arg[0] = MainAlgorithm.class;
                 arg[1] = Properties.class;
@@ -703,12 +703,14 @@ public class MainAlgorithm extends Algorithm {
             }
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
             Properties p = TradingUtil.loadParameters(parameterFile);
-            if (useForTrading || simulation) {
+            if (useForTrading || simulation||backtest) {
                 String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-");
                 String strategyName = tempStrategyArray[tempStrategyArray.length - 1];
                 getStrategies().add(strategyName);
                 strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts, null));
-            } else if (Boolean.parseBoolean(globalProperties.getProperty("backtest", "false"))) {
+            } 
+            /*
+            else if (Boolean.parseBoolean(globalProperties.getProperty("backtest", "false"))) {
                 ArrayList<ArrayList<String>> parameterList = new ArrayList<>();
                 for (BackTestParameter b : backtestParameters) {
                     ArrayList<String> s = new ArrayList<>();
@@ -718,7 +720,8 @@ public class MainAlgorithm extends Algorithm {
                     parameterList.add(s);
                 }
                 loadBackTestStrategies(parameterList, constructor, p, parameterFile, tradingAccounts, 0, new ArrayList<String>());
-            } else { //this is a strategy outside trading, like historical data, market data, scanner etc. 
+            }*/ 
+            else { //this is a strategy outside trading, like historical data, market data, scanner etc. 
                 //trading=false, simulation=false
                 constructor.newInstance(parameterFile);
             }

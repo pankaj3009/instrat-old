@@ -25,12 +25,14 @@ public class HistoricalBars implements Runnable {
     String metric;
     String startTime;
     String endTime;
+    String datetimeFormat;
     boolean appendAtEnd;
     EnumBarSize barSize;
     private static final Logger logger = Logger.getLogger(HistoricalBars.class.getName());
     BeanSymbol s;
     
-    public HistoricalBars(String strategyFilter, String typeFilter, EnumSource source,String[] timeSeries,String metric,String startTime, String endTime,EnumBarSize barSize, boolean appendAtEnd) {
+    public HistoricalBars(String strategyFilter, String typeFilter, EnumSource source,String[] timeSeries,String metric,String datetimeFormat,String startTime, String endTime,EnumBarSize barSize, boolean appendAtEnd) {
+        this.datetimeFormat=datetimeFormat;
         this.strategyFilter = strategyFilter;
         this.typeFilter = typeFilter;
         this.source = source;
@@ -42,9 +44,10 @@ public class HistoricalBars implements Runnable {
         this.barSize=barSize;
     }
     
-    public HistoricalBars(BeanSymbol s,EnumSource source,String[] timeSeries,String metric,String startTime, String endTime,EnumBarSize barSize, boolean appendAtEnd ){
+    public HistoricalBars(BeanSymbol s,EnumSource source,String[] timeSeries,String metric,String datetimeFormat,String startTime, String endTime,EnumBarSize barSize, boolean appendAtEnd ){
         this.s=s;
-                this.source = source;
+        this.datetimeFormat=datetimeFormat;
+        this.source = source;
         this.timeSeries=timeSeries;
         this.metric=metric;
         this.startTime=startTime;
@@ -90,7 +93,7 @@ public class HistoricalBars implements Runnable {
                     //for (BeanSymbol s : Parameters.symbol) {
                       //  if (s.getTimeSeriesLength(barSize) <= 0 && Pattern.compile(Pattern.quote(strategyFilter), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
                         //    if ("".compareTo(typeFilter) != 0 && s.getType().compareTo(typeFilter) == 0) {
-                                Utilities.requestHistoricalData(s,timeSeries,metric,startTime,endTime,barSize,appendAtEnd);
+                                Utilities.requestHistoricalData(s,timeSeries,metric,datetimeFormat,startTime,endTime,barSize,appendAtEnd);
                           //  }
                        // }
                     //}

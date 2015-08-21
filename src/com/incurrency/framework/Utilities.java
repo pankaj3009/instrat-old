@@ -69,9 +69,9 @@ public class Utilities {
      * of specified output text file
      * @return
      */
-    public static BeanSymbol requestHistoricalData(BeanSymbol s, String[] timeSeries, String metric, String startTime, String endTime, EnumBarSize barSize, boolean appendAtEnd) {
+    public static BeanSymbol requestHistoricalData(BeanSymbol s, String[] timeSeries, String metric, String datetimeFormat,String startTime, String endTime, EnumBarSize barSize, boolean appendAtEnd) {
         try {
-            SimpleDateFormat sdfExtendedTimeFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+            SimpleDateFormat sdfExtendedTimeFormat = new SimpleDateFormat(datetimeFormat);
             Date startDate = sdfExtendedTimeFormat.parse(startTime);
             Date endDate = sdfExtendedTimeFormat.parse(endTime);
             String path = Algorithm.globalProperties.getProperty("historicaldataserver").toString().toLowerCase();
