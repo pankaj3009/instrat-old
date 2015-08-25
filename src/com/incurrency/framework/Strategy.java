@@ -301,6 +301,7 @@ public class Strategy implements NotificationListener {
         setTimeZone(p.getProperty("TradeTimeZone") == null ? "Asia/Kolkata" : p.getProperty("TradeTimeZone"));
         // String currDateStr = DateUtil.getFormattedDate("yyyyMMddHHmmss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         //Date currDate=DateUtil.parseDate("yyyyMMddHHmmss", currDateStr, TimeZone.getDefault().toString());
+        stopOrders=Boolean.valueOf(p.getProperty("StopOrders", "false"));
         Date currDate = TradingUtil.getAlgoDate();
         DateFormat df = new SimpleDateFormat("yyyyMMdd");
         df.setTimeZone(TimeZone.getTimeZone(timeZone));
@@ -1316,14 +1317,18 @@ public class Strategy implements NotificationListener {
      * @return the stopOrders
      */
     public boolean isStopOrders() {
+         synchronized (lockPL) {
         return stopOrders;
+         }
     }
 
     /**
      * @param stopOrders the stopOrders to set
      */
     public void setStopOrders(boolean stopOrders) {
+         synchronized (lockPL) {
         logger.log(Level.INFO, "StopOrders Set to {0}", new Object[]{stopOrders});
         this.stopOrders = stopOrders;
+         }
     }
 }
