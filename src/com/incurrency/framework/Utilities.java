@@ -69,7 +69,7 @@ public class Utilities {
      * of specified output text file
      * @return
      */
-    public static BeanSymbol requestHistoricalData(BeanSymbol s, String[] timeSeries, String metric, String datetimeFormat,String startTime, String endTime, EnumBarSize barSize, boolean appendAtEnd) {
+    public static BeanSymbol requestHistoricalData(BeanSymbol s, String[] timeSeries, String metric, String datetimeFormat, String startTime, String endTime, EnumBarSize barSize, boolean appendAtEnd) {
         try {
             SimpleDateFormat sdfExtendedTimeFormat = new SimpleDateFormat(datetimeFormat);
             Date startDate = sdfExtendedTimeFormat.parse(startTime);
@@ -88,7 +88,7 @@ public class Utilities {
             rc.run();
             rc.start.put("start");
             String finished = rc.end.take();
-            
+
 
         } catch (Exception e) {
             logger.log(Level.INFO, null, e);
@@ -98,30 +98,35 @@ public class Utilities {
     }
 
     public static int openPositionCount(ArrayList<BeanSymbol> symbols, String orderFileName, String strategy, double pointValue, boolean longPositionOnly) {
+
+        ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
+        try {
+            if (Utilities.fileExists("logs", orderFileName)) {
+                InputStream initialStream = new FileInputStream(new File("logs" + File.separator + orderFileName));
+                JsonReader jr = new JsonReader(initialStream);
+                allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
+                jr.close();
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
+        return openPositionCount(symbols, allOrders, strategy, pointValue, longPositionOnly);
+    }
+
+    public static int openPositionCount(ArrayList<BeanSymbol> symbols, ExtendedHashMap<String, String, Object> allOrders, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
+
         HashMap<Integer, BeanPosition> position = new HashMap<>();
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
-               ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
-               try{
-                if(Utilities.fileExists("logs", orderFileName)){
-                InputStream initialStream = new FileInputStream(new File("logs"+File.separator+orderFileName));
-                JsonReader jr = new JsonReader(initialStream);
-                allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
-                jr.close();
-                }
-               }catch (Exception e){
-                   logger.log(Level.SEVERE,null,e);
-               }
-        //remove any child orders
         ArrayList<Integer> childEntryOrders = new ArrayList<>();
-        for(Entry entry:allOrders.store.entrySet()){
-            String key=(String)entry.getKey();
-            String childdisplayname=Trade.getEntrySymbol(allOrders, key);
-            int childid=Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            int entryorderidint=Trade.getEntryOrderIDInternal(allOrders, key);
-            if (childid>= 0) {
+        for (Entry entry : allOrders.store.entrySet()) {
+            String key = (String) entry.getKey();
+            String childdisplayname = Trade.getEntrySymbol(allOrders, key);
+            int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+            int entryorderidint = Trade.getEntryOrderIDInternal(allOrders, key);
+            if (childid >= 0) {
                 if (Parameters.symbol.get(childid).getType().equals("COMBO")) {
                     childEntryOrders.add(entryorderidint);
                 }
@@ -129,8 +134,8 @@ public class Utilities {
         }
         Iterator iter1 = allOrders.store.entrySet().iterator();
         while (iter1.hasNext()) {
-              Map.Entry trchild = (Map.Entry) iter1.next();
-              String key = (String) trchild.getKey();
+            Map.Entry trchild = (Map.Entry) iter1.next();
+            String key = (String) trchild.getKey();
             if (childEntryOrders.contains(Integer.valueOf(Trade.getEntryOrderIDInternal(allOrders, key))) && !Parameters.symbol.get(Trade.getEntryOrderIDInternal(allOrders, key)).getType().equals("COMBO")) {
                 //check above rule after requiring unique internalorderid for child orders.
                 iter1.remove();
@@ -141,14 +146,14 @@ public class Utilities {
             String key = (String) entry.getKey();
             int tempPosition = 0;
             double tempPositionPrice = 0D;
-            String childdisplayname=Trade.getEntrySymbol(allOrders, key);
-            String account=Trade.getAccountName(allOrders, key);
-            int entrySize=Trade.getEntrySize(allOrders, key);
-            int exitSize=Trade.getExitSize(allOrders, key);
-            double entryPrice=Trade.getEntryPrice(allOrders, key);
-            double exitPrice=Trade.getExitPrice(allOrders, key);
-            EnumOrderSide entrySide=Trade.getEntrySide(allOrders, key);
-            EnumOrderSide exitSide=Trade.getExitSide(allOrders, key);
+            String childdisplayname = Trade.getEntrySymbol(allOrders, key);
+            String account = Trade.getAccountName(allOrders, key);
+            int entrySize = Trade.getEntrySize(allOrders, key);
+            int exitSize = Trade.getExitSize(allOrders, key);
+            double entryPrice = Trade.getEntryPrice(allOrders, key);
+            double exitPrice = Trade.getExitPrice(allOrders, key);
+            EnumOrderSide entrySide = Trade.getEntrySide(allOrders, key);
+            EnumOrderSide exitSide = Trade.getExitSide(allOrders, key);
 
             int id = Utilities.getIDFromDisplayName(symbols, childdisplayname);
             if (id >= 0) {
@@ -158,7 +163,7 @@ public class Utilities {
                     tempPositionPrice = p.getPrice();
                     switch (entrySide) {
                         case BUY:
-                            tempPositionPrice = entrySize+ tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
+                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
                             tempPosition = tempPosition + entrySize;
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
@@ -178,7 +183,7 @@ public class Utilities {
                     }
                     switch (exitSide) {
                         case COVER:
-                            tempPositionPrice = exitSize+ tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
+                            tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
                             tempPosition = tempPosition + exitSize;
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
@@ -210,9 +215,7 @@ public class Utilities {
 
         return out;
     }
-    
-    
-    
+
     /**
      * Prints data in an ExtendedHashMap to a file.
      *
@@ -254,10 +257,10 @@ public class Utilities {
                 }
                 //}
                 if (!headersWritten) {
-                    writeToFile("logs",filename, headers);
+                    writeToFile("logs", filename, headers);
                     headersWritten = true;
                 }
-                writeToFile("logs",filename, output);
+                writeToFile("logs", filename, output);
                 output = "";
             }
         }
@@ -616,8 +619,8 @@ public class Utilities {
             double remainder = input - floor;
             if (remainder >= step / 2) {
                 round += step;
-            }            
-            return round(round,2);
+            }
+            return round(round, 2);
         }
     }
 
@@ -953,13 +956,13 @@ public class Utilities {
     }
 
     public static int getInt(Object input, int defvalue) {
-        try{
-        if (isInteger(input.toString())) {
-            return Integer.parseInt(input.toString().trim());
-        } else {
-            return defvalue;
-        }
-        }catch (Exception e){
+        try {
+            if (isInteger(input.toString())) {
+                return Integer.parseInt(input.toString().trim());
+            } else {
+                return defvalue;
+            }
+        } catch (Exception e) {
             return defvalue;
         }
     }
@@ -1016,23 +1019,27 @@ public class Utilities {
         double result = factor * range; // 421.20
         return result;
     }
- 
+
     /**
      * Rounds a number to specified decimals.
+     *
      * @param value
      * @param places
-     * @return 
+     * @return
      */
     public static double round(double value, int places) {
-    if (places < 0) throw new IllegalArgumentException();
+        if (places < 0) {
+            throw new IllegalArgumentException();
+        }
 
-    BigDecimal bd = new BigDecimal(value);
-    bd = bd.setScale(places, RoundingMode.HALF_UP);
-    return bd.doubleValue();
-}
-    public static double round(double value, double range, int places){
-        double out=round(value,range);
-        out=round(out,places);
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.doubleValue();
+    }
+
+    public static double round(double value, double range, int places) {
+        double out = round(value, range);
+        out = round(out, places);
         return out;
     }
 
@@ -1182,21 +1189,21 @@ public class Utilities {
      * @return
      */
     public static int getIDFromDisplayName(List<BeanSymbol> symbols, String displayName) {
-        if(displayName!=null){
-        for (BeanSymbol symb : symbols) {
-            if (symb.getDisplayname().equals(displayName)) {
-                return symb.getSerialno() - 1;
+        if (displayName != null) {
+            for (BeanSymbol symb : symbols) {
+                if (symb.getDisplayname().equals(displayName)) {
+                    return symb.getSerialno() - 1;
+                }
             }
-        }
         }
         return -1;
     }
-    
-    public String incrementString(String value, double increment){
-        double doubleValue=Utilities.getDouble(value,-1);
-        doubleValue=doubleValue+increment;
-        return String.format("%.1f",doubleValue);
-        
+
+    public String incrementString(String value, double increment) {
+        double doubleValue = Utilities.getDouble(value, -1);
+        doubleValue = doubleValue + increment;
+        return String.format("%.1f", doubleValue);
+
     }
 
     public static int getReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {
@@ -1212,7 +1219,7 @@ public class Utilities {
         String right = symbols.get(id).getRight();
         return getIDFromBrokerSymbol(symbols, symbol, type, expiry, right, option);
     }
-    
+
     public static int getFutureIDFromSymbol(List<BeanSymbol> symbols, int id, String expiry) {
         String s = Parameters.symbol.get(id).getBrokerSymbol();
         String t = "FUT";
@@ -1332,31 +1339,31 @@ public class Utilities {
     }
 
     public static <T> T convertInstanceOfObject(Object o, Class<T> clazz) {
-    try {
-        return clazz.cast(o);
-    } catch(ClassCastException e) {
-        return null;
+        try {
+            return clazz.cast(o);
+        } catch (ClassCastException e) {
+            return null;
+        }
     }
-}
     /*
      * Serialize an object to json
      */
-    public static void writeJson(String fileName,Object o){
-        Class clazz=o.getClass();
+
+    public static void writeJson(String fileName, Object o) {
+        Class clazz = o.getClass();
         clazz.cast(o);
-            String out=JsonWriter.objectToJson(clazz.cast(o));
-            Utilities.writeToFile(new File(fileName), out);
-        
+        String out = JsonWriter.objectToJson(clazz.cast(o));
+        Utilities.writeToFile(new File(fileName), out);
+
     }
-    
-    
+
     /**
      * Writes to filename, the values in String[].
      *
      * @param filename
      * @param content
      */
-    public static void writeToFile(String relativePath,String filename, String content) {
+    public static void writeToFile(String relativePath, String filename, String content) {
         try {
             File dir = new File(relativePath);
             File file = new File(dir, filename);
@@ -1370,7 +1377,7 @@ public class Utilities {
             bufferWritter.write(content + newline);
             bufferWritter.close();
         } catch (IOException e) {
-            logger.log(Level.SEVERE,null,e);
+            logger.log(Level.SEVERE, null, e);
         }
     }
 
@@ -1409,18 +1416,18 @@ public class Utilities {
             file.delete();
         }
     }
-    
-    public static boolean fileExists(String directory,String filename){
+
+    public static boolean fileExists(String directory, String filename) {
         File dir = new File(directory);
         File file = new File(dir, filename);
-        if(file.exists()&& !file.isDirectory()){
+        if (file.exists() && !file.isDirectory()) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
-    
-        /**
+
+    /**
      * Returns the next expiration date, given today's date.It assumes that the
      * program is run EOD, so the next expiration date is calculated after the
      * completion of today.
@@ -1428,8 +1435,8 @@ public class Utilities {
      * @param currentDay
      * @return
      */
-    public static String getNextExpiry(String currentDay)  {
-        String out=null;
+    public static String getNextExpiry(String currentDay) {
+        String out = null;
         try {
             SimpleDateFormat sdf_yyyMMdd = new SimpleDateFormat("yyyyMMdd");
             Date today = sdf_yyyMMdd.parse(currentDay);
@@ -1442,24 +1449,24 @@ public class Utilities {
             Calendar cal_expiry = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
             cal_expiry.setTime(expiry);
             if (cal_expiry.get(Calendar.DAY_OF_MONTH) > cal_today.get(Calendar.DAY_OF_MONTH)) {
-                out=sdf_yyyMMdd.format(expiry);
+                out = sdf_yyyMMdd.format(expiry);
                 return out;
             } else {
                 if (cal_today.get(Calendar.MONTH) == 11) {//we are in decemeber
                     expiry = getLastThursday(month, year + 1);
                     expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
-                    out=sdf_yyyMMdd.format(expiry);
+                    out = sdf_yyyMMdd.format(expiry);
                     return out;
                 } else {
                     expiry = getLastThursday(month + 1, year);
                     expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
-                    out=sdf_yyyMMdd.format(expiry);
+                    out = sdf_yyyMMdd.format(expiry);
                     return out;
                 }
             }
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
-        }finally{
+        } finally {
             return out;
         }
     }
