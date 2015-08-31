@@ -1356,6 +1356,10 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             } else if (lastPrice < this.getLowPrice() || getLowPrice() == 0) {
                 this.setLowPrice(lastPrice,false);
             }
+            //For index, identify the open price
+            if(this.getType().equals("IND")&&this.getOpenPrice()==0){
+                this.setOpenPrice(lastPrice);
+            }
 
             if (propertySupport != null) {
                 propertySupport.firePropertyChange(PROP_LASTPRICE, oldValue, lastPrice);
