@@ -178,7 +178,7 @@ public class RequestClient implements Runnable {
                     }
                     processResponse(response);
                     if (response.contains("finished")) {
-                        logger.log(Level.INFO,"Symbol:{0}, Status: Historical Data Retrieved",new Object[]{s.getDisplayname()});
+                        logger.log(Level.INFO,"100,HistoricalDataRetrieved,{0}",new Object[]{s.getDisplayname()});
                         stop1();
                         availableForNewRequest.set(true);
                     }

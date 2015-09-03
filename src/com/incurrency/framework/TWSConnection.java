@@ -100,7 +100,7 @@ public class TWSConnection extends Thread implements EWrapper {
             int waitCount = 0;
             String orderid=this.getOrderIDSync().take();
             getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
-            logger.log(Level.INFO,"Next OrderID Received,{0}_{1}_{2}_{3}",new Object[]{getC().getIp(),getC().getPort(),getC().getClientID(),orderid});
+            logger.log(Level.INFO,"103, NextOrderIDReceived,{0}_{1}_{2}_{3}",new Object[]{getC().getIp(),getC().getPort(),getC().getClientID(),orderid});
             if (eClientSocket.isConnected()) {
                 eClientSocket.reqIds(1);
                 System.out.println(">>> Connected to TWSSend with client id: " + clientID);
