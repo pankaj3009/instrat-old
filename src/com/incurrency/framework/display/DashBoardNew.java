@@ -235,7 +235,7 @@ public class DashBoardNew extends javax.swing.JFrame {
                 tblPositions.setRowSelectionInterval(currentRow, currentRow);
                 symbolForPositions = tblPositions.getValueAt(tblPositions.getSelectedRow(), 0).toString();
                 position = (Integer) tblPositions.getValueAt(tblPositions.getSelectedRow(), 1);
-                strategy = tblPositions.getValueAt(tblPositions.getSelectedRow(), 5).toString();
+                strategy = tblPositions.getValueAt(tblPositions.getSelectedRow(), 6).toString();
                 connectionForPositions = comboDisplay.getSelectedIndex();
                 side = position > 0 ? EnumOrderSide.SELL : EnumOrderSide.COVER;
                 ibOrderID=0;
