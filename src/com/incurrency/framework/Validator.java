@@ -763,9 +763,19 @@ public class Validator {
             if (!entry.getValue().equals(tradePosition.get(key))) {
                 ArrayList<Integer> i = new ArrayList<Integer>();
                 i.add(entry.getValue());
-                i.add(tradePosition.get(key));
+                i.add(tradePosition.get(key)==null?0:tradePosition.get(key));
                 out.put(key, i);
             }
+        }
+        
+        //remove zeros from out
+        Iterator iter1=out.entrySet().iterator();
+        while(iter1.hasNext()){
+        Map.Entry<String, ArrayList<Integer>>pair=(Map.Entry)iter1.next();
+        ArrayList<Integer>position=pair.getValue();
+        if(position.get(0)==position.get(1)){
+            iter1.remove();
+        }
         }
         return out;
     }
