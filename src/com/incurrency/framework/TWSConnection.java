@@ -77,7 +77,8 @@ public class TWSConnection extends Thread implements EWrapper {
     public static String[][] marketData;
     public static AtomicBoolean serverInitialized=new AtomicBoolean();
     public RequestIDManager requestIDManager=new RequestIDManager();
-
+    private HashMap<Integer, Request> FundamentalRequestID = new HashMap<>();
+    
     
     public TWSConnection(BeanConnection c) {
         this.c = c;
@@ -1099,7 +1100,7 @@ public class TWSConnection extends Thread implements EWrapper {
         con.m_primaryExch = s.getPrimaryexchange();
         con.m_right = s.getRight();
         con.m_secType = s.getType();
-        if (getC().getReqHandle().getHandle()) {
+        if (getC().getReqHistoricalHandle().getHandle()) {
             mRequestId = requestIDManager.getNextRequestId();
             synchronized(lock_request){
                 getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.valueOf(reportType.toUpperCase()), EnumBarSize.UNDEFINED,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
@@ -1985,7 +1986,10 @@ public class TWSConnection extends Thread implements EWrapper {
             StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
             StackTraceElement e = stacktrace[1];//coz 0th will be getStackTrace so 1st
             String methodName = e.getMethodName();
-            out = new PrintWriter("snapshot.xml");
+            String symbol = this.FundamentalRequestID.get(reqId).symbol.getDisplayname();
+            String reportType = this.FundamentalRequestID.get(reqId).requestType.toString();
+            System.out.println("Received report : " + reportType + " for : " + symbol);
+            out = new PrintWriter(symbol+"_"+reportType+".xml");
             out.println(data);
             out.close();
         } catch (FileNotFoundException ex) {
@@ -1994,37 +1998,6 @@ public class TWSConnection extends Thread implements EWrapper {
             if(out!=null){
             out.close();
             }
-        }
-
-        File fXmlFile = new File("snapshot.xml");
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder;
-        try {
-            dBuilder = dbFactory.newDocumentBuilder();
-            try {
-                Document doc = dBuilder.parse(fXmlFile);
-                doc.getDocumentElement().normalize();
-                //System.out.println("Root element :" + doc.getDocumentElement().getNodeName());
-
-                NodeList nList = doc.getElementsByTagName("CoGeneralInfo");
-                for (int temp = 0; temp < nList.getLength(); temp++) {
-                    Node nNode = nList.item(temp);
-                    if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                        Element eElement = (Element) nNode;
-                        String symbol = getRequestDetails().get(reqId+delimiter+c.getAccountName()).symbol.getBrokerSymbol();
-                        String sharesOutstanding = eElement.getElementsByTagName("SharesOut").item(0).getTextContent();
-                        String floatShares = ((Element) eElement.getElementsByTagName("SharesOut").item(0)).getAttribute("TotalFloat");
-                        String effectiveDate = ((Element) eElement.getElementsByTagName("SharesOut").item(0)).getAttribute("Date");
-                        TradingUtil.writeToFile("Outstanding Shares.csv", effectiveDate + "," + symbol + "," + sharesOutstanding + "," + floatShares);
-                        //reqidFundamentalSnapshot.get(reqId).getFundamental().putSummary("");
-                    }
-                }
-
-            } catch (SAXException | IOException ex) {
-                logger.log(Level.INFO, "101", ex);
-            }
-        } catch (ParserConfigurationException ex) {
-            logger.log(Level.INFO, "101", ex);
         }
     }
 

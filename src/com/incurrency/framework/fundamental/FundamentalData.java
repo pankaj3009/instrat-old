@@ -2,125 +2,68 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-
-/*
- * This Class will populate data into a table. 
- * Other parts of the program will read this table.
- * The intention is to seggregate data acquisition from the algorithm logic
- */
 package com.incurrency.framework.fundamental;
 
-import com.incurrency.framework.BeanConnection;
+import com.incurrency.RatesClient.RequestClient;
 import com.incurrency.framework.BeanSymbol;
+import com.incurrency.framework.EnumRequestType;
 import com.incurrency.framework.Parameters;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
-
 /**
- * @return the fundamentalRatios
- */
-/**
- * @param fundamentalRatios the fundamentalRatios to set
- */
-/**
+ * This call is used only for daily bars. For intra-day bars, use
+ * HistoricalBarsAll
  *
- * @author admin
+ * @author pankaj
  */
-public class FundamentalData implements Runnable, FundamentalDataListener {
+public class FundamentalData implements Runnable {
 
-    private Map<String, Fundamental> fundamentalData = new HashMap<>();
-    private Map<Integer, String> reqIDToFinancialRatio = new HashMap<>();
-    private Map<Integer, String> reqIDToFinancialSnapshot = new HashMap<>();
-    public static boolean fundamentalDataReceived = false;
-    //private ArrayList<FundamentalRatio> fundamentalRatios=new ArrayList();
-    //private Algorithm algo;
-    public static long fundamentalMilliSeconds;
-    private static final Logger logger=Logger.getLogger(FundamentalData.class.getName());
-
-    public FundamentalData() {
-       for (BeanConnection c: Parameters.connection){
-           c.getWrapper().addFundamentalListener(this);
-       }
+    public EnumRequestType[] requestType;
+    private static final Logger logger = Logger.getLogger(FundamentalData.class.getName());
+    
+    public FundamentalData(EnumRequestType[] requestType) {
+        this.requestType=requestType;
     }
+    
 
+//    public HistoricalBars(String ThreadName){
+    //   }
     @Override
     public void run() {
-
-        reqFinancialRatios();
-
+        try {
+                    int connectionCount = Parameters.connection.size();
+                    int i = 0;
+                    for (BeanSymbol s : Parameters.symbol) {
+                        if(s.getType().equals("STK")){
+                        for(EnumRequestType r:requestType){
+                            String targetFileName=s.getDisplayname()+"_"+r.toString()+".xml";
+                            File f=new File(targetFileName);
+                            if(!f.exists()){
+                                //Get next valid connection i
+                                while (Parameters.connection.get(i).getHistMessageLimit() == 0) {
+                                    i = i + 1;
+                                    if (i >= connectionCount) {
+                                        i = 0;
+                                    }
+                                }
+                                //Make Fundamental data request using this connection i
+                                Parameters.connection.get(i).getWrapper().requestFundamentalData(s, r.toString());
+                                i=i+1;
+                                if(i>=connectionCount){
+                                    i=0;
+                                }
+                                //Thread.sleep(Parameters.connection.get(0).getHistMessageLimit() * 1000);
+                            }
+                        }
+                        }
+                    }
+        }catch (Exception e){
+         logger.log(Level.INFO,null,e);   
+        }
     }
-
-    private void reqFinancialRatios() {
-         System.out.println("Thread:"+Thread.currentThread().getName());
-           int connectionCount=Parameters.connection.size();
-           int i=0;
-           for (BeanSymbol s : Parameters.symbol) {
-                System.out.println("Requesting Fundamental Data. Symbol: "+s.getBrokerSymbol());
-                Parameters.connection.get(i).getWrapper().requestFundamentalData(s, "snapshot");
-                if(s.getFundamental().takeSummary()){
-                Parameters.connection.get(i).getWrapper().cancelFundamentalData(s.getFundamental().getSnapshotRequestID());}
-                i=i+1;
-                if(i>=connectionCount){
-                i=0; //reset counter
-                try {
-                Thread.sleep(11000);
-                } catch (InterruptedException ex) {
-                  logger.log(Level.SEVERE, null, ex);
-                }
-                }
-         
-           
-               }
-           }
- 
- 
-    /**
-     * @return the reqIDToFundamentalData
-     */
-    public Map<Integer, String> getReqIDToFinancialRatio() {
-        return reqIDToFinancialRatio;
-    }
-
-    /**
-     * @param reqIDToFundamentalData the reqIDToFundamentalData to set
-     */
-    public void setReqIDToFinancialRatio(Map<Integer, String> reqIDToFundamentalData) {
-        this.reqIDToFinancialRatio = reqIDToFundamentalData;
-    }
-
-    /**
-     * @return the fundamentalData
-     */
-    public Map<String, Fundamental> getFundamentalData() {
-        return fundamentalData;
-    }
-
-    /**
-     * @param fundamentalData the fundamentalData to set
-     */
-    public void setFundamentalData(Map<String, Fundamental> fundamentalData) {
-        this.fundamentalData = fundamentalData;
-    }
-
-   /**
-     * @return the reqIDToFinancialSnapshot
-     */
-    public Map<Integer, String> getReqIDToFinancialSnapshot() {
-        return reqIDToFinancialSnapshot;
-    }
-
-    /**
-     * @param reqIDToFinancialSnapshot the reqIDToFinancialSnapshot to set
-     */
-    public void setReqIDToFinancialSnapshot(Map<Integer, String> reqIDToFinancialSnapshot) {
-        this.reqIDToFinancialSnapshot = reqIDToFinancialSnapshot;
-    }
-
-    @Override
-    public void fundamentalDataStatus(FundamentalDataEvent event) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+                        
 }
