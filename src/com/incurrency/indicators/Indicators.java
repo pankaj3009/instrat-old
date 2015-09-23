@@ -32,7 +32,7 @@ import java.util.Arrays;
  */
 public class Indicators {
     
- private static ExtendedHashMap<String, String, Double> output = new ExtendedHashMap<>();
+ private static ExtendedHashMap<String, Object> output = new ExtendedHashMap<>();
  private final Object lockSwing = new Object();
  private static final Object lockStddev = new Object();
  private static final Object lockma = new Object();

@@ -4,9 +4,8 @@
  */
 package com.incurrency.framework;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -14,69 +13,69 @@ import java.util.concurrent.ConcurrentSkipListMap;
  *
  * @author Pankaj
  */
-public class ExtendedHashMap<J, K, V> {
-
-    public ConcurrentSkipListMap<J, ConcurrentHashMap<K, V>> store = new ConcurrentSkipListMap<>();
-    private int currentSize;
+public class ExtendedHashMap<K,V> implements Database<K,V> {
+    private ConcurrentHashMap<String,ConcurrentSkipListMap<String, ConcurrentHashMap<K, V>>> store=new ConcurrentHashMap<>();
     
-    public void put(J key, ConcurrentHashMap<K,V> map) {
-            store.put(key, map);     
-            this.currentSize=store.size();
-    }
-    
-    public void add(J key, K subkey, V value) {
-        if (store.get(key) == null) {
-            ConcurrentHashMap<K, V> temp = new ConcurrentHashMap<>();
-            temp.put(subkey, value);
-            store.put(key, temp);
-        } else {
-            store.get(key).put(subkey, value);
-        }
-        this.currentSize=store.size();
-
-    }    
-    
-    
-    public V get(J key, K subkey) {
-        if (store.get(key) == null) {
-            return null;
-        } else {
-            return store.get(key).get(subkey);
-        }
-    }
-    
-    public J getLastKey(){
-        return store.lastKey();
+    @Override
+    public Long delKey(String storeName,String key) {
+        store.get(storeName).remove(key);
+        return 1L;
     }
 
+    @Override
+    public Object IncrementKey(String storeName,String key, K field, int incr) {
+        String value=getValue(storeName,key,field).toString();
+        if(Utilities.isDouble(value)){
+            return Utilities.getDouble(value, 0);
+        }else if(Utilities.isInteger(value)){
+            return Utilities.getInt(value, 0);
+        }else return 0;
+        
     }
 /*
     @Override
-    public Iterator iterator() {
-        Iterator<ConcurrentHashMap> it = new Iterator<ConcurrentHashMap>() {
-            private J currentIndex = store.firstKey();
-
-            @Override
-            public boolean hasNext() {
-                return store.ceilingKey(currentIndex)!=null;
-            }
-
-            @Override
-            public ConcurrentHashMap<K,V> next() {
-                currentIndex=store.ceilingKey(currentIndex);
-                return store.get(currentIndex);
-            }
-
-            @Override
-            public void remove() {
-                if(!hasNext()) throw new NoSuchElementException();
-                store.remove(currentIndex);
-                   
-                }            
-        };
-        return it;
+    public void removeValue(String storeName,String key, K field) {        
+        ConcurrentHashMap<K, V> temp=store.get(storeName).get(key);
+        temp.remove(field);
     }
-    */
-    
-    
+*/
+    @Override
+    public V getValue(String storeName,String key, K field) {
+          if (store.get(storeName)==null||store.get(storeName).get(key) == null) {
+            return null;
+        } else {
+            return store.get(storeName).get(key).get(field);
+        }
+    }
 
+    @Override
+    public Long setHash(String storeName,String key, K field, V value) {
+        if(store.get(storeName).containsKey(key)){
+            store.get(storeName).get(key).put(field, value);
+            return 1L;
+        }else{
+            ConcurrentHashMap<K, V> temp=new ConcurrentHashMap<>();
+            temp.put(field, value);
+            store.get(storeName).put(key, temp);
+            return 1L;
+        }        
+    }
+
+    @Override
+    public ConcurrentHashMap<K, V> getValues(String storeName,String Key) {
+        return store.get(storeName).get(Key);
+    }    
+
+    @Override
+    public Set<String> getKeys(String storeName) {
+        return store.get(storeName).keySet();
+    }
+
+    @Override
+    public void rename(String oldStoreName,String newStoreName, String oldKeyName, String newKeyName) {
+        ConcurrentHashMap<K,V> old= store.get(oldStoreName).get(oldKeyName);
+        store.get(oldStoreName).remove(oldKeyName);
+        store.get(newStoreName).put(newKeyName, old);
+    }
+    
+}

@@ -4,7 +4,6 @@
  */
 package com.incurrency.framework;
 
-import com.cedarsoftware.util.io.JsonReader;
 import com.google.common.base.Preconditions;
 import com.ib.client.TickType;
 import com.verhas.licensor.License;
@@ -12,16 +11,13 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -31,18 +27,14 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -63,54 +55,6 @@ public class TradingUtil {
     public static String newline = System.getProperty("line.separator");
     public static License lic = null;
     public static byte[] digest;
-
-    /**
-     * Prints data in an ExtendedHashMap to a file.
-     *
-     * @param h
-     * @param filename
-     * @param printOrder
-     */
-    public static void print(ExtendedHashMap<String, String, Double> h, String filename, String[] printOrder) {
-
-        if (h.store.size() > 0) {
-            boolean headersWritten = false;
-            String headers = "";
-            for (String key : h.store.keySet()) {
-                String output = key.toString();
-                //for(Map.Entry<String,Double> values:h.store.get(key).entrySet()){
-                for (int i = 0; i < printOrder.length; i++) {
-                    Iterator it = h.store.get(key).entrySet().iterator();
-                    while (it.hasNext()) {
-                        Map.Entry<String, Double> values = (Map.Entry) it.next();
-
-                        if (values.getKey().equals(printOrder[i])) {
-                            if (!headersWritten) {
-                                headers = headers + "," + values.getKey().toString();
-                            }
-                            output = output + "," + values.getValue().toString();
-                            it.remove();
-                        }
-                    }
-                }
-                Iterator it = h.store.get(key).entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<String, Double> values = (Map.Entry) it.next();
-                    if (!headersWritten) {
-                        headers = headers + "," + values.getKey().toString();
-                    }
-                    output = output + "," + values.getValue().toString();
-                }
-                //}
-                if (!headersWritten) {
-                    writeToFile(filename, headers);
-                    headersWritten = true;
-                }
-                writeToFile(filename, output);
-                output = "";
-            }
-        }
-    }
 
     /**
      * Returns the next good business day using FB day convention.If
@@ -1301,44 +1245,44 @@ public class TradingUtil {
         return String.format("%1$-" + n + "s", s);
     }
 
-    public static void updateMTM(ExtendedHashMap<String, String, Object> trades, String key, String timeZone) {
+    public static void updateMTM(Database<String,String> db,String key, String timeZone) {
         String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
-        double mtmToday = Trade.getMtmToday(trades, key);
-        String todayDate = Trade.getTodayDate(trades, key);
-        double mtmYesterday = Trade.getMtmYesterday(trades, key);
-        if (Trade.getExitPrice(trades, key) == 0D) { //set the MTM
-            String parentdisplayname = Trade.getParentSymbol(trades, key);
+        double mtmToday = Trade.getMtmToday(db,key);
+        String todayDate = Trade.getTodayDate(db,key);
+        double mtmYesterday = Trade.getMtmYesterday(db,key);
+        if (Trade.getExitPrice(db,key) == 0D) { //set the MTM
+            String parentdisplayname = Trade.getParentSymbol(db,key);
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
             if (id >= 0) {
                 if (mtmToday != 0) {
                     //continuing position. move mtm to yesterday
-                    Trade.setMtmYesterday(trades, key, mtmToday);
-                    Trade.setYesterdayDate(trades, key, todayDate);
+                    Trade.setMtmYesterday(db,key, "opentrades",mtmToday);
+                    Trade.setYesterdayDate(db,key, "opentrades",todayDate);
                 }
-                Trade.setMtmToday(trades, key, Parameters.symbol.get(id).getLastPrice());
-                Trade.setTodayDate(trades, key, today);
+                Trade.setMtmToday(db,key, "opentrades",Parameters.symbol.get(id).getLastPrice());
+                Trade.setTodayDate(db,key,"opentrades", today);
             }
             //change month end mtm.
-            if (Trade.getYesterdayDate(trades, key).length() > 9 && !Trade.getYesterdayDate(trades, key).substring(5, 7).equals(Trade.getTodayDate(trades, key).substring(5, 7))) {
+            if (Trade.getYesterdayDate(db,key).length() > 9 && !Trade.getYesterdayDate(db, key).substring(5, 7).equals(Trade.getTodayDate(db, key).substring(5, 7))) {
                 //month has changed
-                Trade.setMtmPriorMonth(trades, key, mtmYesterday);
+                Trade.setMtmPriorMonth(db,key,"opentrades", mtmYesterday);
             }
 
         } else {
-            if (Trade.getMtmToday(trades, key) != 0) {
+            if (Trade.getMtmToday(db,key) != 0) {
                 //continuing position. move mtm to yesterday
-                Trade.setMtmYesterday(trades, key, mtmToday);
-                Trade.setYesterdayDate(trades, key, todayDate);
+                Trade.setMtmYesterday(db,key, "opentrades",mtmToday);
+                Trade.setYesterdayDate(db,key, "opentrades",todayDate);
             }
             //change month end mtm.
-            if (Trade.getYesterdayDate(trades, key).length() > 9 && !Trade.getYesterdayDate(trades, key).substring(5, 7).equals(Trade.getTodayDate(trades, key).substring(5, 7))) {
+            if (Trade.getYesterdayDate(db,key).length() > 9 && !Trade.getYesterdayDate(db,key).substring(5, 7).equals(Trade.getTodayDate(db,key).substring(5, 7))) {
                 //month has changed
-                Trade.setMtmPriorMonth(trades, key, mtmYesterday);
+                Trade.setMtmPriorMonth(db,key, "opentrades",mtmYesterday);
             }
         }
     }
 
-    public static double[] applyBrokerage(ExtendedHashMap<String, String, Object> trades, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName) {
+    public static double[] applyBrokerage(Database<String,String> db, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName,String strategyName) {
         double[] profitGrid = new double[10];
         ArrayList<Double> dailyEquity = new ArrayList();
         ArrayList<Date> tradeDate = new ArrayList();
@@ -1359,13 +1303,12 @@ public class TradingUtil {
              */
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             int tradesToday = 0; //Holds the number of trades done today
-            for (Entry entry : trades.store.entrySet()) {
-                String key = (String) entry.getKey();
-                TradingUtil.updateMTM(trades, key, timeZone);
-                String entryTime = Trade.getEntryTime(trades, key);
-                String exitTime = Trade.getExitTime(trades, key);
-                String account = Trade.getAccountName(trades, key);
-                String childdisplayname = Trade.getEntrySymbol(trades, key);
+            for (String key : db.getKeys("opentrades")) {
+                TradingUtil.updateMTM(db,key, timeZone);
+                String entryTime = Trade.getEntryTime(db,key);
+                String exitTime = Trade.getExitTime(db, key);
+                String account = Trade.getAccountName( db,key);
+                String childdisplayname = Trade.getEntrySymbol(db, key);
                 int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
                 if ((entryTime.contains(today) && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
                     tradesToday = tradesToday + 1;
@@ -1381,41 +1324,38 @@ public class TradingUtil {
                 }
             }
 
-            for (Entry entry : trades.store.entrySet()) {
-                String key = (String) entry.getKey();
-                String entryTime = Trade.getEntryTime(trades, key);
-                String exitTime = Trade.getExitTime(trades, key);
-                String account = Trade.getAccountName(trades, key);
-                String childsymbolDisplayName=Trade.getEntrySymbol(trades, key);
+            for (String key : db.getKeys("opentrades")) {
+                String entryTime = Trade.getEntryTime( db,key);
+                String exitTime = Trade.getExitTime( db,key);
+                String account = Trade.getAccountName(db, key);
+                String childsymbolDisplayName=Trade.getEntrySymbol(db, key);
                 int childid = Utilities.getIDFromDisplayName(Parameters.symbol,childsymbolDisplayName);
 
                 if (account.equals(accountName)) {
-                    ArrayList<Double> tempBrokerage = calculateBrokerage(trades, key, brokerage, accountName, tradesToday);
-                    Trade.setEntryBrokerage(trades, key, tempBrokerage.get(0));
-                    Trade.setExitBrokerage(trades,key,tempBrokerage.get(1));
+                    ArrayList<Double> tempBrokerage = calculateBrokerage( db,key, brokerage, accountName, tradesToday);
+                    Trade.setEntryBrokerage( db,key, "opentrades",tempBrokerage.get(0));
+                    Trade.setExitBrokerage(db,key,"opentrades",tempBrokerage.get(1));
                 }
             }
             //calculate today's profit
-            for (Entry entry:trades.store.entrySet()) {
-                String key = (String) entry.getKey();
-                String entryTime = Trade.getEntryTime(trades, key);
-                String exitTime = Trade.getExitTime(trades, key);
-                double exitPrice =Trade.getExitPrice(trades, key);
-                double entryPrice=Trade.getEntryPrice(trades, key);
-                double mtmToday=Trade.getMtmToday(trades, key);
-                double mtmYesterday=Trade.getMtmYesterday(trades, key);
-                double entryBrokerage=Trade.getEntryBrokerage(trades, key);
-                double exitBrokerage=Trade.getExitBrokerage(trades, key);
+            for (String key:db.getKeys("opentrades")) {
+                String entryTime = Trade.getEntryTime(db, key);
+                String exitTime = Trade.getExitTime(db, key);
+                double exitPrice =Trade.getExitPrice(db, key);
+                double entryPrice=Trade.getEntryPrice(db, key);
+                double mtmToday=Trade.getMtmToday(db, key);
+                double mtmYesterday=Trade.getMtmYesterday(db, key);
+                double entryBrokerage=Trade.getEntryBrokerage(db, key);
+                double exitBrokerage=Trade.getExitBrokerage(db, key);
                 
-                EnumOrderSide entrySide =Trade.getEntrySide(trades, key);
-                int entrySize=Trade.getEntrySize(trades, key);
-                
-                String account = Trade.getAccountName(trades, key);
-                String childsymbolDisplayName=Trade.getEntrySymbol(trades, key);
+                EnumOrderSide entrySide =Trade.getEntrySide(db, key);
+                int entrySize=Trade.getEntrySize(db, key);                
+                String account = Trade.getAccountName(db, key);
+                String childsymbolDisplayName=Trade.getEntrySymbol(db, key);
                 int childid = Utilities.getIDFromDisplayName(Parameters.symbol,childsymbolDisplayName);
                 if (childid>=0 && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO") || (account.equals(accountName) && account.equals("Order"))) {
                     exitPrice = exitPrice== 0D ? mtmToday: exitPrice;
-                    entryPrice = mtmYesterday== 0D ? entryPrice: mtmYesterday;
+                    //entryPrice = mtmYesterday== 0D ? entryPrice: mtmYesterday;
                     double pnl = 0;
                     boolean considerEntryBrokerage = false;
                     boolean considerExitBrokerage = false;
@@ -1436,39 +1376,27 @@ public class TradingUtil {
                 }
             }
 
-            profitGrid[2] = profitGrid[0] + profitGrid[1];
-
+            profitGrid[2] = profitGrid[0] + profitGrid[1]; //this is unrealized pnl.
+            db.setHash("pnl", strategyName+":"+accountName+":"+today, "unrealized", String.valueOf(Utilities.round(profitGrid[2], 0)));
             String monthBeginning = today.substring(0, 7);
             monthBeginning = monthBeginning + "-01";
             //calculate month p&l/ brokerage
-            double monthpnl = 0;
-            File dir = new File("logs");
-            File file = new File(dir, fileName);
-            ExtendedHashMap<String, String, Object> allTrades = new ExtendedHashMap<>();
-            if (file.exists()) {
-                InputStream initialStream = new FileInputStream(new File(file.getCanonicalPath()));
-                JsonReader jr = new JsonReader(initialStream);
-                allTrades = (ExtendedHashMap<String, String, Object>) jr.readObject();
-                jr.close();
-                }
-                allTrades.store.putAll(trades.store);
-                
-                for(Entry entry:allTrades.store.entrySet()){ //calculate MTD pnl
-                    String key=(String)entry.getKey();
-                    String account=Trade.getAccountName(allTrades, key);
-                String childsymbolDisplayName=Trade.getEntrySymbol(allTrades, key);
+            double monthpnl = 0;                
+                for(String key:db.getKeys("closedtrades")){ //calculate MTD pnl
+                String account=Trade.getAccountName(db,key);
+                String childsymbolDisplayName=Trade.getEntrySymbol(db,key);
                 int childid = Utilities.getIDFromDisplayName(Parameters.symbol,childsymbolDisplayName);
-                String entryTime = Trade.getEntryTime(allTrades, key);
-                String exitTime = Trade.getExitTime(allTrades, key);
-                double exitPrice =Trade.getExitPrice(allTrades, key);
-                double entryPrice=Trade.getEntryPrice(allTrades, key);
-                double mtmToday=Trade.getMtmToday(allTrades, key);
-                double mtmYesterday=Trade.getMtmYesterday(allTrades, key);
-                double entryBrokerage=Trade.getEntryBrokerage(allTrades, key);
-                double exitBrokerage=Trade.getExitBrokerage(allTrades, key);
-                String todayDate=Trade.getTodayDate(allTrades, key);
-                EnumOrderSide entrySide=Trade.getEntrySide(allTrades, key);
-                int entrySize=Trade.getEntrySize(allTrades, key);
+                String entryTime = Trade.getEntryTime(db, key);
+                String exitTime = Trade.getExitTime(db, key);
+                double exitPrice =Trade.getExitPrice(db, key);
+                double entryPrice=Trade.getEntryPrice(db, key);
+                double mtmToday=Trade.getMtmToday(db, key);
+                double mtmYesterday=Trade.getMtmYesterday(db, key);
+                double entryBrokerage=Trade.getEntryBrokerage(db, key);
+                double exitBrokerage=Trade.getExitBrokerage(db, key);
+                String todayDate=Trade.getTodayDate(db, key);
+                EnumOrderSide entrySide=Trade.getEntrySide(db, key);
+                int entrySize=Trade.getEntrySize(db, key);
                     if (account.equals(accountName) && !childsymbolDisplayName.contains(":")|| (account.equals(accountName) && account.equals("Order"))) {
                         //logger.log(Level.INFO, "Month Beginning: {0}, Exit Time: {1}", new Object[]{monthBeginning, t.getExitTime().substring(0, 10)});
                         String exitDate = exitTime.equals("") ? todayDate: exitTime;
@@ -1480,29 +1408,29 @@ public class TradingUtil {
                         }
                     }
                 }
-                profitGrid[3] = monthpnl;
+                profitGrid[3] = monthpnl+profitGrid[2];
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "mtd", String.valueOf(Utilities.round(profitGrid[3], 0)));
                 //logger.log(Level.INFO, "Month P&L: {0}", profitGrid[3]);
                 //calculate yearly pnl
                 double ytdPNL = 0;
                 double tradePNL = 0;
                 double dayPNL = 0;
                 Date entryDate = null;
-                for(Entry entry:allTrades.store.entrySet()){ //calculate YTD pnl
-                    String key=(String)entry.getKey();
-                    String account=Trade.getAccountName(allTrades, key);
-                String childsymbolDisplayName=Trade.getEntrySymbol(allTrades, key);
+                for(String key:db.getKeys("closedtrades")){ //calculate YTD pnl
+                String account=Trade.getAccountName(db,key);
+                String childsymbolDisplayName=Trade.getEntrySymbol(db,key);
                 //int childid = Utilities.getIDFromDisplayName(Parameters.symbol,childsymbolDisplayName);
-                String entryTime = Trade.getEntryTime(allTrades, key);
-                String exitTime = Trade.getExitTime(allTrades, key);
-                double exitPrice =Trade.getExitPrice(allTrades, key);
-                double entryPrice=Trade.getEntryPrice(allTrades, key);
-                double mtmToday=Trade.getMtmToday(allTrades, key);
-                double mtmYesterday=Trade.getMtmYesterday(allTrades, key);
-                double entryBrokerage=Trade.getEntryBrokerage(allTrades, key);
-                double exitBrokerage=Trade.getExitBrokerage(allTrades, key);
-                String todayDate=Trade.getTodayDate(allTrades, key);
-                EnumOrderSide entrySide=Trade.getEntrySide(allTrades, key);
-                int entrySize=Trade.getEntrySize(allTrades, key);
+                String entryTime = Trade.getEntryTime(db,key);
+                String exitTime = Trade.getExitTime(db, key);
+                double exitPrice =Trade.getExitPrice(db, key);
+                double entryPrice=Trade.getEntryPrice(db, key);
+                double mtmToday=Trade.getMtmToday(db, key);
+                double mtmYesterday=Trade.getMtmYesterday(db, key);
+                double entryBrokerage=Trade.getEntryBrokerage(db, key);
+                double exitBrokerage=Trade.getExitBrokerage(db, key);
+                String todayDate=Trade.getTodayDate(db, key);
+                EnumOrderSide entrySide=Trade.getEntrySide(db, key);
+                int entrySize=Trade.getEntrySize(db, key);
                     if ( account.equals(accountName) && !childsymbolDisplayName.contains(":") || (account.equals(accountName) && account.equals("Order"))) {
                         if (entryDate == null) { //set entry date to the first date that trades/orders were executed
                             entryDate = DateUtil.parseDate("yyyy-MM-dd", entryTime.substring(0, 10));
@@ -1521,17 +1449,67 @@ public class TradingUtil {
                         ytdPNL = ytdPNL + tradePNL - entryBrokerage - exitBrokerage;
                     }
                 }
-                profitGrid[4] = ytdPNL;
-                for (Entry entry:trades.store.entrySet()) {
-                    String key=(String)entry.getKey();
-                    if (Trade.getExitPrice(trades, key)!= 0) {
-                        Trade.setMtmPriorMonth(trades, key, 0D);
-                        Trade.setMtmToday(trades, key, 0D);
-                        Trade.setMtmYesterday(trades, key, 0D);
-                        Trade.setTodayDate(trades, key, "");
-                        Trade.setYesterdayDate(trades, key, "");
+                profitGrid[4] = ytdPNL+profitGrid[2];
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "ytd", String.valueOf(Utilities.round(profitGrid[4], 0)));
+                Set<String>dates=db.getKeys("pnl");
+                List<String> L=new ArrayList<>();
+                L.addAll(dates);
+                int len=L.size();
+                String yesterday="";
+                if(len>1){
+                    yesterday=L.get(len-2);//get second last element
+                    len=yesterday.split("_").length;
+                    yesterday=yesterday.split("_")[len-1];//get the last part of the split
+                    
+                }
+                double todaypnl=profitGrid[4]-Utilities.getDouble(db.getValue("pnl", yesterday, "ytd"),0);
+                profitGrid[2]=todaypnl;
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "todaypnl", String.valueOf(Utilities.round(profitGrid[2], 0)));
+
+                for (String key:db.getKeys("closedtrades")) {
+                    if (Trade.getExitPrice(db,key)!= 0) {
+                        Trade.setMtmPriorMonth(db, key,"closedtrades", 0D);
+                        Trade.setMtmToday(db,key,"closedtrades",  0D);
+                        Trade.setMtmYesterday(db, key, "closedtrades", 0D);
+                        Trade.setTodayDate(db, key, "closedtrades", "");
+                        Trade.setYesterdayDate(db, key, "closedtrades", "");
                     }
                 }
+                int longwins=0;
+                int longlosses=0;
+                int shortwins=0;
+                int shortlosses=0;
+            for (String key : db.getKeys("closedtrades")) {
+                EnumOrderSide side = Trade.getEntrySide(db, key);
+                switch (side) {
+                    case BUY:
+                        if (Trade.getExitPrice(db, key) > Trade.getEntryPrice(db, key)) {
+                            longwins = longwins + 1;
+                        } else {
+                            longlosses = longlosses + 1;
+                        }
+                        break;
+                    case SHORT:
+                        if (Trade.getExitPrice(db, key) < Trade.getEntryPrice(db, key)) {
+                            shortwins = shortwins + 1;
+                        } else {
+                            shortlosses = shortlosses + 1;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+                double winratio=longwins+shortwins+longlosses+shortlosses>0?(longwins+shortwins/(longwins+shortwins+longlosses+shortlosses)):0;
+                double longwinratio=longwins+longlosses>0?(longwins/(longwins+longlosses)):0;
+                double shortwinratio=shortwins+shortlosses>0?(shortwins/(shortwins+shortlosses)):0;
+                int tradeCount=db.getKeys("closedtrades").size();
+                
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "winratio", String.valueOf(Utilities.round(winratio, 0)));
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "longwinratio", String.valueOf(Utilities.round(longwinratio, 0)));
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "shortwinratio", String.valueOf(Utilities.round(shortwinratio, 0)));
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "tradecount", String.valueOf(tradeCount));
+                
 
                 //Add equity and date for today's trades
                 dailyEquity.add(startingEquity + profitGrid[4]);
@@ -1541,6 +1519,9 @@ public class TradingUtil {
                 profitGrid[7] = drawdownDays(dailyEquity)[1];
                 profitGrid[8] = sharpeRatio(dailyEquity);
                 profitGrid[9] = dailyEquity.size();
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "sharpe", String.valueOf(Utilities.round(profitGrid[8], 2)));
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "drawdowndaysmax", String.valueOf(Utilities.round(profitGrid[6], 0)));
+                db.setHash("pnl", strategyName+":"+accountName+":"+today, "drawdownpercentmax", String.valueOf(Utilities.round(profitGrid[5], 2)));
                 int i = 0;
                 for (Double d : dailyEquity) {
                     if (tradeDate.get(i) != null) {
@@ -1551,7 +1532,7 @@ public class TradingUtil {
                     }
                 }
             
-            if (allTrades.store.isEmpty() && !file.exists()) {
+            if (db.getKeys("closedtrades").isEmpty()) {
                 profitGrid[3] = 0;
                 profitGrid[4] = 0;
                 profitGrid[5] = 0;
@@ -1561,22 +1542,22 @@ public class TradingUtil {
                 profitGrid[9] = 0;
             }
         } catch (Exception ex) {
-            logger.log(Level.INFO, "101", ex);
+            logger.log(Level.SEVERE, "101", ex);
         }
         return profitGrid;
     }
 
-    public static ArrayList<Double> calculateBrokerage(ExtendedHashMap<String, String, Object> trades, String key, ArrayList<BrokerageRate> brokerage, String accountName, int tradesToday) {
+    public static ArrayList<Double> calculateBrokerage(Database<String,String> db,String key, ArrayList<BrokerageRate> brokerage, String accountName, int tradesToday) {
         ArrayList<Double> brokerageCost = new ArrayList<>();
         brokerageCost.add(0D);
         brokerageCost.add(0D);
-        int entryorderidint = Trade.getEntryOrderIDInternal(trades, key);
-        String childsymboldisplayname=Trade.getEntrySymbol(trades, key);
+        int entryorderidint = Trade.getEntryOrderIDInternal(db, key);
+        String childsymboldisplayname=Trade.getEntrySymbol( db,key);
         int id = Utilities.getIDFromDisplayName(Parameters.symbol, childsymboldisplayname);
-        String account = Trade.getAccountName(trades, key);
+        String account = Trade.getAccountName(db, key);
         if (id>=0 && Parameters.symbol.get(id).getType().equals("COMBO")) {
             if (!account.equals("Order")) {
-                ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(trades, key, brokerage, tradesToday);
+                ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(db, key, brokerage, tradesToday);
                 double earlierEntryCost = brokerageCost.get(0);
                 double earlierExitCost = brokerageCost.get(1);
                 brokerageCost.set(0, earlierEntryCost + singleLegCost.get(0));
@@ -1598,16 +1579,15 @@ public class TradingUtil {
                  */
             } else {
                 //get legs for orders
-                String parentdisplayname = Trade.getParentSymbol(trades, key);
+                String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
-                int parentEntryOrderIDInt = Trade.getParentExitOrderIDInternal(trades, key);
+                int parentEntryOrderIDInt = Trade.getParentExitOrderIDInternal(db, key);
                 for (Map.Entry<BeanSymbol, Integer> comboComponent : Parameters.symbol.get(parentid).getCombo().entrySet()) {
                     int childid = comboComponent.getKey().getSerialno() - 1;
-                    for (Entry entry : trades.store.entrySet()) {
-                        String subkey = (String) entry.getKey();
-                        int sparentEntryOrderIDInt = Trade.getParentEntryOrderIDInternal(trades, key);
-                        if (sparentEntryOrderIDInt == parentEntryOrderIDInt && !Trade.getEntrySymbol(trades, subkey).equals(Trade.getParentSymbol(trades, subkey))) {
-                            ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(trades, subkey, brokerage, tradesToday);
+                    for (String subkey : db.getKeys("opentrades")) {
+                        int sparentEntryOrderIDInt = Trade.getParentEntryOrderIDInternal(db, key);
+                        if (sparentEntryOrderIDInt == parentEntryOrderIDInt && !Trade.getEntrySymbol(db, subkey).equals(Trade.getParentSymbol(db,subkey))) {
+                            ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(db, subkey, brokerage, tradesToday);
                             double earlierEntryCost = brokerageCost.get(0);
                             double earlierExitCost = brokerageCost.get(1);
                             brokerageCost.set(0, earlierEntryCost + singleLegCost.get(0));
@@ -1618,26 +1598,26 @@ public class TradingUtil {
                 }
             }
         } else {
-            brokerageCost = calculateSingleLegBrokerage(trades, key, brokerage, tradesToday);
+            brokerageCost = calculateSingleLegBrokerage(db,key, brokerage, tradesToday);
         }
 //         TradingUtil.writeToFile("brokeragedetails.txt", t.getEntrySymbol()+","+brokerageCost.get(0)+","+brokerageCost.get(1));
         return brokerageCost;
     }
 
-    private static ArrayList<Double> calculateSingleLegBrokerage(ExtendedHashMap<String, String, Object> trades, String key, ArrayList<BrokerageRate> brokerage, int tradesToday) {
+    private static ArrayList<Double> calculateSingleLegBrokerage(Database<String,String>db,String key, ArrayList<BrokerageRate> brokerage, int tradesToday) {
         ArrayList<Double> brokerageCost = new ArrayList<>();
         double entryCost = 0;
         double exitCost = 0;
-        String parentdisplayname = Trade.getParentSymbol(trades, key);
+        String parentdisplayname = Trade.getParentSymbol(db, key);
         int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
-        double entryPrice = Trade.getEntryPrice(trades, key);
-        double exitPrice = Trade.getExitPrice(trades, key);
-        int entrySize = Trade.getEntrySize(trades, key);
-        int exitSize = Trade.getExitSize(trades, key);
-        String exitTime = Trade.getExitTime(trades, key);
-        String entryTime = Trade.getEntryTime(trades, key);
-        EnumOrderSide entrySide = Trade.getEntrySide(trades, key);
-        EnumOrderSide exitSide = Trade.getExitSide(trades, key);
+        double entryPrice = Trade.getEntryPrice(db, key);
+        double exitPrice = Trade.getExitPrice(db, key);
+        int entrySize = Trade.getEntrySize(db, key);
+        int exitSize = Trade.getExitSize(db, key);
+        String exitTime = Trade.getExitTime(db, key);
+        String entryTime = Trade.getEntryTime(db, key);
+        EnumOrderSide entrySide = Trade.getEntrySide(db, key);
+        EnumOrderSide exitSide = Trade.getExitSide(db, key);
 
         //calculate entry costs
         for (BrokerageRate b : brokerage) {
@@ -1698,9 +1678,9 @@ public class TradingUtil {
                     break;
             }
         }
-        entryCost = Trade.getEntryBrokerage(trades, key) == 0D ? entryCost : Trade.getEntryBrokerage(trades, key);
+        entryCost = Trade.getEntryBrokerage(db, key) == 0D ? entryCost : Trade.getEntryBrokerage(db, key);
         brokerageCost.add(entryCost);
-        exitCost = Trade.getExitBrokerage(trades, key) == 0D ? exitCost : Trade.getExitBrokerage(trades, key);
+        exitCost = Trade.getExitBrokerage(db, key) == 0D ? exitCost : Trade.getExitBrokerage(db, key);
         brokerageCost.add(exitCost);
         return brokerageCost;
 
@@ -1765,9 +1745,13 @@ public class TradingUtil {
         for (Double r : returns) {
             stats.addValue(r);
         }
+        if(returns.size()>0){
         double mean = stats.getMean();
         double std = stats.getStandardDeviation();
         return (mean) / std * Math.sqrt(260);
+        }else{
+            return 0;
+        }
     }
 
     public static BrokerageRate parseBrokerageString(String brokerage, String type) {
@@ -1800,13 +1784,13 @@ public class TradingUtil {
 
     //Testing routine
     public static void main(String args[]) {
-        ExtendedHashMap<String,String,Object> trades = new ExtendedHashMap<>();
+        ExtendedHashMap<String,String> trades = new ExtendedHashMap<>();
         ArrayList<BrokerageRate> brokerage = new ArrayList();
         brokerage.add(new BrokerageRate());
         brokerage.get(0).primaryRate = 0.01;
         brokerage.get(0).primaryRule = EnumPrimaryApplication.VALUE;
         brokerage.get(0).type = "FUT";
-        applyBrokerage(trades, brokerage, 50, "USDADROrders.csv", "", 100000, "DU67768", "Equity.csv");
+        //applyBrokerage(trades, brokerage, 50, "USDADROrders.csv", "", 100000, "DU67768", "Equity.csv");
         //String out=DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss",new Date().getTime(),TimeZone.getTimeZone("GMT-4:00"));
         //System.out.println(out);
 

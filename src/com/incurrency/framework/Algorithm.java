@@ -42,6 +42,9 @@ public class Algorithm {
     public static boolean useForSimulation;
     public static ConcurrentHashMap<EnumBarSize,Long> databarSetup=new ConcurrentHashMap<>();
     public static AtomicInteger orderidint=new AtomicInteger(0);
+    public static boolean useRedis=false;
+    public static String redisURL=null;
+    public static Database<String,String>db;
     
     public Algorithm(HashMap<String, String> args) throws Exception {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
@@ -51,7 +54,13 @@ public class Algorithm {
             if (inputFile.exists() && !inputFile.isDirectory()) {
                 holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
             }
-        }        
+        }
+        useRedis=globalProperties.getProperty("redisurl")!=null?true:false;
+        if(useRedis){
+            redisURL=globalProperties.getProperty("redisurl").toString().trim();
+            db=new RedisConnect(redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6389));
+        }
+        
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());
         useForSimulation=Boolean.parseBoolean(globalProperties.getProperty("simulation","false").toString().trim());
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();

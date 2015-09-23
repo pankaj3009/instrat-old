@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -97,173 +98,24 @@ public class Utilities {
         }
     }
 
-    public static int openPositionCount(ArrayList<BeanSymbol> symbols, String orderFileName, String strategy, double pointValue, boolean longPositionOnly) {
-
-        ExtendedHashMap<String, String, Object> allOrders = new ExtendedHashMap<>();
-        try {
-            if (Utilities.fileExists("logs", orderFileName)) {
-                InputStream initialStream = new FileInputStream(new File("logs" + File.separator + orderFileName));
-                JsonReader jr = new JsonReader(initialStream);
-                allOrders = (ExtendedHashMap<String, String, Object>) jr.readObject();
-                jr.close();
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, null, e);
-        }
-        return openPositionCount(symbols, allOrders, strategy, pointValue, longPositionOnly);
-    }
-
-    public static int openPositionCount(ArrayList<BeanSymbol> symbols, ExtendedHashMap<String, String, Object> allOrders, String strategy, double pointValue, boolean longPositionOnly) {
+    public static int openPositionCount(Database<String,String>db,ArrayList<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
-
+        HashSet<String>temp=new HashSet<>();;
         HashMap<Integer, BeanPosition> position = new HashMap<>();
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
         ArrayList<Integer> childEntryOrders = new ArrayList<>();
-        for (Entry entry : allOrders.store.entrySet()) {
-            String key = (String) entry.getKey();
-            String childdisplayname = Trade.getEntrySymbol(allOrders, key);
+        for (String key : db.getKeys("opentrades")) {
+            String childdisplayname = Trade.getEntrySymbol(db,key);
+            String parentdisplayname=Trade.getParentSymbol(db,key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            int entryorderidint = Trade.getEntryOrderIDInternal(allOrders, key);
-            if (childid >= 0) {
-                if (Parameters.symbol.get(childid).getType().equals("COMBO")) {
-                    childEntryOrders.add(entryorderidint);
-                }
+            int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
+            if(childid==parentid){//not a combo child leg
+                temp.add(parentdisplayname);
             }
         }
-        Iterator iter1 = allOrders.store.entrySet().iterator();
-        while (iter1.hasNext()) {
-            Map.Entry trchild = (Map.Entry) iter1.next();
-            String key = (String) trchild.getKey();
-            if (childEntryOrders.contains(Integer.valueOf(Trade.getEntryOrderIDInternal(allOrders, key))) && !Parameters.symbol.get(Trade.getEntryOrderIDInternal(allOrders, key)).getType().equals("COMBO")) {
-                //check above rule after requiring unique internalorderid for child orders.
-                iter1.remove();
-            }
-        }
-
-        for (Entry entry : allOrders.store.entrySet()) {
-            String key = (String) entry.getKey();
-            int tempPosition = 0;
-            double tempPositionPrice = 0D;
-            String childdisplayname = Trade.getEntrySymbol(allOrders, key);
-            String account = Trade.getAccountName(allOrders, key);
-            int entrySize = Trade.getEntrySize(allOrders, key);
-            int exitSize = Trade.getExitSize(allOrders, key);
-            double entryPrice = Trade.getEntryPrice(allOrders, key);
-            double exitPrice = Trade.getExitPrice(allOrders, key);
-            EnumOrderSide entrySide = Trade.getEntrySide(allOrders, key);
-            EnumOrderSide exitSide = Trade.getExitSide(allOrders, key);
-
-            int id = Utilities.getIDFromDisplayName(symbols, childdisplayname);
-            if (id >= 0) {
-                if (account.equals("Order")) {
-                    BeanPosition p = position.get(id) == null ? new BeanPosition(id, strategy) : position.get(id);
-                    tempPosition = p.getPosition();
-                    tempPositionPrice = p.getPrice();
-                    switch (entrySide) {
-                        case BUY:
-                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
-                            tempPosition = tempPosition + entrySize;
-                            p.setPosition(tempPosition);
-                            p.setPrice(tempPositionPrice);
-                            p.setPointValue(pointValue);
-                            position.put(id, p);
-                            break;
-                        case SHORT:
-                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice - entrySize * entryPrice) / (-entrySize + tempPosition) : 0D;
-                            tempPosition = tempPosition - entrySize;
-                            p.setPosition(tempPosition);
-                            p.setPrice(tempPositionPrice);
-                            p.setPointValue(pointValue);
-                            position.put(id, p);
-                            break;
-                        default:
-                            break;
-                    }
-                    switch (exitSide) {
-                        case COVER:
-                            tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
-                            tempPosition = tempPosition + exitSize;
-                            p.setPosition(tempPosition);
-                            p.setPrice(tempPositionPrice);
-                            p.setPointValue(pointValue);
-                            position.put(id, p);
-                            break;
-                        case SELL:
-                            tempPositionPrice = -exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice - exitSize * exitPrice) / (-exitSize + tempPosition) : 0D;
-                            tempPosition = tempPosition - exitSize;
-                            p.setPosition(tempPosition);
-                            p.setPrice(tempPositionPrice);
-                            p.setPointValue(pointValue);
-                            position.put(id, p);
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            }
-        }
-
-        for (BeanPosition p : position.values()) {
-            if (longPositionOnly && p.getPosition() > 0) {
-                out = out + 1;
-            } else if (!longPositionOnly && p.getPosition() < 0) {
-                out = out + 1;
-            }
-        }
-
-        return out;
-    }
-
-    /**
-     * Prints data in an ExtendedHashMap to a file.
-     *
-     * @param h
-     * @param filename
-     * @param printOrder
-     */
-    public static <J, K, V> void print(ExtendedHashMap<J, K, V> h, String filename, String[] printOrder) {
-
-        if (h.store.size() > 0) {
-            boolean headersWritten = false;
-            String headers = "";
-            for (Object key : h.store.keySet()) {
-                String output = key.toString();
-                //for(Map.Entry<String,Double> values:h.store.get(key).entrySet()){
-                if (printOrder != null) {
-                    for (int i = 0; i < printOrder.length; i++) {
-                        Iterator it = h.store.get(key).entrySet().iterator();
-                        while (it.hasNext()) {
-                            Map.Entry<K, V> values = (Map.Entry) it.next();
-
-                            if (values.getKey().equals(printOrder[i])) {
-                                if (!headersWritten) {
-                                    headers = headers + "," + values.getKey().toString();
-                                }
-                                output = output + "," + values.getValue().toString();
-                                it.remove();
-                            }
-                        }
-                    }
-                }
-                Iterator it = h.store.get(key).entrySet().iterator();
-                while (it.hasNext()) {
-                    Map.Entry<K, V> values = (Map.Entry) it.next();
-                    if (!headersWritten) {
-                        headers = headers + "," + values.getKey().toString();
-                    }
-                    output = output + "," + values.getValue().toString();
-                }
-                //}
-                if (!headersWritten) {
-                    writeToFile("logs", filename, headers);
-                    headersWritten = true;
-                }
-                writeToFile("logs", filename, output);
-                output = "";
-            }
-        }
+        return temp.size();
     }
 
     public static void loadMarketData(String filePath, String displayName, List<BeanSymbol> symbols) {

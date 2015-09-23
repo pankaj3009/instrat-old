@@ -271,7 +271,7 @@ public class MainAlgorithm extends Algorithm {
 
                 for (BeanSymbol s : optionsRequiringATMStrike) {
                     tempC.getWrapper().getContractDetails(s, "");
-                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol());
+                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol()+"\n");
                 }
 
                 while (TWSConnection.mTotalATMChecks > 0) {
@@ -291,7 +291,7 @@ public class MainAlgorithm extends Algorithm {
 
                 for (BeanSymbol s : Parameters.symbol) {
                     tempC.getWrapper().getContractDetails(s, "");
-                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol());
+                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol()+"\n");
                 }
 
                 while (TWSConnection.mTotalSymbols > 0) {
