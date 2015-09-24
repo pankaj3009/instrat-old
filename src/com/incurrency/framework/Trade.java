@@ -491,7 +491,7 @@ db.setHash(tradeStatus,internalOrderID.toString(), "mtmtoday", String.valueOf(mt
      * @param yesterdayDate the yesterdayDate to set
      */
     public static void setYesterdayDate(Database db,Object internalOrderID,String tradeStatus,String yesterdayDate) {
-        db.setHash(tradeStatus,internalOrderID.toString(), "yesterdayday", yesterdayDate);    }
+        db.setHash(tradeStatus,internalOrderID.toString(), "yesterdaydate", yesterdayDate);    }
 
     /**
      * @return the exitOrderID
