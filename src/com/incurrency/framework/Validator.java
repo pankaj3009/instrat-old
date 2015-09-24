@@ -475,7 +475,7 @@ public class Validator {
                 iter.remove();
             }
         }
-
+        iter=keys.iterator();
         while(iter.hasNext()){
             String key=iter.next();
             if(isCombo(db,key)){
