@@ -62,21 +62,21 @@ public class Validator {
            }  
            return out;
     }
-    public synchronized static boolean reconcile(String prefix, Database<String,String>orderDB, Database<String,String>tradeDB, String account, String email) {
+    public synchronized static boolean reconcile(String prefix, Database<String,String>orderDB, Database<String,String>tradeDB, String account, String email,String strategy) {
         //for(BeanConnection c:Parameters.connection){
 //        String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
 //        String orderFileFullName = "logs" + File.separator + prefix + orderFile;
-        HashMap<String, ArrayList<Integer>> singleLegReconIssue = getPositionMismatch(orderDB, tradeDB, account, "SingleLeg");
-        HashMap<String, ArrayList<Integer>> comboReconIssue = getPositionMismatch(orderDB, tradeDB, account, "Combo");
-        Set<String> comboParents = returnComboParent(tradeDB,account);
-        Set<String> comboChildren = returnComboChildren(tradeDB,account);
+        HashMap<String, ArrayList<Integer>> singleLegReconIssue = getPositionMismatch(orderDB, tradeDB, account, "SingleLeg",strategy);
+        HashMap<String, ArrayList<Integer>> comboReconIssue = getPositionMismatch(orderDB, tradeDB, account, "Combo",strategy);
+        Set<String> comboParents = returnComboParent(tradeDB,account,strategy);
+        Set<String> comboChildren = returnComboChildren(tradeDB,account,strategy);
         HashMap<String, HashMap<String, ArrayList<Integer>>> comboChildrenReconIssue = reconComboChildren(comboParents, comboChildren, tradeDB,account);
         String singleLegIssues = "";
         String comboIssues = "";
         String comboChildrenIssues = "";
         Boolean reconStatus = true;
         if (!singleLegReconIssue.isEmpty()) {
-            singleLegIssues = TradingUtil.padRight("Flag", 10) + TradingUtil.padRight("Order File", 25) + TradingUtil.padRight("Trade File", 25) + TradingUtil.padRight("Symbol", 25) + TradingUtil.padRight("Expected Pos:Orders", 25) + TradingUtil.padRight("Actual Pos:Trade", 25);
+            singleLegIssues = TradingUtil.padRight("Flag", 10) + TradingUtil.padRight("Order File", 25) + TradingUtil.padRight("Trade File", 25) + TradingUtil.padRight("Symbol", 40) + TradingUtil.padRight("Expected Pos:Orders", 25) + TradingUtil.padRight("Actual Pos:Trade", 25);
             //singleLegIssues="Symbol\t\t,Expected Position As per Orders\t\t,ActualPosition as per trades";
             for (Map.Entry<String, ArrayList<Integer>> issue : singleLegReconIssue.entrySet()) {
                 int expected = Utilities.getInt(issue.getValue().get(0), 0);
@@ -84,21 +84,21 @@ public class Validator {
                 String flag = Math.abs(expected) < Math.abs(actual) || Integer.signum(expected) == -Integer.signum(actual) ? "Issue" : "Warn";
                 reconStatus = reconStatus && (flag.equals("Issue") ? false : true);
                 singleLegIssues = singleLegIssues + newline
-                        + TradingUtil.padRight(flag, 10) + TradingUtil.padRight("OrderFile", 25) + TradingUtil.padRight("TradeFile", 25) + TradingUtil.padRight(issue.getKey(), 25) + TradingUtil.padRight(String.valueOf(expected), 25) + TradingUtil.padRight(String.valueOf(actual), 25) + newline;
+                        + TradingUtil.padRight(flag, 10) + TradingUtil.padRight("OrderFile", 25) + TradingUtil.padRight("TradeFile", 25) + TradingUtil.padRight(issue.getKey(), 40) + TradingUtil.padRight(String.valueOf(expected), 25) + TradingUtil.padRight(String.valueOf(actual), 25) + newline;
                 //singleLegIssues = singleLegIssues + issue.getKey() + "\t\t," + expected + "\t\t," + actual + newline;
             }
             singleLegIssues = "Single Leg executions did not reconcile with orders. Please verify and correct 'Issue' rows in order and trade files before the next run of inStrat. 'Warn' rows are for information"
                     + newline + singleLegIssues;
         }
         if (!comboReconIssue.isEmpty()) {
-            comboIssues = TradingUtil.padRight("Flag", 10) + TradingUtil.padRight("Order File", 25) + TradingUtil.padRight("Trade File", 25) + TradingUtil.padRight("Combo", 25) + TradingUtil.padRight("Child", 25) + TradingUtil.padRight("Expected Pos:Orders", 25) + TradingUtil.padRight("Actual Pos:Trade", 25);
+            comboIssues = TradingUtil.padRight("Flag", 10) + TradingUtil.padRight("Order File", 25) + TradingUtil.padRight("Trade File", 25) + TradingUtil.padRight("Combo", 40) + TradingUtil.padRight("Child", 40) + TradingUtil.padRight("Expected Pos:Orders", 25) + TradingUtil.padRight("Actual Pos:Trade", 25);
             for (Map.Entry<String, ArrayList<Integer>> issue : comboReconIssue.entrySet()) {
                 int expected = issue.getValue().get(0) == null ? 0 : issue.getValue().get(0);
                 int actual = issue.getValue().get(1) == null ? 0 : issue.getValue().get(1);
                 String flag = Math.abs(expected) < Math.abs(actual) || Integer.signum(expected) == -Integer.signum(actual) ? "Issue" : "Warn";
                 reconStatus = reconStatus && (flag.equals("Issue") ? false : true);
                 comboIssues = comboIssues + newline
-                        + TradingUtil.padRight(flag, 10) + TradingUtil.padRight("OrderFile", 25) + TradingUtil.padRight("TradeFile", 25) + TradingUtil.padRight(issue.getKey(), 25) + TradingUtil.padRight("", 25) + TradingUtil.padRight(String.valueOf(expected), 25) + TradingUtil.padRight(String.valueOf(actual), 25) + newline;
+                        + TradingUtil.padRight(flag, 10) + TradingUtil.padRight("OrderFile", 25) + TradingUtil.padRight("TradeFile", 25) + TradingUtil.padRight(issue.getKey(), 40) + TradingUtil.padRight("", 25) + TradingUtil.padRight(String.valueOf(expected), 25) + TradingUtil.padRight(String.valueOf(actual), 25) + newline;
 
             }
             comboIssues = "Combo trades did not reconcile with combo orders. Please verify and correct 'Issue' rows in order and trade files before the next run of inStrat. 'Warn' rows are for information"
@@ -129,7 +129,7 @@ public class Validator {
             t.start();
             return reconStatus;
         } else {
-            System.out.println("Trade and Order Files Reconile for account " + account + " !");
+            System.out.println("Trade and Order Files Reconile for account " + account+";"+strategy + "  !");
             return reconStatus;
         }
 
@@ -146,13 +146,13 @@ public class Validator {
             for (String key : s.db.getKeys("opentrades")) {
                 tradeList.add(key);
             }
-            Set<String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account);
-            Set<String> comboTrades = returnComboParent(s.getOms().getDb(), account);
+            Set<String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account,s.getStrategy());
+            Set<String> comboTrades = returnComboParent(s.getOms().getDb(), account,s.getStrategy());
             boolean headerWritten = false;
             for (String key : singleLegTrades) {
                 if (!headerWritten) {
                     out = out + "List of OpenPositions" + newline;
-                    out = out + TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10) + "," + TradingUtil.padRight("Position", 10) + newline;
+                    out = out + TradingUtil.padRight("Time", 25) + TradingUtil.padRight("Symbol", 40) + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + TradingUtil.padRight("Brok", 10) + TradingUtil.padRight("MTM", 10) + TradingUtil.padRight("Position", 10) + newline;
                     headerWritten = true;
                 }
                 int entrySize = Trade.getEntrySize(s.getOms().getDb(),key);
@@ -164,7 +164,7 @@ public class Validator {
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(),key);
                 double mtmToday = Trade.getMtmToday(s.getOms().getDb(),key);
                 if (entrySize - exitSize != 0) {
-                    out = out + TradingUtil.padRight(entryTime, 25) + "," + TradingUtil.padRight(childdisplayname, 20) + "," + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + "," + TradingUtil.padRight(String.valueOf(entryBrokerage), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + "," + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
+                    out = out + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,2)), 10) + TradingUtil.padRight(String.valueOf(mtmToday), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                 }
             }
             for (String key : comboTrades) {
@@ -184,7 +184,7 @@ public class Validator {
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(),key);
                 double mtmToday = Trade.getMtmToday(s.getOms().getDb(),key);
                 if (entrySize - exitSize != 0) {
-                    out = out + TradingUtil.padRight(entryTime, 25) + "," + TradingUtil.padRight(childdisplayname, 20) + "," + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + "," + TradingUtil.padRight(String.valueOf(entryBrokerage), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
+                    out = out + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) +  TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + "," + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,0)), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
                 }
             }
         } catch (Exception e) {
@@ -439,21 +439,21 @@ public class Validator {
         return true;
     }
 
-    public static HashMap<String, ArrayList<Integer>> getPositionMismatch(Database<String,String>orderDB, Database<String,String>tradeDB, String account, String reconType) {
+    public static HashMap<String, ArrayList<Integer>> getPositionMismatch(Database<String,String>orderDB, Database<String,String>tradeDB, String account, String reconType,String strategy) {
         HashMap<String, ArrayList<Integer>> out = new HashMap<>();
         Set<String> t = new HashSet<>();
         Set<String> o = new HashSet<>();
 
         switch (reconType) {
             case "SingleLeg":
-                t = returnSingleLegTrades(tradeDB);
-                o = returnSingleLegTrades(orderDB);
+                t = returnSingleLegTrades(tradeDB,account,strategy);
+                o = returnSingleLegTrades(orderDB,"Order",strategy);
                 out = reconTrades(t, o, account, "Order",orderDB,tradeDB);
                 break;
 
             case "Combo":
-                t = returnComboParent(tradeDB);
-                o = returnComboParent(orderDB);
+                t = returnComboParent(tradeDB,account,strategy);
+                o = returnComboParent(orderDB,"Order",strategy);
                 out = reconTrades(t, o, account, "Order",orderDB,tradeDB);
                 break;
             default:
@@ -487,7 +487,7 @@ public class Validator {
 
     }
 
-    private static Set<String> returnSingleLegTrades(Database<String, String> db, String accountName) {
+    private static Set<String> returnSingleLegTrades(Database<String, String> db,String accountName, String strategy) {
         //Remove orders that are not in symbolist or are combos
         Set<String> keys = db.getKeys("opentrades");
         Iterator<String> iter = keys.iterator();
@@ -495,7 +495,7 @@ public class Validator {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||childid < 0 || isCombo(db, key)) {
+            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains(strategy)||childid < 0 || isCombo(db, key)) {
                 iter.remove();
             }
         }
@@ -553,7 +553,7 @@ public class Validator {
         return keys;
     }
 
-    private static Set<String> returnComboParent(Database<String, String> db, String accountName) {
+    private static Set<String> returnComboParent(Database<String, String> db, String accountName,String strategy) {
         //Remove orders that are not in symbolist or are combos
         Set<String> keys = db.getKeys("opentrades");
         Iterator<String> iter = keys.iterator();
@@ -561,7 +561,7 @@ public class Validator {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||childid < 0 || !isComboParent(db, key)) {
+            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains(strategy)||childid < 0 || !isComboParent(db, key)) {
                 iter.remove();
             }
         }
@@ -569,7 +569,7 @@ public class Validator {
 
     }
 
-    private static Set<String> returnComboChildren(Database<String,String>db,String accountName) {
+    private static Set<String> returnComboChildren(Database<String,String>db,String accountName,String strategy) {
         //Remove orders that are not in symbolist or are combos
         Set<String> keys = db.getKeys("opentrades");
         Iterator<String> iter = keys.iterator();
@@ -577,7 +577,7 @@ public class Validator {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||childid < 0 || !(isCombo(db,key)&& !isComboParent(db, key))) {
+            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains(strategy)||childid < 0 || !(isCombo(db,key)&& !isComboParent(db, key))) {
                 iter.remove();
             }
         }
