@@ -1467,12 +1467,12 @@ public class TradingUtil {
                 if(d.contains(strategyName)){
                     int len=d.split("_")[1].split(":").length;
                     String yesterday1=d.split("_")[1].split(":")[len-1];
-                    if(yesterday1.compareTo(today)!=0 && yesterday.compareTo(yesterday1)>0 ){
+                    if(yesterday1.compareTo(today)!=0 && yesterday.compareTo(yesterday1)<0 ){
                         yesterday=yesterday1;
                     }
                 }
             }
-            double todaypnl = profitGrid[4] - Utilities.getDouble(db.getValue("pnl", yesterday, "ytd"), 0);
+            double todaypnl = profitGrid[4] - Utilities.getDouble(db.getValue("pnl", strategyName+":"+accountName+":"+yesterday, "ytd"), 0);
             profitGrid[2] = todaypnl;
             db.setHash("pnl", strategyName + ":" + accountName + ":" + today, "todaypnl", String.valueOf(Utilities.round(profitGrid[2], 0)));
 
@@ -1514,10 +1514,16 @@ public class TradingUtil {
                     }
                 }
             }
-            double winratio = longwins + shortwins + longlosses + shortlosses > 0 ? (longwins + shortwins / (longwins + shortwins + longlosses + shortlosses)) : 0;
-            double longwinratio = longwins + longlosses > 0 ? (longwins / (longwins + longlosses)) : 0;
-            double shortwinratio = shortwins + shortlosses > 0 ? (shortwins / (shortwins + shortlosses)) : 0;
-            int tradeCount = db.getKeys("closedtrades").size();
+            double winratio = longwins + shortwins + longlosses + shortlosses > 0 ? ((longwins + shortwins)*100 / (longwins + shortwins + longlosses + shortlosses)) : 0;
+            double longwinratio = longwins + longlosses > 0 ? (longwins*100 / (longwins + longlosses)) : 0;
+            double shortwinratio = shortwins + shortlosses > 0 ? (shortwins*100 / (shortwins + shortlosses)) : 0;
+            int tradeCount=0;
+            for(String key:db.getKeys("closedtrades")){
+                if (key.contains(strategyName)){
+                    tradeCount=tradeCount+1;
+                }
+            }
+            
 
             db.setHash("pnl", strategyName + ":" + accountName + ":" + today, "winratio", String.valueOf(Utilities.round(winratio, 0)));
             db.setHash("pnl", strategyName + ":" + accountName + ":" + today, "longwinratio", String.valueOf(Utilities.round(longwinratio, 0)));
