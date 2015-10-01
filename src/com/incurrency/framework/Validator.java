@@ -46,7 +46,7 @@ public class Validator {
 
     public synchronized static String pnlSummary(Database<String,String>db,String account,Strategy s){
          String out = "";
-         HashMap<String,String>pnlSummary=new HashMap<>();
+         TreeMap<String,String>pnlSummary=new TreeMap<>();
              for (String key : db.getKeys("pnl")) {
                  if(key.contains(account)&& key.contains(s.getStrategy())){
                      out = TradingUtil.padRight(db.getValue("pnl", key, "todaypnl"), 25)
@@ -56,9 +56,9 @@ public class Validator {
                              pnlSummary.put(key, out);
                  }                 
             }
-           out=TradingUtil.padRight("Date", 35)+TradingUtil.padRight("Today PNL", 25)+TradingUtil.padRight("Unrealized PNL", 25)+TradingUtil.padRight("MTD PNL", 25)+TradingUtil.padRight("YTD PNL", 25)+"\n";
+           out=TradingUtil.padRight("Date", 45)+TradingUtil.padRight("Today PNL", 25)+TradingUtil.padRight("Unrealized PNL", 25)+TradingUtil.padRight("MTD PNL", 25)+TradingUtil.padRight("YTD PNL", 25)+"\n";
            for(Entry <String,String>e:pnlSummary.entrySet()){
-               out=out+TradingUtil.padRight(e.getKey(), 35)+e.getValue()+"\n";               
+               out=out+TradingUtil.padRight(e.getKey(), 45)+e.getValue()+"\n";               
            }  
            return out;
     }
