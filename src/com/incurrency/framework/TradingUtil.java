@@ -1325,7 +1325,7 @@ public class TradingUtil {
                     }
                 }
             }
-
+            //set brokerage for open trades.
             for (String key : db.getKeys("opentrades")) {
                 if (key.contains(strategyName)) {
                     String entryTime = Trade.getEntryTime(db, key);
@@ -1341,6 +1341,24 @@ public class TradingUtil {
                     }
                 }
             }
+
+            //set brokerage for closed trades, that has not still been calculated i.e it equals 0
+            for (String key : db.getKeys("closedtrades")) {
+                if (key.contains(strategyName)&& Trade.getExitBrokerage(db, key)==0) {
+                    String entryTime = Trade.getEntryTime(db, key);
+                    String exitTime = Trade.getExitTime(db, key);
+                    String account = Trade.getAccountName(db, key);
+                    String childsymbolDisplayName = Trade.getEntrySymbol(db, key);
+                    int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childsymbolDisplayName);
+
+                    if (account.equals(accountName)) {
+                        ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesToday);
+                        Trade.setEntryBrokerage(db, key, "closedtrades", tempBrokerage.get(0));
+                        Trade.setExitBrokerage(db, key, "closedtrades", tempBrokerage.get(1));
+                    }
+                }
+            }
+            
             //calculate today's profit
             for (String key : db.getKeys("opentrades")) {
                 if (key.contains(strategyName)) {
