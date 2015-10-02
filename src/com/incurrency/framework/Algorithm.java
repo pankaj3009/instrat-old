@@ -5,6 +5,7 @@ package com.incurrency.framework;
  * and open the template in the editor.
  */
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -59,7 +60,7 @@ public class Algorithm {
         if(useRedis){
             redisURL=globalProperties.getProperty("redisurl").toString().trim();
             db=new RedisConnect(redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6389));
-        }
+        } 
         
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());
         useForSimulation=Boolean.parseBoolean(globalProperties.getProperty("simulation","false").toString().trim());

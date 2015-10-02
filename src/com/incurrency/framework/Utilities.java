@@ -1051,6 +1051,23 @@ public class Utilities {
         return -1;
     }
 
+    /**
+     * Returns id from using a substring of displayname.It returns the first match
+     *
+     * @param displayName
+     * @return
+     */
+    public static int getIDFromDisplaySubString(List<BeanSymbol> symbols, String subStringDisplay,String type) {
+        if (subStringDisplay != null) {
+            for (BeanSymbol symb : symbols) {
+                if (symb.getDisplayname().toLowerCase().contains(subStringDisplay.toLowerCase()) && symb.getType().equalsIgnoreCase(type)) {
+                    return symb.getSerialno() - 1;
+                }
+            }
+        }
+        return -1;
+    }
+    
     public String incrementString(String value, double increment) {
         double doubleValue = Utilities.getDouble(value, -1);
         doubleValue = doubleValue + increment;

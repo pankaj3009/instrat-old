@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -68,7 +69,11 @@ public class ExtendedHashMap<K,V> implements Database<K,V> {
 
     @Override
     public Set<String> getKeys(String storeName) {
-        return store.get(storeName).keySet();
+        Set<String>out=new HashSet<>();
+        if(store.get(storeName)!=null){
+            out= store.get(storeName).keySet();
+        }
+        return out;
     }
 
     @Override

@@ -126,12 +126,23 @@ public class Strategy implements NotificationListener {
                     db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6389));
                 } else {
                     String filename = "logs" + File.separator + getOrderFile();
+                    db=new <String,String>ExtendedHashMap();
                     if (new File(filename).exists()) {
                         InputStream initialStream = new FileInputStream(new File(filename));
                         JsonReader jr = new JsonReader(initialStream);
                         db = (Database) jr.readObject();
                         jr.close();
                     }
+                }
+                if(Algorithm.db==null){//using extended hashmap for executions. Initialize hashmap
+                    String filename = "logs" + File.separator + getTradeFile();
+                    Algorithm.db=new <String,String>ExtendedHashMap();
+                    if (new File(filename).exists()) {
+                        InputStream initialStream = new FileInputStream(new File(filename));
+                        JsonReader jr = new JsonReader(initialStream);
+                        db = (Database) jr.readObject();
+                        jr.close();
+                    }        
                 }
                 stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy());
                 if (!stratVal) {
