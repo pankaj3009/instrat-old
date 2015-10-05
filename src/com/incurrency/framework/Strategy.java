@@ -785,7 +785,8 @@ public class Strategy implements NotificationListener {
                 }
                 return tempinternalOrderID;
             } else {
-                logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side + tempinternalOrderID});
+                
+                logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side +delimiter+ tempinternalOrderID+delimiter+key+delimiter+ Trade.getEntrySize(db, key)});
                 return -1;
             }
         } else {
