@@ -672,6 +672,8 @@ public class Strategy implements NotificationListener {
             switch (reason) {
                 case REGULARENTRY:
                 case REGULAREXIT:
+                case SL:
+                case TP:
                     if (side == EnumOrderSide.COVER) {
                         BeanPosition pd = getPosition().get(id);
                         expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
@@ -693,12 +695,6 @@ public class Strategy implements NotificationListener {
                         pd.setStrategy(strategy);
                         getPosition().put(id, pd);
                     }
-                    break;
-                case SL:
-
-                    break;
-                case TP:
-
                     break;
                 default:
                     break;
@@ -736,15 +732,14 @@ public class Strategy implements NotificationListener {
         Boolean scaleout = order.get("scale") != null ? Boolean.valueOf(order.get("scale").toString()) : false;
         EnumOrderReason reason = EnumOrderReason.valueOf(order.get("reason") != null ? order.get("reason").toString() : "UNDEFINED");
         if (id >= 0) {
-            int internalorderid = getInternalOrderID();
-            order.put("orderidint", internalorderid);
-            logger.log(Level.INFO, "310,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
             int tradeSize = scaleout == false ? Math.abs(getPosition().get(id).getPosition()) : size;
             order.put("size", tradeSize);
             double expectedFillPrice = 0;
             switch (reason) {
                 case REGULARENTRY:
                 case REGULAREXIT:
+                case SL:
+                case TP:
                     if (side == EnumOrderSide.COVER) {
                         BeanPosition pd = getPosition().get(id);
                         expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
@@ -767,12 +762,6 @@ public class Strategy implements NotificationListener {
                         getPosition().put(id, pd);
                     }
                     break;
-                case SL:
-
-                    break;
-                case TP:
-
-                    break;
                 default:
                     break;
             }
@@ -781,6 +770,9 @@ public class Strategy implements NotificationListener {
             String key = this.getStrategy() + ":" + tempinternalOrderID + ":" + "Order";
             boolean entryTradeExists = Trade.getEntrySize(db, key) > 0 ? true : false;
             if (entryTradeExists) {
+                 int internalorderid = getInternalOrderID();
+                order.put("orderidint", internalorderid);
+               logger.log(Level.INFO, "310,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
                 int exitSize = Trade.getExitSize(db, key);
                 double exitPrice = Trade.getExitPrice(db, key);
                 int newexitSize = exitSize + tradeSize;
