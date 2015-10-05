@@ -669,11 +669,6 @@ public class Strategy implements NotificationListener {
             logger.log(Level.INFO, "310,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
             int tradeSize = scaleout == false ? Math.abs(getPosition().get(id).getPosition()) : size;
             double expectedFillPrice = 0;
-            switch (reason) {
-                case REGULARENTRY:
-                case REGULAREXIT:
-                case SL:
-                case TP:
                     if (side == EnumOrderSide.COVER) {
                         BeanPosition pd = getPosition().get(id);
                         expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
@@ -684,7 +679,7 @@ public class Strategy implements NotificationListener {
                         pd.setPrice(positionPrice);
                         pd.setStrategy(strategy);
                         getPosition().put(id, pd);
-                    } else {
+                    } else  if (side == EnumOrderSide.SELL){
                         BeanPosition pd = getPosition().get(id);
                         expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
                         int symbolPosition = pd.getPosition() - tradeSize;
@@ -695,10 +690,7 @@ public class Strategy implements NotificationListener {
                         pd.setStrategy(strategy);
                         getPosition().put(id, pd);
                     }
-                    break;
-                default:
-                    break;
-            }
+
             //int tempinternalOrderID = internalOpenOrders.get(id);
             int tempinternalOrderID = getFirstInternalOpenOrder(id, side, "Order");
             String key = this.getStrategy() + ":" + tempinternalOrderID + ":" + "Order";
@@ -713,7 +705,7 @@ public class Strategy implements NotificationListener {
                 } else {
                     Trade.updateExit(db, id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades");
                 }
-                logger.log(Level.FINE, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
+                logger.log(Level.INFO, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, reason, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scaleout, orderGroup, effectiveTime, null);
                 }
@@ -726,7 +718,7 @@ public class Strategy implements NotificationListener {
     public synchronized int exit(HashMap<String, Object> order) {
         int id = Integer.valueOf(order.get("id").toString());
         int size = Utilities.getInt(order.get("size"), 0);
-        //order.put("orderref", this.getStrategy());
+        order.put("orderref", this.getStrategy());
         double limitPrice = Utilities.getDouble(order.get("limitprice"), 0);
         EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
         Boolean scaleout = order.get("scale") != null ? Boolean.valueOf(order.get("scale").toString()) : false;
@@ -735,35 +727,26 @@ public class Strategy implements NotificationListener {
             int tradeSize = scaleout == false ? Math.abs(getPosition().get(id).getPosition()) : size;
             order.put("size", tradeSize);
             double expectedFillPrice = 0;
-            switch (reason) {
-                case REGULARENTRY:
-                case REGULAREXIT:
-                case SL:
-                case TP:
-                    if (side == EnumOrderSide.COVER) {
-                        BeanPosition pd = getPosition().get(id);
-                        expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-                        int symbolPosition = pd.getPosition() + tradeSize;
-                        double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                        pd.setPosition(symbolPosition);
-                        pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                        pd.setPrice(positionPrice);
-                        pd.setStrategy(strategy);
-                        getPosition().put(id, pd);
-                    } else {
-                        BeanPosition pd = getPosition().get(id);
-                        expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-                        int symbolPosition = pd.getPosition() - tradeSize;
-                        double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                        pd.setPosition(symbolPosition);
-                        pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                        pd.setPrice(positionPrice);
-                        pd.setStrategy(strategy);
-                        getPosition().put(id, pd);
-                    }
-                    break;
-                default:
-                    break;
+            if (side == EnumOrderSide.COVER) {
+                BeanPosition pd = getPosition().get(id);
+                expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
+                int symbolPosition = pd.getPosition() + tradeSize;
+                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
+                pd.setPosition(symbolPosition);
+                pd.setPositionInitDate(TradingUtil.getAlgoDate());
+                pd.setPrice(positionPrice);
+                pd.setStrategy(strategy);
+                getPosition().put(id, pd);
+            } else if (side == EnumOrderSide.SELL) {
+                BeanPosition pd = getPosition().get(id);
+                expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
+                int symbolPosition = pd.getPosition() - tradeSize;
+                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
+                pd.setPosition(symbolPosition);
+                pd.setPositionInitDate(TradingUtil.getAlgoDate());
+                pd.setPrice(positionPrice);
+                pd.setStrategy(strategy);
+                getPosition().put(id, pd);
             }
             //int tempinternalOrderID = Utilities.getInt(order.get("entryorderidint"),-1)>0?Utilities.getInt(order.get("entryorderidint"),-1):getFirstInternalOpenOrder(id, side, "Order");
             int tempinternalOrderID = getFirstInternalOpenOrder(id, side, "Order");
@@ -783,7 +766,7 @@ public class Strategy implements NotificationListener {
                     Trade.closeTrade(db, key);
                 }
                 
-                logger.log(Level.FINE, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
+                logger.log(Level.INFO, "501,StrategyExit,{0}", new Object[]{getPosition().get(id).getPosition()+delimiter+exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(order);
                 }

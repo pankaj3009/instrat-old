@@ -105,14 +105,15 @@ public class Utilities {
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
-        ArrayList<Integer> childEntryOrders = new ArrayList<>();
         for (String key : db.getKeys("opentrades")) {
+            if (key.contains(strategy)){
             String childdisplayname = Trade.getEntrySymbol(db,key);
             String parentdisplayname=Trade.getParentSymbol(db,key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
             int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
             if(childid==parentid){//not a combo child leg
                 temp.add(parentdisplayname);
+            }
             }
         }
         return temp.size();
