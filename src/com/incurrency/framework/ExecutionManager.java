@@ -285,6 +285,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
                             p.setPointValue(this.pointValue);
+                            p.setStrategy(this.orderReference);
                             c.getPositions().put(ind, p);
                             if (entrySize > 0) {
                                 tempOpenPosition = this.openPositionCount.get(i);
@@ -298,6 +299,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
                             p.setPointValue(this.pointValue);
+                            p.setStrategy(this.orderReference);
                             c.getPositions().put(ind, p);
                             if (entrySize > 0) {
                                 tempOpenPosition = this.openPositionCount.get(i);
@@ -315,6 +317,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
                             p.setPointValue(this.pointValue);
+                            p.setStrategy(this.orderReference);                            
                             c.getPositions().put(ind, p);
                             break;
                         case SELL:
@@ -323,6 +326,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             p.setPosition(tempPosition);
                             p.setPrice(tempPositionPrice);
                             p.setPointValue(this.pointValue);
+                            p.setStrategy(this.orderReference);                            
                             c.getPositions().put(ind, p);
                             break;
                         default:
@@ -352,6 +356,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     cp.setPosition(tempPosition);
                                     cp.setPrice(tempPositionPrice);
                                     cp.setPointValue(this.pointValue);
+                                    p.setStrategy(this.orderReference);                                    
                                     c.getPositions().put(ind, p);
                                     break;
                                 case SHORT:
@@ -360,6 +365,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     cp.setPosition(tempPosition);
                                     cp.setPrice(tempPositionPrice);
                                     cp.setPointValue(this.pointValue);
+                                    p.setStrategy(this.orderReference);
                                     c.getPositions().put(ind, p);
                                     break;
                                 default:
@@ -372,6 +378,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     cp.setPosition(tempPosition);
                                     cp.setPrice(tempPositionPrice);
                                     cp.setPointValue(this.pointValue);
+                                    p.setStrategy(this.orderReference);
                                     c.getPositions().put(ind, p);
                                     break;
                                 case SELL:
@@ -380,6 +387,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     cp.setPosition(tempPosition);
                                     cp.setPrice(tempPositionPrice);
                                     cp.setPointValue(this.pointValue);
+                                    p.setStrategy(this.orderReference);
                                     c.getPositions().put(ind, p);
                                     break;
                                 default:
@@ -1779,6 +1787,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 }
             }
             p.setSymbolid(parentid);
+            p.setStrategy(strategy);
             //3. Update BeanPosition
             if (p.getChildPosition().isEmpty()) {
                 //3a. Update Single Leg Position
@@ -2089,6 +2098,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 p.setPrice(positionPrice);
                 p.setProfit(realizedPL);
                 p.setPosition(origposition + fill);
+                p.setStrategy(strategy);
                 c.getPositions().put(ind, p);
             } else {
                 //3b. Update Combo Position

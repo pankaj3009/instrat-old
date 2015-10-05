@@ -159,7 +159,7 @@ public class Strategy implements NotificationListener {
                     int tempPosition = 0;
                     double tempPositionPrice = 0D;
                     if (id >= 0) {
-                        if (Trade.getAccountName(db, key).equals("Order")) {
+                        if (Trade.getAccountName(db, key).equals("Order") && key.contains(strategy)) {
                             BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
                             tempPosition = p.getPosition();
                             tempPositionPrice = p.getPrice();
@@ -172,6 +172,7 @@ public class Strategy implements NotificationListener {
                                     p.setPosition(tempPosition);
                                     p.setPrice(tempPositionPrice);
                                     p.setPointValue(pointValue);
+                                    p.setStrategy(strategy);
                                     position.put(id, p);
                                     break;
                                 case SHORT:
@@ -180,6 +181,7 @@ public class Strategy implements NotificationListener {
                                     p.setPosition(tempPosition);
                                     p.setPrice(tempPositionPrice);
                                     p.setPointValue(pointValue);
+                                    p.setStrategy(strategy);    
                                     position.put(id, p);
                                     break;
                                 default:
@@ -194,6 +196,7 @@ public class Strategy implements NotificationListener {
                                     p.setPosition(tempPosition);
                                     p.setPrice(tempPositionPrice);
                                     p.setPointValue(pointValue);
+                                    p.setStrategy(strategy);
                                     position.put(id, p);
                                     break;
                                 case SELL:
@@ -202,6 +205,7 @@ public class Strategy implements NotificationListener {
                                     p.setPosition(tempPosition);
                                     p.setPrice(tempPositionPrice);
                                     p.setPointValue(pointValue);
+                                    p.setStrategy(strategy);
                                     position.put(id, p);
                                     break;
                                 default:
@@ -215,12 +219,12 @@ public class Strategy implements NotificationListener {
                 }
                 int maxorderid = 0;
                 for (String key : db.getKeys("closedtrades")) {
-                    String intkey = key.split("_")[1];
+                    String intkey = key.split("_")[1].split(":")[1];
                     maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
                     maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
                 }
                 for (String key : db.getKeys("opentrades")) {
-                    String intkey = key.split("_")[1];
+                    String intkey = key.split("_")[1].split(":")[1];
                     maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
                     maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
                 }
@@ -590,6 +594,7 @@ public class Strategy implements NotificationListener {
                 pd.setPosition(symbolPosition);
                 pd.setPositionInitDate(TradingUtil.getAlgoDate());
                 pd.setPrice(positionPrice);
+                pd.setStrategy(strategy);
                 getPosition().put(id, pd);
             } else {
                 BeanPosition pd = getPosition().get(id);
@@ -599,6 +604,7 @@ public class Strategy implements NotificationListener {
                 pd.setPosition(symbolPosition);
                 pd.setPositionInitDate(TradingUtil.getAlgoDate());
                 pd.setPrice(positionPrice);
+                pd.setStrategy(strategy);
                 getPosition().put(id, pd);
             }
             int internalorderid = getInternalOrderID();
@@ -628,6 +634,7 @@ public class Strategy implements NotificationListener {
                 pd.setPosition(symbolPosition);
                 pd.setPositionInitDate(TradingUtil.getAlgoDate());
                 pd.setPrice(positionPrice);
+                pd.setStrategy(strategy);
                 getPosition().put(id, pd);
             } else {
                 BeanPosition pd = getPosition().get(id);
@@ -637,6 +644,7 @@ public class Strategy implements NotificationListener {
                 pd.setPosition(symbolPosition);
                 pd.setPositionInitDate(TradingUtil.getAlgoDate());
                 pd.setPrice(positionPrice);
+                pd.setStrategy(strategy);
                 getPosition().put(id, pd);
             }
             int internalorderid = getInternalOrderID();
@@ -672,6 +680,7 @@ public class Strategy implements NotificationListener {
                         pd.setPosition(symbolPosition);
                         pd.setPositionInitDate(TradingUtil.getAlgoDate());
                         pd.setPrice(positionPrice);
+                        pd.setStrategy(strategy);
                         getPosition().put(id, pd);
                     } else {
                         BeanPosition pd = getPosition().get(id);
@@ -681,6 +690,7 @@ public class Strategy implements NotificationListener {
                         pd.setPosition(symbolPosition);
                         pd.setPositionInitDate(TradingUtil.getAlgoDate());
                         pd.setPrice(positionPrice);
+                        pd.setStrategy(strategy);
                         getPosition().put(id, pd);
                     }
                     break;
@@ -720,7 +730,7 @@ public class Strategy implements NotificationListener {
     public synchronized int exit(HashMap<String, Object> order) {
         int id = Integer.valueOf(order.get("id").toString());
         int size = Utilities.getInt(order.get("size"), 0);
-        order.put("orderref", this.getStrategy());
+        //order.put("orderref", this.getStrategy());
         double limitPrice = Utilities.getDouble(order.get("limitprice"), 0);
         EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
         Boolean scaleout = order.get("scale") != null ? Boolean.valueOf(order.get("scale").toString()) : false;
@@ -743,6 +753,7 @@ public class Strategy implements NotificationListener {
                         pd.setPosition(symbolPosition);
                         pd.setPositionInitDate(TradingUtil.getAlgoDate());
                         pd.setPrice(positionPrice);
+                        pd.setStrategy(strategy);
                         getPosition().put(id, pd);
                     } else {
                         BeanPosition pd = getPosition().get(id);
@@ -752,6 +763,7 @@ public class Strategy implements NotificationListener {
                         pd.setPosition(symbolPosition);
                         pd.setPositionInitDate(TradingUtil.getAlgoDate());
                         pd.setPrice(positionPrice);
+                        pd.setStrategy(strategy);
                         getPosition().put(id, pd);
                     }
                     break;
