@@ -1096,7 +1096,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.valueOf(reportType.toUpperCase()), EnumBarSize.UNDEFINED,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
             }
             s.getFundamental().setSnapshotRequestID(mRequestId);
-            eClientSocket.reqFundamentalData(mRequestId, con, reportType);
+            eClientSocket.reqFundamentalData(mRequestId, con, reportType.toLowerCase());
         }
     }
 
@@ -1976,10 +1976,10 @@ public class TWSConnection extends Thread implements EWrapper {
             StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
             StackTraceElement e = stacktrace[1];//coz 0th will be getStackTrace so 1st
             String methodName = e.getMethodName();
-            String symbol = this.FundamentalRequestID.get(reqId).symbol.getDisplayname();
-            String reportType = this.FundamentalRequestID.get(reqId).requestType.toString();
-            System.out.println("Received report : " + reportType + " for : " + symbol);
-            out = new PrintWriter(symbol+"_"+reportType+".xml");
+            String symbol = r.symbol.getDisplayname();
+            String reportType = r.requestType.toString();
+            System.out.println("Received report : " + reportType + " for : " + symbol);            
+            out = new PrintWriter("logs"+"//"+symbol+"_"+reportType+".xml");
             out.println(data);
             out.close();
         } catch (FileNotFoundException ex) {
@@ -2058,7 +2058,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 case 430://We are sorry, but fundamentals data for the security specified is not available.failed to fetch
 
                     String symbol = getRequestDetails().get(id+delimiter+c.getAccountName()) != null ? getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.getDisplayname() : "";
-                    logger.log(Level.INFO, "103,FundamentalDataNotReceived,{0}", new Object[]{symbol});
+                    logger.log(Level.INFO, "103,FundamentalDataNotReceived,{0}", new Object[]{symbol+delimiter+getRequestDetails().get(id+delimiter+c.getAccountName()).requestType});
                     BeanSymbol s = getRequestDetails().get(id+delimiter+c.getAccountName()).symbol;
                     s.getFundamental().putSummary(s.getBrokerSymbol() + "," + errorMsg);
                     break;
