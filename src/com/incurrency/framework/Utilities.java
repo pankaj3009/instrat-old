@@ -98,22 +98,28 @@ public class Utilities {
         }
     }
 
-    public static int openPositionCount(Database<String,String>db,ArrayList<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
+    public static int openPositionCount(Database<String, String> db, ArrayList<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
-        HashSet<String>temp=new HashSet<>();;
+        HashSet<String> temp = new HashSet<>();;
         HashMap<Integer, BeanPosition> position = new HashMap<>();
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
         for (String key : db.getKeys("opentrades")) {
-            if (key.contains(strategy)){
-            String childdisplayname = Trade.getEntrySymbol(db,key);
-            String parentdisplayname=Trade.getParentSymbol(db,key);
-            int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
-            if(childid==parentid){//not a combo child leg
-                temp.add(parentdisplayname);
-            }
+            if (key.contains(strategy)) {
+                String childdisplayname = Trade.getEntrySymbol(db, key);
+                String parentdisplayname = Trade.getParentSymbol(db, key);
+                int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+                int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
+                if (longPositionOnly) {
+                    if (childid == parentid && Trade.getEntrySide(db, key).equals(EnumOrderSide.BUY)) {//not a combo child leg
+                        temp.add(parentdisplayname);
+                    }
+                } else if (!longPositionOnly) {
+                    if (childid == parentid && Trade.getEntrySide(db, key).equals(EnumOrderSide.SHORT)) {//not a combo child leg
+                        temp.add(parentdisplayname);
+                    }
+                }
             }
         }
         return temp.size();
