@@ -2086,7 +2086,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     break;
                 case 502: //could not connect . Check port
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    logger.log(Level.INFO,"103,CouldNotConnect,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     if (!this.severeEmailSent) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + "could not connect. Check that TWSSend is accessible and API connections are enabled in TWSSend. ", "Algorithm SEVERE ALERT"));
                         t.start();
@@ -2095,7 +2095,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     break;
                 case 504: //disconnected
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    logger.log(Level.INFO,"103,Disconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     if (!this.severeEmailSent) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
                         t.start();

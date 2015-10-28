@@ -1492,6 +1492,7 @@ public class TradingUtil {
             }
             double todaypnl = profitGrid[4] - Utilities.getDouble(db.getValue("pnl", strategyName+":"+accountName+":"+yesterday, "ytd"), 0);
             profitGrid[2] = todaypnl;
+            profitGrid[0]=profitGrid[2]-profitGrid[1];
             db.setHash("pnl", strategyName + ":" + accountName + ":" + today, "todaypnl", String.valueOf(Utilities.round(profitGrid[2], 0)));
 
             for (String key : db.getKeys("closedtrades")) {

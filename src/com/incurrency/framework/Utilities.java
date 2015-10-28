@@ -762,8 +762,10 @@ public class Utilities {
     public static boolean isDouble(String value) {
         //String decimalPattern = "([0-9]*)\\.([0-9]*)";  
         //return Pattern.matches(decimalPattern, value)||Pattern.matches("\\d*", value);
+        if(value!=null){
         value = value.trim();
         return value.matches("-?\\d+(\\.\\d+)?");
+        }else return false;
     }
 
     public static boolean isInteger(String str) {
