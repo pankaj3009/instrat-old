@@ -123,7 +123,7 @@ public class Strategy implements NotificationListener {
                 }                
                 if (useRedis) {
                     String redisURL = prop.getProperty("redisurl").toString().trim();
-                    db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6389));
+                    db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379),Utilities.getInt(redisURL.split(":")[2], 1));
                 } else {
                     String filename = "logs" + File.separator + getOrderFile();
                     db=new <String,String>ExtendedHashMap();
@@ -624,7 +624,7 @@ public class Strategy implements NotificationListener {
         double limitPrice = Utilities.getDouble(order.get("limitprice").toString(), 0);
         EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
         if (id >= 0) {
-            size = size == 0 && getNumberOfContracts() == 0 ? (int) (getExposure() / limitPrice) : getNumberOfContracts() * Parameters.symbol.get(id).getMinsize();
+            size = size == 0 && getNumberOfContracts() == 0 ? (int) (getExposure() / limitPrice) : size==0?getNumberOfContracts() * Parameters.symbol.get(id).getMinsize():size;
             order.put("size", size);
             if (side == EnumOrderSide.BUY) {
                 BeanPosition pd = getPosition().get(id);

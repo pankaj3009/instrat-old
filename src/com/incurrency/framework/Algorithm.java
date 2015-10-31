@@ -54,7 +54,7 @@ public class Algorithm {
         useRedis=globalProperties.getProperty("redisurl")!=null?true:false;
         if(useRedis){
             redisURL=globalProperties.getProperty("redisurl").toString().trim();
-            db=new RedisConnect(redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6389));
+            db=new RedisConnect(redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6379),Utilities.getInt(redisURL.split(":")[2], 0));
         } 
         
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());

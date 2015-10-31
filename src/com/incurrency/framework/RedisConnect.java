@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 /**
  *
@@ -21,10 +22,10 @@ public class RedisConnect<K, V> implements Database<K, V> {
     String uri;
     int port;
 
-    public RedisConnect(String uri, int port) {
+    public RedisConnect(String uri, int port, int database) {
         this.uri = uri;
         this.port = port;
-        pool = new JedisPool(uri, port);
+        pool = new JedisPool(new JedisPoolConfig(),uri, port,2000,null,database);
     }
 
     @Override
