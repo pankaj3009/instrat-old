@@ -251,7 +251,21 @@ public class Utilities {
             return "";
         }
     }
+    
+    public static <T>String concatArrayList(ArrayList<T> input) {
+        if (input.size() > 0) {
+            StringBuilder nameBuilder = new StringBuilder();
 
+            for (T n : input) {
+                nameBuilder.append(n).append(",");
+            }
+            nameBuilder.deleteCharAt(nameBuilder.length() - 1);
+            return nameBuilder.toString();
+        } else {
+            return "";
+        }
+    }
+    
     public static double boxRange(double[] range, double input, int segments) {
         double min = Doubles.min(range);
         double max = Doubles.max(range);

@@ -98,7 +98,7 @@ public class ServerResponse implements Runnable {
                         //HistoricalDataPublisher h= new HistoricalDataPublisher(hdSymbols);
                         break;
                     default:
-                        String[] symbolArray = args[1].split("_");
+                        String[] symbolArray = args[1].split("_",-1);
                         HistoricalDataParameters hd;//= new HistoricalDataParameters();
                         switch (symbolArray.length) {
                             case 1:
@@ -132,7 +132,7 @@ public class ServerResponse implements Runnable {
                 //return argument+":"+metric+":"+parameters+","+String.valueOf(requestid.addAndGet(1));
               return ":"+String.valueOf(requestid.addAndGet(1));
             case "snapshot":
-                components = args[1].split("_");
+                components = args[1].split("_",-1);
                  id = Utilities.getIDFromDisplayName(Parameters.symbol,args[1]);
                  if (id >= 0) {
                     return "_"+TWSConnection.marketData[id][com.ib.client.TickType.OPEN] + "_"+TWSConnection.marketData[id][com.ib.client.TickType.HIGH]+"_"+TWSConnection.marketData[id][com.ib.client.TickType.LOW]+"_"+TWSConnection.marketData[id][com.ib.client.TickType.CLOSE]+"_"+TWSConnection.marketData[id][com.ib.client.TickType.LAST]+"_"+TWSConnection.marketData[id][com.ib.client.TickType.VOLUME]; 

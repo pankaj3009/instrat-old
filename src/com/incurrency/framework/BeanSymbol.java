@@ -194,13 +194,13 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param right
      * @param minsize
      */
-    public BeanSymbol(String symbol, String happyName, String type, String exchange, String currency, String expiry, String option, String right, int minsize) {
+    public BeanSymbol(String symbol, String displayName, String type, String exchange, String currency, String expiry, String option, String right, int minsize) {
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
         this.brokerSymbol = symbol;
-        this.happyName = happyName;
-        this.displayName=happyName;
+        this.happyName = displayName;
+        this.displayName=displayName;
         this.type = type;
         this.exchange = exchange;
         this.currency = currency;
@@ -210,6 +210,10 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.minsize = minsize;
     }
 
+    public BeanSymbol(String displayName){
+        this(displayName.split("_",-1)[0],displayName,displayName.split("_",-1)[1],null,null,displayName.split("_",-1)[2],displayName.split("_",-1)[4],displayName.split("_",-1)[3],1);
+    }
+    
     public BeanSymbol(String brokerSymbol,String exchangeSymbol, String type, String expiry, String right,String option) {
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
