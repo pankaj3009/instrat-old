@@ -50,13 +50,11 @@ public class Validator {
              for (String key : db.getKeys("pnl")) {
                  if(key.contains(account)&& key.contains(s.getStrategy())){
                      out = TradingUtil.padRight(db.getValue("pnl", key, "todaypnl"), 25)
-                             +  TradingUtil.padRight(db.getValue("pnl", key, "unrealized"), 25)
-                             + TradingUtil.padRight(db.getValue("pnl", key, "mtd"), 25)
                              + TradingUtil.padRight(db.getValue("pnl", key, "ytd"), 25);
                              pnlSummary.put(key, out);
                  }                 
             }
-           out=TradingUtil.padRight("Date", 45)+TradingUtil.padRight("Today PNL", 25)+TradingUtil.padRight("Unrealized PNL", 25)+TradingUtil.padRight("MTD PNL", 25)+TradingUtil.padRight("YTD PNL", 25)+"\n";
+           out=TradingUtil.padRight("Date", 45)+TradingUtil.padRight("Today PNL", 25)+TradingUtil.padRight("YTD PNL", 25)+"\n";
            for(Entry <String,String>e:pnlSummary.entrySet()){
                out=out+TradingUtil.padRight(e.getKey(), 45)+e.getValue()+"\n";               
            }  

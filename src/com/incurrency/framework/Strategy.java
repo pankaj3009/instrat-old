@@ -415,14 +415,10 @@ public class Strategy implements NotificationListener {
             if (prefix.equals("")) {
                 profitGrid = TradingUtil.applyBrokerage(db, s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName,s.getStrategy());
                 TradingUtil.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
-                TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
-                TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
                 TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
-                TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
                 TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
                 TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
                 TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
-                TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
                 TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
                 TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
             }
@@ -454,14 +450,10 @@ public class Strategy implements NotificationListener {
                         TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
                         String message =
                                 "Strategy Name:" + s.strategy + Strategy.newline
-                                + "Gross P&L today: " + df.format(profitGrid[0]) + Strategy.newline
-                                + "Brokerage today: " + df.format(profitGrid[1]) + Strategy.newline
                                 + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
-                                + "MTD P&L: " + df.format(profitGrid[3]) + Strategy.newline
                                 + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
                                 + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
                                 + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
-                                + "Avg Drawdown (days): " + df.format(profitGrid[7]) + Strategy.newline
                                 + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
                                 + "# days in history: " + df.format(profitGrid[9]);
 
