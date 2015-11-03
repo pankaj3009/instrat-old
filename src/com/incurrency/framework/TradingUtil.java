@@ -1280,6 +1280,8 @@ public class TradingUtil {
                     if (alternativemtm == -1) {
                         Trade.setMtmToday(db, key, "opentrades", mtmToday);
 
+                    }else{
+                        Trade.setMtmToday(db, key, "opentrades", alternativemtm);
                     }
                 }
             }
@@ -1509,6 +1511,9 @@ public class TradingUtil {
             if (!yesterday.equals("")) {
                 ytdpnl = Utilities.getDouble(db.getValue("pnl", strategy + ":" + account + ":" + yesterday, "ytd"), 0);
             }
+            if(yesterday.equals("")){
+               yesterday= sdfDate.format(Utilities.previousGoodDay(sdfDate.parse(startDate), -24*60, Algorithm.timeZone, 9, 15, 15, 30, Algorithm.holidays, true));
+            }
             Iterator<Map.Entry<Long, String>> keys = pair.entrySet().iterator();
             while (keys.hasNext()) {
                 String key = keys.next().getValue();
@@ -1538,10 +1543,11 @@ public class TradingUtil {
                 }
                 if (exitDate.compareTo(yesterday) > 0 || exitDate.equals("")) {
                     String entryDate = Trade.getEntryTime(db, key).substring(0, 10);
-                    double entryPrice;
+                    if(entryDate.compareTo(today)<=0){
+                    double entryPrice=0;
                     double exitPrice;
                     double mtmYesterday = Trade.getMtmToday(db, key);
-                    if (exitDate.equals("") && entryDate.compareTo(yesterday)<=0) {
+                    if (exitDate.equals("")) {
                         Trade.setMtmYesterday(db, key, "opentrades", mtmYesterday);
                     } else {
                         Trade.setMtmYesterday(db, key, "closedtrades", mtmYesterday);
@@ -1553,7 +1559,7 @@ public class TradingUtil {
                     } else if (entryDate.compareTo(yesterday) < 0) {
                         entryPrice = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(yesterday));
                     } else {
-                        break;
+                        
                     }
                     int entrySize = Trade.getEntrySize(db, key);
                     if (exitDate.equals("") || exitDate.compareTo(today) > 0) {
@@ -1580,6 +1586,7 @@ public class TradingUtil {
                             ytdpnl = ytdpnl - Trade.getExitBrokerage(db, key);
                         }
                     }
+                    }
                 } else {
                     keys.remove();
                 }
@@ -1592,7 +1599,7 @@ public class TradingUtil {
             double winratio = longwins + shortwins + longlosses + shortlosses > 0 ? ((longwins + shortwins) * 100 / (longwins + shortwins + longlosses + shortlosses)) : 0;
             double longwinratio = longwins + longlosses > 0 ? (longwins * 100 / (longwins + longlosses)) : 0;
             double shortwinratio = shortwins + shortlosses > 0 ? (shortwins * 100 / (shortwins + shortlosses)) : 0;
-            String sd = new SimpleDateFormat("yyyy-MM-dd").format(DateUtil.parseDate("yyyyMMdd", today));
+            String sd = today;
             db.setHash("pnl", strategyaccount + ":" + sd, "ytd", String.valueOf(Utilities.round(ytdpnl, 0)));
             db.setHash("pnl", strategyaccount + ":" + sd, "winratio", String.valueOf(Utilities.round(winratio, 0)));
             db.setHash("pnl", strategyaccount + ":" + sd, "longwinratio", String.valueOf(Utilities.round(longwinratio, 0)));
