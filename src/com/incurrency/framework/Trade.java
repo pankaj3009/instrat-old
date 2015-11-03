@@ -9,6 +9,7 @@ import com.cedarsoftware.util.io.JsonWriter;
 import java.util.ArrayList;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -626,10 +627,15 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entryorderidext", String.val
      
       public static ArrayList<Stop> getStop(Database db,Object internalOrderID){
          Object o=db.getValue("opentrades",internalOrderID.toString(), "stop");
+         ArrayList<Stop>stop=null;
          if(o==null){
              return null;
          }else{
-             ArrayList<Stop> stop=(ArrayList<Stop>)JsonReader.jsonToJava(o.toString());
+             try{
+             stop=(ArrayList<Stop>)JsonReader.jsonToJava((String)o);
+             }catch (Exception e){
+                 logger.log(Level.SEVERE,(String)o+"_"+internalOrderID);
+             }
              return stop;
          }
      }
