@@ -290,7 +290,7 @@ public class Strategy implements NotificationListener {
         setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
         setDynamicOrderDuration(p.getProperty("DynamicOrderDuration") == null ? 1 : Integer.parseInt(p.getProperty("DynamicOrderDuration")));
         if (MainAlgorithm.isUseForTrading()) {
-            m.setCloseDate(DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 2) * 60)); //2 minutes after the enddate+max order duaration
+            m.setCloseDate(DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 5) * 60)); //2 minutes after the enddate+max order duaration
         }
         setStrategyLog(Boolean.parseBoolean(p.getProperty("StrategyLog", "true").toString().trim()));
         setTickSize(Double.parseDouble(p.getProperty("TickSize")));
