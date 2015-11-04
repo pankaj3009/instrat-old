@@ -1251,7 +1251,12 @@ public class TradingUtil {
     }
 
     public static String padRight(String s, int n) {
-        return String.format("%1$-" + n + "s", s);
+        if (s.substring(0, 1).equals("-")) {
+            return String.format("%1$-" + (n - 1) + "s", s);
+
+        } else {
+            return String.format("%1$-" + n + "s", s);
+        }
     }
 
     public static void updateMTM(Database<String, String> db, String key, String timeZone) {
@@ -1547,7 +1552,7 @@ public class TradingUtil {
                     if(entryDate.compareTo(today)<=0){
                     double entryPrice=0;
                     double exitPrice;
-                    double mtmYesterday = Trade.getMtmToday(db, key);
+                    double mtmYesterday = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)),sdfDate.parse(yesterday));
                     if (exitDate.equals("")) {
                         Trade.setMtmYesterday(db, key, "opentrades", mtmYesterday);
                     } else {
