@@ -64,7 +64,7 @@ public class TradingUtil {
     public static String newline = System.getProperty("line.separator");
     public static License lic = null;
     public static byte[] digest;
-
+    public final static String delimiter = "_";
     /**
      * Returns the next good business day using FB day convention.If
      * weekendHolidays is set to false, weekends are considered as working days
@@ -1506,6 +1506,7 @@ public class TradingUtil {
         }
         for (String today : pnlDates) {
             //get last trade record date
+            logger.log(Level.INFO,"PNLRecords,{0}",new Object[]{strategy+delimiter+account+delimiter+today});
             String yesterday = getLastPNLRecordDate(db, account, strategy, today, false);
             double ytdpnl = 0;
             if (!yesterday.equals("")) {
