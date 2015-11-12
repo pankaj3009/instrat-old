@@ -1429,8 +1429,12 @@ public class TradingUtil {
                         times.add(time);
                     }
                 }
+                if(times.size()>0){
                 yesterday = sdfDate.format(new Date(times.first()));
                 startDate = yesterday;
+                }else{
+                    startDate=today;
+                }
                 addPNLRecords(db, strategyName, accountName, startDate, today, false);
 
             }
