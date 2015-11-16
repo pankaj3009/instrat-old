@@ -167,7 +167,7 @@ public class TradingEventSupport {
     }
 */    
     public void fireOrderEvent(OrderEvent order){
-         logger.log(Level.INFO,"303, NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
+         logger.log(Level.INFO,"303,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
                             +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
@@ -183,7 +183,7 @@ public class TradingEventSupport {
     // public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String link, boolean transmit, String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer> stubs) {    
        public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, boolean transmit,String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer>stubs) {
        OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent, dynamicorderduration, maxslippage,transmit,validity,scale,orderGroup,effectiveFrom,stubs);
-                logger.log(Level.INFO,"303, NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
+                logger.log(Level.INFO,"303,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
                             +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
@@ -208,7 +208,7 @@ public class TradingEventSupport {
         public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String account, boolean scale,String passToOrderObject) {
         OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent,  dynamicorderduration, maxslippage,true,"DAY",scale,passToOrderObject,"",null);
         order.setAccount(account);
-                 logger.log(Level.INFO,"303, NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
+                 logger.log(Level.INFO,"303,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
                             +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter

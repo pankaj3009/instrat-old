@@ -753,7 +753,7 @@ public class Strategy implements NotificationListener {
                 int newexitSize = exitSize + tradeSize;
                 double newexitPrice = (exitPrice * exitSize + tradeSize * expectedFillPrice) / (newexitSize);
                 order.put("entryorderidint", tempinternalOrderID);
-                Trade.updateExit(db, id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades");
+                Trade.updateExit(db, id, reason, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades");
                 if (getPosition().get(id).getPosition() == 0) {
                     Trade.closeTrade(db, key);
                 }

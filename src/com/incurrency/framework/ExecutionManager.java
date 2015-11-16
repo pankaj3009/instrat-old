@@ -434,6 +434,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     boolean comboPartiallyFilled = (ob.getParentSymbolID() != ob.getChildSymbolID()) && !ob.getOrderType().equals(EnumOrderType.MKT);
                     if (ob != null && waitOver || coverSlippageExceeded || sellSlippageExceeded || comboPartiallyFilled) {
                         //amendement scenario is valid if exit orders have not exceeded slippage or dynamic order management time has kicked in or combo order is partially filled
+                        logger.log(Level.INFO,"307,BidAskChangeStatus,{0}",new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + waitOver+delimiter+coverSlippageExceeded+delimiter+sellSlippageExceeded+delimiter+comboPartiallyFilled});
                         if (!Parameters.symbol.get(id).getType().equals("COMBO")) {
                             double limitprice = tempOrderInfo.getOrigEvent().getLimitPrice();
                             double newlimitprice = c.getWrapper().getLimitPriceUsingAggression(id, limitprice, side);//limit price of child is returned
