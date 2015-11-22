@@ -2253,12 +2253,15 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             boolean entry = ob.getParentOrderSide() == EnumOrderSide.BUY || ob.getParentOrderSide() == EnumOrderSide.SHORT ? true : false;
             //update trades if order is completely filled. For either combo or regular orders, this will be reflected
             if (ob.getInternalOrderIDEntry() == -1) {
-                parentInternalOrderIDEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName());
+                parentInternalOrderIDEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName(),true);
+                childInternalOrderIDEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName(),false);
             } else {
                 parentInternalOrderIDEntry = getEntryParentOrderIDInt(ob, account);
                 childInternalOrderIDEntry = ob.getInternalOrderIDEntry();
             }
+            
             String key =s.getStrategy() + ":" + String.valueOf(childInternalOrderIDEntry) + ":" + account;
+            
             if (p.getChildPosition().isEmpty()) {//single leg order
                 if (entry) {
                     new Trade(db, childid, parentid, ob.getReason(), ob.getParentOrderSide(), avgFillPrice, filled, parentInternalOrderIDEntry, orderid, parentInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades");
@@ -2273,9 +2276,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         if (c.getPositions().get(ind).getPosition() == 0) {
                             Trade.closeTrade(db, key);
                         }
-                        logger.log(Level.INFO, "311,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
+                        logger.log(Level.INFO, "311,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()+delimiter+key});
                     } else {
-                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter + orderid});
+                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter+parentInternalOrderIDEntry+delimiter + orderid+delimiter+key});
                     }
                 }
             } else {//combo order
@@ -2297,7 +2300,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         }
                         logger.log(Level.INFO, "311,TradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
                     } else {
-                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter + orderid});
+                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter+parentInternalOrderIDEntry+delimiter + orderid+delimiter+key});
 
                     }
                 }
@@ -2332,7 +2335,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         }
                         logger.log(Level.INFO, "311,TradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
                     } else {
-                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter + orderid});
+                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry +delimiter+parentInternalOrderIDEntry+ delimiter + orderid+delimiter+key});
                     }
                 }
             }
@@ -2520,13 +2523,17 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
     }
 
-    private int getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
+    private int getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName,boolean parentOrderID) {
         String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
         for (String key : getDb().getKeys("opentrades")) {
             if(key.contains(s.getStrategy())){
             if (Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
+                if(!parentOrderID){
                 return Trade.getEntryOrderIDInternal(db, key);
+                }else{
+                    return Trade.getParentEntryOrderIDInternal(db, key);
+                }
             }
             }
         }
