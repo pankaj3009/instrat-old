@@ -1403,12 +1403,14 @@ public class TradingUtil {
 
             //Get last pnl record
             String yesterday = "";
+            int count=0;
             SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
             SimpleDateFormat sdfDateTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             TreeSet<Long> times = new TreeSet<>();
             String startDate = "";
             for (String d : dates) {
                 if (d.contains(strategyName) && d.contains(accountName)) {
+                    count=count+1;
                     int len = d.split("_")[1].split(":").length;
                     long time = sdfDate.parse(d.split("_")[1].split(":")[len - 1]).getTime();
                     times.add(time);
@@ -1436,7 +1438,6 @@ public class TradingUtil {
                     startDate=today;
                 }
                 addPNLRecords(db, strategyName, accountName, startDate, today, false);
-
             }
 
             yesterday = getLastPNLRecordDate(db, accountName, strategyName, today, true);
@@ -1447,7 +1448,8 @@ public class TradingUtil {
             profitGrid[5] = Utilities.getDouble(db.getValue("pnl", key, "drawdownpercentmax"), 0);
             profitGrid[6] = Utilities.getDouble(db.getValue("pnl", key, "drawdowndaysmax"), 0);
             profitGrid[8] = Utilities.getDouble(db.getValue("pnl", key, "sharpe"), 0);
-            profitGrid[9] = Utilities.getDouble(db.getValue("pnl", key, "tradecount"), 0);
+            count=count+1;//increased count for new pnl recort
+            profitGrid[9] = Utilities.getDouble(count, 0);
 
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "101", ex);
