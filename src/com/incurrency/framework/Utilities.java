@@ -315,7 +315,8 @@ public class Utilities {
         exitCal.add(Calendar.MINUTE, minuteAdjust);
         int exitMinute = exitCal.get(Calendar.MINUTE);
         int exitHour = exitCal.get(Calendar.HOUR_OF_DAY);
-
+        
+        //If the exitTime is after market, move to eixtCal to next day BOD.
         if (exitHour > tradeCloseHour || (exitHour == tradeCloseHour && exitMinute >= tradeCloseMinute)) {
             //1.get minutes from close
             int minutesFromClose = (tradeCloseHour - entryHour) > 0 ? (tradeCloseHour - entryHour) * 60 : 0 + tradeCloseMinute - entryMinute;
