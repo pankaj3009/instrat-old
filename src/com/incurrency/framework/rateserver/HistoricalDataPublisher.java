@@ -116,7 +116,7 @@ public class HistoricalDataPublisher implements Runnable {
     }
 
     private void publishTick(ArrayList<HistoricalDataParameters> symbols, String periodicity, Date startDate, Date endDate) throws URISyntaxException, IOException, InterruptedException {
-        HttpClient client = new HttpClient("http://192.187.112.162:8085");
+        HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
         String metricnew = null;
         int startCounter = 0;
         TreeMultimap<Long, OHLCV> timeKey = TreeMultimap.create();
@@ -228,7 +228,7 @@ public class HistoricalDataPublisher implements Runnable {
     }
 
     private static void getClose(ArrayList<HistoricalDataParameters> symbols, Date closeDate) throws URISyntaxException, IOException {
-        HttpClient client = new HttpClient("http://192.187.112.162:8085");
+        HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
         String metricnew = null;
         String topic=symbols.get(0).topic;
         int startCounter = 0;

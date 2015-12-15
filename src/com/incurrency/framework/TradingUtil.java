@@ -1629,7 +1629,7 @@ public class TradingUtil {
     private static double getSettlePrice(BeanSymbol s, Date d) {
         double settlePrice = -1;
         try {
-            HttpClient client = new HttpClient("http://192.187.112.162:8085");
+            HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
             String metric;
             switch (s.getType()) {
                 case "STK":
