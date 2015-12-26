@@ -41,6 +41,7 @@ public class Algorithm {
     public static boolean useRedis=false;
     public static String redisURL=null;
     public static Database<String,String>db;
+    public static String cassandraIP;
     
     public Algorithm(HashMap<String, String> args) throws Exception {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
@@ -52,6 +53,7 @@ public class Algorithm {
             }
         }
         useRedis=globalProperties.getProperty("redisurl")!=null?true:false;
+        cassandraIP=globalProperties.getProperty("cassandraconnection", "127.0.0.1");
         if(useRedis){
             redisURL=globalProperties.getProperty("redisurl").toString().trim();
             db=new RedisConnect(redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6379),Utilities.getInt(redisURL.split(":")[2], 0));

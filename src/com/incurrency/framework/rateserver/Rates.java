@@ -78,7 +78,7 @@ properties=Utilities.loadParameters(ParameterFile);
         }
         responseport=Integer.parseInt(properties.getProperty("responseport", "5555"));
         publishport=Integer.parseInt(properties.getProperty("publishport", "5556"));
-        String cassandraIP=properties.getProperty("cassandraip","192.187.112.162");
+        String cassandraIP=properties.getProperty("cassandraip","127.0.0.1");
         int cassandraPort=Integer.valueOf(properties.getProperty("cassandraport","4242"));
         String topic=properties.getProperty("topic","INR");
         useRTVolume = Boolean.parseBoolean(properties.getProperty("usertvolume","false").toString().trim());

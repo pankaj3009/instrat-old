@@ -50,7 +50,7 @@ public class TWSConnection extends Thread implements EWrapper {
     private boolean historicalDataFarmConnected=true;
     public static boolean skipsymbol=false;
     //Parameters for dataserver
-    public String cassandraIP = "192.187.112.162";
+    public String cassandraIP;
     public int cassandraPort = 4242;
     public Socket cassandraConnection;
     public PrintStream output;

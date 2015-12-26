@@ -206,7 +206,7 @@ public class HistoricalDataResponse implements Runnable {
 
     private void publishTick(String symbol, String[] metric) {
         try{
-        HttpClient client = new HttpClient("http://192.187.112.162:8085");
+        HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
         String metricnew = null;
         int startCounter = 0;
         TreeMap<Long, HashMap<String, String>> symbolData = new TreeMap<>();
