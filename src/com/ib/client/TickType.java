@@ -64,6 +64,7 @@ public class TickType {
     public static final int TRADE_RATE = 55;
     public static final int VOLUME_RATE = 56;
     public static final int LAST_RTH_TRADE = 57;
+    public static final int TRADEDVALUE  = 58;
 
     public static String getField( int tickType) {
         switch( tickType) {
@@ -73,6 +74,7 @@ public class TickType {
             case ASK_SIZE:                    return "askSize";
             case LAST:                        return "lastPrice";
             case LAST_SIZE:                   return "lastSize";
+            case TRADEDVALUE:                 return "tradedValue";
             case HIGH:                        return "high";
             case LOW:                         return "low";
             case VOLUME:                      return "volume";

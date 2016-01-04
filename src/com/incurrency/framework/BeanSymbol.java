@@ -78,6 +78,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private double askVol;
     private double lastVol;
     private int lastSize;
+    private double tradedValue;
     private double bidSize;
     private double askSize;
     private double closePrice;
@@ -123,6 +124,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private final Object lockLowPrice=new Object();
     private final Object lockLastPriceTime = new Object();
     private final Object lockLastSize = new Object();
+    private final Object lockTradedValue =new Object();
     private final Object lockOpenPrice = new Object();
     private final Object lockClosePrice = new Object();
     private final Object lockTradedPrices = new Object();
@@ -1537,6 +1539,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void setLastSize(int lastSize) {
         synchronized (lockLastSize) {
             this.lastSize = lastSize;
+            this.setTradedValue(this.getTradedValue() + this.lastSize*this.lastPrice);
         }
     }
 
@@ -2240,5 +2243,23 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setLongName(String longName) {
         this.longName = longName;
+    }
+
+    /**
+     * @return the tradedValue
+     */
+    public double getTradedValue() {
+        synchronized(lockTradedValue){
+            return tradedValue;
+        }
+    }
+
+    /**
+     * @param tradedValue the tradedValue to set
+     */
+    public void setTradedValue(double tradedValue) {
+        synchronized(lockTradedValue){
+            this.tradedValue = tradedValue;
+        }
     }
 }
