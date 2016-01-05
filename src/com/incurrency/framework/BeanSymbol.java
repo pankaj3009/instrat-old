@@ -1370,6 +1370,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             if (propertySupport != null) {
                 propertySupport.firePropertyChange(PROP_LASTPRICE, oldValue, lastPrice);
             }
+            if (this.getTradedValue()==0){
+                this.setTradedValue(lastPrice*this.getVolume());
+            }
         }
     }
 
@@ -1539,7 +1542,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void setLastSize(int lastSize) {
         synchronized (lockLastSize) {
             this.lastSize = lastSize;
+            if(this.getTradedValue()!=0){
             this.setTradedValue(this.getTradedValue() + this.lastSize*this.lastPrice);
+            }
         }
     }
 
