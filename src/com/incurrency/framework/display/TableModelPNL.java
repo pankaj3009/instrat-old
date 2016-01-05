@@ -60,15 +60,15 @@ public class TableModelPNL extends AbstractTableModel {
             case 0:
                 return MainAlgorithm.getStrategies().get(rowIndex);
             case 1:
-                return ((int) Math.round(Parameters.connection.get(display).getPnlByStrategy().get(strategy) * 100)) / 100;
+                return ((int) Math.round(Parameters.connection.get(display).getPnlByStrategy().get(strategy)==null?0:Parameters.connection.get(display).getPnlByStrategy().get(strategy) * 100)) / 100;
             case 2:
-                double value=Parameters.connection.get(display).getPnlByStrategy().get(strategy)-Parameters.connection.get(display).getMtmByStrategy().get(strategy);
+                double value=Parameters.connection.get(display).getPnlByStrategy().get(strategy)==null?0:Parameters.connection.get(display).getPnlByStrategy().get(strategy)-Parameters.connection.get(display).getMtmByStrategy().get(strategy);
                 return Utilities.round(value, 0);
             case 3:
-                return ((int) Math.round(Parameters.connection.get(display).getMaxpnlByStrategy().get(strategy) * 100)) / 100;
+                return ((int) Math.round(Parameters.connection.get(display).getMaxpnlByStrategy().get(strategy)==null?0:Parameters.connection.get(display).getMaxpnlByStrategy().get(strategy) * 100)) / 100;
 
             case 4:
-                return ((int) Math.round(Parameters.connection.get(display).getMinpnlByStrategy().get(strategy) * 100)) / 100;
+                return ((int) Math.round(Parameters.connection.get(display).getMinpnlByStrategy().get(strategy)==null?0:Parameters.connection.get(display).getMinpnlByStrategy().get(strategy) * 100)) / 100;
 
             default:
                 throw new IndexOutOfBoundsException();

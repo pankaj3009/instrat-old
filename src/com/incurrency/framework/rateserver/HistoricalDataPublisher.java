@@ -142,7 +142,7 @@ public class HistoricalDataPublisher implements Runnable {
                 builder.setStart(startDate)
                         .setEnd(endDate)
                         .addMetric(metricnew)
-                        .addTag("symbol", symbol.name.toLowerCase());
+                        .addTag("symbol", symbol.name.toLowerCase().replace("&", "").replace("-", ""));
                 builder.getMetrics().get(0).setOrder(QueryMetric.Order.ASCENDING);
                 if (!symbol.expiry.equals("")) {
                     builder.getMetrics().get(0).addTag("expiry", symbol.expiry);

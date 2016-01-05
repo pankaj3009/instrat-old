@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework.display;
 
+import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.Index;
 import com.incurrency.framework.MainAlgorithm;
@@ -55,7 +56,11 @@ public class TableModelPositions extends AbstractTableModel {
     @Override
     public int getRowCount() {
         display = DashBoardNew.comboDisplayGetConnection();
-        return Parameters.connection.get(display).getPositions().size();
+        if (Algorithm.useForSimulation == Boolean.FALSE) {
+            return Parameters.connection.get(display).getPositions().size();
+        } else {
+            return 0;
+        }
 //        return Parameters.symbol.size();
     }
 

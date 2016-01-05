@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework.display;
 
+import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.OrderBean;
@@ -62,7 +63,11 @@ public class TableModelOpenOrders extends AbstractTableModel{
     @Override
     public int getRowCount() {
         display = DashBoardNew.comboDisplayGetConnection();
-       return Parameters.connection.get(display).getOrdersInProgress().size();
+        if(!Algorithm.useForSimulation){
+        return Parameters.connection.get(display).getOrdersInProgress().size();
+        }else{
+            return 0;
+        }
                }
 
     @Override

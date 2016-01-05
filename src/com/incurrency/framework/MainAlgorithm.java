@@ -654,6 +654,10 @@ public class MainAlgorithm extends Algorithm {
         if (strategyInstances.isEmpty()) {
             getStrategies().add("NoStrategy");
         }
+        
+        if(!Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
+            
+        }
         for (int i = 0; i < strategyInstances.size(); i++) {
             minPNL.add(0D);
             maxPNL.add(0D);
