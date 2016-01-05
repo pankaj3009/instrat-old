@@ -849,12 +849,12 @@ public class TWSConnection extends Thread implements EWrapper {
         int internalOrderID = e.getInternalorder();
         int internalOrderIDEntry = e.getInternalorderentry();
         if (!orders.isEmpty()) {
-            orderids = placeOrder(c, symbolID, side, notify, stage, orders, internalOrderID, internalOrderIDEntry, e.getTag());
+            orderids = placeOrder(c, symbolID, side, notify, stage, orders, internalOrderID, internalOrderIDEntry, e.getTag(),e.isScale());
         }
         return orderids;
     }
 
-    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag) {
+    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag,boolean scale) {
         ArrayList<Integer> orderids = new ArrayList<>();
         if ((side == EnumOrderSide.BUY || side == EnumOrderSide.SHORT) && stage != EnumOrderStage.AMEND && (isStopTrading() || (getRecentOrders().size() == c.getOrdersHaltTrading() && (new Date().getTime() - (Long) getRecentOrders().get(0)) < 120000))) {
             setStopTrading(false);
@@ -886,6 +886,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     ob.setOcaGroup(order.m_ocaGroup);
                     ob.setOcaExecutionLogic(order.m_ocaType);
                     ob.setOrderType(order.m_orderType);
+                    ob.setScale(scale);
                     if (Parameters.symbol.get(parentid).getCombo().isEmpty()) {//single leg order
                         ob.setParentSymbolID(symbolID); //symbolID = the only order    
                         if (ob.getChildSymbolID() == 0) {
@@ -933,6 +934,7 @@ public class TWSConnection extends Thread implements EWrapper {
                                     ob.setChildSymbolID(entry2.getKey().getSerialno());
                                     ob.setParentSymbolID(symbolID);
                                     ob.setParentOrderSide(side);
+                                    ob.setScale(scale);
                                     ob.setParentOrderSize(Math.abs(order.m_totalQuantity / entry2.getValue()));
                                     if (entry2.getValue() > 0) {
                                         ob.setChildOrderSide(side);

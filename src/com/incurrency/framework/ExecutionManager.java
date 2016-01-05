@@ -1951,7 +1951,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             //For entry, there each fill with the same internal order id is updated.
             updateTrades(c, ob, p, tradeFill, avgFillPrice);
             if (ob.getParentOrderSide() == EnumOrderSide.SELL || ob.getParentOrderSide() == EnumOrderSide.COVER) {
-                if (fill != 0) { //do not reduce open position count if duplicate message, in which case fill == 0
+                if (fill != 0 && ob.getParentFillSize()==ob.getParentOrderSize()) { //do not reduce open position count if duplicate message, in which case fill == 0
                     int connectionid = Parameters.connection.indexOf(c);
                     int tmpOpenPositionCount = this.getOpenPositionCount().get(connectionid);
                     int openpositioncount = tmpOpenPositionCount - 1;
@@ -2024,7 +2024,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
         //ordersToBeRetried - not needed. Orders to be retried is cleansed only if there are linked orders
         //Reduce position count if needed
-        if (c.getOrders().get(orderid).getParentOrderSide() == EnumOrderSide.BUY || c.getOrders().get(orderid).getParentOrderSide() == EnumOrderSide.SHORT) {
+        if (!c.getOrders().get(orderid).isScale() &&(c.getOrders().get(orderid).getParentOrderSide() == EnumOrderSide.BUY || c.getOrders().get(orderid).getParentOrderSide() == EnumOrderSide.SHORT)) {
             //reduce open position count
             int connectionid = Parameters.connection.indexOf(c);
             ArrayList<Integer> cancelledOrdersForConnection = cancelledOrdersAcknowledgedByIB.get(connectionid);

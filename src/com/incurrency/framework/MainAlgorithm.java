@@ -27,7 +27,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import org.apache.commons.lang.StringUtils;
 
 /**
  *
@@ -93,9 +92,11 @@ public class MainAlgorithm extends Algorithm {
             subscribeMarketData();
             Timer keepAlive = new Timer("Timer: Maintain IB Connection");
             keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
-        } else if (Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim())) {
+        } else if (useForSimulation) {
+            //Used for subscribing to cassandra historical data
             runSimulation();
         }else if(Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
+            //used to get historical data
             connectToTWS();
             boolean subscribe=Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
             if (subscribe) {
@@ -458,9 +459,9 @@ public class MainAlgorithm extends Algorithm {
                 t1.start();
             }
             simulationBarSize="";
-            simulationStartDate=globalProperties.getProperty("SimulationStartDate").toString().trim();
-            simulationEndDate=globalProperties.getProperty("SimulationEndDate").toString().trim();
-            simulationCloseReferenceDate=globalProperties.getProperty("SimulationPriorCloseDate").toString().trim();
+            simulationStartDate=globalProperties.getProperty("simulationstartdate").toString().trim();
+            simulationEndDate=globalProperties.getProperty("simulationenddate").toString().trim();
+            simulationCloseReferenceDate=globalProperties.getProperty("simulationpriorclosedate").toString().trim();
             topic=globalProperties.getProperty("topic").toString().trim();
             //Request Historical Data
             int j = 0;

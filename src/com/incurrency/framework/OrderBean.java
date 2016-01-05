@@ -41,6 +41,7 @@ public class OrderBean implements Serializable {
     private EnumOrderReason reason;
     private String ocaGroup;
     private int ocaExecutionLogic;
+    private boolean scale;
     private final Object lockparentlimitprice=new Object();
    
     
@@ -466,6 +467,20 @@ public class OrderBean implements Serializable {
      */
     public void setParentInternalOrderID(int parentInternalOrderID) {
         this.parentInternalOrderID = parentInternalOrderID;
+    }
+
+    /**
+     * @return the scale
+     */
+    public boolean isScale() {
+        return scale;
+    }
+
+    /**
+     * @param scale the scale to set
+     */
+    public void setScale(boolean scale) {
+        this.scale = scale;
     }
 
 
