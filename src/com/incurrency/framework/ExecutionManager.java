@@ -574,9 +574,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 case "111"://position, open order, entry order received.
                                     logger.log(Level.INFO, "303,ExecutionFlow,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "111" + delimiter + event.getInternalorder() + delimiter + event.getSymbolBean().getDisplayname()});
                                     boolean combo = Parameters.symbol.get(id).getType().equals("COMBO") ? true : false;
-                                    if (event.isScale()) {
+                                    if (event.isScale()) { //scale in order
                                         if (!combo && (openCover.size() > 0 && event.getSide() == EnumOrderSide.SHORT) || (openSell.size() > 0 && event.getSide() == EnumOrderSide.BUY)) {
                                             //logger.log(Level.INFO, "{0},{1},Execution Manager,Case:111. Reinstate Scale-in, Symbol:{2}, Size={3}, Side:{4}, Limit:{5}, Trigger:{6}, Expiration Time:{7}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getSymbol(), event.getOrderSize(), event.getSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getExpireTime()});
+                                            //If an entry order is received, but prior exit for same entry side not completed, cancel prior exit order
                                             ArrayList<Integer> orderids = event.getSide() == EnumOrderSide.SHORT ? getOpenOrdersForSide(c, id, EnumOrderSide.COVER) : getOpenOrdersForSide(c, id, EnumOrderSide.SELL);
                                             this.cancelOpenOrders(c, id, event.getOrdReference());
                                             //there is a problem if the order could not be cancelled as it was already filled. We then need to bring back this event again.
@@ -593,10 +594,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
                                         } else if ((c.getPositions().get(ind).getPosition() > 0 && openBuy.size() > 0 && openShort.size() == 0 && openSell.size() == 0 && openCover.size() == 0)
                                                 || (c.getPositions().get(ind).getPosition() < 0 && openBuy.size() == 0 && openShort.size() > 0 && openSell.size() == 0 && openCover.size() == 0)) {
-                                            //logger.log(Level.INFO, "{0},{1},Execution Manager,Case:111. Scale-In allowed, Symbol:{2}, Size={3}, Side:{4}, Limit:{5}, Trigger:{6}, Expiration Time:{7}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getSymbol(), event.getOrderSize(), event.getSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getExpireTime()});
+                                            logger.log(Level.INFO, "{0},{1},Execution Manager,Case:111. Scale-In allowed, Symbol:{2}, Size={3}, Side:{4}, Limit:{5}, Trigger:{6}, Expiration Time:{7}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getDisplayname(), event.getOrderSize(), event.getSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getExpireTime()});
+                                            //else process scale-in order
                                             processEntryOrder(id, c, event);
                                         } else {
-                                            //logger.log(Level.INFO, "{0},{1},Execution Manager,Case:111. Cleanse orders, Symbol:{2}, Size={3}, Side:{4}, Limit:{5}, Trigger:{6}, Expiration Time:{7}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getSymbol(), event.getOrderSize(), event.getSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getExpireTime()});
+                                            logger.log(Level.INFO, "{0},{1},Execution Manager,Case:111. Cleanse Scale-in orders, Symbol:{2}, Size={3}, Side:{4}, Limit:{5}, Trigger:{6}, Expiration Time:{7}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getDisplayname(), event.getOrderSize(), event.getSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getExpireTime()});
                                             cleanScaleTrueOrders(c, id, event);
                                         }
                                     } else if (!event.isScale()) {
@@ -708,20 +710,28 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
         if (orderids.size() > 0) {
             int connectionid = Parameters.connection.indexOf(c);
-            synchronized (lockLinkedAction) {
-                //for (int orderid : orderids) {
-                //ArrayList<LinkedAction> cancelRequests = getCancellationRequestsForTracking().get(connectionid);
-                ArrayList<OrderEvent> e = new ArrayList<>();
-                //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
-                //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
-                //getCancellationRequestsForTracking().set(connectionid, cancelRequests);
-                getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
-                getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
-                logger.log(Level.FINE, "307, LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "CLOSEPOSITION" + delimiter + event.getInternalorder() + delimiter + orderids.get(0) + delimiter + event.getSymbolBean().getDisplayname()});
-                logger.log(Level.FINE, "307, LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "PROPOGATE" + delimiter + event.getInternalorder() + delimiter + event.getSymbolBean().getDisplayname()});
-                c.getWrapper().cancelOrder(c, orderids.get(0));
-                //}
-                lockLinkedAction.notifyAll();
+            boolean skip = false;
+            for (LinkedAction l : getCancellationRequestsForTracking().get(connectionid)) {
+                if (orderids.contains(l.orderID)) {
+                    skip = true;
+                }
+            }
+            if (!skip) {
+                synchronized (lockLinkedAction) {
+                    //for (int orderid : orderids) {
+                    //ArrayList<LinkedAction> cancelRequests = getCancellationRequestsForTracking().get(connectionid);
+                    ArrayList<OrderEvent> e = new ArrayList<>();
+                    //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
+                    //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
+                    //getCancellationRequestsForTracking().set(connectionid, cancelRequests);
+                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
+                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
+                    logger.log(Level.FINE, "307, LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "CLOSEPOSITION" + delimiter + event.getInternalorder() + delimiter + orderids.get(0) + delimiter + event.getSymbolBean().getDisplayname()});
+                    logger.log(Level.FINE, "307, LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "PROPOGATE" + delimiter + event.getInternalorder() + delimiter + event.getSymbolBean().getDisplayname()});
+                    c.getWrapper().cancelOrder(c, orderids.get(0));
+                    //}
+                    lockLinkedAction.notifyAll();
+                }
             }
         }
         return orderids.size();
@@ -740,20 +750,28 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
         if (orderids.size() > 0) {
             int connectionid = Parameters.connection.indexOf(c);
-            synchronized (lockLinkedAction) {
-                //for (int orderid : orderids) {
-                //ArrayList<LinkedAction> cancelRequests = getCancellationRequestsForTracking().get(connectionid);
-                ArrayList<OrderEvent> e = new ArrayList<>();
-                //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
-                //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
-                //getCancellationRequestsForTracking().set(connectionid, cancelRequests);
-                getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
-                getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
-                logger.log(Level.INFO, "307, LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "CLOSEPOSITION" + delimiter + event.getInternalorder() + delimiter + orderids.get(0) + delimiter + event.getSymbolBean().getDisplayname()});
-                logger.log(Level.INFO, "307, LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "PROPOGATE" + delimiter + event.getInternalorder() + delimiter + event.getSymbolBean().getDisplayname()});
-                c.getWrapper().cancelOrder(c, orderids.get(0));
-                //}
-                lockLinkedAction.notifyAll();
+            boolean skip = false;
+            for (LinkedAction l : getCancellationRequestsForTracking().get(connectionid)) {
+                if (orderids.contains(l.orderID)) {
+                    skip = true;
+                }
+            }
+            if (!skip) {
+                synchronized (lockLinkedAction) {
+                    //for (int orderid : orderids) {
+                    //ArrayList<LinkedAction> cancelRequests = getCancellationRequestsForTracking().get(connectionid);
+                    ArrayList<OrderEvent> e = new ArrayList<>();
+                    //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
+                    //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
+                    //getCancellationRequestsForTracking().set(connectionid, cancelRequests);
+                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
+                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
+                    logger.log(Level.INFO, "307, LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "CLOSEPOSITION" + delimiter + event.getInternalorder() + delimiter + orderids.get(0) + delimiter + event.getSymbolBean().getDisplayname()});
+                    logger.log(Level.INFO, "307, LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "PROPOGATE" + delimiter + event.getInternalorder() + delimiter + event.getSymbolBean().getDisplayname()});
+                    c.getWrapper().cancelOrder(c, orderids.get(0));
+                    //}
+                    lockLinkedAction.notifyAll();
+                }
             }
         }
         return orderids.size();
