@@ -2055,6 +2055,9 @@ public class TWSConnection extends Thread implements EWrapper {
             logger.log(Level.INFO, "103,IB Message,{0}", new Object[]{getC().getAccountName()+delimiter+id+delimiter+errorCode+delimiter+errorMsg});
                     
             switch (errorCode) {
+                case 104:
+                    
+                    break;
                 case 430://We are sorry, but fundamentals data for the security specified is not available.failed to fetch
 
                     String symbol = getRequestDetails().get(id+delimiter+c.getAccountName()) != null ? getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.getDisplayname() : "";

@@ -1159,7 +1159,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
                     }
 
-                    logger.log(Level.INFO, "308, inStratOrderStatus,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + fillStatus});
+                    logger.log(Level.INFO, "308,inStratOrderStatus,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + fillStatus});
 
                     switch (fillStatus) {
                         case COMPLETEFILLED:
@@ -1189,7 +1189,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
     @Override
     public void TWSErrorReceived(TWSErrorEvent event) {
-        if (deemedCancellation != null && deemedCancellation.contains(event.getErrorCode()) && !event.getErrorMessage().contains("Cannot cancel the filled order")) {//135 is thrown if there is no specified order id with TWS.
+        if (deemedCancellation != null && deemedCancellation.contains(event.getErrorCode()) && (!event.getErrorMessage().contains("Cannot cancel the filled order")||!event.getErrorMessage().contains("modify a filled order"))) {//135 is thrown if there is no specified order id with TWS.
             int id = event.getConnection().getOrders().get(event.getId()).getParentSymbolID() - 1;
             String ref = event.getConnection().getOrders().get(event.getId()).getOrderReference();
             if (orderReference.equals(ref)) {
@@ -1199,6 +1199,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
             }
         }
+
         if (event.getErrorCode() == 200) {
             //contract id not found
         } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Equity with Loan Value")) { //insufficient margin
@@ -1970,9 +1971,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int internalorderid = ob.getInternalOrderID();
         boolean stubOrderPlaced = false;
         //ob.setCancelRequested(false);
-        if (ob.getChildFillSize() > 0) {
+        if (ob.getChildFillSize() > 0 && ob.getChildFillSize()<ob.getChildOrderSize()) {
             ob.setChildStatus(EnumOrderStatus.CANCELLEDPARTIALFILL);
-        } else {
+        } else if (ob.getChildFillSize() > 0 && ob.getChildFillSize()==ob.getChildOrderSize())  {
+            ob.setChildStatus(EnumOrderStatus.COMPLETEFILLED);
+        }else{
             ob.setChildStatus(EnumOrderStatus.CANCELLEDNOFILL);
         }
 
