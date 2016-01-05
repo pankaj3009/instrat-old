@@ -95,8 +95,9 @@ public class ServerResponse implements Runnable {
                 switch (args[1]) {
                     case "finished":
                         new Thread(new HistoricalDataPublisher(hdSymbols)).start();
+                        return(":"+"processed");
                         //HistoricalDataPublisher h= new HistoricalDataPublisher(hdSymbols);
-                        break;
+                        //break;
                     default:
                         String[] symbolArray = args[1].split("_",-1);
                         HistoricalDataParameters hd;//= new HistoricalDataParameters();
@@ -118,7 +119,7 @@ public class ServerResponse implements Runnable {
                         return(":"+"processed");
                         //break;
                 }
-                break;
+                //break;
             case "backfill": //one symbol at a time, using request/response
                 String requestidReceived=args[4];  
                 int reqid=Integer.valueOf(requestidReceived);

@@ -24,7 +24,7 @@ public class HistoricalDataParameters {
 
     public HistoricalDataParameters(String displayName, String periodicity,String startDate, String endDate,String closeReferenceDate,String metric) {
         this.displayName=displayName;
-        String[] symbol=displayName.split("_");
+        String[] symbol=displayName.split("_",-1);
         this.name=symbol[0]==null||symbol[0].equalsIgnoreCase("null")?"":symbol[0];
         this.type=symbol[1]==null||symbol[1].equalsIgnoreCase("null")?"":symbol[1];
         this.expiry=symbol.length<=2 || (symbol[2]==null||symbol[2].equalsIgnoreCase("null"))?"":symbol[2];
