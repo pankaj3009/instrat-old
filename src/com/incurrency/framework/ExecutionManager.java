@@ -803,7 +803,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             HashMap<Integer, Order> orders = c.getWrapper().createOrder(event);
             if (orders.size() > 0) {//trading is not halted 
                 this.getOpenPositionCount().set(connectionid, tempOpenPosition + 1);
-                logger.log(Level.INFO, "303, EntryOrder,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()});
+                logger.log(Level.INFO, "303, EntryOrder,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()+delimiter+this.getOpenPositionCount().get(connectionid)});
                 ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders);
 
                 //update orderid structures
@@ -844,7 +844,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 }
             }
         } else {
-            logger.log(Level.INFO, "303,EntryOrderNotSent, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()});
+            logger.log(Level.INFO, "303,EntryOrderNotSent, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()+delimiter+tempOpenPosition+delimiter+s.getPlmanager().isDayProfitTargetHit()+delimiter+s.getPlmanager().isDayStopLossHit()});
         }
     }
 
@@ -1951,7 +1951,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             //For entry, there each fill with the same internal order id is updated.
             updateTrades(c, ob, p, tradeFill, avgFillPrice);
             if (ob.getParentOrderSide() == EnumOrderSide.SELL || ob.getParentOrderSide() == EnumOrderSide.COVER) {
-                if (fill != 0 && ob.getParentFillSize()==ob.getParentOrderSize()) { //do not reduce open position count if duplicate message, in which case fill == 0
+                if (fill != 0 && ((ob.getChildFillSize()==ob.getChildOrderSize())||(ob.getParentFillSize()==ob.getParentOrderSize()))) { //do not reduce open position count if duplicate message, in which case fill == 0
                     int connectionid = Parameters.connection.indexOf(c);
                     int tmpOpenPositionCount = this.getOpenPositionCount().get(connectionid);
                     int openpositioncount = tmpOpenPositionCount - 1;
