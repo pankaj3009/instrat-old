@@ -1333,9 +1333,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             for (LinkedAction f : cancelledOrders) {
                 //while (iter.hasNext()) {
                 //  LinkedAction f = iter.next();
-                if (f.orderID == orderid) {
+                int i=0;
+                if (f.orderID == orderid && i==0) { //only fire one linkedaction at one time.
                     //logger.log(Level.INFO, "{0},{1},Execution Manager,Cancellation Success. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
                     fireLinkedAction(c, orderid, f.action, f);
+                    i=i+1;
                     cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
                     //iter.remove();
                     itemsToRemove.add(f);
@@ -1346,9 +1348,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             for (LinkedAction f : filledOrders) {
                 //while (iter.hasNext()) {
                 //LinkedAction f = iter.next();
-                if (f.orderID == orderid) {
+                int i=0;
+                if (f.orderID == orderid && i==0) {//only fire one linked action at one time
                     //logger.log(Level.INFO, "{0},{1},Execution Manager,OrderFilled. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
                     fireLinkedAction(c, orderid, f.action, f);
+                    i=i+1;
                     cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
                     //iter.remove();
                     itemsToRemove.add(f);
