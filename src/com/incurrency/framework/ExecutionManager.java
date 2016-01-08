@@ -1330,10 +1330,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             ArrayList<LinkedAction> cancelledOrders = (ArrayList<LinkedAction>) getCancellationRequestsForTracking().get(connectionid).clone();
             //iter = cancelledOrders.iterator();
             ArrayList<LinkedAction> itemsToRemove = new ArrayList<>();
+            int i=0;
             for (LinkedAction f : cancelledOrders) {
                 //while (iter.hasNext()) {
                 //  LinkedAction f = iter.next();
-                int i=0;
                 if (f.orderID == orderid && i==0) { //only fire one linkedaction at one time.
                     //logger.log(Level.INFO, "{0},{1},Execution Manager,Cancellation Success. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
                     fireLinkedAction(c, orderid, f.action, f);
@@ -1345,10 +1345,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
             ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
             iter = filledOrders.iterator();
+            i=0;
             for (LinkedAction f : filledOrders) {
                 //while (iter.hasNext()) {
                 //LinkedAction f = iter.next();
-                int i=0;
+
                 if (f.orderID == orderid && i==0) {//only fire one linked action at one time
                     //logger.log(Level.INFO, "{0},{1},Execution Manager,OrderFilled. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
                     fireLinkedAction(c, orderid, f.action, f);
