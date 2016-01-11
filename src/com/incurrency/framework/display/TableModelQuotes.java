@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework.display;
 
+import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.Parameters;
 import java.awt.event.ActionEvent;
@@ -11,6 +12,8 @@ import java.awt.event.ActionListener;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Timer;
@@ -30,6 +33,7 @@ public class TableModelQuotes extends AbstractTableModel{
     MainAlgorithm m;
     int display=0;
     NumberFormat df = DecimalFormat.getInstance();
+    SimpleDateFormat sdf=new SimpleDateFormat("HH:mm:ss dd-MMM-yy"); 
     
      ActionListener taskPerformer = new ActionListener() {
 
@@ -41,6 +45,7 @@ public class TableModelQuotes extends AbstractTableModel{
 
     public TableModelQuotes() {
         new Timer(delay, taskPerformer).start();
+        sdf.setTimeZone(TimeZone.getTimeZone(Algorithm.timeZone));
         this.m=MainAlgorithm.getInstance();
         df.setMinimumFractionDigits(2);
         df.setMaximumFractionDigits(4);
@@ -56,7 +61,8 @@ public class TableModelQuotes extends AbstractTableModel{
     
     @Override
     public int getRowCount() {
-     DashBoardNew.lblTime.setText(com.incurrency.framework.TradingUtil.getAlgoDate().toString());
+     //DashBoardNew.lblTime.setText(com.incurrency.framework.TradingUtil.getAlgoDate().toString());
+     DashBoardNew.lblTime.setText(sdf.format(com.incurrency.framework.TradingUtil.getAlgoDate()));
      return Parameters.symbol.size();
                }
 
