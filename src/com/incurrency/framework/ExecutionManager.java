@@ -1170,7 +1170,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             break;
                         case CANCELLEDNOFILL:
                         case CANCELLEDPARTIALFILL:
-                            //logger.log(Level.INFO, "{0},{1},Execution Manager,Cancelled Partial Fill,Symbol:{2},OrderID:{3}", new Object[]{event.getC().getAccountName(), orderReference, Parameters.symbol.get(parentid).getSymbol(), orderid});
+                            logger.log(Level.INFO, "{0},{1},Execution Manager,Cancelled Partial Fill,Symbol:{2},OrderID:{3}", new Object[]{event.getC().getAccountName(), orderReference, Parameters.symbol.get(parentid).getDisplayname(), orderid});
                             updateCancelledOrders(event.getC(), parentid, orderid);
                             break;
                         case ACKNOWLEDGED:
@@ -1976,6 +1976,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int internalorderid = ob.getInternalOrderID();
         boolean stubOrderPlaced = false;
         //ob.setCancelRequested(false);
+        logger.log(Level.INFO,"000,Debug,{0}",new Object[]{Parameters.symbol.get(parentid).getDisplayname()+delimiter+ob.getChildFillSize()+delimiter+ob.getChildOrderSize()+delimiter+ob.getParentFillSize()+delimiter+ob.getParentOrderSize()});
         if (ob.getChildFillSize() > 0 && ob.getChildFillSize()<ob.getChildOrderSize()) {
             ob.setChildStatus(EnumOrderStatus.CANCELLEDPARTIALFILL);
         } else if (ob.getChildFillSize() > 0 && ob.getChildFillSize()==ob.getChildOrderSize())  {
