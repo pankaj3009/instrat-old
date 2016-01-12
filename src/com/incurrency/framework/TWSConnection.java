@@ -921,7 +921,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         if (stage != EnumOrderStage.AMEND) {
                             getRecentOrders().add(new Date().getTime());
                         }
-                        logger.log(Level.INFO, "304,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate});
+                        logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate});
                         orderids.add(mOrderID);
                     } else {//combo order
                         if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
@@ -1012,7 +1012,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         if (stage != EnumOrderStage.AMEND) {
                             getRecentOrders().add(new Date().getTime());
                         }
-                        logger.log(Level.INFO, "304,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate + delimiter});
+                        logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate + delimiter});
                         orderids.add(mOrderID);
                     }
                 }
@@ -1068,17 +1068,25 @@ public class TWSConnection extends Thread implements EWrapper {
         }
     }
 
-    public void cancelOrder(BeanConnection c, int orderID) {
+    public void cancelOrder(BeanConnection c, int orderID, boolean force) {
         ArrayList<Integer> linkedorderids = TradingUtil.getLinkedOrderIds(orderID, c);
         for (int orderid : linkedorderids) {
+            if(!force){//regular cancellation
             switch (c.getOrders().get(orderid).getChildStatus()) {
                 case SUBMITTED:
                 case ACKNOWLEDGED:
                     c.getOrders().get(orderid).setCancelRequested(true);
                     this.eClientSocket.cancelOrder(orderid);
                     //handle cancellations that are not successful
-                    logger.log(Level.INFO, "304,CancellationPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + c.getOrders().get(orderID).getOrderReference() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getChildSymbolID() - 1).getDisplayname() + delimiter + orderID});
+                    logger.log(Level.INFO, "102,CancellationPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + c.getOrders().get(orderID).getOrderReference() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getChildSymbolID() - 1).getDisplayname() + delimiter + orderID+delimiter+force});
                     break;
+            }
+            }else{
+               c.getOrders().get(orderid).setCancelRequested(true);
+                    this.eClientSocket.cancelOrder(orderid);
+                    //handle cancellations that are not successful
+                    logger.log(Level.INFO, "102,CancellationPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + c.getOrders().get(orderID).getOrderReference() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getChildSymbolID() - 1).getDisplayname() + delimiter + orderID+delimiter+force});
+ 
             }
         }
     }

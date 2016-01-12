@@ -94,7 +94,7 @@ public class TradingEventSupport {
     public void fireOrderStatus(BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
         OrderStatusEvent ordStatus = new OrderStatusEvent(new Object(), c, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-        logger.log(Level.INFO,"308,IBOrderStatus,{0}",new Object[]{ordStatus.getC().getAccountName()+delimiter+ordStatus.getClientId()+delimiter+ordStatus.getOrderID()+delimiter+ordStatus.getStatus()+delimiter+ordStatus.getFilled()+delimiter+ordStatus.getRemaining()+delimiter+ordStatus.getAvgFillPrice()+delimiter+ordStatus.getLastFillPrice()+delimiter+ordStatus.getPermId()+delimiter+ordStatus.getParentId()+delimiter+ordStatus.getWhyHeld()});
+        logger.log(Level.INFO,"302,IBOrderStatus,{0}",new Object[]{ordStatus.getC().getAccountName()+delimiter+ordStatus.getClientId()+delimiter+ordStatus.getOrderID()+delimiter+ordStatus.getStatus()+delimiter+ordStatus.getFilled()+delimiter+ordStatus.getRemaining()+delimiter+ordStatus.getAvgFillPrice()+delimiter+ordStatus.getLastFillPrice()+delimiter+ordStatus.getPermId()+delimiter+ordStatus.getParentId()+delimiter+ordStatus.getWhyHeld()});
         Iterator itrListeners = orderStatusListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderStatusListener) itrListeners.next()).orderStatusReceived(ordStatus);
@@ -159,7 +159,7 @@ public class TradingEventSupport {
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
                             +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())});
-        logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getSymbol()});
+        logger.log(Level.INFO,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getSymbol()});
         Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
@@ -167,12 +167,12 @@ public class TradingEventSupport {
     }
 */    
     public void fireOrderEvent(OrderEvent order){
-         logger.log(Level.INFO,"303,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
+         logger.log(Level.INFO,"301,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
                             +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
                             +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())});
-        logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
+        logger.log(Level.INFO,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
        Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
@@ -183,12 +183,12 @@ public class TradingEventSupport {
     // public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String link, boolean transmit, String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer> stubs) {    
        public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, boolean transmit,String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer>stubs) {
        OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent, dynamicorderduration, maxslippage,transmit,validity,scale,orderGroup,effectiveFrom,stubs);
-                logger.log(Level.INFO,"303,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
+                logger.log(Level.INFO,"301,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
                             +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
                             +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())}); 
-       logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
+       logger.log(Level.INFO,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
        Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
@@ -197,7 +197,7 @@ public class TradingEventSupport {
        
     public  void fireOrderEvent(HashMap<String,Object>orderDetails) {
         OrderEvent order = new OrderEvent(this, orderDetails);
-       logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
+       logger.log(Level.INFO,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
        Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
@@ -208,12 +208,12 @@ public class TradingEventSupport {
         public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String account, boolean scale,String passToOrderObject) {
         OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent,  dynamicorderduration, maxslippage,true,"DAY",scale,passToOrderObject,"",null);
         order.setAccount(account);
-                 logger.log(Level.INFO,"303,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
+                 logger.log(Level.INFO,"301,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
                             +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
                             +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
                             +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())});
-        logger.log(Level.INFO,"303,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
+        logger.log(Level.INFO,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
        Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
