@@ -104,6 +104,7 @@ public class HistoricalDataPublisher implements Runnable {
                         Rates.rateServer.send(symbols.get(0).topic, lastsize);
                         logger.log(Level.FINE, "Published: {0}", new Object[]{h.displayName + "_" + close});
                     }
+                    symbols.clear();
                 }
 
             }
