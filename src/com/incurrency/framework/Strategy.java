@@ -495,6 +495,9 @@ public class Strategy implements NotificationListener {
                     }
                     //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
                 }
+                if(Algorithm.useForSimulation){
+                    System.exit(0);
+                }
             
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
