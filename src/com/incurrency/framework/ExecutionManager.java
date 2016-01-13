@@ -1236,7 +1236,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
         if (!stubSizeZero) {
-            OrderEvent e = new OrderEvent(new Object(), internalorderid, internalorderid, Parameters.symbol.get(parentid), parentSide, EnumOrderReason.REGULARENTRY, EnumOrderType.MKT, 0, 0, 0, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", true, "", "", stubs);
+            OrderEvent e = new OrderEvent(new Object(), internalorderid, internalorderid, Parameters.symbol.get(parentid), parentSide, EnumOrderReason.REGULARENTRY, EnumOrderType.MKT, 0, 0, 0, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", true, "", "", stubs,"REDUCESTUB");
             e.setAccount(c.getAccountName());
             tes.fireOrderEvent(e);
         }
@@ -1257,7 +1257,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
         if (!stubSizeZero) {
-            OrderEvent e = new OrderEvent(new Object(), internalorderid, internalorderid, Parameters.symbol.get(parentid), ob.getParentOrderSide(), EnumOrderReason.REGULAREXIT, EnumOrderType.MKT, 0, 0, 0, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", true, "", "", stubs);
+            OrderEvent e = new OrderEvent(new Object(), internalorderid, internalorderid, Parameters.symbol.get(parentid), ob.getParentOrderSide(), EnumOrderReason.REGULAREXIT, EnumOrderType.MKT, 0, 0, 0, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", true, "", "", stubs,"COMPLETESTUB");
             e.setAccount(c.getAccountName());
             tes.fireOrderEvent(e);
         }
@@ -1670,13 +1670,13 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         OrderEvent event = new OrderEvent(new Object());
         if (position > 0) {
             int internalorderid = s.getInternalOrderID();
-            event = new OrderEvent(new Object(), internalorderid, internalorderid, Parameters.symbol.get(id), EnumOrderSide.SELL, EnumOrderReason.REGULAREXIT, EnumOrderType.MKT, Math.abs(position), 0D, 0D, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", false, "", "", null);
+            event = new OrderEvent(new Object(), internalorderid, internalorderid, Parameters.symbol.get(id), EnumOrderSide.SELL, EnumOrderReason.REGULAREXIT, EnumOrderType.MKT, Math.abs(position), 0D, 0D, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", false, "", "", null,"SQUAREALLPOSITIONS");
             orders = c.getWrapper().createOrder(event);
             logger.log(Level.INFO, "309,SquareAllPositions,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + "SELL"});
 
         } else if (position < 0) {
             int internalorderid = s.getInternalOrderID();
-            event = new OrderEvent(new Object(), internalorderid, internalorderid, Parameters.symbol.get(id), EnumOrderSide.COVER, EnumOrderReason.REGULAREXIT, EnumOrderType.MKT, Math.abs(position), 0D, 0D, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", false, "", "", null);
+            event = new OrderEvent(new Object(), internalorderid, internalorderid, Parameters.symbol.get(id), EnumOrderSide.COVER, EnumOrderReason.REGULAREXIT, EnumOrderType.MKT, Math.abs(position), 0D, 0D, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", false, "", "", null,"SQUAREALLPOSITIONS");
             orders = c.getWrapper().createOrder(event);
             logger.log(Level.INFO, "309,SquareAllPositions,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + "BUY"});
 

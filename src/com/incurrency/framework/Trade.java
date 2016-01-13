@@ -105,6 +105,30 @@ public class Trade {
         }
     }  
 
+    public static String getEntryTradeLog(Database db, Object internalOrderID){
+         Object out1=db.getValue("opentrades", internalOrderID.toString(), "entrytradelog");
+        Object out2=db.getValue("closedtrades", internalOrderID.toString(), "entrytradelog");
+        return (out1!=null?out1.toString():out2!=null?out2.toString():"");
+ 
+    }
+    
+    public static void updateEntryTradeLog(Database db,Object internalOrderID,String tradeStatus,String log){
+        String prior=getEntryTradeLog(db,internalOrderID);
+        db.setHash(tradeStatus, internalOrderID.toString(), "entrytradelog", prior+";"+log);
+    }
+    
+    public static String getExitTradeLog(Database db, Object internalOrderID){
+         Object out1=db.getValue("opentrades", internalOrderID.toString(), "exittradelog");
+        Object out2=db.getValue("closedtrades", internalOrderID.toString(), "exittradelog");
+        return (out1!=null?out1.toString():out2!=null?out2.toString():"");
+ 
+    }
+    
+    public static void updateExitTradeLog(Database db,Object internalOrderID,String tradeStatus,String log){
+        String prior=getExitTradeLog(db,internalOrderID);
+        db.setHash(tradeStatus, internalOrderID.toString(), "exittradelog", prior+";"+log);
+    }
+    
     /**
      * @return the entrySymbol
      */

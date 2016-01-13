@@ -607,7 +607,7 @@ public class Strategy implements NotificationListener {
             new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades");
             logger.log(Level.INFO, "401,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
-                oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
+                oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null,"TOBECOMPLETED");
             }
         }
     }
@@ -702,7 +702,7 @@ public class Strategy implements NotificationListener {
                 }
                 logger.log(Level.INFO, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
                 if (MainAlgorithm.isUseForTrading()) {
-                    oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, reason, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scaleout, orderGroup, effectiveTime, null);
+                    oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, reason, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scaleout, orderGroup, effectiveTime, null,"TOBECOMPLETED");
                 }
             } else {
                 logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side + tempinternalOrderID});

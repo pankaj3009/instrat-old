@@ -181,8 +181,8 @@ public class TradingEventSupport {
     
     //this event is triggered by adr order
     // public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String link, boolean transmit, String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer> stubs) {    
-       public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, boolean transmit,String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer>stubs) {
-       OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent, dynamicorderduration, maxslippage,transmit,validity,scale,orderGroup,effectiveFrom,stubs);
+       public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, boolean transmit,String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer>stubs,String log) {
+       OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent, dynamicorderduration, maxslippage,transmit,validity,scale,orderGroup,effectiveFrom,stubs,log);
                 logger.log(Level.INFO,"301,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
                             +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
                             +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
@@ -205,8 +205,8 @@ public class TradingEventSupport {
     }     
 
        //this is fired by profit loss manager. It sets the account for squareoff.
-        public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String account, boolean scale,String passToOrderObject) {
-        OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent,  dynamicorderduration, maxslippage,true,"DAY",scale,passToOrderObject,"",null);
+        public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String account, boolean scale,String passToOrderObject,String log) {
+        OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent,  dynamicorderduration, maxslippage,true,"DAY",scale,passToOrderObject,"",null,log);
         order.setAccount(account);
                  logger.log(Level.INFO,"301,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
                             +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter

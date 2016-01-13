@@ -35,6 +35,7 @@ public class OrderEvent extends EventObject {
     private String _orderGroup;
     private String _effectiveFrom;
     private HashMap _stubs;
+    private String _log;
     
     public OrderEvent(Object obj){
         super (obj);
@@ -71,7 +72,7 @@ public class OrderEvent extends EventObject {
  */
     //fired by adr orders
 //  public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side, EnumOrderReason reason, EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage stage, int dynamicdur, double slippage, boolean transmit, String validity, boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs){
-    public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side,EnumOrderReason reason,EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicdur, double slippage, boolean transmit, String validity,boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs){
+    public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side,EnumOrderReason reason,EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicdur, double slippage, boolean transmit, String validity,boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs,String log){
         //after slippage add boolean trasmit,string validity, at end add String effectiveFrom, HashMap<Integer,Integer>stubs
         super(obj);
         this._orderidint=internalorder;
@@ -96,6 +97,7 @@ public class OrderEvent extends EventObject {
         this._reason=reason;
         this._orderGroup=orderGroup;
         this._effectiveFrom="";
+        this._log=log;
         
     }
 
@@ -125,11 +127,11 @@ public class OrderEvent extends EventObject {
         this._reason=(order.get("reason")!=null&&order.get("reason")!="")?EnumOrderReason.valueOf(order.get("reason").toString()):EnumOrderReason.UNDEFINED;
         this._orderGroup=(order.get("ordergroup")!=null&&order.get("ordergroup")!="")?order.get("ordergroup").toString():null;
         this._effectiveFrom=(order.get("effectivefrom")!=null&&order.get("effectivefrom")!="")?order.get("effectivefrom").toString():null;
-        
+        this._log=(order.get("log")!=null&&order.get("log")!="")?order.get("log").toString():null;
     }
 
     static OrderEvent fastClose(BeanSymbol s,EnumOrderSide side,int size,String orderReference){
-        OrderEvent e=new OrderEvent(new Object(),-1,-1,s,side,EnumOrderReason.REGULAREXIT,EnumOrderType.MKT,size,0,0,orderReference,0, EnumOrderStage.INIT, 0, 0D, true, "DAY", false,"","",null);
+        OrderEvent e=new OrderEvent(new Object(),-1,-1,s,side,EnumOrderReason.REGULAREXIT,EnumOrderType.MKT,size,0,0,orderReference,0, EnumOrderStage.INIT, 0, 0D, true, "DAY", false,"","",null,"fastclose");
         return e;
     }
     /**
@@ -452,5 +454,19 @@ public class OrderEvent extends EventObject {
      */
     public void setFirstLimitPrice(double firstLimitPrice) {
         this._firstLimitPrice = firstLimitPrice;
+    }
+
+    /**
+     * @return the _log
+     */
+    public String getLog() {
+        return _log;
+    }
+
+    /**
+     * @param log the _log to set
+     */
+    public void setLog(String log) {
+        this._log = log;
     }
 }
