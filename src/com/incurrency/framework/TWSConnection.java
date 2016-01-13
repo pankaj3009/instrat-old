@@ -849,12 +849,12 @@ public class TWSConnection extends Thread implements EWrapper {
         int internalOrderID = e.getInternalorder();
         int internalOrderIDEntry = e.getInternalorderentry();
         if (!orders.isEmpty()) {
-            orderids = placeOrder(c, symbolID, side, notify, stage, orders, internalOrderID, internalOrderIDEntry, e.getTag(),e.isScale());
+            orderids = placeOrder(c, symbolID, side, notify, stage, orders, internalOrderID, internalOrderIDEntry, e.getTag(),e.isScale(),e.getLog());
         }
         return orderids;
     }
 
-    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag,boolean scale) {
+    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag,boolean scale,String log) {
         ArrayList<Integer> orderids = new ArrayList<>();
         if ((side == EnumOrderSide.BUY || side == EnumOrderSide.SHORT) && stage != EnumOrderStage.AMEND && (isStopTrading() || (getRecentOrders().size() == c.getOrdersHaltTrading() && (new Date().getTime() - (Long) getRecentOrders().get(0)) < 120000))) {
             setStopTrading(false);
@@ -887,6 +887,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     ob.setOcaExecutionLogic(order.m_ocaType);
                     ob.setOrderType(order.m_orderType);
                     ob.setScale(scale);
+                    ob.setLog(log);
                     if (Parameters.symbol.get(parentid).getCombo().isEmpty()) {//single leg order
                         ob.setParentSymbolID(symbolID); //symbolID = the only order    
                         if (ob.getChildSymbolID() == 0) {
@@ -996,6 +997,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         ob.setOrderReference(order.m_orderRef);
                         ob.setInternalOrderID(internalOrderID);
                         ob.setInternalOrderIDEntry(internalOrderIDEntry);
+                        ob.setLog(log);
 
                         if (orders.size() > 1 && !comboOrderMapsUpdated) {
                             ArrayList<Integer> temp = new ArrayList<>();

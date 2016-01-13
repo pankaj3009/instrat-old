@@ -55,7 +55,7 @@ public class Trade {
         db.setHash(tradeStatus,key,"accountname",input[24]);
     }
 
-    public Trade(Database db,int id, int parentid, EnumOrderReason reason, EnumOrderSide side, double price, int size, int entryorderidint, int entryorderidext, int parententryorderidint, String timeZone, String accountName,String strategy,String tradeStatus) {
+    public Trade(Database db,int id, int parentid, EnumOrderReason reason, EnumOrderSide side, double price, int size, int entryorderidint, int entryorderidext, int parententryorderidint, String timeZone, String accountName,String strategy,String tradeStatus,String log) {
         String key = strategy+":"+entryorderidint + ":" + accountName;
         db.setHash(tradeStatus, key, "entrysymbol", Parameters.symbol.get(id).getDisplayname());
         db.setHash(tradeStatus, key, "parentsymbol", Parameters.symbol.get(parentid).getDisplayname());
@@ -74,9 +74,10 @@ public class Trade {
         db.setHash(tradeStatus, key, "entryorderidext", String.valueOf(entryorderidext));
         db.setHash(tradeStatus, key, "parententryorderidint", String.valueOf(parententryorderidint));
         db.setHash(tradeStatus, key, "accountname", accountName);
+        Trade.updateEntryTradeLog(db, key, tradeStatus, log);
     }
 
-    public static void updateExit(Database db,int id, EnumOrderReason reason, EnumOrderSide side, double price, int size, int exitorderidint, int exitorderidext, int parentexitorderidint, int keyentryorderid, String timeZone, String accountName,String strategy,String tradeStatus) {
+    public static void updateExit(Database db,int id, EnumOrderReason reason, EnumOrderSide side, double price, int size, int exitorderidint, int exitorderidext, int parentexitorderidint, int keyentryorderid, String timeZone, String accountName,String strategy,String tradeStatus,String log) {
         String key = strategy+":"+keyentryorderid + ":" + accountName;
         db.setHash(tradeStatus, key, "exitsymbol", Parameters.symbol.get(id).getDisplayname());
         db.setHash(tradeStatus, key, "exitside", String.valueOf(side));
@@ -94,6 +95,8 @@ public class Trade {
         db.setHash(tradeStatus, key, "parentexitorderidint", String.valueOf(parentexitorderidint));
         db.setHash(tradeStatus, key, "accountname", accountName);
         db.setHash(tradeStatus, key, "exitreason", String.valueOf(reason));
+        Trade.updateExitTradeLog(db, key, tradeStatus, log);
+
     }
     
     public static void closeTrade(Database db,String oldkey){

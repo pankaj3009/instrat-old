@@ -604,7 +604,7 @@ public class Strategy implements NotificationListener {
             }
             int internalorderid = getInternalOrderID();
             this.internalOpenOrders.put(id, internalorderid);
-            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades");
+            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades","TOBECOMPLETED");
             logger.log(Level.INFO, "401,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null,"TOBECOMPLETED");
@@ -646,7 +646,8 @@ public class Strategy implements NotificationListener {
             order.put("orderidint", internalorderid);
             order.put("entryorderidint", internalorderid);
             this.internalOpenOrders.put(id, internalorderid);
-            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades");
+            String log=order.get("log")!=null?order.get("log").toString():"";
+            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades",log);
             logger.log(Level.INFO, "401,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(order);
@@ -696,9 +697,9 @@ public class Strategy implements NotificationListener {
                 int newexitSize = exitSize + tradeSize;
                 double newexitPrice = (exitPrice * exitSize + tradeSize * expectedFillPrice) / (newexitSize);
                 if (getPosition().get(id).getPosition() == 0) {
-                    Trade.updateExit(db, id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "closedtrades");
+                    Trade.updateExit(db, id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "closedtrades","TOBECOMPLETED");
                 } else {
-                    Trade.updateExit(db, id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades");
+                    Trade.updateExit(db, id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades","TOBECOMPLETED");
                 }
                 logger.log(Level.INFO, "Debugging_Strategy_exit,{0}", new Object[]{exitSize + delimiter + exitPrice + delimiter + size + delimiter + expectedFillPrice + delimiter + newexitSize + delimiter + newexitPrice});
                 if (MainAlgorithm.isUseForTrading()) {
@@ -756,7 +757,8 @@ public class Strategy implements NotificationListener {
                 int newexitSize = exitSize + tradeSize;
                 double newexitPrice = (exitPrice * exitSize + tradeSize * expectedFillPrice) / (newexitSize);
                 order.put("entryorderidint", tempinternalOrderID);
-                Trade.updateExit(db, id, reason, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades");
+                String log=order.get("log")!=null?order.get("log").toString():"";
+                Trade.updateExit(db, id, reason, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades",log);
                 if (getPosition().get(id).getPosition() == 0) {
                     Trade.closeTrade(db, key);
                 }

@@ -43,6 +43,7 @@ public class OrderBean implements Serializable {
     private int ocaExecutionLogic;
     private boolean scale;
     private final Object lockparentlimitprice=new Object();
+    private String log;
    
     
 
@@ -481,6 +482,20 @@ public class OrderBean implements Serializable {
      */
     public void setScale(boolean scale) {
         this.scale = scale;
+    }
+
+    /**
+     * @return the log
+     */
+    public String getLog() {
+        return log;
+    }
+
+    /**
+     * @param log the log to set
+     */
+    public void setLog(String log) {
+        this.log = log;
     }
 
 
