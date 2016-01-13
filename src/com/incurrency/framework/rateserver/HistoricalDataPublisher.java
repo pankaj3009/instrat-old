@@ -95,7 +95,7 @@ public class HistoricalDataPublisher implements Runnable {
                 //If EOD reached send 99 ticktype
                 Calendar nextStartDate = new GregorianCalendar();
                 nextStartDate.setTime(addSeconds(d, 28800, true));
-                if (nextStartDate.get(Calendar.DAY_OF_MONTH) > now.get(Calendar.DAY_OF_MONTH) || nextStartDate.get(Calendar.MONTH) > now.get(Calendar.MONTH)) {
+                if (nextStartDate.get(Calendar.DAY_OF_MONTH) > now.get(Calendar.DAY_OF_MONTH) || nextStartDate.get(Calendar.MONTH) > now.get(Calendar.MONTH)|| nextStartDate.get(Calendar.YEAR) > now.get(Calendar.YEAR)) {
                     Thread.sleep(20000);//wait for 10 seconds to ensure all tick for today has been sent
                     for (HistoricalDataParameters h : symbols) {
                         String close = 99 + "," + 1 + "," + 1 + "," + h.displayName;
