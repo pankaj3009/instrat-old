@@ -1536,6 +1536,11 @@ public class TWSConnection extends Thread implements EWrapper {
          */
         //System.out.println("TickType: "+tickType+"Value: "+value );
         //By default, tickstring returns value for ticktype=45 = last timestamp.
+        if(useRTVolume==Boolean.TRUE){
+        if(tickType==48){
+            
+        }
+            }
     }
 
     @Override
