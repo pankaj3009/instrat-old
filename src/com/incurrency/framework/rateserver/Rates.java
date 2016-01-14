@@ -109,7 +109,7 @@ properties=Utilities.loadParameters(ParameterFile);
                 if (savetocassandra) {
                     try {
                         ServerPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);
-                        ServerPubSub.output = new PrintStream(c.getWrapper().cassandraConnection.getOutputStream());
+                        ServerPubSub.output = new PrintStream(ServerPubSub.cassandraConnection.getOutputStream());
                         ServerPubSub.saveToCassandra=savetocassandra;
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, null, e);

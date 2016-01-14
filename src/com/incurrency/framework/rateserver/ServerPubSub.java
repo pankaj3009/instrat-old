@@ -44,6 +44,7 @@ public class ServerPubSub {
     public synchronized void send(String topic, String message) {
         publisher.sendMore(topic);
         publisher.send(message, 0);
+   //     logger.log(Level.INFO,"SaveToCassandra:{0}",new Object[]{saveToCassandra});
         if (saveToCassandra) {
             String[] components = message.split(",");
             String tickType = null;
@@ -67,11 +68,14 @@ public class ServerPubSub {
                 default:
                     break;
             }
-
-            if (tickType != null && components.length == 4) {
-                String[] symbol = components[3].split("-", -1);
+               // logger.log(Level.INFO,"components[0]={0},ticktype={1},message={2},componentlength={3}",new Object[]{components[0],tickType,message,components.length});
+             if (tickType != null && components.length == 4) {
+                String[] symbol = components[3].split("_", -1);
+                //logger.log(Level.INFO,"symbol length={0}",new Object[]{symbol.length});
                 if(symbol.length==5){
                 String expiry = symbol[2];
+                //logger.log(Level.INFO,"smybol[1]={0}",new Object[]{symbol[1]});
+               
                 if(symbol[1]!=null){
                     switch(symbol[1]){
                         case "STK":
@@ -88,13 +92,15 @@ public class ServerPubSub {
                             break;
                     }
                 }
-                if (output != null && metric!=null) {
+                //logger.log(Level.INFO,"SaveToCassandra={0},output={1},ticktype={2},message={3},componentlength={4},symbollength={5}",new Object[]{saveToCassandra,output,tickType,message,components.length,symbol.length});
+                if (output != null && metric!=null) {                    
                     new Cassandra(components[2], Long.valueOf(components[1]), metric + "." + tickType, components[3], expiry, output).write();
                 }
                 }
             }
             //logger.log(Level.INFO,"Method:{0}, Message:{1}:{2}", new Object[]{Thread.currentThread().getStackTrace()[1].getMethodName(), topic,message});
         }
+                        
     }
     
     public synchronized void close() {

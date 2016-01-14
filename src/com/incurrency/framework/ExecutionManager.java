@@ -804,7 +804,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (orders.size() > 0) {//trading is not halted 
                 this.getOpenPositionCount().set(connectionid, tempOpenPosition + 1);
                 logger.log(Level.INFO, "202,EntryOrder,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()+delimiter+this.getOpenPositionCount().get(connectionid)});
-                logger.log(Level.INFO, "206,OpenPosition,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + this.getOpenPositionCount().get(id)});
+                logger.log(Level.INFO, "206,OpenPosition,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + this.getOpenPositionCount().get(connectionid)});
 
                 ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders);
 
