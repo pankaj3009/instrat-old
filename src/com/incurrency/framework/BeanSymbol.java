@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbol>, PropertyChangeListener {
 
+    //DisplayName=exchangeSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option
     private final static Logger logger = Logger.getLogger(BeanSymbol.class.getName());
     private String longName;
     private int serialno;

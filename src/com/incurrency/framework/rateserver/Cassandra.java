@@ -45,4 +45,18 @@ public class Cassandra implements Runnable {
             //output.close();
         }
     }
+    
+    public void write() {
+        try {
+            if (expiry == null) {
+                output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.replace("&", "").toLowerCase() + System.getProperty("line.separator"));
+            } else {
+                output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.replace("&", "").toLowerCase() + " " + "expiry=" + expiry + System.getProperty("line.separator"));
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Cassandra.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            //output.close();
+        }
+    }
 }

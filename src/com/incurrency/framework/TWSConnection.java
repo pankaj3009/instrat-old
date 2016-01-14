@@ -1375,31 +1375,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 Rates.rateServer.send(header, com.ib.client.TickType.OPEN + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getOpenPrice() + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.HIGH + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getHighPrice() + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.LOW + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getLowPrice() + "," + symbol);
-
-                if (saveToCassandra) {
-                    switch (type) {
-                        case "STK":
-                        case "IND":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
-                            break;
-                        case "FUT":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
-                            break;
-                    }
-                }
-            } else {
-                if (saveToCassandra) {
-                    switch (type) {
-                        case "STK":
-                        case "IND":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickEquityMetric + ".close", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
-                            break;
-                        case "FUT":
-                            new Thread(new Cassandra(String.valueOf(price), new Date().getTime(), tickFutureMetric + ".close", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
-                            break;
-                    }
-                }
-            }
+            } 
         }
         }catch (Exception e){
             logger.log(Level.SEVERE,null,e);
@@ -1502,63 +1478,12 @@ public class TWSConnection extends Thread implements EWrapper {
                 //Rates.rateServer.send(header, com.ib.client.TickType.LAST_SIZE + "," + new Date().getTime() + "," + lastSize + "," + symbol);
                 Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
                 Parameters.symbol.get(id).setVolume(size,false);
-                if (saveToCassandra) {
-                    switch (type) {
-                        case "STK":
-                        case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
-                            //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.equity.s1.tick.volume", Parameters.symbol.get(id).getServicename(), null, output)).start();
-                            break;
-                        case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
-                            //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.future.s1.tick.volume", Parameters.symbol.get(id).getServicename(), Parameters.symbol.get(id).getExpiry(), output)).start();
-                            break;
-                    }
-                }
-
-            } else {
-                if (saveToCassandra) {
-                    switch (type) {
-                        case "STK":
-                        case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
-                            //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.equity.s1.tick.volume", Parameters.symbol.get(id).getServicename(), null, output)).start();
-                            break;
-                        case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".dayvolume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
-                            //new Thread(new Cassandra(String.valueOf(lastSize), localTime, "india.nse.future.s1.tick.volume", Parameters.symbol.get(id).getServicename(), Parameters.symbol.get(id).getExpiry(), output)).start();
-                            break;
-                    }
-                }
             }
         } else if (field == com.ib.client.TickType.LAST_SIZE) {
             long localTime = new Date().getTime();
             if ((useRTVolume && snapshot) || !useRTVolume) {
                 Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
-                if (saveToCassandra) {
-                    switch (type) {
-                        case "STK":
-                        case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
-                            break;
-                        case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
-                            break;
-                    }
-                }
-            } else {
-                if (saveToCassandra) {
-                    switch (type) {
-                        case "STK":
-                        case "IND":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickEquityMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), null, output)).start();
-                            break;
-                        case "FUT":
-                            new Thread(new Cassandra(String.valueOf(size), localTime, tickFutureMetric + ".volume", Parameters.symbol.get(id).getDisplayname(), Parameters.symbol.get(id).getExpiry(), output)).start();
-                            break;
-                    }
-                }
-            }
+            } 
         }
         }catch (Exception e){
             logger.log(Level.INFO,null,e);
