@@ -89,6 +89,15 @@ properties=Utilities.loadParameters(ParameterFile);
         rtFutureMetric = properties.getProperty("rtfuturemetric");
         rtEquityMetric = properties.getProperty("rtequitymetric");
         rtOptionMetric = properties.getProperty("rtoptionmetric");
+        if(useRTVolume){
+            ServerPubSub.equityMetric=rtEquityMetric;
+            ServerPubSub.futureMetric=rtFutureMetric;
+            ServerPubSub.optionMetric=rtOptionMetric;
+        }else{
+            ServerPubSub.equityMetric=tickEquityMetric;
+            ServerPubSub.futureMetric=tickFutureMetric;
+            ServerPubSub.optionMetric=tickOptionMetric;
+        }
         boolean realtime=Boolean.parseBoolean(properties.getProperty("realtime","false"));
         pushToCassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra","false")) ;
         boolean savetocassandra=Boolean.parseBoolean(properties.getProperty("savetocassandra","false"));

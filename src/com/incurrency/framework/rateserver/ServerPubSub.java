@@ -4,12 +4,8 @@
  */
 package com.incurrency.framework.rateserver;
 
-import com.incurrency.framework.Parameters;
-import com.incurrency.framework.TWSConnection;
 import java.io.PrintStream;
 import java.net.Socket;
-import java.util.Date;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.zeromq.ZMQ;
 
@@ -27,6 +23,9 @@ public class ServerPubSub {
     public static PrintStream output;
     public static Socket cassandraConnection;
     public static boolean saveToCassandra=false;
+    public static String equityMetric;
+    public static String futureMetric;
+    public static String optionMetric;
     
     public ServerPubSub(int port) {
         publisher = context.socket(ZMQ.PUB);
@@ -80,13 +79,13 @@ public class ServerPubSub {
                     switch(symbol[1]){
                         case "STK":
                         case "IND":
-                            metric=Rates.tickEquityMetric;
+                            metric=equityMetric;
                             break;
                         case "FUT":
-                            metric=Rates.tickFutureMetric;
+                            metric=futureMetric;
                             break;
                         case "OPT":
-                            metric=Rates.tickOptionMetric;
+                            metric=optionMetric;
                             break;
                         default:
                             break;
