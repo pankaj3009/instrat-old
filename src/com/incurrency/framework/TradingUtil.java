@@ -1937,7 +1937,7 @@ public class TradingUtil {
 
     //Testing routine
     public static void main(String args[]) {
-        ExtendedHashMap<String, String> trades = new ExtendedHashMap<>();
+        DataStore<String, String> trades = new DataStore<>();
         ArrayList<BrokerageRate> brokerage = new ArrayList();
         brokerage.add(new BrokerageRate());
         brokerage.get(0).primaryRate = 0.01;

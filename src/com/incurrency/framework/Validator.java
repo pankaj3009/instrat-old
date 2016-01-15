@@ -204,10 +204,10 @@ public class Validator {
             String orderFileFullName = "logs" + File.separator + prefix + orderFile;
             ArrayList<String> comboTrades = new ArrayList<>();
             ArrayList<BeanSymbol> symbolList = new ArrayList<>();
-            ExtendedHashMap<String, String> orderList = new ExtendedHashMap<>();
+            DataStore<String, String> orderList = new DataStore<>();
             InputStream initialStream = new FileInputStream(new File(orderFileFullName));
             JsonReader jr = new JsonReader(initialStream);
-            orderList = (ExtendedHashMap<String, String>) jr.readObject();
+            orderList = (DataStore<String, String>) jr.readObject();
             jr.close();
             boolean symbolfileneeded = Boolean.parseBoolean(globalProperties.getProperty("symbolfileneeded", "false"));
             if (symbolfileneeded) {

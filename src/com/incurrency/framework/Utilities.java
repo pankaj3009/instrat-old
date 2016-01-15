@@ -881,6 +881,16 @@ public class Utilities {
 
         return p;
     }
+    
+    public static HashMap<String,String> loadParameters(String parameterFile,boolean side) {
+        HashMap<String,String>out=new HashMap<>();
+        Properties properties=loadParameters(parameterFile);
+        for (String key : properties.stringPropertyNames()) {
+        String value = properties.getProperty(key);
+        out.put(key, value);
+    }
+        return out;
+    }
 
     /**
      * Rounds a double value to a range. So, if range=0.05, values are rounded

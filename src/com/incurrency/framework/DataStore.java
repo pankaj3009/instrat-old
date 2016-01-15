@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
  *
  * @author Pankaj
  */
-public class ExtendedHashMap<K,V> implements Database<K,V> {
+public class DataStore<K,V> implements Database<K,V> {
     private ConcurrentHashMap<String,ConcurrentSkipListMap<String, ConcurrentHashMap<K, V>>> store=new ConcurrentHashMap<>();
     
     @Override

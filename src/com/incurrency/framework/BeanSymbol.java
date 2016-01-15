@@ -710,6 +710,33 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         return out;
     }
 
+       /**
+     * Returns the ceiling from a timeSeriesLabel, given any time.If time is not present in the corresponding
+     * columnlabels, returns the next high value.
+     * @param size
+     * @param time
+     * @param timeSeriesLabel
+     * @return 
+     */
+
+      public double getTimeSeriesValueCeil(EnumBarSize size, long time, String timeSeriesLabel) {
+        double out = ReservedValues.EMPTY;
+        int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
+        TreeSet<Long> tempSet=new TreeSet<>(this.getColumnLabels().get(size));
+        long priorTime=tempSet.ceiling(time);
+        boolean datafound=false;
+        while (row >= 0 && !datafound) {
+            out = this.getTimeSeriesValue(size, priorTime, timeSeriesLabel);
+            if(out!=ReservedValues.EMPTY){
+                datafound=Boolean.TRUE;
+            }else{
+               priorTime=tempSet.ceiling(priorTime+1);
+
+            }
+        }
+        return out;
+    }
+
    /**
     * Returns the floor of the time passed to the method.
     * @param size
@@ -1364,10 +1391,17 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 this.setLowPrice(lastPrice,false);
             }
             //For index, identify the open price
+            
             if(this.getType().equals("IND")&&this.getOpenPrice()==0){
                 this.setOpenPrice(lastPrice);
             }
-
+            
+            if (Algorithm.useForSimulation) {
+                if (this.getOpenPrice() == 0) {
+                    this.setOpenPrice(lastPrice);
+                }
+            }
+            
             if (propertySupport != null) {
                 propertySupport.firePropertyChange(PROP_LASTPRICE, oldValue, lastPrice);
             }

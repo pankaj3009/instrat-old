@@ -9,7 +9,7 @@ import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.DateUtil;
 import com.incurrency.framework.EnumBarSize;
-import com.incurrency.framework.ExtendedHashMap;
+import com.incurrency.framework.DataStore;
 import com.incurrency.framework.MatrixMethods;
 import com.incurrency.framework.ReservedValues;
 import com.incurrency.framework.Utilities;
@@ -32,7 +32,7 @@ import java.util.Arrays;
  */
 public class Indicators {
     
- private static ExtendedHashMap<String, Object> output = new ExtendedHashMap<>();
+ private static DataStore<String, Object> output = new DataStore<>();
  private final Object lockSwing = new Object();
  private static final Object lockStddev = new Object();
  private static final Object lockma = new Object();
