@@ -8,28 +8,17 @@ import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.Drop;
 import com.incurrency.framework.EnumBarSize;
-import com.incurrency.framework.HistoricalBarsIntraDay;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.Request;
 import com.incurrency.framework.Utilities;
-import com.incurrency.scan.ExtendedHashMap;
-import java.io.File;
-import java.io.FileInputStream;
-import java.lang.reflect.Constructor;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Properties;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 /**
@@ -96,7 +85,7 @@ public Scanner(HashMap<String,String>args){
         type = args.get("datatype").toString();            
                     Date endDate1=new Date();
                 //loop through dates
-                for (Date startDate1 = startDate; startDate1.compareTo(endDate) <= 0; startDate1 = nextGoodDay(endDate1)) {
+                for (Date startDate1 = startDate; startDate1.compareTo(endDate) < 0; startDate1 = endDate1) {
                     //System.out.println("Start Date:" + startDate1 + " ,End Date:" + nextGoodDay(startDate1));
                     while (!dateProcessing.empty()) {
                         Thread.yield();

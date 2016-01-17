@@ -1149,20 +1149,46 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         propertySupport.removePropertyChangeListener(listener);
     }
 
-    public void saveToExternalFile(EnumBarSize barSize,String filename) {
-        //String filename = this.getDisplayname().toUpperCase() + "_" + barSize.toString() + ".csv";
-        Utilities.deleteFile("logs",filename);
-        String[] headerarray = initData.get("0");
-        String header = Utilities.concatStringArray(headerarray);
-        header = "," + "," + header;
-        Utilities.writeToFile("logs",filename, header);
-        initData.remove("0");
-        for (String[] data : initData.values()) {
-            Utilities.writeToFile(filename, data, timeZone, true);
-        }
-        initData.clear();
-    }
+    
 
+    /**
+     * Saves the beansymbol timeseries values to an external file. If append is false, existing file is deleted and headers
+     * are inserted.Else no headers are inserted and data is appended to any existing file.
+     * @param barSize
+     * @param labels
+     * @param startTime
+     * @param endTime
+     * @param filename
+     * @param dateFormat
+     * @param append 
+     */
+    public void saveToExternalFile(EnumBarSize barSize, String[] labels, long startTime, long endTime, String filename, String dateFormat, boolean append) {
+        if (!append) {
+            Utilities.deleteFile("logs", filename);
+            String header = Utilities.concatStringArray(labels);
+            header = "time," + header;
+            Utilities.writeToFile("logs", filename, header);
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        sdf.setTimeZone(TimeZone.getTimeZone(Algorithm.timeZone));
+        //now write data
+        if (endTime == -1) {
+            endTime = this.getLastBarEndTime(barSize);
+        }
+        for (long t : this.getColumnLabels().get(EnumBarSize.ONESECOND)) {
+            if (t >= startTime && t <= endTime) {
+                //create output line
+                String output = sdf.format(new Date(t));
+                for (String l : labels) {
+                    output = output + ",";
+                    output = output + this.getTimeSeriesValue(barSize, t, l);
+                }
+                Utilities.writeToFile("logs", filename, output);
+            }
+
+        }
+    }
+        
     /**
      * Sets timeseries for specified labels and time value.Effectively sets
      * multiple rows for a specified time.
@@ -1223,7 +1249,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         initTimeSeries(size, labels, time);
         addTimeSeries(size, labels, time, values);
     }
-
+    
    public void setTimeSeries(EnumBarSize size, long time, String label, double value) {
             int colid = getColumnLabels().get(size).indexOf(Long.valueOf(time));
             int rowid = getRowLabels().get(size).indexOf(label);

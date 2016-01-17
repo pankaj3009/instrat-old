@@ -28,6 +28,13 @@ public class MatrixMethods {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
+    /**
+     * Inserts a new column at range location.
+     * @param m
+     * @param values
+     * @param range
+     * @return 
+     */
     public static DoubleMatrix insertColumn(DoubleMatrix m, double[] values, int[] range){
         int newColumns=range[1]-range[0]+1;
         DoubleMatrix m1=m.getRange(0, m.rows, 0, range[0]);
