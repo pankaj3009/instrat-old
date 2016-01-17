@@ -123,7 +123,6 @@ public Scanner(HashMap<String,String>args){
                     }
                 dateProcessing.put("finished");
                 }
-                System.exit(0);
         }catch(Exception e){
             logger.log(Level.SEVERE,null,e);
         }   
