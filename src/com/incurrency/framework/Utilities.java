@@ -1162,6 +1162,16 @@ public class Utilities {
         } catch (IOException ex) {
         }
     }
+    
+    
+    public static String getNextFileName(String directory, String fileName){
+        int increase=0;
+        String name=fileName+"."+increase;
+        if(Utilities.fileExists(directory, name)){
+            increase++;
+        }
+        return name;
+    }
 
     /**
      * Writes content in String[] to a file.The first column in the file has the

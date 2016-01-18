@@ -1370,6 +1370,9 @@ public class TWSConnection extends Thread implements EWrapper {
                 double lastPrice = Parameters.symbol.get(id).getLastPrice();
                 Parameters.symbol.get(id).setPrevLastPrice(lastPrice);
                 Parameters.symbol.get(id).setLastPrice(price);
+                if(Parameters.symbol.get(id).getOpenPrice()==0){
+                    requestSingleSnapshot(Parameters.symbol.get(id));
+                }
                 Rates.rateServer.send(header, com.ib.client.TickType.LAST + "," + new Date().getTime() + "," + price + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.CLOSE + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getClosePrice() + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.OPEN + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getOpenPrice() + "," + symbol);
