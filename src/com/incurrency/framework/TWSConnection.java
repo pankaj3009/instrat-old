@@ -1457,6 +1457,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public void realtime_tickSize(int tickerId,int field, int size){
         try{
+        boolean proceed=true;
         int serialno = getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId+delimiter+c.getAccountName()).symbol.getSerialno() : 0;
         int id = serialno - 1;
         
@@ -1465,7 +1466,9 @@ public class TWSConnection extends Thread implements EWrapper {
             snapshot = getRequestDetails().get(tickerId+delimiter+c.getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
         } else {
             logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId});
+            proceed=false;
         }
+        if(proceed){
         Request r;
         synchronized (lock_request) {
             r = getRequestDetails().get(tickerId + delimiter + c.getAccountName());
@@ -1492,6 +1495,7 @@ public class TWSConnection extends Thread implements EWrapper {
             if ((useRTVolume && snapshot) || !useRTVolume) {
                 Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
             } 
+        }
         }
         }catch (Exception e){
             logger.log(Level.INFO,null,e);
