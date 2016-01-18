@@ -174,15 +174,15 @@ public class TWSConnection extends Thread implements EWrapper {
         for (Map.Entry<String, Request> entry : getRequestDetails().entrySet()) {
             if (s.getSerialno() == entry.getValue().symbol.getSerialno() && entry.getValue().requestType.equals(EnumRequestType.SNAPSHOT)) {
                 proceed = false;
-                logger.log(Level.INFO, "101,ErrorSnapshotRequestExists", new Object[]{s.getDisplayname()});
+                logger.log(Level.FINER, "101,ErrorSnapshotRequestExists", new Object[]{s.getDisplayname()+delimiter+entry.getKey()});
             }
         }
         }
         if (proceed && getC().getReqHandle().getHandle()) {
             mRequestId = requestIDManager.getNextRequestId();
             synchronized(lock_request){
-                getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
-                logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
+                getRequestDetails().put(mRequestId+delimiter+this.getC().getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()+delimiter+mRequestId+delimiter+this.getC().getAccountName()});
             }
 
             //c.getmSnapShotReqID().put(mRequestId, s.getSerialno());
@@ -1331,14 +1331,17 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public void realtime_tickPrice(int tickerId, int field, double price, int canAutoExecute){
         try{
+        boolean proceed=true;
         int serialno = getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId+delimiter+c.getAccountName()).symbol.getSerialno() : 0;
         int id = serialno - 1;
         boolean snapshot = false;
-        if (getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null) {
-            snapshot = getRequestDetails().get(tickerId+delimiter+c.getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
+        if (getRequestDetails().get(tickerId+delimiter+this.getC().getAccountName()) != null) {
+            snapshot = getRequestDetails().get(tickerId+delimiter+this.getC().getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
         } else {
-            logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId});
+            logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId+delimiter+this.getC().getAccountName()});
+            proceed=false;
         }
+        if(proceed){
         Request r;
         synchronized (lock_request) {
             r = getRequestDetails().get(tickerId + delimiter + c.getAccountName());
@@ -1372,6 +1375,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 Parameters.symbol.get(id).setLastPrice(price);
                 if(Parameters.symbol.get(id).getOpenPrice()==0){
                     requestSingleSnapshot(Parameters.symbol.get(id));
+                    
                 }
                 Rates.rateServer.send(header, com.ib.client.TickType.LAST + "," + new Date().getTime() + "," + price + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.CLOSE + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getClosePrice() + "," + symbol);
@@ -1379,6 +1383,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 Rates.rateServer.send(header, com.ib.client.TickType.HIGH + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getHighPrice() + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.LOW + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getLowPrice() + "," + symbol);
             } 
+        }
         }
         }catch (Exception e){
             logger.log(Level.SEVERE,null,e);

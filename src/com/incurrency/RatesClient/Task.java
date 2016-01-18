@@ -47,33 +47,33 @@ public class Task implements Runnable {
                 }
                 if (id >= 0) {
                     switch (type) {
-                        case 0: //bidsize
+                        case com.ib.client.TickType.BID_SIZE: //bidsize
                                 Parameters.symbol.get(id).setBidSize((int) Double.parseDouble(value));
                                 if (MainAlgorithm.getCollectTicks()) {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "BidSize," + value);
                                 }
                                 break;
-                            case 1: //bidprice
+                            case com.ib.client.TickType.BID: //bidprice
                                 Parameters.symbol.get(id).setBidPrice(Double.parseDouble(value));
                                 tes.fireBidAskChange(id);
                                 if (MainAlgorithm.getCollectTicks()) {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Bid," + value);
                                 }
                                 break;
-                            case 2://askprice
+                            case com.ib.client.TickType.ASK://askprice
                                 Parameters.symbol.get(id).setAskPrice(Double.parseDouble(value));
                                 tes.fireBidAskChange(id);
                                 if (MainAlgorithm.getCollectTicks()) {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Bid," + value);
                                 }
                                 break;
-                            case 3: //ask size
+                            case com.ib.client.TickType.ASK_SIZE: //ask size
                                 Parameters.symbol.get(id).setAskSize((int) Double.parseDouble(value));
                                 if (MainAlgorithm.getCollectTicks()) {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "AskSize," + value);
                                 }
                                 break;
-                            case 4: //last price
+                            case com.ib.client.TickType.LAST: //last price
                                 double price = Double.parseDouble(value);
                                 double prevLastPrice = Parameters.symbol.get(id).getPrevLastPrice() == 0 ? price : Parameters.symbol.get(id).getPrevLastPrice();
                                 MainAlgorithm.setAlgoDate(date);
@@ -94,7 +94,7 @@ public class Task implements Runnable {
                                     Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(TradingUtil.getAlgoDate().getTime(), com.ib.client.TickType.LAST, String.valueOf(price));
                                 }
                                 break;
-                            case 5: //last size
+                            case com.ib.client.TickType.LAST_SIZE: //last size
                                 int size1 = (int) Double.parseDouble(value);
                                 /*
                                 if (MainAlgorithm.isUseForTrading() ||(!MainAlgorithm.isUseForTrading() && MainAlgorithm.getInput().get("backtest").equals("tick"))) {
@@ -131,13 +131,13 @@ public class Task implements Runnable {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "LastSize," + value);
                                 }
                                 break;
-                            case 6:
+                            case com.ib.client.TickType.HIGH:
                                  Parameters.symbol.get(id).setHighPrice(Double.parseDouble(value),false); 
                                 break;
-                            case 7:
+                            case com.ib.client.TickType.LOW:
                                  Parameters.symbol.get(id).setLowPrice(Double.parseDouble(value),false); 
                                 break;
-                            case 8: //volume
+                            case com.ib.client.TickType.VOLUME: //volume
                                 int size = (int) Double.parseDouble(value);
                                 int calculatedLastSize=size-Parameters.symbol.get(id).getVolume();
                                 if(calculatedLastSize>0){
@@ -151,7 +151,7 @@ public class Task implements Runnable {
                                 }
 
                                 break;
-                            case 9: //close
+                            case com.ib.client.TickType.CLOSE: //close
                                 Parameters.symbol.get(id).setClosePrice(Double.parseDouble(value));
                                 Parameters.symbol.get(id).setLastPriceTime(date);
                                 tes.fireTradeEvent(id, com.ib.client.TickType.CLOSE);
@@ -159,8 +159,9 @@ public class Task implements Runnable {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Close," + value);
                                 }
                                 break;
-                            case 14: //open
+                            case com.ib.client.TickType.OPEN: //open
                                 Parameters.symbol.get(id).setOpenPrice(Double.parseDouble(value)); 
+                                tes.fireTradeEvent(id, com.ib.client.TickType.OPEN);
                                 break;
                             case 99:
                                 Parameters.symbol.get(id).setClosePrice(Double.parseDouble(value));
