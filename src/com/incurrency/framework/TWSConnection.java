@@ -1356,15 +1356,27 @@ public class TWSConnection extends Thread implements EWrapper {
 
         if (field == com.ib.client.TickType.CLOSE) {
             Parameters.symbol.get(id).setClosePrice(price);
+            if (MainAlgorithm.getCollectTicks()) {
+                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Close," + price);
+            }
         } else if (field == com.ib.client.TickType.OPEN) {
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
             Parameters.symbol.get(id).setOpenPrice(price);
+                                if (MainAlgorithm.getCollectTicks()) {
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Open," + price);
+                    }
         } else if (field == com.ib.client.TickType.HIGH) {
             Parameters.symbol.get(id).setHighPrice(price,false);
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
+                    if (MainAlgorithm.getCollectTicks()) {
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "High," + price);
+                    }
         } else if (field == com.ib.client.TickType.LOW) {
             Parameters.symbol.get(id).setLowPrice(price,false);
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
+                    if (MainAlgorithm.getCollectTicks()) {
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Low," + price);
+                    }
         } else if (field == com.ib.client.TickType.BID || field == com.ib.client.TickType.ASK) {
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
         }
@@ -1382,6 +1394,9 @@ public class TWSConnection extends Thread implements EWrapper {
                 Rates.rateServer.send(header, com.ib.client.TickType.OPEN + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getOpenPrice() + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.HIGH + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getHighPrice() + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.LOW + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getLowPrice() + "," + symbol);
+                                if (MainAlgorithm.getCollectTicks()) {
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + price);
+                    }
             } 
         }
         }
@@ -1489,11 +1504,17 @@ public class TWSConnection extends Thread implements EWrapper {
                 //Rates.rateServer.send(header, com.ib.client.TickType.LAST_SIZE + "," + new Date().getTime() + "," + lastSize + "," + symbol);
                 Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
                 Parameters.symbol.get(id).setVolume(size,false);
+                    if (MainAlgorithm.getCollectTicks()) {
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
+                    }
             }
         } else if (field == com.ib.client.TickType.LAST_SIZE) {
             long localTime = new Date().getTime();
             if ((useRTVolume && snapshot) || !useRTVolume) {
                 Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
+                    if (MainAlgorithm.getCollectTicks()) {
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Lastsize," + size);
+                    }
             } 
         }
         }
