@@ -50,27 +50,27 @@ public class Task implements Runnable {
                         case com.ib.client.TickType.BID_SIZE: //bidsize
                                 Parameters.symbol.get(id).setBidSize((int) Double.parseDouble(value));
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "BidSize," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + value);
                                 }
                                 break;
                             case com.ib.client.TickType.BID: //bidprice
                                 Parameters.symbol.get(id).setBidPrice(Double.parseDouble(value));
                                 tes.fireBidAskChange(id);
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Bid," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + value);
                                 }
                                 break;
                             case com.ib.client.TickType.ASK://askprice
                                 Parameters.symbol.get(id).setAskPrice(Double.parseDouble(value));
                                 tes.fireBidAskChange(id);
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Bid," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + value);
                                 }
                                 break;
                             case com.ib.client.TickType.ASK_SIZE: //ask size
                                 Parameters.symbol.get(id).setAskSize((int) Double.parseDouble(value));
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "AskSize," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + value);
                                 }
                                 break;
                             case com.ib.client.TickType.LAST: //last price
@@ -88,7 +88,7 @@ public class Task implements Runnable {
                                 //logger.log(Level.FINER,"Task Data Received, Symbol:{1},Time:{0},Price:{2}",new Object[]{new Date(date),Parameters.symbol.get(id).getDisplayname(),price});
 
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "LastPrice," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastPrice," + value);
                                 }
                                 if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
                                     Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(TradingUtil.getAlgoDate().getTime(), com.ib.client.TickType.LAST, String.valueOf(price));
@@ -128,7 +128,7 @@ public class Task implements Runnable {
                                     tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                                 }
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "LastSize," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize," + value);
                                 }
                                 break;
                             case com.ib.client.TickType.HIGH:
@@ -147,7 +147,7 @@ public class Task implements Runnable {
                                 Parameters.symbol.get(id).setVolume(size,false);
                                 tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Volume," + size);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
                                 }
 
                                 break;
@@ -156,7 +156,7 @@ public class Task implements Runnable {
                                 Parameters.symbol.get(id).setLastPriceTime(date);
                                 tes.fireTradeEvent(id, com.ib.client.TickType.CLOSE);
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Close," + value);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Close," + value);
                                 }
                                 break;
                             case com.ib.client.TickType.OPEN: //open

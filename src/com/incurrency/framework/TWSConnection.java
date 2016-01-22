@@ -1289,13 +1289,13 @@ public class TWSConnection extends Thread implements EWrapper {
                 if (field == 1) {
                     Parameters.symbol.get(id).setBidPrice(price);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Bid," + price);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + price);
                     }
                     tes.fireBidAskChange(id);
                 } else if (field == 2) {
                     Parameters.symbol.get(id).setAskPrice(price);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Ask," + price);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Ask," + price);
                     }
                     tes.fireBidAskChange(id);
                 } else if (field == 4) {
@@ -1306,7 +1306,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     Parameters.symbol.get(id).getTradedPrices().add(price);
                     Parameters.symbol.get(id).getTradedDateTime().add(System.currentTimeMillis());
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Trade," + price);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Trade," + price);
                     }
                     tes.fireTradeEvent(id, com.ib.client.TickType.LAST);
                     if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
@@ -1410,17 +1410,17 @@ public class TWSConnection extends Thread implements EWrapper {
                 if (field == 0) {
                     Parameters.symbol.get(id).setBidSize(size);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "BidSize," + size);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + size);
                     }
                 } else if (field == 3) {
                     Parameters.symbol.get(id).setAskSize(size);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "AskSize," + size);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + size);
                     }
                 } else if (field == 5) {
                     //Parameters.symbol.get(id).setLastSize(size);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "LastSize," + size);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname()+ ".csv", "LastSize," + size);
                     }
 
                 } else if (field == 8) {
@@ -1444,8 +1444,8 @@ public class TWSConnection extends Thread implements EWrapper {
                         Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
                     }
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Volume," + size);
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getBrokerSymbol() + ".csv", "Calculated LastSize," + calculatedLastSize);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
+                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
                     }
                 }
             }
