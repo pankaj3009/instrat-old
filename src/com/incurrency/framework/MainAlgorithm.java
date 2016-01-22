@@ -388,7 +388,7 @@ public class MainAlgorithm extends Algorithm {
                 for (BeanConnection c : Parameters.connection) {
                     //if ("Data".equals(c.getPurpose())) {
                     int connectionCapacity = c.getTickersLimit();
-                    if (count > 0) {
+                    if (count > 0 && connectionCapacity>0) {
                         Thread t = new Thread(new MarketData(c, allocatedCapacity, Math.min(count, connectionCapacity), Parameters.symbol, c.getTickersLimit(), false));
                         t.setName("Streaming Market Data");
                         t.start();
