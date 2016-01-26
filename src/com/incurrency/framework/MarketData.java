@@ -45,7 +45,7 @@ public class MarketData implements Runnable {
      *
      */
 
-    public MarketData(BeanConnection ib, int pos, int count, List<BeanSymbol> s, int rtrequests, boolean snapshot) {
+    public MarketData(BeanConnection ib, int pos, int count, List<BeanSymbol> s, int rtrequests, boolean snapshot,boolean rtVolume) {
 
         this.mIB = ib;
         this.mStartPosition = pos;

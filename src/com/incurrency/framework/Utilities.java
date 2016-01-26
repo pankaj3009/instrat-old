@@ -807,6 +807,31 @@ public class Utilities {
         }
         return true;
     }
+    
+    public static boolean isLong(String str) {
+        if (str == null) {
+            return false;
+        }
+        str = str.trim();
+        int length = str.length();
+        if (length == 0) {
+            return false;
+        }
+        int i = 0;
+        if (str.charAt(0) == '-') {
+            if (length == 1) {
+                return false;
+            }
+            i = 1;
+        }
+        for (; i < length; i++) {
+            char c = str.charAt(i);
+            if (c <= '/' || c >= ':') {
+                return false;
+            }
+        }
+        return true;
+    }
 
     public static boolean isDate(String dateString, SimpleDateFormat sdf) {
 
@@ -843,6 +868,19 @@ public class Utilities {
         }
     }
 
+    public static long getLong(Object input, long defvalue) {
+        try {
+            if (isLong(input.toString())) {
+                return Long.parseLong(input.toString().trim());
+            } else {
+                return defvalue;
+            }
+        } catch (Exception e) {
+            return defvalue;
+        }
+    }
+
+    
     public static double[] convertStringListToDouble(String[] input) {
         double[] out = new double[input.length];
         for (int i = 0; i < input.length; i++) {

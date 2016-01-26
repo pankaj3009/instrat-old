@@ -25,7 +25,7 @@ public class SnapShotPreOpenPrice extends TimerTask {
 }
         int count = filteredSymbols.size();
         int allocatedCapacity = 0;
-       Thread t= new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, count,filteredSymbols,Parameters.connection.get(0).getTickersLimit(),true));
+       Thread t= new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, count,filteredSymbols,Parameters.connection.get(0).getTickersLimit(),true,false));
        t.setName("Pre Open Data");
        t.start();
        

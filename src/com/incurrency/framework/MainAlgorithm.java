@@ -74,6 +74,7 @@ public class MainAlgorithm extends Algorithm {
     private static final Object lockUseForTrading = new Object();
     private static final Object lockStrategies = new Object();
     public static int selectedStrategy = 0;
+    public static boolean rtvolume=false;
     /*
      * EOD Validation Fixed
      * Deemed cancellations wes a string arraylist. Changed this to <Integer>
@@ -388,8 +389,9 @@ public class MainAlgorithm extends Algorithm {
                 for (BeanConnection c : Parameters.connection) {
                     //if ("Data".equals(c.getPurpose())) {
                     int connectionCapacity = c.getTickersLimit();
+                    rtvolume=Boolean.valueOf(globalProperties.getProperty("rtvolume","false"));
                     if (count > 0 && connectionCapacity>0) {
-                        Thread t = new Thread(new MarketData(c, allocatedCapacity, Math.min(count, connectionCapacity), Parameters.symbol, c.getTickersLimit(), false));
+                        Thread t = new Thread(new MarketData(c, allocatedCapacity, Math.min(count, connectionCapacity), Parameters.symbol, c.getTickersLimit(), false,rtvolume));
                         t.setName("Streaming Market Data");
                         t.start();
                         allocatedCapacity = allocatedCapacity + Math.min(count, connectionCapacity);
@@ -402,7 +404,7 @@ public class MainAlgorithm extends Algorithm {
                 if (getsnapshotfromallconnections) {
                     for (BeanConnection c : Parameters.connection) {
                         int snapshotcount = count / Parameters.connection.size();
-                        Thread t = new Thread(new MarketData(c, allocatedCapacity, snapshotcount, Parameters.symbol, c.getTickersLimit(), true));
+                        Thread t = new Thread(new MarketData(c, allocatedCapacity, snapshotcount, Parameters.symbol, c.getTickersLimit(), true,false));
                         t.setName("Continuous Snapshot");
                         t.start();
                     }
@@ -410,7 +412,7 @@ public class MainAlgorithm extends Algorithm {
                 else {
                     if (count > 0) {
                         int snapshotcount = count;;
-                        Thread t = new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, snapshotcount, Parameters.symbol, Parameters.connection.get(0).getTickersLimit(), true));
+                        Thread t = new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, snapshotcount, Parameters.symbol, Parameters.connection.get(0).getTickersLimit(), true,false));
                         t.setName("Continuous Snapshot");
                         t.start();
                     }

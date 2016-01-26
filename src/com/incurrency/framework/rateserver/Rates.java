@@ -49,7 +49,7 @@ public class Rates {
 
     public Rates(String parameterFile) {
         loadParameters(parameterFile);
-        rateServer= new com.incurrency.framework.rateserver.ServerPubSub(publishport);
+        rateServer = new com.incurrency.framework.rateserver.ServerPubSub(publishport);
         Thread t = new Thread(new ServerResponse(responseport));
         t.setName("ResponseServer");
         t.start();
@@ -58,54 +58,54 @@ public class Rates {
     }
 
     private void loadParameters(String ParameterFile) {
-properties=Utilities.loadParameters(ParameterFile);
+        properties = Utilities.loadParameters(ParameterFile);
         String currDateStr = DateUtil.getFormattedDate("yyyyMMdd", new Date().getTime());
         String endDateStr;
-        if (Boolean.getBoolean(properties.getProperty("historicaldata","false"))) {
+        if (Boolean.getBoolean(properties.getProperty("historicaldata", "false"))) {
             endDateStr = DateUtil.getFormattedDate("yyyyMMdd", new Date().getTime() + 24 * 60 * 60 * 1000);
         } else {
             endDateStr = currDateStr + " " + properties.getProperty("endtime");
         }
-        if(Utilities.isDate(endDateStr, new SimpleDateFormat("yyyyMMdd HH:mm:ss"))){
+        if (Utilities.isDate(endDateStr, new SimpleDateFormat("yyyyMMdd HH:mm:ss"))) {
             endDate = DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, Algorithm.timeZone);
             if (new Date().compareTo(endDate) > 0) {
                 //increase enddate by one calendar day
                 endDate = DateUtil.addDays(endDate, 1);
             }
         }
-        if(endDate!=null ||"".equals(endDate)){
+        if (endDate != null || "".equals(endDate)) {
             MainAlgorithm.setCloseDate(endDate);
         }
-        responseport=Integer.parseInt(properties.getProperty("responseport", "5555"));
-        publishport=Integer.parseInt(properties.getProperty("publishport", "5556"));
-        String cassandraIP=properties.getProperty("cassandraip","127.0.0.1");
-        int cassandraPort=Integer.valueOf(properties.getProperty("cassandraport","4242"));
-        String topic=properties.getProperty("topic","INR");
-        useRTVolume = Boolean.parseBoolean(properties.getProperty("usertvolume","false").toString().trim());
-        country = properties.getProperty("countrycode","INR");
+        responseport = Integer.parseInt(properties.getProperty("responseport", "5555"));
+        publishport = Integer.parseInt(properties.getProperty("publishport", "5556"));
+        String cassandraIP = properties.getProperty("cassandraip", "127.0.0.1");
+        int cassandraPort = Integer.valueOf(properties.getProperty("cassandraport", "4242"));
+        String topic = properties.getProperty("topic", "INR");
+        useRTVolume = Boolean.parseBoolean(properties.getProperty("usertvolume", "false").toString().trim());
+        country = properties.getProperty("countrycode", "INR");
         tickFutureMetric = properties.getProperty("tickfuturemetric");
         tickEquityMetric = properties.getProperty("tickequitymetric");
         tickOptionMetric = properties.getProperty("tickoptionmetric");
         rtFutureMetric = properties.getProperty("rtfuturemetric");
         rtEquityMetric = properties.getProperty("rtequitymetric");
         rtOptionMetric = properties.getProperty("rtoptionmetric");
-        if(useRTVolume){
-            ServerPubSub.equityMetric=rtEquityMetric;
-            ServerPubSub.futureMetric=rtFutureMetric;
-            ServerPubSub.optionMetric=rtOptionMetric;
-        }else{
-            ServerPubSub.equityMetric=tickEquityMetric;
-            ServerPubSub.futureMetric=tickFutureMetric;
-            ServerPubSub.optionMetric=tickOptionMetric;
+        if (useRTVolume) {
+            ServerPubSub.equityMetric = rtEquityMetric;
+            ServerPubSub.futureMetric = rtFutureMetric;
+            ServerPubSub.optionMetric = rtOptionMetric;
+        } else {
+            ServerPubSub.equityMetric = tickEquityMetric;
+            ServerPubSub.futureMetric = tickFutureMetric;
+            ServerPubSub.optionMetric = tickOptionMetric;
         }
-        boolean realtime=Boolean.parseBoolean(properties.getProperty("realtime","false"));
-        pushToCassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra","false")) ;
-        boolean savetocassandra=Boolean.parseBoolean(properties.getProperty("savetocassandra","false"));
-        if (Parameters.connection.size()>0) {
+        boolean realtime = Boolean.parseBoolean(properties.getProperty("realtime", "false"));
+        pushToCassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra", "false"));
+        boolean savetocassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra", "false"));
+        if (Parameters.connection.size() > 0) {
             for (BeanConnection c : Parameters.connection) {
-                c.getWrapper().cassandraIP=cassandraIP;
-                c.getWrapper().cassandraPort=cassandraPort;
-                c.getWrapper().topic=topic;
+                c.getWrapper().cassandraIP = cassandraIP;
+                c.getWrapper().cassandraPort = cassandraPort;
+                c.getWrapper().topic = topic;
                 c.getWrapper().saveToCassandra = pushToCassandra;
                 c.getWrapper().tickEquityMetric = tickEquityMetric;
                 c.getWrapper().tickFutureMetric = tickFutureMetric;
@@ -113,13 +113,13 @@ properties=Utilities.loadParameters(ParameterFile);
                 c.getWrapper().rtEquityMetric = rtEquityMetric;
                 c.getWrapper().rtFutureMetric = rtFutureMetric;
                 c.getWrapper().rtOptionMetric = rtOptionMetric;
-                c.getWrapper().realtime=realtime;
+                c.getWrapper().realtime = realtime;
                 c.getWrapper().saveToCassandra = savetocassandra;
                 if (savetocassandra) {
                     try {
                         ServerPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);
                         ServerPubSub.output = new PrintStream(ServerPubSub.cassandraConnection.getOutputStream());
-                        ServerPubSub.saveToCassandra=savetocassandra;
+                        ServerPubSub.saveToCassandra = savetocassandra;
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, null, e);
                     }
@@ -139,5 +139,4 @@ properties=Utilities.loadParameters(ParameterFile);
         logger.log(Level.INFO, "RT Future Metric: {0}", rtFutureMetric);
         logger.log(Level.INFO, "RT Option Metric {0}", rtOptionMetric);
     }
-
 }

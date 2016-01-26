@@ -20,6 +20,8 @@ import com.incurrency.framework.rateserver.Rates;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
+import com.ib.client.TickType;
+import java.text.SimpleDateFormat;
 /**
  *
  * @author admin
@@ -54,7 +56,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public int cassandraPort = 4242;
     public Socket cassandraConnection;
     public PrintStream output;
-    public boolean useRTVolume = false;
+    //public boolean useRTVolume = false;
     public String topic;
     public boolean saveToCassandra;
     public boolean realtime=false;
@@ -68,6 +70,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public static AtomicBoolean serverInitialized=new AtomicBoolean();
     public RequestIDManager requestIDManager=new RequestIDManager();
     private HashMap<Integer, Request> FundamentalRequestID = new HashMap<>();
+    private SimpleDateFormat sdfTime=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     
     
     public TWSConnection(BeanConnection c) {
@@ -1274,8 +1277,17 @@ public class TWSConnection extends Thread implements EWrapper {
             realtime_tickPrice(tickerId,field,price,canAutoExecute);
         }else{
         try {
+            boolean snapshot=false;
+            boolean proceed=true;
             int serialno = getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId+delimiter+c.getAccountName()).symbol.getSerialno() : 0;
             int id = serialno - 1;
+                    if (getRequestDetails().get(tickerId+delimiter+this.getC().getAccountName()) != null) {
+            snapshot = getRequestDetails().get(tickerId+delimiter+this.getC().getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
+        } else {
+            logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId+delimiter+this.getC().getAccountName()});
+            proceed=false;
+        }
+        if(proceed){
             Request r;
             synchronized(lock_request){
                 r=getRequestDetails().get(tickerId+delimiter+c.getAccountName());
@@ -1286,19 +1298,19 @@ public class TWSConnection extends Thread implements EWrapper {
             //logger.log(Level.INFO,"request id:{0},id: {1},price:{2}",new Object[]{tickerId,id,price});
             //Parameters.updateSymbol(id, field, price);
             if (id >= 0) {
-                if (field == 1) {
+                if (field==TickType.BID) {
                     Parameters.symbol.get(id).setBidPrice(price);
                     if (MainAlgorithm.getCollectTicks()) {
                         TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + price);
                     }
                     tes.fireBidAskChange(id);
-                } else if (field == 2) {
+                } else if (field==TickType.ASK) {
                     Parameters.symbol.get(id).setAskPrice(price);
                     if (MainAlgorithm.getCollectTicks()) {
                         TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Ask," + price);
                     }
                     tes.fireBidAskChange(id);
-                } else if (field == 4) {
+                } else if ((field==TickType.LAST)&&(MainAlgorithm.rtvolume && snapshot || !MainAlgorithm.rtvolume)) {
                     double prevLastPrice = Parameters.symbol.get(id).getPrevLastPrice() == 0 ? price : Parameters.symbol.get(id).getPrevLastPrice();
                     Parameters.symbol.get(id).setPrevLastPrice(prevLastPrice);
                     Parameters.symbol.get(id).setLastPrice(price);
@@ -1312,17 +1324,18 @@ public class TWSConnection extends Thread implements EWrapper {
                     if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
                         Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.LAST, String.valueOf(price));
                     }
-                } else if (field == 6) {
+                } else if (field==TickType.HIGH) {
                     Parameters.symbol.get(id).setHighPrice(price,false);
-                } else if (field == 7) {
+                } else if (field==TickType.LOW) {
                     Parameters.symbol.get(id).setLowPrice(price,false);
-                } else if (field == 9) {
+                } else if (field==TickType.CLOSE) {
                     Parameters.symbol.get(id).setClosePrice(price);
                     tes.fireTradeEvent(id, com.ib.client.TickType.CLOSE);
-                } else if (field == 14) {
+                } else if (field==TickType.OPEN) {
                     Parameters.symbol.get(id).setOpenPrice(price);
                 }
             }
+        }
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
@@ -1381,7 +1394,7 @@ public class TWSConnection extends Thread implements EWrapper {
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
         }
         if (field == com.ib.client.TickType.LAST) {
-            if (useRTVolume && snapshot || !useRTVolume) {
+            if (MainAlgorithm.rtvolume && snapshot || !MainAlgorithm.rtvolume) {
                 double lastPrice = Parameters.symbol.get(id).getLastPrice();
                 Parameters.symbol.get(id).setPrevLastPrice(lastPrice);
                 Parameters.symbol.get(id).setLastPrice(price);
@@ -1407,66 +1420,78 @@ public class TWSConnection extends Thread implements EWrapper {
     
     @Override
     public void tickSize(int tickerId, int field, int size) {
-        if(realtime && serverInitialized.get()){
-            realtime_tickSize(tickerId,field,size);
-        }else{
-                
-        try {
-            int serialno = getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId+delimiter+c.getAccountName()).symbol.getSerialno() : 0;
-            Request r; 
-                    synchronized(lock_request){
-                        r= getRequestDetails().get(tickerId+delimiter+c.getAccountName());
-                    }
-            if (r != null) {
-                r.requestStatus = EnumRequestStatus.SERVICED;
-            }
-            int id = serialno - 1;
-            if (id >= 0) {
-                if (field == 0) {
-                    Parameters.symbol.get(id).setBidSize(size);
-                    if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + size);
-                    }
-                } else if (field == 3) {
-                    Parameters.symbol.get(id).setAskSize(size);
-                    if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + size);
-                    }
-                } else if (field == 5) {
-                    //Parameters.symbol.get(id).setLastSize(size);
-                    if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname()+ ".csv", "LastSize," + size);
-                    }
+        if (realtime && serverInitialized.get()) {
+            realtime_tickSize(tickerId, field, size);
+        } else {
+            try {
+                int serialno = getRequestDetails().get(tickerId + delimiter + c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId + delimiter + c.getAccountName()).symbol.getSerialno() : 0;
+                boolean proceed = true;
+                boolean snapshot = false;
+                if (getRequestDetails().get(tickerId + delimiter + this.getC().getAccountName()) != null) {
+                    snapshot = getRequestDetails().get(tickerId + delimiter + this.getC().getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
+                } else {
+                    logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId + delimiter + this.getC().getAccountName()});
+                    proceed = false;
+                }
+                if (proceed) {
 
-                } else if (field == 8) {
-                    Parameters.symbol.get(id).getTradedVolumes().add(size - Parameters.symbol.get(id).getVolume());
-                    double prevLastPrice = Parameters.symbol.get(id).getPrevLastPrice();
-                    double lastPrice = Parameters.symbol.get(id).getLastPrice();
-                    int incrementalSize = Parameters.symbol.get(id).getVolume() > 0 ? size - Parameters.symbol.get(id).getVolume() : 0;
-                    int calculatedLastSize;
-                    if (prevLastPrice != lastPrice) {
-                        Parameters.symbol.get(id).setPrevLastPrice(lastPrice);
-                        calculatedLastSize = incrementalSize;
-                    } else {
-                        calculatedLastSize = incrementalSize + Parameters.symbol.get(id).getLastSize();
+                    Request r;
+                    synchronized (lock_request) {
+                        r = getRequestDetails().get(tickerId + delimiter + c.getAccountName());
                     }
-                    //int calculatedLastSize=prevLastPrice==Parameters.symbol.get(id).getLastPrice()?Parameters.symbol.get(id).getLastSize()+incrementalSize:incrementalSize;
-                    Parameters.symbol.get(id).setLastSize(calculatedLastSize);
-                    Parameters.symbol.get(id).setVolume(size,false);
-                    tes.fireTradeEvent(id, com.ib.client.TickType.LAST_SIZE);
-                    tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
-                    if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
-                        Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
+                    if (r != null) {
+                        r.requestStatus = EnumRequestStatus.SERVICED;
                     }
-                    if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
+                    int id = serialno - 1;
+                    if (id >= 0) {
+                        if (field == TickType.BID_SIZE) {
+                            Parameters.symbol.get(id).setBidSize(size);
+                            if (MainAlgorithm.getCollectTicks()) {
+                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + size);
+                            }
+                        } else if (field == TickType.ASK_SIZE) {
+                            Parameters.symbol.get(id).setAskSize(size);
+                            if (MainAlgorithm.getCollectTicks()) {
+                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + size);
+                            }
+                        } else if (field == TickType.LAST_SIZE) {
+                            //Parameters.symbol.get(id).setLastSize(size);
+                            if (MainAlgorithm.getCollectTicks()) {
+                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSizeTick," + size);
+                            }
+
+                        } else if (field == TickType.VOLUME) {
+                            if (MainAlgorithm.rtvolume && snapshot || !MainAlgorithm.rtvolume) {
+                                Parameters.symbol.get(id).getTradedVolumes().add(size - Parameters.symbol.get(id).getVolume());
+                                double prevLastPrice = Parameters.symbol.get(id).getPrevLastPrice();
+                                double lastPrice = Parameters.symbol.get(id).getLastPrice();
+                                int incrementalSize = Parameters.symbol.get(id).getVolume() > 0 ? size - Parameters.symbol.get(id).getVolume() : 0;
+                                int calculatedLastSize;
+                                if (prevLastPrice != lastPrice) {
+                                    Parameters.symbol.get(id).setPrevLastPrice(lastPrice);
+                                    calculatedLastSize = incrementalSize;
+                                } else {
+                                    calculatedLastSize = incrementalSize + Parameters.symbol.get(id).getLastSize();
+                                }
+                                //int calculatedLastSize=prevLastPrice==Parameters.symbol.get(id).getLastPrice()?Parameters.symbol.get(id).getLastSize()+incrementalSize:incrementalSize;
+                                Parameters.symbol.get(id).setLastSize(calculatedLastSize);
+                                Parameters.symbol.get(id).setVolume(size, false);
+                                tes.fireTradeEvent(id, com.ib.client.TickType.LAST_SIZE);
+                                tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
+                                if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
+                                    Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
+                                }
+                                if (MainAlgorithm.getCollectTicks()) {
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
+                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
+                                }
+                            }
+                        }
                     }
                 }
+            } catch (Exception e) {
+                logger.log(Level.INFO, "101", e);
             }
-        } catch (Exception e) {
-            logger.log(Level.INFO, "101", e);
-        }
         }
     }
 
@@ -1500,7 +1525,7 @@ public class TWSConnection extends Thread implements EWrapper {
         if (field == com.ib.client.TickType.VOLUME) {
             long localTime = new Date().getTime();
             int lastSize = size - Parameters.symbol.get(id).getVolume();
-            if ((useRTVolume && snapshot) || !useRTVolume) {
+            if ((MainAlgorithm.rtvolume && snapshot) || !MainAlgorithm.rtvolume) {
                 //Rates.rateServer.send(header, com.ib.client.TickType.LAST_SIZE + "," + new Date().getTime() + "," + lastSize + "," + symbol);
                 Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
                 Parameters.symbol.get(id).setVolume(size,false);
@@ -1510,7 +1535,7 @@ public class TWSConnection extends Thread implements EWrapper {
             }
         } else if (field == com.ib.client.TickType.LAST_SIZE) {
             long localTime = new Date().getTime();
-            if ((useRTVolume && snapshot) || !useRTVolume) {
+            if ((MainAlgorithm.rtvolume && snapshot) || !MainAlgorithm.rtvolume) {
                 Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
                     if (MainAlgorithm.getCollectTicks()) {
                         TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Lastsize," + size);
@@ -1561,21 +1586,108 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void tickString(int tickerId, int tickType, String value) {
-        /*
-         StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-         StackTraceElement e = stacktrace[1];//coz 0th will be getStackTrace so 1st
-         String methodName = e.getMethodName();
-         //System.out.println(methodName);
-         */
-        //System.out.println("TickType: "+tickType+"Value: "+value );
-        //By default, tickstring returns value for ticktype=45 = last timestamp.
-        if(useRTVolume==Boolean.TRUE){
-        if(tickType==48){
-            
-        }
+        if (tickType == 48) {
+            if (realtime && serverInitialized.get()) {
+                realtime_rtVolume(tickerId, value);
+            } else {
+                boolean proceed = true;
+                int serialno = getRequestDetails().get(tickerId + delimiter + c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId + delimiter + c.getAccountName()).symbol.getSerialno() : 0;
+                int id = serialno - 1;
+                boolean snapshot = false;
+                if (getRequestDetails().get(tickerId + delimiter + c.getAccountName()) != null) {
+                    snapshot = getRequestDetails().get(tickerId + delimiter + c.getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
+                } else {
+                    logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId});
+                    proceed = false;
+                }
+                if (proceed) {
+                    String[] values = value.split(";");
+                    if (values.length == 6) {
+                        double last = Utilities.getDouble(values[0], 0);
+                        double last_size = Utilities.getInt(values[1], 0);
+                        long time = Utilities.getLong(values[2], 0);
+                        int volume = Utilities.getInt(values[3], 0);
+
+                        Parameters.symbol.get(id).setLastPrice(last);
+                        Parameters.symbol.get(id).getTradedVolumes().add(volume - Parameters.symbol.get(id).getVolume());
+                        double prevLastPrice = Parameters.symbol.get(id).getPrevLastPrice();
+                        double lastPrice = Parameters.symbol.get(id).getLastPrice();
+                        int incrementalSize = Parameters.symbol.get(id).getVolume() > 0 ? volume - Parameters.symbol.get(id).getVolume() : 0;
+                        int calculatedLastSize;
+                        if (prevLastPrice != lastPrice) {
+                            Parameters.symbol.get(id).setPrevLastPrice(lastPrice);
+                            calculatedLastSize = incrementalSize;
+                        } else {
+                            calculatedLastSize = incrementalSize + Parameters.symbol.get(id).getLastSize();
+                        }
+                        //int calculatedLastSize=prevLastPrice==Parameters.symbol.get(id).getLastPrice()?Parameters.symbol.get(id).getLastSize()+incrementalSize:incrementalSize;
+                        Parameters.symbol.get(id).setLastSize(calculatedLastSize);
+                        Parameters.symbol.get(id).setVolume(volume, false);
+                        tes.fireTradeEvent(id, com.ib.client.TickType.LAST_SIZE);
+                        tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
+                        if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
+                            Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
+                        }
+                        if (MainAlgorithm.getCollectTicks()) {
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "ExchangeTimeStamp," + sdfTime.format(new Date(time)));
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + volume);
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize_RT," + last_size);
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + last);
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
+                        }
+
+                    }
+                }
             }
+
+        }
     }
 
+    void realtime_rtVolume(int tickerId, String value) {
+        boolean proceed = true;
+        int serialno = getRequestDetails().get(tickerId + delimiter + c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId + delimiter + c.getAccountName()).symbol.getSerialno() : 0;
+        int id = serialno - 1;
+        boolean snapshot = false;
+        if (getRequestDetails().get(tickerId + delimiter + c.getAccountName()) != null) {
+            snapshot = getRequestDetails().get(tickerId + delimiter + c.getAccountName()).requestType == EnumRequestType.SNAPSHOT ? true : false;
+        } else {
+            logger.log(Level.INFO, "RequestID: {0} was not found", new Object[]{tickerId});
+            proceed = false;
+        }
+        if (proceed) {
+            String[] values = value.split(";");
+            if (values.length == 6) {
+                double last = Utilities.getDouble(values[0], 0);
+                double last_size = Utilities.getInt(values[1], 0);
+                long time = Utilities.getLong(values[2], 0);
+                int volume = Utilities.getInt(values[3], 0);
+                Request r;
+                synchronized (lock_request) {
+                    r = getRequestDetails().get(tickerId + delimiter + c.getAccountName());
+                }
+                if (r != null) {
+                    r.requestStatus = EnumRequestStatus.SERVICED;
+                }
+                String type = Parameters.symbol.get(id).getType();
+                String header = Rates.country + ":" + type + ":" + "ALL";
+                String symbol = Parameters.symbol.get(id).getDisplayname();
+                int lastSize = volume - Parameters.symbol.get(id).getVolume();
+                Rates.rateServer.send(header, TickType.VOLUME + "," + time + "," + volume + "," + symbol);
+                Parameters.symbol.get(id).setVolume(volume, false);
+                Rates.rateServer.send(header, TickType.LAST_SIZE + "," + time + "," + last_size + "," + symbol);
+                    if (MainAlgorithm.getCollectTicks()) {
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "ExchangeTimeStamp," + sdfTime.format(new Date(time)));
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + volume);
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize_RT," + last_size);
+                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + last);
+                           }
+
+            }
+
+        }
+    }
+    
+    
     @Override
     public void tickEFP(int tickerId, int tickType, double basisPoints, String formattedBasisPoints, double impliedFuture, int holdDays, String futureExpiry, double dividendImpact, double dividendsToExpiry) {
         StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
