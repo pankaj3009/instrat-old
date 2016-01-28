@@ -760,7 +760,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 synchronized (lockLinkedAction) {
                     //for (int orderid : orderids) {
                     //ArrayList<LinkedAction> cancelRequests = getCancellationRequestsForTracking().get(connectionid);
-                    ArrayList<OrderEvent> e = new ArrayList<>();
                     //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
                     //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
                     //getCancellationRequestsForTracking().set(connectionid, cancelRequests);
@@ -1320,6 +1319,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     }
 
     private synchronized void fireLinkedActions(BeanConnection c, int orderid) {
+        logger.log(Level.INFO,"204,LinkedActionOrderID,{0}",new Object[]{c.getAccountName() + delimiter + orderReference + delimiter  + orderid});
         //this function only supports linked actions for cancellation. What about linked action for fills?
         OrderBean ob = c.getOrders().get(orderid);
         int parentid = ob.getParentSymbolID() - 1;
@@ -1327,30 +1327,20 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         //if this was a requested cancellation, fire any event if needed
         int connectionid = Parameters.connection.indexOf(c);
         synchronized (lockLinkedAction) {
-            Iterator<LinkedAction> iter;
             ArrayList<LinkedAction> cancelledOrders = (ArrayList<LinkedAction>) getCancellationRequestsForTracking().get(connectionid).clone();
-            //iter = cancelledOrders.iterator();
             ArrayList<LinkedAction> itemsToRemove = new ArrayList<>();
             int i=0;
             for (LinkedAction f : cancelledOrders) {
-                //while (iter.hasNext()) {
-                //  LinkedAction f = iter.next();
                 if (f.orderID == orderid && i==0) { //only fire one linkedaction at one time.
-                    //logger.log(Level.INFO, "{0},{1},Execution Manager,Cancellation Success. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
                     fireLinkedAction(c, orderid, f.action, f);
                     i=i+1;
                     cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
-                    //iter.remove();
                     itemsToRemove.add(f);
                 }
             }
             ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
-            iter = filledOrders.iterator();
             i=0;
             for (LinkedAction f : filledOrders) {
-                //while (iter.hasNext()) {
-                //LinkedAction f = iter.next();
-
                 if (f.orderID == orderid && i==0) {//only fire one linked action at one time
                     //logger.log(Level.INFO, "{0},{1},Execution Manager,OrderFilled. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
                     fireLinkedAction(c, orderid, f.action, f);
@@ -1361,11 +1351,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 }
             }
             for (LinkedAction f : itemsToRemove) {
-                logger.log(Level.FINE, "307,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
+                logger.log(Level.INFO, "204,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
                 getCancellationRequestsForTracking().get(connectionid).remove(f);
             }
             for (LinkedAction f : itemsToRemove) {
-                logger.log(Level.FINE, "307,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
+                logger.log(Level.FINE, "204,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
                 getFillRequestsForTracking().get(connectionid).remove(f);
             }
             lockLinkedAction.notifyAll();
@@ -1429,23 +1419,23 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 size = ob.getParentOrderSize() - ob.getParentFillSize();
                 e = OrderEvent.fastClose(Parameters.symbol.get(parentid), ob.getParentOrderSide(), size, orderReference);
                 e.setAccount(c.getAccountName());
-                logger.log(Level.INFO, "307,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
+                logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
                 tes.fireOrderEvent(e);
                 break;
             case REVERSEFILL:
                 size = ob.getParentOrderSize() - ob.getParentFillSize();
                 e = OrderEvent.fastClose(Parameters.symbol.get(parentid), reverse(ob.getParentOrderSide()), size, orderReference);
                 e.setAccount(c.getAccountName());
-                logger.log(Level.INFO, "307,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
+                logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
                 tes.fireOrderEvent(e);
                 break;
             case CLOSEPOSITION:
                 size = c.getPositions().get(new Index(orderReference, parentid)) != null ? c.getPositions().get(new Index(orderReference, parentid)).getPosition() : 0;
-                if (size > 0) {
+                if (size != 0) {
                     EnumOrderSide side = size > 0 ? EnumOrderSide.SELL : EnumOrderSide.COVER;
                     e = OrderEvent.fastClose(Parameters.symbol.get(parentid), side, size, orderReference);
                     e.setAccount(c.getAccountName());
-                    logger.log(Level.INFO, "307,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
+                    logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
                     tes.fireOrderEvent(e);
                 }
                 break;
@@ -1477,12 +1467,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     }
                     e = OrderEvent.fastClose(Parameters.symbol.get(ob.getParentSymbolID() - 1), parentside, 1, orderReference);
                     e.setAccount(c.getAccountName());
-                    logger.log(Level.INFO, "307,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
+                    logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
                     tes.fireOrderEvent(e);
                 }
                 break;
             case PROPOGATE:
-                logger.log(Level.INFO, "307,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
+                logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
                 tes.fireOrderEvent(f.e);
                 break;
             default:
