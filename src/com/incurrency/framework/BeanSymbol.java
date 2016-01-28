@@ -1259,7 +1259,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     @Override
     public void writer(String fileName) {
-                File f = new File(fileName);
+                File f = new File("logs",fileName);
         try {
             if (!f.exists() || f.isDirectory()) {
                 String header = "Long Name" + ",IB Symbol" + ",Exchange Symbol" + ",Currency" + ",Contract ID" + ",Exchange" + ",Type";
