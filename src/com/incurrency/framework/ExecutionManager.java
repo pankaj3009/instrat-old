@@ -758,17 +758,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
             if (!skip) {
                 synchronized (lockLinkedAction) {
-                    //for (int orderid : orderids) {
-                    //ArrayList<LinkedAction> cancelRequests = getCancellationRequestsForTracking().get(connectionid);
-                    //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
-                    //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
-                    //getCancellationRequestsForTracking().set(connectionid, cancelRequests);
+                    //if cancellation is a success, close position.
                     getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
-                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
+                    this.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
                     logger.log(Level.INFO, "204,LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "CLOSEPOSITION" + delimiter + event.getInternalorder() + delimiter + orderids.get(0) + delimiter + event.getSymbolBean().getDisplayname()});
                     logger.log(Level.INFO, "204,LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "PROPOGATE" + delimiter + event.getInternalorder() + delimiter + event.getSymbolBean().getDisplayname()});
                     c.getWrapper().cancelOrder(c, orderids.get(0),true);
-                    //}
                     lockLinkedAction.notifyAll();
                 }
             }
@@ -1318,6 +1313,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         return stubSize;
     }
 
+    //fireLinkedActions is triggered on partial/ complete fill and on order cancellation
     private synchronized void fireLinkedActions(BeanConnection c, int orderid) {
         logger.log(Level.INFO,"204,LinkedActionOrderID,{0}",new Object[]{c.getAccountName() + delimiter + orderReference + delimiter  + orderid});
         //this function only supports linked actions for cancellation. What about linked action for fills?
@@ -1331,7 +1327,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             ArrayList<LinkedAction> itemsToRemove = new ArrayList<>();
             int i=0;
             for (LinkedAction f : cancelledOrders) {
-                if (f.orderID == orderid && i==0) { //only fire one linkedaction at one time.
+                if (f.orderID == orderid && i==0 && (ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDNOFILL)||ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDPARTIALFILL))) { //only fire one linkedaction at one time.
                     fireLinkedAction(c, orderid, f.action, f);
                     i=i+1;
                     cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
@@ -1341,7 +1337,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
             i=0;
             for (LinkedAction f : filledOrders) {
-                if (f.orderID == orderid && i==0) {//only fire one linked action at one time
+                if (f.orderID == orderid && i==0&&(ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED))) {//only fire one linked action at one time
                     //logger.log(Level.INFO, "{0},{1},Execution Manager,OrderFilled. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
                     fireLinkedAction(c, orderid, f.action, f);
                     i=i+1;
@@ -1409,6 +1405,51 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
     }
 
+       private synchronized void removeLinkedActions(BeanConnection c, int orderid,EnumLinkedAction f) {
+        OrderBean ob = c.getOrders().get(orderid);
+        int parentid = ob.getParentSymbolID() - 1;
+        int internalorderid = ob.getInternalOrderID();
+        //if this was a requested cancellation, fire any event if needed
+        int connectionid = Parameters.connection.indexOf(c);
+        synchronized (lockLinkedAction) {
+            Iterator<LinkedAction> iter;
+            ArrayList<LinkedAction> cancelledOrders = (ArrayList<LinkedAction>) getCancellationRequestsForTracking().get(connectionid).clone();
+            //iter = cancelledOrders.iterator();
+            ArrayList<LinkedAction> itemsToRemove = new ArrayList<>();
+            for (LinkedAction f1 : cancelledOrders) {
+                if (f1.orderID == orderid && f.equals(f1.action)) {
+                    //fireLinkedAction(c, orderid, f.action, f);
+                    cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
+                    //iter.remove();
+                    itemsToRemove.add(f1);
+                }
+            }
+            ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
+            iter = filledOrders.iterator();
+            for (LinkedAction f1 : filledOrders) {
+                if (f1.orderID == orderid && f.equals(f1.action)) {
+                    //logger.log(Level.INFO, "{0},{1},Execution Manager,OrderFilled. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
+                    //fireLinkedAction(c, orderid, f.action, f);
+                    cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
+                    itemsToRemove.add(f1);
+                }
+            }
+            for (LinkedAction f1 : itemsToRemove) {
+                logger.log(Level.FINE, "307,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f1.action + delimiter + internalorderid + delimiter + f1.orderID});
+                getCancellationRequestsForTracking().get(connectionid).remove(f);
+            }
+            for (LinkedAction f1 : itemsToRemove) {
+                logger.log(Level.FINE, "307,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f1.action + delimiter + internalorderid + delimiter + f1.orderID});
+                getFillRequestsForTracking().get(connectionid).remove(f1);
+            }
+            lockLinkedAction.notifyAll();
+        }
+
+
+
+    }
+
+    
     private void fireLinkedAction(BeanConnection c, int orderid, EnumLinkedAction nextAction, LinkedAction f) {
         OrderBean ob = c.getOrders().get(orderid);
         int parentid = ob.getParentSymbolID() - 1;
@@ -1436,7 +1477,16 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     e = OrderEvent.fastClose(Parameters.symbol.get(parentid), side, size, orderReference);
                     e.setAccount(c.getAccountName());
                     logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
-                    tes.fireOrderEvent(e);
+                    int connectionid = Parameters.connection.indexOf(c);
+                    ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
+                    for (LinkedAction f1 : filledOrders) {
+                if (f1.e.getSymbolBean().getSerialno() -1== parentid && f.orderID==orderid ) {
+                    f.orderID=-1; //reset the orderid for tracking completed fills
+                    break;//update the first occurrence
+                }
+            }
+            tes.fireOrderEvent(e);
+                    
                 }
                 break;
             case REVERSESTUB:
@@ -1956,10 +2006,19 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 }
             }
             //if this was a requested cancellation, fire any event if needed
+            int connectionid = Parameters.connection.indexOf(c);
+            ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
+            for (LinkedAction f : filledOrders) {
+                if (f.e.getSymbolBean().getSerialno() -1== childid && f.orderID==-1) {//only fire one linked action at one time
+                    f.orderID=orderid;
+                    break;//update the first occurrence
+                }
+            }
             fireLinkedActions(c, orderid);
         }
         return orderProcessed;
     }
+        
 
     private boolean updateCancelledOrders(BeanConnection c, int id, int orderid) {
         OrderBean ob = c.getOrders().get(orderid);
@@ -2119,6 +2178,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 p.setPosition(origposition + fill);
                 p.setStrategy(strategy);
                 c.getPositions().put(ind, p);
+                ob.setParentFillSize(filled);
             } else {
                 //3b. Update Combo Position
                 ArrayList startingLowerBoundPosition = lowerBoundParentPosition(p);
@@ -2165,6 +2225,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     p.setPosition(parentNewPosition);
                     p.setPointValue(1);
                     p.setProfit(realizedPL);
+                    //we need to update ob.parentfillsize for combo orders. TBD
 
                 }
             }
