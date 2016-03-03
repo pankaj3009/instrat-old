@@ -1464,11 +1464,16 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 tes.fireOrderEvent(e);
                 break;
             case REVERSEFILL:
-                size = ob.getParentOrderSize() - ob.getParentFillSize();
-                e = OrderEvent.fastClose(Parameters.symbol.get(parentid), reverse(ob.getParentOrderSide()), size, orderReference);
+                size = ob.getParentFillSize();
+                e= f.e;
+                int newOrderSize=size;
+                logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()+delimiter+newOrderSize});
+                if(newOrderSize>0){
+                e.setOrderSize(newOrderSize);
+//                e = OrderEvent.fastClose(Parameters.symbol.get(parentid), reverse(ob.getParentOrderSide()), size, orderReference);
                 e.setAccount(c.getAccountName());
-                logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
                 tes.fireOrderEvent(e);
+                }
                 break;
             case CLOSEPOSITION:
                 size = c.getPositions().get(new Index(orderReference, parentid)) != null ? c.getPositions().get(new Index(orderReference, parentid)).getPosition() : 0;
@@ -1871,6 +1876,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 p.setProfit(realizedPL);
                 p.setPosition(origposition + fill);
                 c.getPositions().put(ind, p);
+                ob.setParentFillSize(filled);
             } else {
                 //3b. Update combo position
                 ArrayList startingLowerBoundPosition = lowerBoundParentPosition(p);
@@ -1997,7 +2003,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             //For entry, there each fill with the same internal order id is updated.
             updateTrades(c, ob, p, tradeFill, avgFillPrice);
             if (ob.getParentOrderSide() == EnumOrderSide.SELL || ob.getParentOrderSide() == EnumOrderSide.COVER) {
-                if (fill != 0 && ((ob.getChildFillSize()==ob.getChildOrderSize())||(ob.getParentFillSize()==ob.getParentOrderSize()))) { //do not reduce open position count if duplicate message, in which case fill == 0
+                //if (fill != 0 && ((ob.getChildFillSize()==ob.getChildOrderSize())||(ob.getParentFillSize()==ob.getParentOrderSize()))) { //do not reduce open position count if duplicate message, in which case fill == 0
+                if (fill != 0 && (ob.getParentFillSize()==ob.getParentOrderSize())) { //do not reduce open position count if duplicate message, in which case fill == 0
                     int connectionid = Parameters.connection.indexOf(c);
                     int tmpOpenPositionCount = this.getOpenPositionCount().get(connectionid);
                     int openpositioncount = tmpOpenPositionCount - 1;
