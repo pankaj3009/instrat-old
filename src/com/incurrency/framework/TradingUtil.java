@@ -1399,7 +1399,7 @@ public class TradingUtil {
                     }
                 }
             }
-            Set<String> dates = db.getKeys("pnl");
+            Set<String> dates = db.getKeys("pnl_"+strategyName+":"+accountName);
 
             //Get last pnl record
             String yesterday = "";
@@ -1419,11 +1419,11 @@ public class TradingUtil {
             if (times.size() > 0) {
                 yesterday = sdfDate.format(new Date(times.last()));
                 startDate = yesterday;
-                addPNLRecords(db, strategyName, accountName, startDate, today, true);
+                addPNLRecords(db, strategyName, accountName, startDate, today, true,startingEquity);
             } else {
                 times.clear();
-                Set<String> keys1 = db.getKeys("opentrades");
-                Set<String> keys2 = db.getKeys("closedtrades");
+                Set<String> keys1 = db.getKeys("opentrades_"+strategyName);
+                Set<String> keys2 = db.getKeys("closedtrades_"+strategyName);
                 keys1.addAll(keys2);
                 for (String key : keys1) {
                     if (key.contains(strategyName) && Trade.getAccountName(db, key).equals(accountName)) {
@@ -1437,7 +1437,7 @@ public class TradingUtil {
                 }else{
                     startDate=today;
                 }
-                addPNLRecords(db, strategyName, accountName, startDate, today, false);
+                addPNLRecords(db, strategyName, accountName, startDate, today, false,startingEquity);
             }
 
             yesterday = getLastPNLRecordDate(db, accountName, strategyName, today, true);
@@ -1449,7 +1449,9 @@ public class TradingUtil {
             profitGrid[6] = Utilities.getDouble(db.getValue("pnl", key, "drawdowndaysmax"), 0);
             profitGrid[8] = Utilities.getDouble(db.getValue("pnl", key, "sharpe"), 0);
             count=count+1;//increased count for new pnl recort
-            profitGrid[9] = Utilities.getDouble(count, 0);
+            dates = db.getKeys("pnl_"+strategyName+":"+accountName);
+            int recordsInHistory=dates.size()+1;
+            profitGrid[9] = Utilities.getDouble(recordsInHistory, 0);
 
         } catch (Exception ex) {
             logger.log(Level.SEVERE, "101", ex);
@@ -1457,7 +1459,7 @@ public class TradingUtil {
         return profitGrid;
     }
 
-    public static void addPNLRecords(Database<String, String> db, String strategy, String account, String startDate, String endDate, boolean startfromNBD) throws ParseException {
+    public static void addPNLRecords(Database<String, String> db, String strategy, String account, String startDate, String endDate, boolean startfromNBD,double startingEquity) throws ParseException {
         String strategyaccount = strategy + ":" + account;
         TreeMap<Long, String> pair = new TreeMap<>();
         SimpleDateFormat sdfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -1604,7 +1606,7 @@ public class TradingUtil {
                 }
 
             }//end iter
-            dailyEquity.add(1000000 + ytdpnl);
+            dailyEquity.add(startingEquity + ytdpnl);
             double drawdowndaysmax = TradingUtil.drawdownDays(dailyEquity)[0];
             double drawdownpercentage = TradingUtil.maxDrawDownPercentage(dailyEquity);
             double sharpe = TradingUtil.sharpeRatio(dailyEquity);
