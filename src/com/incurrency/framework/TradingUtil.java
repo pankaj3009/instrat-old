@@ -1619,7 +1619,7 @@ public class TradingUtil {
             db.setHash("pnl", strategyaccount + ":" + sd, "longwinratio", String.valueOf(Utilities.round(longwinratio, 0)));
             db.setHash("pnl", strategyaccount + ":" + sd, "shortwinratio", String.valueOf(Utilities.round(shortwinratio, 0)));
             db.setHash("pnl", strategyaccount + ":" + sd, "tradecount", String.valueOf(tradeCount));
-            double todaypnl = dailyEquity.size() > 1 ? dailyEquity.get(dailyEquity.size() - 1) - dailyEquity.get(dailyEquity.size() - 2) : dailyEquity.get(dailyEquity.size() - 1) - 1000000;
+            double todaypnl = dailyEquity.size() > 1 ? dailyEquity.get(dailyEquity.size() - 1) - dailyEquity.get(dailyEquity.size() - 2) : dailyEquity.get(dailyEquity.size() - 1) - startingEquity;
             db.setHash("pnl", strategyaccount + ":" + sd, "todaypnl", String.valueOf(String.valueOf(Utilities.round(todaypnl, 0))));
             db.setHash("pnl", strategyaccount + ":" + sd, "sharpe", String.valueOf(Utilities.round(sharpe, 2)));
             db.setHash("pnl", strategyaccount + ":" + sd, "drawdowndaysmax", String.valueOf(Utilities.round(drawdowndaysmax, 0)));
