@@ -1450,7 +1450,7 @@ public class TradingUtil {
             profitGrid[8] = Utilities.getDouble(db.getValue("pnl", key, "sharpe"), 0);
             count=count+1;//increased count for new pnl recort
             dates = db.getKeys("pnl_"+strategyName+":"+accountName);
-            int recordsInHistory=dates.size()+1;
+            int recordsInHistory=dates.size();
             profitGrid[9] = Utilities.getDouble(recordsInHistory, 0);
 
         } catch (Exception ex) {
