@@ -1502,7 +1502,7 @@ public class TradingUtil {
         }
         for (Map.Entry<Long, String> entry : pnl.entrySet()) {
             String date = sdfDate.format(new Date(entry.getKey()));
-            dailyEquity.add(Utilities.getDouble(db.getValue("pnl", strategy + ":" + account + ":" + date, "ytd"), 0) + 1000000);
+            dailyEquity.add(Utilities.getDouble(db.getValue("pnl", strategy + ":" + account + ":" + date, "ytd"), 0) + startingEquity);
         }
         //pnlDates contains the dates for which we need to generate trade records
         ArrayList<String> pnlDates = new ArrayList<>();
