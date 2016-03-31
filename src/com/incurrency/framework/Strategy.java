@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -87,6 +88,11 @@ public class Strategy implements NotificationListener {
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
+            if(accounts.isEmpty()){
+                //pop a message that no accounts were found. Then exit
+                JOptionPane.showMessageDialog(null, "No valid broker accounts found for strategy: "+headerStrategy+". Check the connection file and parameter file to ensure the accounts are consistent");
+                System.exit(0);
+            }
             this.m = m;
             this.accounts = accounts;
             this.prop = prop;
