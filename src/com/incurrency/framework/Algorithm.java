@@ -28,6 +28,7 @@ public class Algorithm {
     private final static Logger logger = Logger.getLogger(Algorithm.class.getName());
     private final String delimiter = "_";
     public static Properties globalProperties;
+    public static Properties instratInfo=new Properties();
     public static List<String> holidays;
     public static String timeZone;
     public static int openHour=9;
@@ -45,6 +46,13 @@ public class Algorithm {
     
     public Algorithm(HashMap<String, String> args) throws Exception {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
+        File info=new File("instratinfo");
+        if(info.exists() && !info.isDirectory()){
+        instratInfo=Utilities.loadParameters(args.get("instratinfo"));            
+        }else{
+            instratInfo.setProperty("rd", "");
+            instratInfo.setProperty("prd", "");
+        }
         String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
@@ -52,6 +60,7 @@ public class Algorithm {
                 holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
             }
         }
+        
         useRedis=globalProperties.getProperty("redisurl")!=null?true:false;
         cassandraIP=globalProperties.getProperty("cassandraconnection", "127.0.0.1");
         if(useRedis){
