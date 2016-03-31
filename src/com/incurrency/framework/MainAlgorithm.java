@@ -7,7 +7,11 @@ package com.incurrency.framework;
 import com.incurrency.RatesClient.RequestClient;
 import com.incurrency.RatesClient.SocketListener;
 import static com.incurrency.framework.Algorithm.globalProperties;
+import static com.incurrency.framework.Algorithm.instratInfo;
 import com.verhas.licensor.License;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
@@ -21,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -87,17 +92,34 @@ public class MainAlgorithm extends Algorithm {
         super(args); //this initializes the connection and symbols
         input = args;
         logStartupData();
+        String today=DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         if (useForTrading) {
+            if(!holidays.contains(today)){
+            String rd=instratInfo.getProperty("rd","");
+            if(rd.compareTo(today)<0){//good scenario.
+                instratInfo.setProperty("prd", rd);
+                instratInfo.setProperty(rd, today);                
+            }
             connectToTWS();
             getContractInformation();
             subscribeMarketData();
             Timer keepAlive = new Timer("Timer: Maintain IB Connection");
             keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
-        } else if (useForSimulation) {
+            }else{
+                logger.log(Level.SEVERE,"Trading holiday");
+                System.exit(0);
+            }
+            } else if (useForSimulation) {
             //Used for subscribing to cassandra historical data
             runSimulation();
         }else if(Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
             //used to get historical data
+            if (!holidays.contains(today)) {
+                String rd = instratInfo.getProperty("rd", "");
+                if (rd.compareTo(today) < 0) {//good scenario.
+                    instratInfo.setProperty("prd", rd);
+                    instratInfo.setProperty(rd, today);
+                }
             connectToTWS();
             boolean subscribe=Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
             if (subscribe) {
@@ -106,7 +128,11 @@ public class MainAlgorithm extends Algorithm {
                 Timer keepAlive = new Timer("Timer: Maintain IB Connection");
                 keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
             }
+            }else{
+                logger.log(Level.SEVERE,"Trading holiday");
+                System.exit(0);
             
+            }   
         }
         collectTicks = Boolean.parseBoolean(globalProperties.getProperty("collectticks", "false").toString().trim());
     }
@@ -424,9 +450,17 @@ public class MainAlgorithm extends Algorithm {
         @Override
         public void run() {
             logger.log(Level.INFO, "100, inStratShutdown,{0}", new Object[]{closeDate});
+            File f = new File("instratinfo");
+            try {
+                OutputStream out = new FileOutputStream(f);
+                instratInfo.store(out, "EOD Write");
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, null, e);
+            }
             System.exit(0);
         }
     };
+    
     TimerTask keepConnectionAlive = new TimerTask() {
         @Override
         public void run() {
