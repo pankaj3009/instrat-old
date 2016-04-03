@@ -745,7 +745,7 @@ public class MainAlgorithm extends Algorithm {
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
             Properties p = TradingUtil.loadParameters(parameterFile);
             if (useForTrading || simulation||backtest) {
-                String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-");
+                String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
                 String strategyName = tempStrategyArray[tempStrategyArray.length - 1];
                 getStrategies().add(strategyName);
                 strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts, null));

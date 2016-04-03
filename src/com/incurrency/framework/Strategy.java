@@ -108,7 +108,7 @@ public class Strategy implements NotificationListener {
                     position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, getStrategy()));
                 }
             }
-            String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-");
+            String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
             if (stratCount == null) {
                 this.strategy = tempStrategyArray[tempStrategyArray.length - 1];
             } else {
