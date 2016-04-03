@@ -98,7 +98,7 @@ public class MainAlgorithm extends Algorithm {
             String rd=instratInfo.getProperty("rd","");
             if(rd.compareTo(today)<0){//good scenario.
                 instratInfo.setProperty("prd", rd);
-                instratInfo.setProperty(rd, today);                
+                instratInfo.setProperty("rd", today);                
             }
             connectToTWS();
             getContractInformation();
@@ -118,7 +118,7 @@ public class MainAlgorithm extends Algorithm {
                 String rd = instratInfo.getProperty("rd", "");
                 if (rd.compareTo(today) < 0) {//good scenario.
                     instratInfo.setProperty("prd", rd);
-                    instratInfo.setProperty(rd, today);
+                    instratInfo.setProperty("rd", today);
                 }
             connectToTWS();
             boolean subscribe=Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
