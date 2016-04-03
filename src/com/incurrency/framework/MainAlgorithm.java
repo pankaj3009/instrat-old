@@ -817,7 +817,9 @@ public class MainAlgorithm extends Algorithm {
                     }
                 }
             }
+            if(!subAccountNames.isEmpty()){
             out.put(instanceFile[i], subAccountNames);
+            }
             //[U72311-DU12345-inradr2.properties,<U72311,DU12345>]
         }
         return out;

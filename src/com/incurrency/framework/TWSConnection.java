@@ -21,6 +21,7 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.ib.client.TickType;
+import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 /**
  *
@@ -86,9 +87,11 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     public boolean connectToTWS() {
+        try{
         String twsHost = getC().getIp();
         int twsPort = getC().getPort();
         int clientID = getC().getClientID();
+        if(InetAddress.getByName(twsHost).isReachable(1000)){        
         if (!eClientSocket.isConnected()) {
             eClientSocket.eConnect(twsHost, twsPort, clientID);
             int waitCount = 0;
@@ -106,7 +109,12 @@ public class TWSConnection extends Thread implements EWrapper {
                 return false;
             }
         }
+        }
         return false;
+        }catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
+            return false;
+        }
     }
 
     public void getAccountUpdates() {
