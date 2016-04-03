@@ -7,6 +7,7 @@ package com.ib.client;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 public class EClientSocket {
@@ -210,9 +211,12 @@ public class EClientSocket {
             return;
         }
         try{
-            Socket socket = new Socket( host, port);
+                Socket socket=new Socket();
+            //socket.setSoTimeout(2000);
+            socket.connect(new InetSocketAddress(host, port), 2000);
+            //Socket socket = new Socket( host, port);
             eConnect(socket, clientId);
-        }
+    }
         catch( Exception e) {
         	eDisconnect();
             connectionError();

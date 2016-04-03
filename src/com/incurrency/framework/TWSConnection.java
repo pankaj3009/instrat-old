@@ -91,14 +91,13 @@ public class TWSConnection extends Thread implements EWrapper {
         String twsHost = getC().getIp();
         int twsPort = getC().getPort();
         int clientID = getC().getClientID();
-        if(InetAddress.getByName(twsHost).isReachable(1000)){        
         if (!eClientSocket.isConnected()) {
             eClientSocket.eConnect(twsHost, twsPort, clientID);
             int waitCount = 0;
+            if (eClientSocket.isConnected()) {
             String orderid=this.getOrderIDSync().take();
             getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
             logger.log(Level.INFO,"103, NextOrderIDReceived,{0}_{1}_{2}_{3}",new Object[]{getC().getIp(),getC().getPort(),getC().getClientID(),orderid});
-            if (eClientSocket.isConnected()) {
                 eClientSocket.reqIds(1);
                 System.out.println(">>> Connected to TWSSend with client id: " + clientID);
                 //logger.log(Level.INFO, "{0},{1},TWSReceive,Connected to TWSSend,Server Version: {2}", new Object[]{"", c.getStrategy(), eClientSocket.serverVersion()});
@@ -109,7 +108,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 return false;
             }
         }
-        }
+        
         return false;
         }catch (Exception e){
             logger.log(Level.SEVERE,null,e);
