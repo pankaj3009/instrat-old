@@ -45,9 +45,7 @@ public class Algorithm {
     public static String cassandraIP;
     
     public Algorithm(HashMap<String, String> args) throws Exception {
-        globalProperties = Utilities.loadParameters(args.get("propertyfile"));
-        instratInfo=Utilities.loadParameters(args.get("instratinfo"));           
-        
+        globalProperties = Utilities.loadParameters(args.get("propertyfile"));        
         String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);

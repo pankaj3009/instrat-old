@@ -95,11 +95,6 @@ public class MainAlgorithm extends Algorithm {
         String today=DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         if (useForTrading) {
             if(!holidays.contains(today)){
-            String rd=instratInfo.getProperty("rd","");
-            if(rd.compareTo(today)<0){//good scenario.
-                instratInfo.setProperty("prd", rd);
-                instratInfo.setProperty("rd", today);                
-            }
             connectToTWS();
             getContractInformation();
             subscribeMarketData();
@@ -115,11 +110,6 @@ public class MainAlgorithm extends Algorithm {
         }else if(Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
             //used to get historical data
             if (!holidays.contains(today)) {
-                String rd = instratInfo.getProperty("rd", "");
-                if (rd.compareTo(today) < 0) {//good scenario.
-                    instratInfo.setProperty("prd", rd);
-                    instratInfo.setProperty("rd", today);
-                }
             connectToTWS();
             boolean subscribe=Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
             if (subscribe) {
@@ -450,13 +440,6 @@ public class MainAlgorithm extends Algorithm {
         @Override
         public void run() {
             logger.log(Level.INFO, "100, inStratShutdown,{0}", new Object[]{closeDate});
-            File f = new File("instratinfo");
-            try {
-                OutputStream out = new FileOutputStream(f);
-                instratInfo.store(out, "EOD Write");
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, null, e);
-            }
             System.exit(0);
         }
     };
