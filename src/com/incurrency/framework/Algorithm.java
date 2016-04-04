@@ -46,13 +46,8 @@ public class Algorithm {
     
     public Algorithm(HashMap<String, String> args) throws Exception {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
-        File info=new File("instratinfo");
-        if(info.exists() && !info.isDirectory()){
-        instratInfo=Utilities.loadParameters(args.get("instratinfo"));            
-        }else{
-            instratInfo.setProperty("rd", "");
-            instratInfo.setProperty("prd", "");
-        }
+        instratInfo=Utilities.loadParameters(args.get("instratinfo"));           
+        
         String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
