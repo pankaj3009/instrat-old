@@ -1333,7 +1333,7 @@ public class TradingUtil {
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             int tradesToday = 0; //Holds the number of trades done today
             for (String key : db.getKeys("opentrades")) {
-                if (key.contains(strategyName)) {
+                if (key.contains("_"+strategyName)) {
                     TradingUtil.updateMTM(db, key, timeZone);
                     String entryTime = Trade.getEntryTime(db, key);
                     String exitTime = Trade.getExitTime(db, key);
@@ -1355,7 +1355,7 @@ public class TradingUtil {
                 }
             }
             for (String key : db.getKeys("closedtrades")) {
-                if (key.contains(strategyName)) {
+                if (key.contains("_"+strategyName)) {
                     String entryTime = Trade.getEntryTime(db, key);
                     String exitTime = Trade.getExitTime(db, key);
                     String account = Trade.getAccountName(db, key);
@@ -1378,7 +1378,7 @@ public class TradingUtil {
 
             //set brokerage for open trades.
             for (String key : db.getKeys("opentrades")) {
-                if (key.contains(strategyName)) {
+                if (key.contains("_"+strategyName)) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesToday);
@@ -1390,7 +1390,7 @@ public class TradingUtil {
 
             //set brokerage for closed trades, that has not still been calculated i.e it equals 0
             for (String key : db.getKeys("closedtrades")) {
-                if (key.contains(strategyName) && Trade.getExitBrokerage(db, key) == 0) {
+                if (key.contains("_"+strategyName) && Trade.getExitBrokerage(db, key) == 0) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesToday);
@@ -1426,7 +1426,7 @@ public class TradingUtil {
                 Set<String> keys2 = db.getKeys("closedtrades_"+strategyName);
                 keys1.addAll(keys2);
                 for (String key : keys1) {
-                    if (key.contains(strategyName) && Trade.getAccountName(db, key).equals(accountName)) {
+                    if (key.contains("_"+strategyName) && Trade.getAccountName(db, key).equals(accountName)) {
                         long time = sdfDateTime.parse(Trade.getEntryTime(db, key)).getTime();
                         times.add(time);
                     }
@@ -1466,7 +1466,7 @@ public class TradingUtil {
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
         String bpd = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         for (String key : db.getKeys("closedtrades")) {
-            if (key.contains(strategy) && key.contains(account)) {
+            if (key.contains("_"+strategy) && key.contains(account)) {
                 long time = sdfTime.parse(Trade.getExitTime(db, key)).getTime();
                 while (pair.containsKey(time)) {
                     time = time + 1;
@@ -1475,7 +1475,7 @@ public class TradingUtil {
             }
         }
         for (String key : db.getKeys("opentrades")) {
-            if (key.contains(strategy) && key.contains(account)) {
+            if (key.contains("_"+strategy) && key.contains(account)) {
                 long time = sdfDate.parse(bpd).getTime();
                 while (pair.containsKey(time)) {
                     time = time + 1;
@@ -1494,7 +1494,7 @@ public class TradingUtil {
         Set<String> pnlKeys = db.getKeys("pnl");
         TreeMap<Long, String> pnl = new TreeMap<>();
         for (String key : pnlKeys) {
-            if (key.contains(strategy) && key.contains(account)) {
+            if (key.contains("_"+strategy) && key.contains(account)) {
                 int length = key.length();
                 long time = sdfDate.parse(key.substring(length - 10, length)).getTime();
                 pnl.put(time, key);

@@ -106,7 +106,7 @@ public class Utilities {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
         for (String key : db.getKeys("opentrades")) {
-            if (key.contains(strategy)) {
+            if (key.contains("_"+strategy)) {
                 String childdisplayname = Trade.getEntrySymbol(db, key);
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);

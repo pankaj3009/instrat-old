@@ -165,7 +165,7 @@ public class Strategy implements NotificationListener {
                     int tempPosition = 0;
                     double tempPositionPrice = 0D;
                     if (id >= 0) {
-                        if (Trade.getAccountName(db, key).equals("Order") && key.contains(strategy)) {
+                        if (Trade.getAccountName(db, key).equals("Order") && key.contains("_"+strategy)) {
                             BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
                             tempPosition = p.getPosition();
                             tempPositionPrice = p.getPrice();

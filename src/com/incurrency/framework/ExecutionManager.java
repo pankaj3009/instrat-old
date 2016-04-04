@@ -111,7 +111,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             //first update combo positions
             ArrayList<Integer> comboOrderids = new ArrayList<>();
             for (String key : db.getKeys("opentrades")) {
-                if(key.contains(s.getStrategy())){
+                if(key.contains("_"+s.getStrategy())){
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
                 if (parentid >= 0 && Parameters.symbol.get(parentid).getType().equals("COMBO")) {
@@ -122,7 +122,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
             //then update single legs
             for (String key : db.getKeys("opentrades")) {
-                if(key.contains(s.getStrategy())){
+                if(key.contains("_"+s.getStrategy())){
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
                 if (parentid >= 0 && !Parameters.symbol.get(parentid).getType().equals("COMBO")) {
@@ -2402,7 +2402,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     //We need to get the entryorderid for the child order
                     // this information is in orderbean
                     for (String subkey : getDb().getKeys("opentrades")) {
-                        if(subkey.contains(s.getStrategy())){
+                        if(subkey.contains("_"+s.getStrategy())){
                         if (Trade.getParentEntryOrderIDInternal(db, subkey) == parentInternalOrderIDEntry) {
                             childInternalOrderIDEntry = Trade.getEntryOrderIDInternal(db, subkey);
                         }
@@ -2619,7 +2619,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
         for (String key : getDb().getKeys("opentrades")) {
-            if(key.contains(s.getStrategy())){
+            if(key.contains("_"+s.getStrategy())){
             if (Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
                 if(!parentOrderID){
                 return Trade.getEntryOrderIDInternal(db, key);

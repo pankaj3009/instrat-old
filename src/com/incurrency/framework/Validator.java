@@ -48,7 +48,7 @@ public class Validator {
          String out = "";
          TreeMap<String,String>pnlSummary=new TreeMap<>();
              for (String key : db.getKeys("pnl")) {
-                 if(key.contains(account)&& key.contains(s.getStrategy())){
+                 if(key.contains(account)&& key.contains("_"+s.getStrategy())){
                      out = TradingUtil.padRight(db.getValue("pnl", key, "todaypnl"), 25)
                              + TradingUtil.padRight(db.getValue("pnl", key, "ytd"), 25);
                              pnlSummary.put(key, out);
@@ -493,7 +493,7 @@ public class Validator {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains(strategy)||childid < 0 || isCombo(db, key)) {
+            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || isCombo(db, key)) {
                 iter.remove();
             }
         }
@@ -559,7 +559,7 @@ public class Validator {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains(strategy)||childid < 0 || !isComboParent(db, key)) {
+            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || !isComboParent(db, key)) {
                 iter.remove();
             }
         }
@@ -575,7 +575,7 @@ public class Validator {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains(strategy)||childid < 0 || !(isCombo(db,key)&& !isComboParent(db, key))) {
+            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || !(isCombo(db,key)&& !isComboParent(db, key))) {
                 iter.remove();
             }
         }
