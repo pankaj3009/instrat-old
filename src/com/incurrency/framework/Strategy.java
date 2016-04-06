@@ -757,7 +757,7 @@ public class Strategy implements NotificationListener {
             if (entryTradeExists) {
                  int internalorderid = getInternalOrderID();
                 order.put("orderidint", internalorderid);
-               logger.log(Level.INFO, "401,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
+               logger.log(Level.INFO, "401,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()+delimiter+key});
                 int exitSize = Trade.getExitSize(db, key);
                 double exitPrice = Trade.getExitPrice(db, key);
                 int newexitSize = exitSize + tradeSize;
