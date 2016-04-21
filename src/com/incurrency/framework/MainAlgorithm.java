@@ -448,7 +448,7 @@ public class MainAlgorithm extends Algorithm {
         @Override
         public void run() {
             for (BeanConnection c : Parameters.connection) {
-                if (!c.getWrapper().isAlive()) {
+                if (!c.getWrapper().eClientSocket.isConnected()) {
                     c.getWrapper().connectToTWS();
                 }
             }
