@@ -215,6 +215,12 @@ public class MainAlgorithm extends Algorithm {
             }
         }
     }
+    
+    private void connectToTWS(BeanConnection c){
+            c.setWrapper(new TWSConnection(c));
+            c.getWrapper().connectToTWS();
+        }
+    
 
     private void getContractInformation() throws InterruptedException {
         ArrayList<RequestClient> arrRequestClient = new ArrayList<>();
@@ -449,7 +455,7 @@ public class MainAlgorithm extends Algorithm {
         public void run() {
             for (BeanConnection c : Parameters.connection) {
                 if (!c.getWrapper().eClientSocket.isConnected()) {
-                    c.getWrapper().connectToTWS();
+                    connectToTWS(c);
                 }
             }
         }
