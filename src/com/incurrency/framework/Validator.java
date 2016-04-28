@@ -182,7 +182,7 @@ public class Validator {
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(),key);
                 double mtmToday = Trade.getMtmToday(s.getOms().getDb(),key);
                 if (entrySize - exitSize != 0) {
-                    out = out + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) +  TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + "," + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,0)), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
+                    out = out + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) +  TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryPrice, 2)), 10) + "," + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,0)), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
                 }
             }
         } catch (Exception e) {

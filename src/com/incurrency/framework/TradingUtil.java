@@ -1381,7 +1381,7 @@ public class TradingUtil {
              */
             
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
-            int tradesToday=tradesToday(db,strategyName,timeZone,accountName,today);
+            //int tradesToday=tradesToday(db,strategyName,timeZone,accountName,today);
             //set brokerage for open trades.
             for (String key : db.getKeys("opentrades")) {
                 if (key.contains("_"+strategyName)) {
@@ -1389,8 +1389,8 @@ public class TradingUtil {
                     if (account.equals(accountName)) {
                         int tradesTodayTemp=tradesToday(db,strategyName,timeZone,accountName,Trade.getEntryTime(db, key).substring(0,10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
-                        Trade.setEntryBrokerage(db, key, "opentrades", tempBrokerage.get(0));
-                        Trade.setExitBrokerage(db, key, "opentrades", tempBrokerage.get(1));
+                        Trade.setEntryBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(0),0));
+                        Trade.setExitBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(1),0));
                     }
                 }
             }
@@ -1402,7 +1402,7 @@ public class TradingUtil {
                     if (account.equals(accountName)) {
                         int tradesTodayTemp=tradesToday(db,strategyName,timeZone,accountName,Trade.getExitTime(db, key).substring(0,10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
-                        Trade.setExitBrokerage(db, key, "closedtrades", tempBrokerage.get(1));
+                        Trade.setExitBrokerage(db, key, "closedtrades", Utilities.round(tempBrokerage.get(1),0));
                     }
                 }
                 if (key.contains("_"+strategyName) && Trade.getEntryBrokerage(db, key) == 0) {
@@ -1410,7 +1410,7 @@ public class TradingUtil {
                     if (account.equals(accountName)) {
                         int tradesTodayTemp=tradesToday(db,strategyName,timeZone,accountName,Trade.getEntryTime(db, key).substring(0,10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
-                        Trade.setEntryBrokerage(db, key, "closedtrades", tempBrokerage.get(0));
+                        Trade.setEntryBrokerage(db, key, "closedtrades", Utilities.round(tempBrokerage.get(0),0));
                     }
                 }
             }
