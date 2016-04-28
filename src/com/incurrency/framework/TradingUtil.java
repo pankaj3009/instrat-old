@@ -1311,26 +1311,7 @@ public class TradingUtil {
         }
     }
 
-    public static double[] applyBrokerage(Database<String, String> db, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName, String strategyName) {
-        double[] profitGrid = new double[10];
-        ArrayList<Double> dailyEquity = new ArrayList();
-        ArrayList<Date> tradeDate = new ArrayList();
-        try {
-            /*
-             * 0 => gross profit for day
-             * 1 => Brokerage for day
-             * 2 => Net Profit for day
-             * 3 => MTD profit
-             * 4 => YTD profit
-             */
-
-            /* 5=> Max Drawdown
-             * 6=> Max Drawdown Days
-             * 7=> Avg Drawdown days
-             * 8 => Sharpe ratio
-             * 9 => Number of days in the sample
-             */
-            String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+    public static int tradesToday(Database<String, String> db,String strategyName,String timeZone,String accountName,String today){
             int tradesToday = 0; //Holds the number of trades done today
             for (String key : db.getKeys("opentrades")) {
                 if (key.contains("_"+strategyName)) {
@@ -1375,13 +1356,36 @@ public class TradingUtil {
                     }
                 }
             }
+        return tradesToday;
+    }
+    public static double[] applyBrokerage(Database<String, String> db, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName, String strategyName) {
+        double[] profitGrid = new double[10];
+        ArrayList<Double> dailyEquity = new ArrayList();
+        ArrayList<Date> tradeDate = new ArrayList();
+        try {
+            /*
+             * 0 => gross profit for day
+             * 1 => Brokerage for day
+             * 2 => Net Profit for day
+             * 3 => MTD profit
+             * 4 => YTD profit
+             */
 
+            /* 5=> Max Drawdown
+             * 6=> Max Drawdown Days
+             * 7=> Avg Drawdown days
+             * 8 => Sharpe ratio
+             * 9 => Number of days in the sample
+             */
+            String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+            int tradesToday=tradesToday(db,strategyName,timeZone,accountName,today);
             //set brokerage for open trades.
             for (String key : db.getKeys("opentrades")) {
                 if (key.contains("_"+strategyName)) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
-                        ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesToday);
+                        int tradesTodayTemp=tradesToday(db,strategyName,timeZone,accountName,Trade.getEntryTime(db, key).substring(0,10));
+                        ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setEntryBrokerage(db, key, "opentrades", tempBrokerage.get(0));
                         Trade.setExitBrokerage(db, key, "opentrades", tempBrokerage.get(1));
                     }
@@ -1393,9 +1397,17 @@ public class TradingUtil {
                 if (key.contains("_"+strategyName) && Trade.getExitBrokerage(db, key) == 0) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
-                        ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesToday);
-                        Trade.setEntryBrokerage(db, key, "closedtrades", tempBrokerage.get(0));
+                        int tradesTodayTemp=tradesToday(db,strategyName,timeZone,accountName,Trade.getExitTime(db, key).substring(0,10));
+                        ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setExitBrokerage(db, key, "closedtrades", tempBrokerage.get(1));
+                    }
+                }
+                if (key.contains("_"+strategyName) && Trade.getEntryBrokerage(db, key) == 0) {
+                    String account = Trade.getAccountName(db, key);
+                    if (account.equals(accountName)) {
+                        int tradesTodayTemp=tradesToday(db,strategyName,timeZone,accountName,Trade.getEntryTime(db, key).substring(0,10));
+                        ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
+                        Trade.setEntryBrokerage(db, key, "closedtrades", tempBrokerage.get(0));
                     }
                 }
             }
