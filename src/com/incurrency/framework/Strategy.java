@@ -471,7 +471,10 @@ public class Strategy implements NotificationListener {
                                 + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
                                 + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
                                 + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
-                                + "# days in history: " + df.format(profitGrid[9]);
+                                + "# days in history: " + df.format(profitGrid[9]) +Strategy.newline
+                                + "Average Drawdown Cycle:  " + df.format(profitGrid[10]) + Strategy.newline
+                                + "# days in current drawdown: " + df.format(profitGrid[11]);
+                        
 
                         String openPositions = Validator.openPositions(c.getAccountName(), s);
 
