@@ -1345,6 +1345,7 @@ public class TradingUtil {
                     if ((entryTime.contains(today) && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
                         tradesToday = tradesToday + 1;
                     }
+                    logger.log(Level.INFO,"DEBUG:{0}",new Object[]{key});
                     if ((!exitTime.equals("") && exitTime.contains(today) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
                         tradesToday = tradesToday + 1;
                     }
@@ -1359,7 +1360,7 @@ public class TradingUtil {
         return tradesToday;
     }
     public static double[] applyBrokerage(Database<String, String> db, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName, String strategyName) {
-        double[] profitGrid = new double[12];
+        double[] profitGrid = new double[14];
         ArrayList<Double> dailyEquity = new ArrayList();
         ArrayList<Date> tradeDate = new ArrayList();
         try {
@@ -1465,6 +1466,8 @@ public class TradingUtil {
             profitGrid[8] = Utilities.getDouble(db.getValue("pnl", key, "sharpe"), 0);
             profitGrid[10] = Utilities.getDouble(db.getValue("pnl", key, "averagedddays"), 0);
             profitGrid[11] = Utilities.getDouble(db.getValue("pnl", key, "currentdd"), 0);
+            profitGrid[12] = Utilities.getDouble(db.getValue("pnl", key, "averageddvalue"), 0);
+            profitGrid[13] = Utilities.getDouble(db.getValue("pnl", key, "currentddvalue"), 0);
             
             count=count+1;//increased count for new pnl recort
             dates = db.getKeys("pnl_"+strategyName+":"+accountName);
@@ -1737,10 +1740,19 @@ public class TradingUtil {
         int hwmcount=0;
         int ddcount=0;
         double ytdpnl=0;
+        double priordayytdpnl=0;
         int numberofuniquedd=0;
         int numberofuniquehwm=0;
         double currentdd=0;
         double currenthwm=0;
+        double currentlwm=Double.MAX_VALUE;
+        double ddvalue=0;
+        double ddstartpnl=0;
+        int ddstart=0;
+        
+        ArrayList<Double>ddvalueseries=new ArrayList<>();
+        ArrayList<Integer>ddcountseries=new ArrayList<>();
+        
         for(String key:pair.values()){
             String key1=key.substring(4, key.length());
             
@@ -1748,6 +1760,11 @@ public class TradingUtil {
             if(ytdpnl>=hwmvalue){
                 if(currenthwm==0){
                     numberofuniquehwm++;
+                    ddvalue=ddvalue+ddstartpnl-priordayytdpnl;
+                    ddvalueseries.add(ddstartpnl-currentlwm);
+                    ddcountseries.add(ddcount-ddstart);
+                    currentlwm=Double.MAX_VALUE;
+                    ddstartpnl=0;
                 }
                 currenthwm++;
                 hwmcount++;
@@ -1756,23 +1773,66 @@ public class TradingUtil {
             }else{
                 if(currentdd==0){
                     numberofuniquedd++;
+                    ddstartpnl=priordayytdpnl;
+                    ddstart=ddcount;
+                }
+                if(ytdpnl<currentlwm){
+                    currentlwm=ytdpnl;                   
                 }
                 currentdd++;
                 ddcount++;
                 currenthwm=0;
             }
+            priordayytdpnl=ytdpnl;
             //write data to pnl files
+             double dddaysmean=calculateMean(ddcountseries);
+             double dddayssd=calculateSD(ddcountseries);
+             double ddvaluemean=calculateMean(ddvalueseries);
+             double ddvaluesd=calculateSD(ddvalueseries);
+             
              db.setHash("pnl", key1, "hwmvalue",String.valueOf(Utilities.round(hwmvalue, 0)));
              db.setHash("pnl", key1, "hwmcount",String.valueOf(Utilities.round(hwmcount, 0)));
              db.setHash("pnl", key1, "hwmuniquestarts",String.valueOf(Utilities.round(numberofuniquehwm, 0)));
              db.setHash("pnl", key1, "ddcount",String.valueOf(Utilities.round(ddcount, 0)));
              db.setHash("pnl", key1, "dduniquestarts",String.valueOf(Utilities.round(numberofuniquedd, 0)));
-             db.setHash("pnl", key1, "averagedddays",String.valueOf(Utilities.round(ddcount/numberofuniquedd, 1)));
-             db.setHash("pnl", key1, "currentdd",String.valueOf(Utilities.round(currentdd, 0)));
-           
+             //db.setHash("pnl", key1, "averagedddays",String.valueOf(Utilities.round(ddcount/numberofuniquedd, 1)));
+             db.setHash("pnl", key1, "averagedddays",String.valueOf(Utilities.round(dddaysmean, 1)));
+             db.setHash("pnl", key1, "sddddays",String.valueOf(Utilities.round(dddayssd, 1)));
+             db.setHash("pnl", key1, "averageddvalue",String.valueOf(Utilities.round(ddvaluemean, 0)));
+             db.setHash("pnl", key1, "sdddvalue",String.valueOf(Utilities.round(ddvaluesd, 1)));
+             db.setHash("pnl", key1, "currentdddays",String.valueOf(Utilities.round(currentdd, 0)));
+             currentlwm=currentlwm<Double.MAX_VALUE?currentlwm:0;
+             db.setHash("pnl", key1, "currentddvalue",String.valueOf(Utilities.round(ddstartpnl-currentlwm, 0)));
         }
     }
     
+    private static <T> double calculateMean(List<T> data) {
+        double sum = 0;
+        if (!data.isEmpty()) {
+            for (T d : data) {
+                sum += Double.valueOf(d.toString());
+            }
+            return sum / data.size();
+        }
+        return sum;
+    }
+    
+    
+        private static <T> double calculateSD (List<T> data) {
+        double sum = 0;
+        double avg=calculateMean(data);
+        if (!data.isEmpty()) {
+            for (T d : data) {
+                
+                sum += Math.pow(Double.valueOf(d.toString())-avg,2);
+            }
+            return Math.sqrt(sum/data.size());
+        }
+        return sum;
+    }
+        
+ 
+        
     public static ArrayList<Double> calculateBrokerage(Database<String, String> db, String key, ArrayList<BrokerageRate> brokerage, String accountName, int tradesToday) {
         ArrayList<Double> brokerageCost = new ArrayList<>();
         brokerageCost.add(0D);
