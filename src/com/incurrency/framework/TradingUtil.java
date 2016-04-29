@@ -1321,16 +1321,16 @@ public class TradingUtil {
                     String account = Trade.getAccountName(db, key);
                     String childdisplayname = Trade.getEntrySymbol(db, key);
                     int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-                    if ((entryTime.contains(today) && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    if ((entryTime.contains(today) && account.equals(accountName) && !childdisplayname.contains(":"))) {
                         tradesToday = tradesToday + 1;
                     }
-                    if ((!exitTime.equals("") && exitTime.contains(today) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    if ((!exitTime.equals("") && exitTime.contains(today) && !childdisplayname.contains(":"))) {
                         tradesToday = tradesToday + 1;
                     }
-                    if ((entryTime.contains(today) && account.equals(accountName) && account.equals("Order") && Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    if ((entryTime.contains(today) && account.equals(accountName) && account.equals("Order") && childdisplayname.contains(":"))) {
                         tradesToday = tradesToday + Parameters.symbol.get(childid).getCombo().size();
                     }
-                    if ((!exitTime.equals("") && exitTime.contains(today) && account.equals("Order") && Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    if ((!exitTime.equals("") && exitTime.contains(today) && account.equals("Order") && childdisplayname.contains(":"))) {
                         tradesToday = tradesToday + Parameters.symbol.get(childid).getCombo().size();
                     }
                 }
@@ -1342,17 +1342,17 @@ public class TradingUtil {
                     String account = Trade.getAccountName(db, key);
                     String childdisplayname = Trade.getEntrySymbol(db, key);
                     int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-                    if ((entryTime.contains(today) && account.equals(accountName) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    if (entryTime.contains(today) && account.equals(accountName) && !childdisplayname.contains(":")) { //not a combo
                         tradesToday = tradesToday + 1;
                     }
                     logger.log(Level.INFO,"DEBUG:{0}",new Object[]{key});
-                    if ((!exitTime.equals("") && exitTime.contains(today) && !Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    if ((!exitTime.equals("") && exitTime.contains(today) && !childdisplayname.contains(":"))) {
                         tradesToday = tradesToday + 1;
                     }
-                    if ((entryTime.contains(today) && account.equals(accountName) && account.equals("Order") && Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    if ((entryTime.contains(today) && account.equals(accountName) && account.equals("Order") && childdisplayname.contains(":"))) {
                         tradesToday = tradesToday + Parameters.symbol.get(childid).getCombo().size();
                     }
-                    if ((!exitTime.equals("") && exitTime.contains(today) && account.equals("Order") && Parameters.symbol.get(childid).getType().equals("COMBO"))) {
+                    if ((!exitTime.equals("") && exitTime.contains(today) && account.equals("Order") && childdisplayname.contains(":"))) {
                         tradesToday = tradesToday + Parameters.symbol.get(childid).getCombo().size();
                     }
                 }
