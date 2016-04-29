@@ -31,6 +31,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -1465,7 +1466,7 @@ public class TradingUtil {
             profitGrid[6] = Utilities.getDouble(db.getValue("pnl", key, "drawdowndaysmax"), 0);
             profitGrid[8] = Utilities.getDouble(db.getValue("pnl", key, "sharpe"), 0);
             profitGrid[10] = Utilities.getDouble(db.getValue("pnl", key, "averagedddays"), 0);
-            profitGrid[11] = Utilities.getDouble(db.getValue("pnl", key, "currentdd"), 0);
+            profitGrid[11] = Utilities.getDouble(db.getValue("pnl", key, "currentdddays"), 0);
             profitGrid[12] = Utilities.getDouble(db.getValue("pnl", key, "averageddvalue"), 0);
             profitGrid[13] = Utilities.getDouble(db.getValue("pnl", key, "currentddvalue"), 0);
             
@@ -1801,9 +1802,15 @@ public class TradingUtil {
              db.setHash("pnl", key1, "averageddvalue",String.valueOf(Utilities.round(ddvaluemean, 0)));
              db.setHash("pnl", key1, "sdddvalue",String.valueOf(Utilities.round(ddvaluesd, 1)));
              db.setHash("pnl", key1, "currentdddays",String.valueOf(Utilities.round(currentdd, 0)));
-             currentlwm=currentlwm<Double.MAX_VALUE?currentlwm:0;
-             db.setHash("pnl", key1, "currentddvalue",String.valueOf(Utilities.round(ddstartpnl-currentlwm, 0)));
-        }
+             //currentlwm=currentlwm<Double.MAX_VALUE?currentlwm:0;
+             db.setHash("pnl", key1, "currentddvalue",String.valueOf(Utilities.round(ddstartpnl-(currentlwm<Double.MAX_VALUE?currentlwm:0), 0)));
+             if(ddvalueseries.size()>0){
+             db.setHash("pnl", key1, "maxddvalue",String.valueOf(Utilities.round(Collections.max(ddvalueseries),0)));
+             }
+             if(ddcountseries.size()>0){
+             db.setHash("pnl", key1, "maxdddays",String.valueOf(Utilities.round(Collections.max(ddcountseries),0)));
+             }
+            }
     }
     
     private static <T> double calculateMean(List<T> data) {
