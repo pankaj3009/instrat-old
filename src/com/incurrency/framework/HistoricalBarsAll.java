@@ -113,22 +113,26 @@ public class HistoricalBarsAll implements Runnable {
         switch (barSize) {
             case "1sec":
                 iterations = (int) (days * tradingMinutes / 30 * 60) + 1;
-                duration = "1800 S";
+                duration = MainAlgorithm.globalProperties.getProperty("1sec", "1800 S").toString();
+                //duration = "1800 S";
                 ibBarSize = "1 secs";
                 break;
             case "5sec":
                 iterations = (int) (days * tradingMinutes / 7200) + 1;
-                duration = "7200 S";
+                duration = MainAlgorithm.globalProperties.getProperty("5sec", "7200 S").toString();
+//              duration = "7200 S";
                 ibBarSize = "5 sec";
                 break;
             case "1min":
                 iterations = (int) (days * 10) + 1;
-                duration = "10 D";
+                duration = MainAlgorithm.globalProperties.getProperty("1min", "5 D").toString();
+ //             duration = "10 D";
                 ibBarSize = "1 min";
                 break;
             case "1day":
                 iterations = days + 1;
-                duration = "1 Y";
+                duration = MainAlgorithm.globalProperties.getProperty("1day", "1 Y").toString();
+//              duration = "1 Y";
                 ibBarSize = "1 day";
                 break;
             default:
