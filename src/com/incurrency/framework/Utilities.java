@@ -500,10 +500,14 @@ public class Utilities {
     }
 
     public static String roundToDecimal(String input) {
+        if(!input.equals("")){
         Float inputvalue = Float.parseFloat(input);
         DecimalFormat df = new DecimalFormat("0.00");
         df.setMaximumFractionDigits(2);
         return df.format(inputvalue);
+        }
+        else 
+            return input;
     }
     /**
      * Returns a native array of specified 'size', filled with values starting
