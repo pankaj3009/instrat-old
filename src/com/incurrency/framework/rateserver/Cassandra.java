@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework.rateserver;
 
+import com.incurrency.framework.Utilities;
 import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,15 +20,19 @@ public class Cassandra {
     String metric;
     String symbol;
     String expiry;
+    String right;
+    String strike;
     PrintStream output;
     private static final Logger logger = Logger.getLogger(Cassandra.class.getName());
 
-    public Cassandra(String value, long time, String metric, String symbol, String expiry, PrintStream output) {
+    public Cassandra(String value, long time, String metric, String symbol, String expiry,String right,String strike, PrintStream output) {
         this.value = value;
         this.time = time;
         this.metric = metric;
         this.symbol = symbol;
         this.expiry = expiry;
+        this.right=right;
+        this.strike=Utilities.roundToDecimal(strike);
         this.output = output;
 
     }
@@ -53,9 +58,11 @@ public class Cassandra {
                 //logger.log(Level.INFO,"Symbol:{0}",new Object[]{symbol});
                 output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.split("_")[0].replace("&", "").toLowerCase() + System.getProperty("line.separator"));
                 
-            } else {
+            } else if (right.equals("")) {
                 //logger.log(Level.INFO,"Symbol:{0}",new Object[]{symbol});
                 output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.split("_")[0].replace("&", "").toLowerCase() + " " + "expiry=" + expiry + System.getProperty("line.separator"));
+            }else{
+                output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.split("_")[0].replace("&", "").toLowerCase() + " " + "expiry=" + expiry + " " + "right=" + right+ " " + "strike=" + strike+System.getProperty("line.separator"));
             }
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);

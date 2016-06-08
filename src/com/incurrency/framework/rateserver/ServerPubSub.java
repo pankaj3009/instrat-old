@@ -73,6 +73,8 @@ public class ServerPubSub {
                 //logger.log(Level.INFO,"symbol length={0}",new Object[]{symbol.length});
                 if(symbol.length==5){
                 String expiry = symbol[2];
+                String right= symbol[3];
+                String strike= symbol[4];
                 //logger.log(Level.INFO,"smybol[1]={0}",new Object[]{symbol[1]});
                
                 if(symbol[1]!=null){
@@ -93,7 +95,7 @@ public class ServerPubSub {
                 }
                 //logger.log(Level.INFO,"SaveToCassandra={0},output={1},ticktype={2},message={3},componentlength={4},symbollength={5}",new Object[]{saveToCassandra,output,tickType,message,components.length,symbol.length});
                 if (output != null && metric!=null) {                    
-                    new Cassandra(components[2], Long.valueOf(components[1]), metric + "." + tickType, components[3], expiry, output).write();
+                    new Cassandra(components[2], Long.valueOf(components[1]), metric + "." + tickType, components[3], expiry, right,strike,output).write();
                 }
                 }
             }

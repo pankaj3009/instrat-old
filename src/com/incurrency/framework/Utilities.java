@@ -25,6 +25,7 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -498,6 +499,12 @@ public class Utilities {
         }
     }
 
+    public static String roundToDecimal(String input) {
+        Float inputvalue = Float.parseFloat(input);
+        DecimalFormat df = new DecimalFormat("0.00");
+        df.setMaximumFractionDigits(2);
+        return df.format(inputvalue);
+    }
     /**
      * Returns a native array of specified 'size', filled with values starting
      * from 'value', incremented by 'increment'.
