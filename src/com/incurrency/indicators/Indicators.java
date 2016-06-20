@@ -211,7 +211,200 @@ public class Indicators {
         return s;
         }
     }
+    
+    public BeanSymbol trend(BeanSymbol s, EnumBarSize barSize) {
+        int startIndex = 1;
+        int swingLowStartIndex = 0;
+        int swingHighStartIndex = 0;
+        int swingLowEndIndex = 0;
+        int swingHighEndIndex = 0;
+        DoubleMatrix mO = s.getTimeSeries(barSize, "open");
+        DoubleMatrix mH = s.getTimeSeries(barSize, "high");
+        DoubleMatrix mL = s.getTimeSeries(barSize, "low");
+        DoubleMatrix mC = s.getTimeSeries(barSize, "settle");
+        //get missing data
+        int[] indices = mH.ne(ReservedValues.EMPTY).findIndices();
+        mO = mO.get(indices).reshape(1, indices.length);
+        mH = mH.get(indices).reshape(1, indices.length);
+        mL = mL.get(indices).reshape(1, indices.length);
+        mC = mC.get(indices).reshape(1, indices.length);
+        List<Long> time = Utilities.subList(indices, BeanSymbol.columnLabels.get(barSize));
 
+        if (mH.length > 0) {
+            List<Long> dT = s.getColumnLabels().get(barSize);
+            dT = Utilities.subList(indices, dT);
+            DoubleMatrix HH = new DoubleMatrix();
+            DoubleMatrix HL = new DoubleMatrix();
+            DoubleMatrix LH = new DoubleMatrix();
+            DoubleMatrix LL = new DoubleMatrix();
+            DoubleMatrix EL = new DoubleMatrix();
+            DoubleMatrix EH = new DoubleMatrix();
+            DoubleMatrix mH_1 = MatrixMethods.ref(mH, -1);
+            DoubleMatrix mL_1 = MatrixMethods.ref(mL, -1);
+            DoubleMatrix swingLevel = MatrixMethods.create(0D, mH.length);
+            DoubleMatrix swingLow = MatrixMethods.create(0D, mH.length);
+            DoubleMatrix swingLowLow = MatrixMethods.create(0D, mH.length);
+            DoubleMatrix swingLowLow_1 = MatrixMethods.create(0D, mH.length);
+            DoubleMatrix swingLowLow_2 = MatrixMethods.create(0D, mH.length);
+            DoubleMatrix swingHigh = MatrixMethods.create(0D, mH.length);
+            DoubleMatrix swingHighHigh = MatrixMethods.create(0D, mH.length);
+            DoubleMatrix swingHighHigh_1 = MatrixMethods.create(0D, mH.length);
+            DoubleMatrix swingHighHigh_2 = MatrixMethods.create(0D, mH.length);
+            double[] swinglevel = new double[mH.length];
+            double[] swinglow = new double[mH.length];
+            double[] swinglowlow = new double[mH.length];
+            double[] swinglowlow_1 = new double[mH.length];
+            double[] swinglowlow_2 = new double[mH.length];
+            double[] swinghigh = new double[mH.length];
+            double[] swinghighhigh = new double[mH.length];
+            double[] swinghighhigh_1 = new double[mH.length];
+            double[] swinghighhigh_2 = new double[mH.length];
+            double[] trend = new double[mH.length];
+            mH.gti(mH_1, HH);
+            mH.lti(mH_1, LH);
+            mL.gti(mL_1, HL);
+            mL.lti(mL_1, LL);
+            mL.eqi(mL_1, EL);
+            mH.eqi(mH_1, EH);
+
+            DoubleMatrix updownbarclean = (HH.and(HL)).or(EH.and(HL)).or(HH.and(EL));
+            DoubleMatrix updownbar = (HH.and(HL)).or(EH.and(HL)).or(HH.and(EL));
+
+            DoubleMatrix updownbarclean_neg = (LH.and(LL)).or(EH.and(LH)).or(LL.and(EH));
+            DoubleMatrix updownbar_neg = (LH.and(LL)).or(EH.and(LH)).or(LL.and(EH));
+            updownbarclean_neg = updownbarclean_neg.mul(-1);
+            updownbar_neg = updownbar_neg.mul(-1);
+            updownbarclean.addi(updownbarclean_neg);
+            updownbar.addi(updownbar_neg);
+            DoubleMatrix outsidebar = (HH.and(LL));
+            DoubleMatrix insidebar = updownbarclean.add(updownbar).add(outsidebar).neg();
+            for (int i = 1; i < HH.length; i++) {
+                if (outsidebar.get(i) == 1) {
+                    updownbar.put(i, -updownbar.get(i - 1));
+                } else if (insidebar.get(i) == 1) {
+                    updownbar.put(i, updownbar.get(i - 1));
+                }
+            }
+            int priorbar = 0;
+            for (int i = 1; i < HH.length; i++) {
+                if (HH.get(i) != ReservedValues.EMPTY) {
+                    if (updownbar.get(i) == 1) {//we are in upswing
+                        if (updownbar.get(i - 1) == 1) {//continuing upswing
+                            swinghigh[i] = Math.max(mH.get(i), swinghigh[i - 1]);
+                            //swinghighhigh will be updated when the upswing ends or if its the last upswing.
+                            //update swinglow and swinglowlow for "i"
+                            if (swinglow[i - 1] != 0 & outsidebar.get(i) != 1) {//prevent init of swinglow to 0!!
+                                swinglow[i] = swinglow[i - 1];
+                                swinglowlow[i] = swinglow[i - 1];
+                            }
+                        } else {//first day of swing
+                            swingHighStartIndex = i;
+                            swingLowEndIndex = i - 1;
+                            swinghigh[i] = mH.get(i);
+                            if (outsidebar.get(i) == 1) {
+                                swinglow[i] = Math.min(mL.get(i), swinglow[i - 1]);
+                                swinglowlow[i] = swinglow[i];
+                            } else {
+                                swinglow[i] = swinglow[i - 1];
+                                swinglowlow[i] = swinglow[i - 1];
+                            }
+
+                            for (int j = swingLowStartIndex; j < swingHighStartIndex; j++) {
+                                if (outsidebar.get(i) == 1) {
+                                    swinglowlow[j] = swinglow[i];
+                                } else {
+                                    swinglowlow[j] = swinglow[i - 1];
+                                }
+                            }
+                        }
+                    }
+                } else if (updownbar.get(i) == -1) {//we are in a downswing
+                    if (updownbar.get(i - 1) == -1) {//continuing downswing
+                        swinglow[i] = Math.min(mL.get(i), swinglow[i - 1]);
+                        //swinglowlow will be updated when the downswing ends or if its the last downswing.
+                        //update swinghigh and swinghighhigh for "i"
+                        if (swinghigh[i - 1] != 0 & outsidebar.get(i) != 1) { //prevent init of swinghigh to 0!!
+                            swinghigh[i] = swinghigh[i - 1];
+                            swinghighhigh[i] = swinghigh[i - 1];
+                        }
+                    } else { //first day of downswing
+                        swingLowStartIndex = i;
+                        swingHighEndIndex = i - 1;
+
+                        swinglow[i] = mL.get(i);
+                        if (outsidebar.get(i) == 1) {
+                            swinghigh[i] = Math.max(mH.get(i), swinghigh[i - 1]);
+                            swinghighhigh[i] = swinghigh[i];
+                        } else {
+                            swinghigh[i] = swinghigh[i - 1];
+                            swinghighhigh[i] = swinghigh[i - 1];
+                        }
+                        for (int j = swingHighStartIndex; j < swingLowStartIndex; j++) {
+                            if (outsidebar.get(i) == 1) {
+                                swinghighhigh[j] = swinghigh[i];
+                            } else {
+                                swinghighhigh[j] = swinghigh[i - 1];
+                            }
+                        }
+                    }
+                }
+            }
+            //update swinghighhigh,swinglowlow for last (incomplete) swing
+            if (swingHighStartIndex > swingLowStartIndex) {//last incomplete swing is up
+                for (int j = swingHighStartIndex; j < mH.length; j++) {
+                    swinghighhigh[j] = swinghigh[mH.length - 1];
+                }
+            } else {
+                for (int j = swingLowStartIndex; j < mH.length; j++) {
+                    swinglowlow[j] = swinglow[mH.length - 1];
+                }
+            }
+            swingLowLow_1 = MatrixMethods.shift(new DoubleMatrix(swinglowlow).reshape(1, swinglowlow.length), updownbar, -1);
+            swingHighHigh_1 = MatrixMethods.shift(new DoubleMatrix(swinghighhigh).reshape(1, swinghighhigh.length), updownbar, 1);
+            swingLowLow_2 = MatrixMethods.shift(swingLowLow_1, updownbar, -1);
+            swingHighHigh_2 = MatrixMethods.shift(swingHighHigh_1, updownbar, 1);
+
+            swinglowlow_1 = swingLowLow_1.data;
+            swinghighhigh_1 = swingHighHigh_1.data;
+            swinglowlow_2 = swingLowLow_2.data;
+            swinghighhigh_2 = swingHighHigh_2.data;
+            //create swing level
+            for (int j = 1; j < mH.length; j++) {
+                if (updownbar.get(j) == 1) {
+                    swinglevel[j] = swinghighhigh[j];
+                } else if (updownbar.get(j) == -1) {
+                    swinglevel[j] = swinglowlow[j];
+                } else {
+                    swinglevel[j] = 0;
+                }
+            }
+
+            // update trend
+            for (int i = 1; i < mH.length; i++) {
+                trend[i] = 0;
+                boolean up1 = (updownbar.get(i) == 1) && swinghigh[i] > swinghighhigh_1[i] && swinglow[i] > swinglowlow_1[i];
+                boolean up2 = (updownbar.get(i) == 1) && swinghighhigh_1[i] > swinghighhigh_2[i] && swinglow[i] > swinglowlow_1[i];
+                boolean up3 = (updownbar.get(i) == -1 || outsidebar.get(i) == 1) && swinghigh[i] > swinghighhigh_1[i] && swinglowlow_1[i] > swinglowlow_2[i] && mL.get(i) > swinglowlow_1[i];
+                boolean down1 = (updownbar.get(i) == -1) && swinghigh[i] < swinghighhigh_1[i] && swinglow[i] < swinglowlow_1[i];
+                boolean down2 = (updownbar.get(i) == -1) && swinghigh[i] < swinghighhigh_1[i] && swinglowlow_1[i] < swinglowlow_2[i];
+                boolean down3 = (updownbar.get(i) == 1 || outsidebar.get(i) == 1) && swinghighhigh_1[i] < swinghighhigh_2[i] && swinglow[i] < swinglowlow_1[i] && mH.get(i) < swinghighhigh_1[i];
+
+                if (up1 || up2 || up3) {
+                    trend[i] = 1;
+                } else if (down1 || down2 || down3) {
+                    trend[i] = -1;
+                }
+            }
+
+            s.setTimeSeries(barSize, dT, new String[]{"trendnew", "updownbarnew", "outsidebarnew", "insidebarnew", "swinghigh", "swinglow",
+                "swinghighhigh", "swinglowlow", "swinghighhigh_1", "swinglowlow_1", "swinghighhigh_2", "swinglowlow_2", "swinglevel"},
+                    new double[][]{trend, updownbar.data, outsidebar.data, insidebar.data, swinghigh,
+                swinglow, swinghighhigh, swinglowlow, swinghighhigh_1, swinglowlow_1, swinghighhigh_2, swinglowlow_2, swinglevel});
+        }
+        return s;
+    }
+
+        
     public DoubleMatrix stddev(DoubleMatrix m, int period){
         DoubleMatrix mout = MatrixMethods.create(ReservedValues.EMPTY, m.length);
         Core c = new Core();

@@ -282,6 +282,20 @@ public static DoubleMatrix ref(DoubleMatrix m, DoubleMatrix mshift) {
         return out;
     }
     
+    public static DoubleMatrix shift(DoubleMatrix m1, DoubleMatrix m2, int ref) {
+        DoubleMatrix out = DoubleMatrix.zeros(m1.getRows(), m1.getColumns());
+        int nSize = m1.length;
+        for (int i = 1; i < nSize; i++) {
+            boolean trigger = m2.get(i) != m2.get(i - 1) && m2.get(i) == ref;
+            if (m1.get(i) != m1.get(i - 1) | trigger) {
+                out.put(i, m1.get(i - 1));
+            } else {
+                out.put(i, out.get(i - 1));
+            }
+        }
+
+        return out;
+    }
 
     /**
      * Calculates the number of bars (time periods) that have passed since
