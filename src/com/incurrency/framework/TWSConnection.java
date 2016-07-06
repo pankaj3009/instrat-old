@@ -2063,6 +2063,7 @@ public class TWSConnection extends Thread implements EWrapper {
     @Override
     public void fundamentalData(int reqId, String data) {
         Request r;
+        
         synchronized(lock_request){
             r=getRequestDetails().get(reqId+delimiter+c.getAccountName());
         }
@@ -2080,7 +2081,7 @@ public class TWSConnection extends Thread implements EWrapper {
             out = new PrintWriter("logs"+"//"+symbol+"_"+reportType+".xml");
             out.println(data);
             out.close();
-        } catch (FileNotFoundException ex) {
+        } catch (Exception ex) {
             logger.log(Level.INFO, "101", ex);
         } finally {
             if(out!=null){

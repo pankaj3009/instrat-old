@@ -53,6 +53,7 @@ public class FundamentalData implements Runnable {
                                 //Make Fundamental data request using this connection i
                                 logger.log(Level.FINE,"Initiating request for Historical Data for:{0}",new Object[]{targetFileName});
                                 Parameters.connection.get(i).getWrapper().requestFundamentalData(s, r.toString());
+                                logger.log(Level.FINE,"Initiating request for Historical Data for:{0}",new Object[]{targetFileName});
                                 i=i+1;
                                 if(i>=connectionCount){
                                     i=0;
