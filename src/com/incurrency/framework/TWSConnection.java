@@ -49,7 +49,7 @@ public class TWSConnection extends Thread implements EWrapper {
     private HashMap<Integer, Request> requestDetailsWithSymbolKey = new HashMap<>();
     public int outstandingSnapshots = 0;
     private final String delimiter = "_";
-    final static Object lock_request =new Object();
+    final Object lock_request =new Object();
     private boolean historicalDataFarmConnected=true;
     public static boolean skipsymbol=false;
     //Parameters for dataserver
