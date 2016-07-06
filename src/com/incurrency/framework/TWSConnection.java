@@ -49,7 +49,7 @@ public class TWSConnection extends Thread implements EWrapper {
     private HashMap<Integer, Request> requestDetailsWithSymbolKey = new HashMap<>();
     public int outstandingSnapshots = 0;
     private final String delimiter = "_";
-    final Object lock_request =new Object();
+    static final Object lock_request =new Object();
     private boolean historicalDataFarmConnected=true;
     public static boolean skipsymbol=false;
     //Parameters for dataserver
@@ -2163,7 +2163,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     String symbol = getRequestDetails().get(id+delimiter+c.getAccountName()) != null ? getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.getDisplayname() : "";
                     logger.log(Level.INFO, "103,FundamentalDataNotReceived,{0}", new Object[]{symbol+delimiter+getRequestDetails().get(id+delimiter+c.getAccountName()).requestType});
                     BeanSymbol s = getRequestDetails().get(id+delimiter+c.getAccountName()).symbol;
-                    s.getFundamental().putSummary(s.getBrokerSymbol() + "," + errorMsg);
+                    //s.getFundamental().putSummary(s.getBrokerSymbol() + "," + errorMsg);
                     break;
                 case 200: //No security definition has been found for the request
                     symbol = getRequestDetails().get(id+delimiter+c.getAccountName()) != null ? getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.getBrokerSymbol() : "";
