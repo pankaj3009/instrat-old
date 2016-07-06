@@ -284,8 +284,15 @@ public class Validator {
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_3"});
                     } else {
                         String ud = input[2] + "_" + input[4] + "_" + input[8] + "_" + input[9] + "_" + input[10];
-                        uniqueDisplayName.put(ud, input);
+                        if(!uniqueDisplayName.containsKey(ud))
+                        {
+                            uniqueDisplayName.put(ud, input);
+                        }else{
+                        logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"DuplicateSymbols_" + ud});
+                  
+                        }
                     }
+                    
                     if (input[4] == null) {//type
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_5"});
