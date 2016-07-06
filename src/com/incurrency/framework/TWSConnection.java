@@ -1124,6 +1124,8 @@ public class TWSConnection extends Thread implements EWrapper {
             s.getFundamental().setSnapshotRequestID(mRequestId);
             logger.log(Level.FINE,"Requested Historical Data for symbol:{0}, Account: {1}, RequestID:{2}",new Object[]{s.getDisplayname()+"_"+reportType,c.getAccountName(),mRequestId});    
             eClientSocket.reqFundamentalData(mRequestId, con, reportType.toLowerCase());
+           logger.log(Level.FINE,"Finished placing request to eclientsocket for symbol:{0}, Account: {1}, RequestID:{2}",new Object[]{s.getDisplayname()+"_"+reportType,c.getAccountName(),mRequestId});    
+           
         }
     }
 
