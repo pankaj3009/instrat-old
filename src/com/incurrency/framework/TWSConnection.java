@@ -1112,12 +1112,16 @@ public class TWSConnection extends Thread implements EWrapper {
         con.m_primaryExch = s.getPrimaryexchange();
         con.m_right = s.getRight();
         con.m_secType = s.getType();
+        logger.log(Level.FINE,"Waiting for handle for Historical Data for symbol:{0}, Account: {1}",new Object[]{s.getDisplayname()+"_"+reportType,c.getAccountName()});
         if (getC().getReqHistoricalHandle().getHandle()) {
+            logger.log(Level.FINE,"Waiting for requestid for Historical Data for symbol:{0}, Account: {1}",new Object[]{s.getDisplayname()+"_"+reportType,c.getAccountName()});
             mRequestId = requestIDManager.getNextRequestId();
+            logger.log(Level.FINE,"Waiting for lock for Historical Data for symbol:{0}, Account: {1}, RequestID:{2}",new Object[]{s.getDisplayname()+"_"+reportType,c.getAccountName(),mRequestId});
             synchronized(lock_request){
                 getRequestDetails().put(mRequestId+delimiter+c.getAccountName(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.valueOf(reportType.toUpperCase()), EnumBarSize.UNDEFINED,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
             }
             s.getFundamental().setSnapshotRequestID(mRequestId);
+            logger.log(Level.FINE,"Requested Historical Data for symbol:{0}, Account: {1}, RequestID:{2}",new Object[]{s.getDisplayname()+"_"+reportType,c.getAccountName(),mRequestId});    
             eClientSocket.reqFundamentalData(mRequestId, con, reportType.toLowerCase());
         }
     }
