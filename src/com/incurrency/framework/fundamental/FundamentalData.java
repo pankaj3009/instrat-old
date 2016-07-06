@@ -41,7 +41,7 @@ public class FundamentalData implements Runnable {
                         if(s.getType().equals("STK")){
                         for(EnumRequestType r:requestType){
                             String targetFileName=s.getDisplayname()+"_"+r.toString()+".xml";
-                            File f=new File(targetFileName);
+                            File f=new File("logs",targetFileName);
                             if(!f.exists()){
                                 //Get next valid connection i
                                 while (Parameters.connection.get(i).getHistMessageLimit() == 0) {
