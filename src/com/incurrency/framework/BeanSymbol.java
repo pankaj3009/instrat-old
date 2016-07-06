@@ -1268,7 +1268,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 out.close();
             } 
                 String data = this.getLongName() + "," + this.getBrokerSymbol() + "," + this.getExchangeSymbol() + "," + this.getCurrency() + "," + this.contractID + "," + this.getExchange() + "," + this.getType();
-                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
+                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));
                 out.println(data);
                 out.close();
             
