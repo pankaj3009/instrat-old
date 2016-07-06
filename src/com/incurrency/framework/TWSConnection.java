@@ -1104,6 +1104,7 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     public void requestFundamentalData(BeanSymbol s, String reportType) {
+        
         Contract con = new Contract();
         con.m_symbol = s.getBrokerSymbol();
         con.m_currency = s.getCurrency();
@@ -2062,19 +2063,17 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void fundamentalData(int reqId, String data) {
+        PrintWriter out = null;
+        logger.log(Level.FINE,"Received Fundamental Data for reqid:{0}, connection:{1}",new Object[]{reqId,c.getAccountName()});
+        try {
         Request r;
-        
         synchronized(lock_request){
-            r=getRequestDetails().get(reqId+delimiter+c.getAccountName());
+        r=getRequestDetails().get(reqId+delimiter+c.getAccountName());
         }
         if (r != null) {
             r.requestStatus = EnumRequestStatus.SERVICED;
         }
-        PrintWriter out = null;
-        try {
-            StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-            StackTraceElement e = stacktrace[1];//coz 0th will be getStackTrace so 1st
-            String methodName = e.getMethodName();
+       
             String symbol = r.symbol.getDisplayname();
             String reportType = r.requestType.toString();
             System.out.println("Received report : " + reportType + " for : " + symbol);            
@@ -2082,7 +2081,7 @@ public class TWSConnection extends Thread implements EWrapper {
             out.println(data);
             out.close();
         } catch (Exception ex) {
-            logger.log(Level.INFO, "101", ex);
+            logger.log(Level.SEVERE, "101", ex);
         } finally {
             if(out!=null){
             out.close();
