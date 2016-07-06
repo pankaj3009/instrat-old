@@ -38,8 +38,10 @@ public class FundamentalData implements Runnable {
                     int connectionCount = Parameters.connection.size();
                     int i = 0;
                     for (BeanSymbol s : Parameters.symbol) {
+                        logger.log(Level.FINE,"Fundamental Data starting attempt for symbol: {0}", new Object[]{s.getDisplayname()});
                         if(s.getType().equals("STK")){
                         for(EnumRequestType r:requestType){
+                        logger.log(Level.FINE,"Fundamental Data starting attempt for symbol: {0}, Report:{1}", new Object[]{s.getDisplayname(),r.toString()});
                             String targetFileName=s.getDisplayname()+"_"+r.toString()+".xml";
                             File f=new File("logs",targetFileName);
                             if(!f.exists()){
