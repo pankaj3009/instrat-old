@@ -85,6 +85,7 @@ public class Strategy implements NotificationListener {
     private boolean stopOrders = false;
     public Database<String, String> db;
     private Boolean useRedis;
+    private String redisDatabaseID;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -129,6 +130,7 @@ public class Strategy implements NotificationListener {
                 }                
                 if (useRedis) {
                     String redisURL = prop.getProperty("redisurl").toString().trim();
+                    redisDatabaseID=redisURL.split(":")[2];
                     db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379),Utilities.getInt(redisURL.split(":")[2], 1));
                 } else {
                     String filename = "logs" + File.separator + getOrderFile();
@@ -1275,5 +1277,19 @@ public class Strategy implements NotificationListener {
      */
     public static synchronized void setCombosAdded(HashMap<String, String> aCombosAdded) {
         combosAdded = aCombosAdded;
+    }
+
+    /**
+     * @return the redisDatabaseID
+     */
+    public String getRedisDatabaseID() {
+        return redisDatabaseID;
+    }
+
+    /**
+     * @param redisDatabaseID the redisDatabaseID to set
+     */
+    public void setRedisDatabaseID(String redisDatabaseID) {
+        this.redisDatabaseID = redisDatabaseID;
     }
 }

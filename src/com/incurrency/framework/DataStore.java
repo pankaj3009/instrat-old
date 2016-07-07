@@ -82,5 +82,20 @@ public class DataStore<K,V> implements Database<K,V> {
         store.get(oldStoreName).remove(oldKeyName);
         store.get(newStoreName).put(newKeyName, old);
     }
+
+    @Override
+    public List<String> blpop(String storeName, String key, int duration) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<String> brpop(String storeName, String key, int duration) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<String> lrange(String storeName, String key, int start, int end) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }
