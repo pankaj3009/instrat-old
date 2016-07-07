@@ -103,4 +103,25 @@ public class RedisConnect<K, V> implements Database<K, V> {
             jedis.rename(oldKeyName, newKeyName);
         }
     }
+
+    @Override
+    public List<String> blpop(String storeName,String key,int duration) {
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.blpop(duration, storeName+key);
+        }
+    }
+
+    @Override
+    public List<String> brpop(String storeName, String key, int duration) {
+                try (Jedis jedis = pool.getResource()) {
+            return jedis.blpop(duration, storeName+key);
+        }
+    }
+
+    @Override
+    public List<String> lrange(String storeName, String key, int start, int end) {
+                try (Jedis jedis = pool.getResource()) {
+            return jedis.lrange(storeName+key,start,end);  
+                }
+    }
 }

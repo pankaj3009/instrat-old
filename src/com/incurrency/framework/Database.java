@@ -36,6 +36,9 @@ public interface Database<K,V> {
     //public Boolean isSetMember(String key,String value);
     public V getValue(String storeName,String key, K field);
     public ConcurrentHashMap<K,V> getValues(String storeName,String Key);
+    public List<String> blpop(String storeName,String key, int duration);
+    public List<String> brpop(String storeName,String key,int duration);
+    public List<String> lrange(String storeName,String key,int start, int end);
     //public int loadVariables();
     //public int saveVariables();
     //public Set<String> getKeys(String pattern);
