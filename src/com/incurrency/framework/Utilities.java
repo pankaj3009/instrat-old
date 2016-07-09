@@ -1190,13 +1190,61 @@ public class Utilities {
         return getIDFromBrokerSymbol(symbols, s, t, e, r, o);
     }
 
+/**
+ * Returns an optionid for a system that is longonly for options
+ * @param symbols
+ * @param positions
+ * @param underlyingid is the id of the underlying stock or future for which we need an option
+ * @param side 
+ * @param expiry
+ * @return 
+ */
+    public static int getOptionIDForLongSystem(List<BeanSymbol>symbols,HashMap<Integer,BeanPosition> positions,int underlyingid, EnumOrderSide side,String expiry) {
+        int id = -1;
+        String displayname=symbols.get(underlyingid).getDisplayname();
+        String underlying=displayname.split("_")[0];
+        switch (side) {
+            case BUY:
+                id = Utilities.getATMStrike(symbols, underlyingid, 100, expiry, "CALL");
+                break;
+            case SELL:
+                for (BeanPosition p : positions.values()) {
+                    if (p.getPosition() != 0) {
+                        int tradeid = p.getSymbolid() - 1;
+                        String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
+                        if (displayname.contains(underlying) && tradedisplayname.contains("CALL")) {
+                            id = tradeid;
+                        }
+                    }
+                }
+                break;
+            case SHORT:
+                id = Utilities.getATMStrike(Parameters.symbol, id, 100, expiry, "PUT");
+                break;
+            case COVER:
+                for (BeanPosition p : positions.values()) {
+                    if (p.getPosition() != 0) {
+                        int tradeid = p.getSymbolid() - 1;
+                        String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
+                        if (displayname.contains(underlying) && tradedisplayname.contains("PUT")) {
+                            id = tradeid;
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        return id;
+    }
+    
     public static int getATMStrike(List<BeanSymbol>symbols, int id, int increment,String expiry,String right){
         double price=Parameters.symbol.get(id).getLastPrice();
         price=Utilities.roundTo(price, increment);
         String strikePrice=Utilities.formatDouble(price, new DecimalFormat("#.##"));
-        String displayName=symbols.get(id).getDisplayname();
+        String underlying=symbols.get(id).getDisplayname().split("_")[0];
         for(BeanSymbol s: Parameters.symbol){
-            if(s.getDisplayname().equals(displayName) && s.getType().equals("OPT")&&s.getRight().equals(right) && s.getOption().equals(strikePrice)){
+            if(s.getDisplayname().equals(underlying) && s.getType().equals("OPT")&&s.getRight().equals(right) && s.getOption().equals(strikePrice)){
                 return s.getSerialno()-1;
             }
         }

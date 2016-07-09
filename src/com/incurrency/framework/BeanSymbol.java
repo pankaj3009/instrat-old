@@ -88,8 +88,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private long lastPriceTime;
     private int reqID;
     private DataBars OneMinuteBarFromRealTimeBars;
-    private DataBars intraDayBarsFromTick;
-    private DataBars dailyBar = new DataBars(this, EnumBarSize.UNDEFINED);
+    private DataBars intraDayBarsFromTick; /*contains intraday bars, created from tick data. Built automatically. */
+    private DataBars dailyBar = new DataBars(this, EnumBarSize.UNDEFINED); //contains daily bars. Set
     private DataBars supplementalBars1;
     private DataBars supplementalBars2;
     private double openPrice;
@@ -106,7 +106,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private ConcurrentHashMap<EnumBarSize, DoubleMatrix> timeSeries = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<EnumBarSize, List<Long>> columnLabels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<EnumBarSize, List<String>> rowLabels = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<EnumBarSize, BeanOHLC> databars = new ConcurrentHashMap<>();
     private boolean active;
     public TreeMap<String, String[]> initData = new TreeMap<>();
     //properties
@@ -2245,74 +2244,37 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.intraDayBarsFromTick = intraDayBarsFromTick;
     }
 
-    /**
-     * @return the databars
-     */
-    public ConcurrentHashMap<EnumBarSize, BeanOHLC> getDatabars() {
-        return databars;
-    }
 
     /**
-     * @param databars the databars to set
-     */
-    public void setDatabars(EnumBarSize barSize, int duration) {
-        final EnumBarSize barSizeLocal = barSize;
-        databars.put(barSize, new BeanOHLC(this.getSerialno() - 1, duration));
-        if (Algorithm.databarSetup.get(barSize) == null) {
-            Algorithm.databarSetup.put(barSize, DateUtil.getNextPeriodStartTime(barSize));
-            ScheduledExecutorService ex = Executors.newSingleThreadScheduledExecutor();
-            ScheduledFuture scheduledFuture =
-                    ex.schedule(new Callable() {
-                public Object call() throws Exception {
-                    for (BeanSymbol s : Parameters.symbol) {
-                        BeanOHLC ohlc = s.getDatabars().get(barSizeLocal);
-                        long time = Algorithm.databarSetup.get(barSizeLocal);
-                        if (ohlc.getOpen() != 0) {
-                            s.addTimeSeries(barSizeLocal, new String[]{"open", "high", "low", "close", "volume"}, time, new double[]{ohlc.getOpen(), ohlc.getHigh(), ohlc.getLow(), ohlc.getClose(), ohlc.getVolume()});
-                            ohlc.setVolume(0);
-                        }
-                    }
-                    Algorithm.databarSetup.put(barSizeLocal, DateUtil.getNextPeriodStartTime(barSizeLocal));
-                    return true;
-                }
-            },
-                    duration,
-                    TimeUnit.MINUTES);
-        }
-
-        this.databars = databars;
-    }
-
-    /**
-     * @return the exchangeSymbol
+     * @return the exchangeSymbol as the identifier used by the exchange to refer to the symbol
      */
     public String getExchangeSymbol() {
         return exchangeSymbol;
     }
 
     /**
-     * @param exchangeSymbol the exchangeSymbol to set
+     * @param exchangeSymbol the exchangeSymbol to set to the identifer used by the exchange to refer to the symbol
      */
     public void setExchangeSymbol(String exchangeSymbol) {
         this.exchangeSymbol = exchangeSymbol;
     }
 
     /**
-     * @return the longName
+     * @return the longName as the full name provided by the exchange
      */
     public String getLongName() {
         return longName;
     }
 
     /**
-     * @param longName the longName to set
+     * @param longName the longName to set to the full name provided by the exchange
      */
     public void setLongName(String longName) {
         this.longName = longName;
     }
 
     /**
-     * @return the tradedValue
+     * @return the tradedValue contains the total volume weighted price for the day
      */
     public double getTradedValue() {
         synchronized(lockTradedValue){
@@ -2321,7 +2283,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     }
 
     /**
-     * @param tradedValue the tradedValue to set
+     * @param tradedValue contains the total volume weighted price for the day
      */
     public void setTradedValue(double tradedValue) {
         synchronized(lockTradedValue){
