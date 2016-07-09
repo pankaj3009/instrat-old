@@ -435,6 +435,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 order.m_orderType = "MKT";
                 break;
             case LMT:
+            case CUSTOMREL:
                 if (limit > 0) {
                     order.m_orderType = "LMT";
                     order.m_lmtPrice = limit;
@@ -1027,7 +1028,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate + delimiter});
                         orderids.add(mOrderID);
                         switch (ob.getOrderType()) {
-                            case REL:
+                            case CUSTOMREL:
                                 Thread t = new Thread(new OrderTypeRel(c, Parameters.symbol.get(symbolID-1),contracts.get(0), order, 0.05));
                                 t.setName("OrderType: REL");
                                 t.start();
