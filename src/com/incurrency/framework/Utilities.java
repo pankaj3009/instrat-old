@@ -1190,6 +1190,24 @@ public class Utilities {
         return getIDFromBrokerSymbol(symbols, s, t, e, r, o);
     }
 
+    public static int getATMStrike(List<BeanSymbol>symbols, int id, int increment,String expiry,String right){
+        double price=Parameters.symbol.get(id).getLastPrice();
+        price=Utilities.roundTo(price, increment);
+        String strikePrice=Utilities.formatDouble(price, new DecimalFormat("#.##"));
+        String displayName=symbols.get(id).getDisplayname();
+        for(BeanSymbol s: Parameters.symbol){
+            if(s.getDisplayname().equals(displayName) && s.getType().equals("OPT")&&s.getRight().equals(right) && s.getOption().equals(strikePrice)){
+                return s.getSerialno()-1;
+            }
+        }
+        return -1;
+    }
+    
+    public static String formatDouble(double d,DecimalFormat df){
+        return df.format(d);
+    }
+    
+    
     /**
      * Write split information to file
      *
