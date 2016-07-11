@@ -20,6 +20,7 @@ public class Trade {
 
     //public static ExtendedHashMap <String,String,String> trades=new ExtendedHashMap<>();
     private static final Logger logger = Logger.getLogger(Trade.class.getName());
+    private static final Object syncTrade=new Object();
     public Trade() {
     }
 
@@ -649,10 +650,12 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entryorderidext", String.val
     }
      
      public static void setStop(Database db,Object internalOrderID,String tradeStatus, ArrayList<Stop> stop){
+         synchronized(syncTrade){
          db.setHash(tradeStatus,internalOrderID.toString(), "stop", JsonWriter.objectToJson(stop));
      }
-     
+     }
       public static ArrayList<Stop> getStop(Database db,Object internalOrderID){
+         synchronized(syncTrade){
          Object o=db.getValue("opentrades",internalOrderID.toString(), "stop");
          ArrayList<Stop>stop=null;
          if(o==null){
@@ -664,6 +667,7 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entryorderidext", String.val
                  logger.log(Level.SEVERE,(String)o+"_"+internalOrderID);
              }
              return stop;
+         }
          }
      }
 }
