@@ -1385,7 +1385,7 @@ public class TradingUtil {
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             //int tradesToday=tradesToday(db,strategyName,timeZone,accountName,today);
             //set brokerage for open trades.
-            for (String key : db.getKeys("opentrades")) {
+            for (String key : db.getKeys("opentrades_"+strategyName)) {
                 if (key.contains("_"+strategyName)) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
@@ -1398,7 +1398,7 @@ public class TradingUtil {
             }
 
             //set brokerage for closed trades, that has not still been calculated i.e it equals 0
-            for (String key : db.getKeys("closedtrades")) {
+            for (String key : db.getKeys("closedtrades_"+strategyName)) {
                 if (key.contains("_"+strategyName) && Trade.getExitBrokerage(db, key) == 0) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
@@ -1487,7 +1487,7 @@ public class TradingUtil {
         SimpleDateFormat sdfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
         String bpd = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-        for (String key : db.getKeys("closedtrades")) {
+        for (String key : db.getKeys("closedtrades_"+strategy)) {
             if (key.contains("_"+strategy) && key.contains(account)) {
                 long time = sdfTime.parse(Trade.getExitTime(db, key)).getTime();
                 while (pair.containsKey(time)) {
@@ -1496,7 +1496,7 @@ public class TradingUtil {
                 pair.put(time, key);
             }
         }
-        for (String key : db.getKeys("opentrades")) {
+        for (String key : db.getKeys("opentrades_"+strategy)) {
             if (key.contains("_"+strategy) && key.contains(account)) {
                 long time = sdfDate.parse(bpd).getTime();
                 while (pair.containsKey(time)) {
