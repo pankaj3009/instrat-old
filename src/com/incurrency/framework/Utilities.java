@@ -1210,7 +1210,7 @@ public class Utilities {
             case SELL:
                 for (BeanPosition p : positions.values()) {
                     if (p.getPosition() != 0) {
-                        int tradeid = p.getSymbolid() - 1;
+                        int tradeid = p.getSymbolid();
                         String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
                         if (displayname.contains(underlying) && tradedisplayname.contains("CALL")) {
                             id = tradeid;
@@ -1224,7 +1224,7 @@ public class Utilities {
             case COVER:
                 for (BeanPosition p : positions.values()) {
                     if (p.getPosition() != 0) {
-                        int tradeid = p.getSymbolid() - 1;
+                        int tradeid = p.getSymbolid();
                         String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
                         if (displayname.contains(underlying) && tradedisplayname.contains("PUT")) {
                             id = tradeid;
@@ -1244,7 +1244,7 @@ public class Utilities {
         String strikePrice=Utilities.formatDouble(price, new DecimalFormat("#.##"));
         String underlying=symbols.get(id).getDisplayname().split("_")[0];
         for(BeanSymbol s: Parameters.symbol){
-            if(s.getDisplayname().equals(underlying) && s.getType().equals("OPT")&&s.getRight().equals(right) && s.getOption().equals(strikePrice)){
+            if(s.getDisplayname().contains(underlying) && s.getType().equals("OPT")&&s.getRight().equals(right) && s.getOption().equals(strikePrice)){
                 return s.getSerialno()-1;
             }
         }
