@@ -1219,7 +1219,7 @@ public class Utilities {
                 }
                 break;
             case SHORT:
-                id = Utilities.getATMStrike(Parameters.symbol, id, 100, expiry, "PUT");
+                id = Utilities.getATMStrike(symbols, underlyingid, 100, expiry, "PUT");
                 break;
             case COVER:
                 for (BeanPosition p : positions.values()) {

@@ -17,20 +17,25 @@ import java.util.logging.Logger;
 public class OrderTypeRel implements Runnable,BidAskListener,OrderStatusListener {
 
     BeanConnection c;
-    BeanSymbol s;
-    Contract cont;
-    Order o;
-    double tickSize;
+    int id;
+    OrderEvent e;
+    double ticksize=0.05;
+    EnumOrderSide side;
+    double limitprice;
+    ExecutionManager oms;
     boolean orderCompleted=false;
     final Object syncObject=new Object();
     private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
     
-    public OrderTypeRel(BeanConnection c, BeanSymbol s,Contract cont, Order o,double tickSize){
+    public OrderTypeRel(int id, BeanConnection c,OrderEvent event,double ticksize,ExecutionManager oms){
         this.c=c;
-        this.s=s;
-        this.cont=cont;
-        this.o=o;
-        this.tickSize=tickSize;
+        this.id=id;
+        this.e=event;
+        side=event.getSide();
+        limitprice=event.getLimitPrice();
+        this.ticksize=ticksize;
+        this.oms=oms;
+        
     }
     
     @Override
@@ -47,18 +52,30 @@ public class OrderTypeRel implements Runnable,BidAskListener,OrderStatusListener
 
     @Override
     public void bidaskChanged(BidAskEvent event) {
-        double limitPrice=o.m_lmtPrice;
-        switch(o.m_action){
-            case "BUY":
-                if(s.getBidPrice()>limitPrice){
-                    o.m_lmtPrice=s.getBidPrice()+tickSize;
-                    c.getWrapper().eClientSocket.placeOrder(o.m_orderId, cont, o);
+
+        switch(side){
+            case BUY:
+            case COVER:
+                double bidprice=Parameters.symbol.get(id).getBidPrice();
+                if(bidprice>limitprice){
+                    limitprice=bidprice+ticksize;
+                    e.setLimitPrice(limitprice);
+                    e.setOrderStage(EnumOrderStage.AMEND);
+                    e.setAccount(c.getAccountName());
+                    e.setTag("BIDASKCHANGED");
+                    oms.orderReceived(e);
                 }
                 break;
-            case "SELL":
-                if(s.getAskPrice()<limitPrice){
-                    o.m_lmtPrice=s.getAskPrice()-tickSize;
-                    c.getWrapper().eClientSocket.placeOrder(o.m_orderId, cont, o);
+            case SHORT:
+            case SELL:
+                double askprice=Parameters.symbol.get(id).getAskPrice();
+                if(askprice>0 && askprice<limitprice){
+                    limitprice=askprice-ticksize;
+                    e.setLimitPrice(limitprice);
+                    e.setOrderStage(EnumOrderStage.AMEND);
+                    e.setAccount(c.getAccountName());
+                    e.setTag("BIDASKCHANGED");
+                    oms.orderReceived(e);
                 }
                 break;
             default:
@@ -68,7 +85,8 @@ public class OrderTypeRel implements Runnable,BidAskListener,OrderStatusListener
 
     @Override
     public void orderStatusReceived(OrderStatusEvent event) {
-        if(event.getOrderID()==o.m_orderId){
+        OrderBean ob=c.getOrders().get(event.getOrderID());
+        if(event.getOrderID()==ob.getOrderID()){
             if(event.getRemaining()==0){
                 synchronized(syncObject){
                 syncObject.notify();                   

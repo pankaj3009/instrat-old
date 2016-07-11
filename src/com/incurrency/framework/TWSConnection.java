@@ -852,13 +852,14 @@ public class TWSConnection extends Thread implements EWrapper {
         EnumOrderStage stage = e.getOrderStage();
         int internalOrderID = e.getInternalorder();
         int internalOrderIDEntry = e.getInternalorderentry();
+        EnumOrderType ordType=e.getOrderType();
         if (!orders.isEmpty()) {
-            orderids = placeOrder(c, symbolID, side, notify, stage, orders, internalOrderID, internalOrderIDEntry, e.getTag(),e.isScale(),e.getLog());
+            orderids = placeOrder(c, symbolID, side, notify, stage, ordType,orders, internalOrderID, internalOrderIDEntry, e.getTag(),e.isScale(),e.getLog());
         }
         return orderids;
     }
 
-    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag, boolean scale, String log) {
+    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, EnumOrderType ordType,HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag, boolean scale, String log) {
         ArrayList<Integer> orderids = new ArrayList<>();
         if (!tradeIntegrityOK(side, stage, orders,true)) {//reset trading flag set during createorder
             return orderids;
@@ -886,7 +887,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 ob.setReason(reason);
                 ob.setOcaGroup(order.m_ocaGroup);
                 ob.setOcaExecutionLogic(order.m_ocaType);
-                ob.setOrderType(order.m_orderType);
+                ob.setOrderType(ordType);
                 ob.setScale(scale);
                 ob.setLog(log);
                 boolean singlelegorder=Parameters.symbol.get(parentid).getCombo().isEmpty() & orders.size()==1;
@@ -919,15 +920,6 @@ public class TWSConnection extends Thread implements EWrapper {
                         getRecentOrders().add(new Date().getTime());
                     }
                     logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate});
-                    switch (ob.getOrderType()) {
-                        case CUSTOMREL:
-                            Thread t = new Thread(new OrderTypeRel(c, Parameters.symbol.get(symbolID - 1), contracts.get(0), order, 0.05));
-                            t.setName("OrderType: REL");
-                            t.start();
-                            break;
-                        default:
-                            break;
-                    }
                     orderids.add(mOrderID);
                 } else {//combo order
                     if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
@@ -1022,15 +1014,6 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate + delimiter});
                     orderids.add(mOrderID);
-                    switch (ob.getOrderType()) {
-                        case CUSTOMREL:
-                            Thread t = new Thread(new OrderTypeRel(c, Parameters.symbol.get(symbolID - 1), contracts.get(0), order, 0.05));
-                            t.setName("OrderType: REL");
-                            t.start();
-                            break;
-                        default:
-                            break;
-                    }
                 }
             }
         }

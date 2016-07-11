@@ -838,6 +838,15 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 synchronized (c.lockOrderMapping) {
                     c.getOrderMapping().put(new Index(orderReference, event.getInternalorder()), orderids);
                 }
+            switch (event.getOrderType()) {
+            case CUSTOMREL:
+                Thread t = new Thread(new OrderTypeRel(id, c, event, tickSize, this));
+                t.setName("OrderType: REL");
+                t.start();
+                break;
+            default:
+                break;
+        }
             }
         } else {
             logger.log(Level.INFO, "303,EntryOrderNotSent, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()+delimiter+tempOpenPosition+delimiter+s.getPlmanager().isDayProfitTargetHit()+delimiter+s.getPlmanager().isDayStopLossHit()});
@@ -921,6 +930,15 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         c.getOrdersSymbols().put(new Index(orderReference, id), symbolOrders);
         synchronized (c.lockOrderMapping) {
             c.getOrderMapping().put(new Index(orderReference, event.getInternalorder()), orderids);
+        }
+        switch (event.getOrderType()) {
+            case CUSTOMREL:
+                Thread t = new Thread(new OrderTypeRel(id, c, event, tickSize, this));
+                t.setName("OrderType: REL");
+                t.start();
+                break;
+            default:
+                break;
         }
     }
 
@@ -1031,6 +1049,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             if (amendedOrders.size() > 0) {
                                 logger.log(Level.INFO, "209,AmendmentOrder, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()});
                                 c.getWrapper().placeOrder(c, event, amendedOrders);
+                                logger.log(Level.INFO,"Amended Limit Price for internalorderid: {0} to :{1}",new Object[]{internalorderid,ord.m_lmtPrice});
                                 c.getOrders().get(ord.m_orderId).setParentLimitPrice(event.getLimitPrice());
                                 //update orders information. Do we need the two lines below as its already set in TWSConnection.placeOrders
                                 //c.getOrders().get(orderid).setTriggerPrice(ob.m_auxPrice);
