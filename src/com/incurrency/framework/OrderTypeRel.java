@@ -87,6 +87,7 @@ public class OrderTypeRel implements Runnable,BidAskListener,OrderStatusListener
     public void orderStatusReceived(OrderStatusEvent event) {
         OrderBean ob=c.getOrders().get(event.getOrderID());
         if(event.getOrderID()==ob.getOrderID()){
+            logger.log(Level.INFO,"OrderTypeRel : InternalOrderID:{0},Remaining{1}",new Object[]{event.getOrderID(),event.getRemaining()});
             if(event.getRemaining()==0){
                 synchronized(syncObject){
                 syncObject.notify();                   
