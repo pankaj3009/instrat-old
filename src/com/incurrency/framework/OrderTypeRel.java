@@ -34,18 +34,19 @@ public class OrderTypeRel implements Runnable,BidAskListener,OrderStatusListener
         side=event.getSide();
         limitprice=event.getLimitPrice();
         this.ticksize=ticksize;
-        this.oms=oms;
-        
+        this.oms=oms;       
     }
     
     @Override
     public void run() {
         Subscribe.tes.addBidAskListener(this);
+        Subscribe.tes.addOrderStatusListener(this);
         synchronized(syncObject){
             try {
                 syncObject.wait();
                 logger.log(Level.INFO,"OrderTypeRel: Notified execution completion");
                 Subscribe.tes.removeBidAskListener(this);
+                Subscribe.tes.removeOrderStatusListener(this);
             } catch (InterruptedException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
