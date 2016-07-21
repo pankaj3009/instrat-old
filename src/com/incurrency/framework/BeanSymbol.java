@@ -103,6 +103,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private long firstTimeStamp;
     private int connectionidUsedForMarketData;
     private boolean comboSetupFailed = false;
+    private double strikeDistance=0;
     private ConcurrentHashMap<EnumBarSize, DoubleMatrix> timeSeries = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<EnumBarSize, List<Long>> columnLabels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<EnumBarSize, List<String>> rowLabels = new ConcurrentHashMap<>();
@@ -251,15 +252,17 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             this.minsize = input[11].equals("") ? 1 : Integer.parseInt(input[11]);;
             this.barsstarttime = input[12].equals("") ? null : input[12].trim().toUpperCase();
             this.streamingpriority = input[13].equals("") ? 1 : Integer.parseInt(input[13].trim().toUpperCase());
-            if (input.length <= 14) {
+            this.streamingpriority = input[13].equals("") ? 1 : Integer.parseInt(input[13].trim().toUpperCase());
+            this.strikeDistance=input[14].equals("")?0:Double.parseDouble(input[14].trim().toUpperCase());
+            if (input.length <= 15) {
                 this.strategy = "";
             } else {
-                this.strategy = input[14].equals("") ? "" : input[14].trim().toUpperCase();
+                this.strategy = input[15].equals("") ? "" : input[15].trim().toUpperCase();
             }
-            if (input.length <= 15) {
+            if (input.length <= 16) {
                 this.active = true;
             } else {
-                this.active = input[15].equals("") ? false : Boolean.parseBoolean(input[15].trim().toUpperCase());
+                this.active = input[16].equals("") ? false : Boolean.parseBoolean(input[16].trim().toUpperCase());
             }
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
@@ -268,6 +271,20 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
     }
 
+     public BeanSymbol(String[] input, int count) {
+        switch(count){
+            case 7: //used for eodmaintenance to push in STK data
+                this.longName=input[0];
+                this.brokerSymbol=input[1];
+                this.exchangeSymbol=input[2];
+                this.currency=input[3];
+                this.exchange=input[5];
+                this.type=input[6];
+                break;
+            default:
+                break;
+        }
+     }
     /**
      * synchronizes timeseries matrix with columnLabels, across all symbols for
      * all barsizes.
@@ -513,6 +530,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         b.preopen = orig.preopen;
         b.streamingpriority = orig.streamingpriority;
         b.strategy = orig.strategy;
+        b.strikeDistance=orig.strikeDistance;
         return b;
     }
 
@@ -2289,5 +2307,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         synchronized(lockTradedValue){
             this.tradedValue = tradedValue;
         }
+    }
+
+    /**
+     * @return the strikeDistance
+     */
+    public double getStrikeDistance() {
+        return strikeDistance;
+    }
+
+    /**
+     * @param strikeDistance the strikeDistance to set
+     */
+    public void setStrikeDistance(double strikeDistance) {
+        this.strikeDistance = strikeDistance;
     }
 }
