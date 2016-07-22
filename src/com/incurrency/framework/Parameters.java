@@ -6,6 +6,8 @@ package com.incurrency.framework;
 
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  *
@@ -13,7 +15,7 @@ import java.util.ArrayList;
  */
 public class Parameters {
 
-    static public ArrayList<BeanConnection> connection = new ArrayList<>();
+    static public List<BeanConnection> connection = Collections.synchronizedList(new ArrayList<BeanConnection>());
     static public ArrayList<BeanSymbol> symbol = new ArrayList<>();
     private static ArrayList _listeners = new ArrayList();
 //control variables

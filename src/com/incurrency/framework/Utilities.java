@@ -99,6 +99,13 @@ public class Utilities {
         }
     }
 
+    public static double[] requestHistoricalData(BeanSymbol s, String starttime, String endtime, String timeZone, String name, String[] ts, String[] aggregators, String value, String unit) {
+        double[] out = new double[0];
+
+
+        return out;
+    }
+
     public static int openPositionCount(Database<String, String> db, ArrayList<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
         HashSet<String> temp = new HashSet<>();;
@@ -107,7 +114,7 @@ public class Utilities {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
         for (String key : db.getKeys("opentrades")) {
-            if (key.contains("_"+strategy)) {
+            if (key.contains("_" + strategy)) {
                 String childdisplayname = Trade.getEntrySymbol(db, key);
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
@@ -252,8 +259,8 @@ public class Utilities {
             return "";
         }
     }
-    
-    public static <T>String concatArrayList(ArrayList<T> input) {
+
+    public static <T> String concatArrayList(ArrayList<T> input) {
         if (input.size() > 0) {
             StringBuilder nameBuilder = new StringBuilder();
 
@@ -266,7 +273,7 @@ public class Utilities {
             return "";
         }
     }
-    
+
     public static double boxRange(double[] range, double input, int segments) {
         double min = Doubles.min(range);
         double max = Doubles.max(range);
@@ -316,7 +323,7 @@ public class Utilities {
         exitCal.add(Calendar.MINUTE, minuteAdjust);
         int exitMinute = exitCal.get(Calendar.MINUTE);
         int exitHour = exitCal.get(Calendar.HOUR_OF_DAY);
-        
+
         //If the exitTime is after market, move to eixtCal to next day BOD.
         if (exitHour > tradeCloseHour || (exitHour == tradeCloseHour && exitMinute >= tradeCloseMinute)) {
             //1.get minutes from close
@@ -500,15 +507,16 @@ public class Utilities {
     }
 
     public static String roundToDecimal(String input) {
-        if(!input.equals("")){
-        Float inputvalue = Float.parseFloat(input);
-        DecimalFormat df = new DecimalFormat("0.00");
-        df.setMaximumFractionDigits(2);
-        return df.format(inputvalue);
-        }
-        else 
+        if (!input.equals("")) {
+            Float inputvalue = Float.parseFloat(input);
+            DecimalFormat df = new DecimalFormat("0.00");
+            df.setMaximumFractionDigits(2);
+            return df.format(inputvalue);
+        } else {
             return input;
+        }
     }
+
     /**
      * Returns a native array of specified 'size', filled with values starting
      * from 'value', incremented by 'increment'.
@@ -788,10 +796,12 @@ public class Utilities {
     public static boolean isDouble(String value) {
         //String decimalPattern = "([0-9]*)\\.([0-9]*)";  
         //return Pattern.matches(decimalPattern, value)||Pattern.matches("\\d*", value);
-        if(value!=null){
-        value = value.trim();
-        return value.matches("-?\\d+(\\.\\d+)?");
-        }else return false;
+        if (value != null) {
+            value = value.trim();
+            return value.matches("-?\\d+(\\.\\d+)?");
+        } else {
+            return false;
+        }
     }
 
     public static boolean isInteger(String str) {
@@ -818,7 +828,7 @@ public class Utilities {
         }
         return true;
     }
-    
+
     public static boolean isLong(String str) {
         if (str == null) {
             return false;
@@ -891,7 +901,6 @@ public class Utilities {
         }
     }
 
-    
     public static double[] convertStringListToDouble(String[] input) {
         double[] out = new double[input.length];
         for (int i = 0; i < input.length; i++) {
@@ -930,14 +939,14 @@ public class Utilities {
 
         return p;
     }
-    
-    public static HashMap<String,String> loadParameters(String parameterFile,boolean side) {
-        HashMap<String,String>out=new HashMap<>();
-        Properties properties=loadParameters(parameterFile);
+
+    public static HashMap<String, String> loadParameters(String parameterFile, boolean side) {
+        HashMap<String, String> out = new HashMap<>();
+        Properties properties = loadParameters(parameterFile);
         for (String key : properties.stringPropertyNames()) {
-        String value = properties.getProperty(key);
-        out.put(key, value);
-    }
+            String value = properties.getProperty(key);
+            out.put(key, value);
+        }
         return out;
     }
 
@@ -1135,12 +1144,13 @@ public class Utilities {
     }
 
     /**
-     * Returns id from using a substring of displayname.It returns the first match
+     * Returns id from using a substring of displayname.It returns the first
+     * match
      *
      * @param displayName
      * @return
      */
-    public static int getIDFromDisplaySubString(List<BeanSymbol> symbols, String subStringDisplay,String type) {
+    public static int getIDFromDisplaySubString(List<BeanSymbol> symbols, String subStringDisplay, String type) {
         if (subStringDisplay != null) {
             for (BeanSymbol symb : symbols) {
                 if (symb.getDisplayname().toLowerCase().contains(subStringDisplay.toLowerCase()) && symb.getType().equalsIgnoreCase(type)) {
@@ -1150,7 +1160,7 @@ public class Utilities {
         }
         return -1;
     }
-    
+
     public String incrementString(String value, double increment) {
         double doubleValue = Utilities.getDouble(value, -1);
         doubleValue = doubleValue + increment;
@@ -1190,22 +1200,34 @@ public class Utilities {
         return getIDFromBrokerSymbol(symbols, s, t, e, r, o);
     }
 
-/**
- * Returns an optionid for a system that is longonly for options
- * @param symbols
- * @param positions
- * @param underlyingid is the id of the underlying stock or future for which we need an option
- * @param side 
- * @param expiry
- * @return 
- */
-    public static int getOptionIDForLongSystem(List<BeanSymbol>symbols,HashMap<Integer,BeanPosition> positions,int underlyingid, EnumOrderSide side,String expiry) {
+    /**
+     * Returns an optionid for a system that is longonly for options
+     *
+     * @param symbols
+     * @param positions
+     * @param underlyingid is the id of the underlying stock or future for which
+     * we need an option
+     * @param side
+     * @param expiry
+     * @return
+     */
+    public static int getOptionIDForLongSystem(List<BeanSymbol> symbols, HashMap<Integer, BeanPosition> positions, int underlyingid, EnumOrderSide side, String expiry) {
         int id = -1;
-        String displayname=symbols.get(underlyingid).getDisplayname();
-        String underlying=displayname.split("_")[0];
+        String displayname = symbols.get(underlyingid).getDisplayname();
+        String underlying = displayname.split("_")[0];
+        double strikeDistance = 0;
         switch (side) {
             case BUY:
-                id = Utilities.getATMStrike(symbols, underlyingid, 100, expiry, "CALL");
+                if (!Parameters.symbol.get(underlyingid).getType().equals("FUT")) {
+                    int futureid = Utilities.getFutureIDFromSymbol(symbols, underlyingid, expiry);
+                    strikeDistance = Parameters.symbol.get(futureid).getStrikeDistance();
+                } else {
+                    strikeDistance = Parameters.symbol.get(underlyingid).getStrikeDistance();
+                }
+                id = Utilities.getATMStrike(symbols, underlyingid, strikeDistance, expiry, "CALL");
+                if (id == -1) {
+                    id = Utilities.insertATMStrike(symbols, underlyingid, strikeDistance, expiry, "CALL");
+                }
                 break;
             case SELL:
                 for (BeanPosition p : positions.values()) {
@@ -1219,7 +1241,16 @@ public class Utilities {
                 }
                 break;
             case SHORT:
-                id = Utilities.getATMStrike(symbols, underlyingid, 100, expiry, "PUT");
+                if (!Parameters.symbol.get(underlyingid).getType().equals("FUT")) {
+                    int futureid = Utilities.getFutureIDFromSymbol(symbols, underlyingid, expiry);
+                    strikeDistance = Parameters.symbol.get(futureid).getStrikeDistance();
+                } else {
+                    strikeDistance = Parameters.symbol.get(underlyingid).getStrikeDistance();
+                }
+                id = Utilities.getATMStrike(symbols, underlyingid, strikeDistance, expiry, "PUT");
+                if (id == -1) {
+                    id = Utilities.insertATMStrike(symbols, underlyingid, strikeDistance, expiry, "PUT");
+                }
                 break;
             case COVER:
                 for (BeanPosition p : positions.values()) {
@@ -1237,25 +1268,42 @@ public class Utilities {
         }
         return id;
     }
-    
-    public static int getATMStrike(List<BeanSymbol>symbols, int id, int increment,String expiry,String right){
-        double price=Parameters.symbol.get(id).getLastPrice();
-        price=Utilities.roundTo(price, increment);
-        String strikePrice=Utilities.formatDouble(price, new DecimalFormat("#.##"));
-        String underlying=symbols.get(id).getDisplayname().split("_")[0];
-        for(BeanSymbol s: Parameters.symbol){
-            if(s.getDisplayname().contains(underlying) && s.getType().equals("OPT")&&s.getRight().equals(right) && s.getOption().equals(strikePrice)){
-                return s.getSerialno()-1;
+
+    public static int getATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
+        double price = Parameters.symbol.get(id).getLastPrice();
+        price = Utilities.roundTo(price, increment);
+        String strikePrice = Utilities.formatDouble(price, new DecimalFormat("#.##"));
+        String underlying = symbols.get(id).getDisplayname().split("_")[0];
+        for (BeanSymbol s : Parameters.symbol) {
+            if (s.getDisplayname().contains(underlying) && s.getType().equals("OPT") && s.getRight().equals(right) && s.getOption().equals(strikePrice)) {
+                return s.getSerialno() - 1;
             }
         }
         return -1;
     }
-    
-    public static String formatDouble(double d,DecimalFormat df){
+
+    public static int insertATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
+        double price = Parameters.symbol.get(id).getLastPrice();
+        price = Utilities.roundTo(price, increment);
+        String strikePrice = Utilities.formatDouble(price, new DecimalFormat("#.##"));
+        BeanSymbol ul = symbols.get(id);
+        BeanSymbol s = new BeanSymbol(ul.getBrokerSymbol(), ul.getExchangeSymbol(), "OPT", expiry, right, strikePrice);
+        s.setCurrency("INR");
+        s.setExchange("NSE");
+
+        s.setStreamingpriority(1);
+        s.setStrategy("TBD");
+        s.setDisplayname(ul.getExchangeSymbol() + "_" + "OPT" + "_" + expiry + "_" + right + "_" + strikePrice);
+        s.setSerialno(Parameters.symbol.size() + 1);
+        s.setAddedToSymbols(true);
+        symbols.add(s);
+        return s.getSerialno() - 1;
+    }
+
+    public static String formatDouble(double d, DecimalFormat df) {
         return df.format(d);
     }
-    
-    
+
     /**
      * Write split information to file
      *
@@ -1277,12 +1325,11 @@ public class Utilities {
         } catch (IOException ex) {
         }
     }
-    
-    
-    public static String getNextFileName(String directory, String fileName){
-        int increase=0;
-        String name=fileName+"."+increase;
-        if(Utilities.fileExists(directory, name)){
+
+    public static String getNextFileName(String directory, String fileName) {
+        int increase = 0;
+        String name = fileName + "." + increase;
+        if (Utilities.fileExists(directory, name)) {
             increase++;
         }
         return name;

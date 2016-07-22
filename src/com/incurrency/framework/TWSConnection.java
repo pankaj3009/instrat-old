@@ -206,7 +206,7 @@ public class TWSConnection extends Thread implements EWrapper {
         }
     }
 
-    public void getMktData(BeanSymbol s, Contract contract, boolean isSnap) throws Exception {
+    public void getMktData(BeanSymbol s, Contract contract, boolean isSnap) {
         if (!eClientSocket.isConnected()) {
             connectToTWS();
         }
@@ -271,6 +271,20 @@ public class TWSConnection extends Thread implements EWrapper {
         }
     }
 
+    public void getMktData(BeanSymbol s, boolean isSnap){
+        Contract con = new Contract();
+             con.m_symbol = s.getBrokerSymbol();
+            con.m_currency = s.getCurrency();
+            con.m_exchange = s.getExchange();
+            con.m_expiry = s.getExpiry();
+            con.m_primaryExch = s.getPrimaryexchange();
+            con.m_right = s.getRight();
+            con.m_secType = s.getType();
+            con.m_strike = s.getOption() == null ? 0 : Double.parseDouble(s.getOption());
+            getMktData(s,con,isSnap);
+           
+    }
+    
     public void getRealTimeBars(BeanSymbol s) {
         Contract con = new Contract();
         con.m_symbol = s.getBrokerSymbol();

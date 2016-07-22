@@ -13,7 +13,7 @@ import java.util.List;
  */
 public interface ReaderWriterInterface<E> {
     
-    public void reader(String inputfile, ArrayList<E> target);
+    public void reader(String inputfile, List<E> target);
     public void writer (String fileName);
 }
 

@@ -143,6 +143,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private LimitedQueue<Long> tradedDateTime;
     private HashMap<BeanSymbol, Integer> combo = new HashMap<>(); //holds brokerSymbol and corresponding size
     private Fundamental fundamental = new Fundamental();
+    private boolean addedToSymbols=false;
 
     public BeanSymbol() {
         tradedPrices = new LimitedQueue(10);
@@ -1096,7 +1097,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     }
 
     @Override
-    public void reader(String inputfile, ArrayList<BeanSymbol> target) {
+    public void reader(String inputfile, List<BeanSymbol> target) {
         File inputFile = new File(inputfile);
         if (inputFile.exists() && !inputFile.isDirectory()) {
             try {
@@ -2321,5 +2322,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setStrikeDistance(double strikeDistance) {
         this.strikeDistance = strikeDistance;
+    }
+
+    /**
+     * @return the extraInsert
+     */
+    public boolean isAddedToSymbols() {
+        return addedToSymbols;
+    }
+
+    /**
+     * @param extraInsert the extraInsert to set
+     */
+    public void setAddedToSymbols(boolean addedToSymbols) {
+        this.addedToSymbols = addedToSymbols;
     }
 }
