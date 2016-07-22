@@ -813,6 +813,10 @@ public class TWSConnection extends Thread implements EWrapper {
             if(Parameters.symbol.get(id).getExchangeSymbol()!=null && Parameters.symbol.get(id).getType().equals("STK")){
                 contract.m_localSymbol=Parameters.symbol.get(id).getExchangeSymbol();
             }
+            contract.m_expiry=Parameters.symbol.get(id).getExpiry().equals("")?null:Parameters.symbol.get(id).getExpiry();
+            contract.m_right=Parameters.symbol.get(id).getRight().equals("")?null:Parameters.symbol.get(id).getRight();
+            contract.m_strike=Utilities.getDouble(Parameters.symbol.get(id).getOption(), 0);
+            contract.m_secType=Parameters.symbol.get(id).getType();
             out.add(contract);
         } else {
             for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(id).getCombo().entrySet()) { //ordering of orders and combo should be the same. This appears to be a correct assumption

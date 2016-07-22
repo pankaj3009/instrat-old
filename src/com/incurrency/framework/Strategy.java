@@ -167,7 +167,27 @@ public class Strategy implements NotificationListener {
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     int tempPosition = 0;
                     double tempPositionPrice = 0D;
+                    if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
+                        String[] input = parentsymbolname.split("_", -1);
+                        BeanSymbol s = new BeanSymbol(input[0],input[0], input[1], input[2], input[3], input[4]);
+                        if(s.getBrokerSymbol().equals("NSENIFTY")){
+                            s.setBrokerSymbol("NIFTY50");
+                        }
+                        s.setCurrency("INR");
+                        s.setExchange("NSE");
+                        s.setStreamingpriority(1);
+                        s.setStrategy(this.getStrategy().toUpperCase());
+                        s.setDisplayname(parentsymbolname);
+                        s.setSerialno(Parameters.symbol.size() + 1);
+                        Parameters.symbol.add(s);
+                        id=Parameters.symbol.size()-1;
+                        Parameters.connection.get(0).getWrapper().getMktData(s, false);
+                    }
                     if (id >= 0) {
+                        if(!Parameters.symbol.get(id).getStrategy().contains(this.getStrategy().toUpperCase())){
+                            String oldstrategy=Parameters.symbol.get(id).getStrategy();
+                            Parameters.symbol.get(id).setStrategy(oldstrategy+":"+this.getStrategy().toUpperCase());
+                        }
                         if (Trade.getAccountName(db, key).equals("Order") && key.contains("_"+strategy)) {
                             BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
                             tempPosition = p.getPosition();
@@ -539,68 +559,6 @@ public class Strategy implements NotificationListener {
         return -1;
     }
 
-    //used by CSV orders
-/*    
-     public synchronized void entry(int id, EnumOrderSide side, EnumOrderType orderType, double limitPrice, double triggerPrice, boolean scalein, EnumOrderReason reason, String orderGroup, int size, int duration, int dynamicDuration, double slippage, EnumOrderStage stage, String effectiveTime) {
-     if (side == EnumOrderSide.BUY) {
-     BeanPosition pd = getPosition().get(id);
-     double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-     int symbolPosition = pd.getPosition() + size;
-     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * size + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-     pd.setPosition(symbolPosition);
-     pd.setPositionInitDate(TradingUtil.getAlgoDate());
-     pd.setPrice(positionPrice);
-     getPosition().put(id, pd);
-     } else {
-     BeanPosition pd = getPosition().get(id);
-     double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-     int symbolPosition = pd.getPosition() - size;
-     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * size + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-     pd.setPosition(symbolPosition);
-     pd.setPositionInitDate(TradingUtil.getAlgoDate());
-     pd.setPrice(positionPrice);
-     getPosition().put(id, pd);
-     }
-     int internalorderid = getInternalOrderID();
-     this.internalOpenOrders.put(id, internalorderid);
-     getTrades().put(new OrderLink(internalorderid, 0, "Order"), new Trade(id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, getTimeZone(), "Order"));
-     logger.log(Level.INFO, "310,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
-     if (MainAlgorithm.isUseForTrading()) {
-     oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), duration, stage, dynamicDuration, slippage, scalein, orderGroup);
-     }
-     }
-     */
-    //used by pairs
-    /*
-     public synchronized void entry(int id, EnumOrderSide side, EnumOrderType orderType, double limitPrice, double triggerPrice, boolean scalein, EnumOrderReason reason, String orderGroup, int size) {
-     if (side == EnumOrderSide.BUY) {
-     BeanPosition pd = getPosition().get(id);
-     double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-     int symbolPosition = pd.getPosition() + size;
-     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * size + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-     pd.setPosition(symbolPosition);
-     pd.setPositionInitDate(TradingUtil.getAlgoDate());
-     pd.setPrice(positionPrice);
-     getPosition().put(id, pd);
-     } else {
-     BeanPosition pd = getPosition().get(id);
-     double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-     int symbolPosition = pd.getPosition() - size;
-     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * size + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-     pd.setPosition(symbolPosition);
-     pd.setPositionInitDate(TradingUtil.getAlgoDate());
-     pd.setPrice(positionPrice);
-     getPosition().put(id, pd);
-     }
-     int internalorderid = getInternalOrderID();
-     this.internalOpenOrders.put(id, internalorderid);
-     getTrades().put(new OrderLink(internalorderid, 0, "Order"), new Trade(id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, getTimeZone(), "Order"));
-     logger.log(Level.INFO, "310,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
-     if (MainAlgorithm.isUseForTrading()) {
-     oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), maxOrderDuration, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit,true,"DAY", scalein, orderGroup,"",null);
-     }
-     }
-     */
     //used by adr
     public synchronized void entry(int id, EnumOrderSide side, int size, EnumOrderType orderType, double limitPrice, double triggerPrice, EnumOrderReason reason, EnumOrderStage stage, int duration, int dynamicDuration, double slippage, String orderGroup, String validity, String effectiveTime, boolean scalein, boolean transmit) {
         if (id >= 0) {
@@ -802,6 +760,28 @@ public class Strategy implements NotificationListener {
         }
     }
 
+    /**
+     * Initializes the strategy for any new symbol that is added during the run.
+     * @param id 
+     */
+    public void initSymbol(int id){
+        if (id >=0 && Parameters.symbol.get(id).isAddedToSymbols()) {
+            //do housekeeping
+            //1. ensure it exists in positions for strategy and oms
+            if (!this.getStrategySymbols().contains(Integer.valueOf(id))) {
+                this.getStrategySymbols().add(id);
+                this.getPosition().put(id, new BeanPosition(id, getStrategy()));
+                Index ind = new Index(this.getStrategy(), id);
+                if (Parameters.symbol.get(id).getBidPrice() == 0) {
+                    Parameters.connection.get(0).getWrapper().getMktData(Parameters.symbol.get(id), false);
+                }
+                for (BeanConnection c : Parameters.connection) {
+                    c.initializeConnection(this.getStrategy(), id);
+                }
+            }
+        }
+    }
+    
     @Override
     public void notificationReceived(NotificationEvent event) {
     }

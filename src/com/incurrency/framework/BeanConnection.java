@@ -119,26 +119,30 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         }
     }
 
-    public void initializeConnection(String strategyName) {
+    public void initializeConnection(String strategyName,int id) {
+        if(id==-1){
         this.pnlByStrategy.put(strategyName, 0D);
         if(this.mtmByStrategy.get(strategyName)==null){
             this.mtmByStrategy.put(strategyName, 0D);
         }
-        this.maxpnlByStrategy.put(strategyName, 0D);
-        this.minpnlByStrategy.put(strategyName, 0D);
+            this.maxpnlByStrategy.put(strategyName, 0D);
+            this.minpnlByStrategy.put(strategyName, 0D);
 
-        for (int i = 0; i < Parameters.symbol.size(); i++) {
-            Index ind = new Index(strategyName, i);
+            for (int i = 0; i < Parameters.symbol.size(); i++) {
+                Index ind = new Index(strategyName, i);
+                ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
+                pnlBySymbol.put(ind, 0D);
+                if (this.mtmBySymbol.get(ind) == null) {
+                    this.mtmBySymbol.put(ind, 0D);
+                }
+            }
+        } else {//adding a symbol
+            Index ind = new Index(strategyName, id);
             ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
             pnlBySymbol.put(ind, 0D);
-        if(this.mtmBySymbol.get(ind)==null){
-            this.mtmBySymbol.put(ind, 0D);
-        }
-            /*
-            for (int j = 0; j <= 5; j++) {
-                ordersSymbols.get(ind).add(new ArrayList<Integer>());
+            if (this.mtmBySymbol.get(ind) == null) {
+                this.mtmBySymbol.put(ind, 0D);
             }
-            */
         }
     }
 
