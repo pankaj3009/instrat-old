@@ -1143,7 +1143,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     }
 
-    public void readerAll(String inputfile, ArrayList target) {
+    public void readerAll(String inputfile, List target) {
         File inputFile = new File(inputfile);
         if (inputFile.exists() && !inputFile.isDirectory()) {
             try {

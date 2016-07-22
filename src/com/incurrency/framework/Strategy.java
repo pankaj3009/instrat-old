@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -37,7 +38,7 @@ public class Strategy implements NotificationListener {
     //--common parameters required for all strategies
     MainAlgorithm m;
     public HashMap<Integer, Integer> internalOpenOrders = new HashMap(); //holds mapping of symbol id to latest initialization internal order
-    private HashMap<Integer, BeanPosition> position = new HashMap<>();
+    private ConcurrentHashMap<Integer, BeanPosition> position = new ConcurrentHashMap<>();
     private double tickSize;
     private double pointValue = 1;
     //private int internalOrderID = 1;
@@ -1210,7 +1211,7 @@ public class Strategy implements NotificationListener {
     /**
      * @return the position
      */
-    public HashMap<Integer, BeanPosition> getPosition() {
+    public ConcurrentHashMap<Integer, BeanPosition> getPosition() {
         synchronized (lockPL) {
             return position;
         }
@@ -1219,7 +1220,7 @@ public class Strategy implements NotificationListener {
     /**
      * @param position the position to set
      */
-    public void setPosition(HashMap<Integer, BeanPosition> position) {
+    public void setPosition(ConcurrentHashMap<Integer, BeanPosition> position) {
         synchronized (lockPL) {
             this.position = position;
         }

@@ -46,6 +46,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -106,7 +107,7 @@ public class Utilities {
         return out;
     }
 
-    public static int openPositionCount(Database<String, String> db, ArrayList<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
+    public static int openPositionCount(Database<String, String> db, List<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
         HashSet<String> temp = new HashSet<>();;
         HashMap<Integer, BeanPosition> position = new HashMap<>();
@@ -1211,7 +1212,7 @@ public class Utilities {
      * @param expiry
      * @return
      */
-    public static int getOptionIDForLongSystem(List<BeanSymbol> symbols, HashMap<Integer, BeanPosition> positions, int underlyingid, EnumOrderSide side, String expiry) {
+    public static int getOptionIDForLongSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int underlyingid, EnumOrderSide side, String expiry) {
         int id = -1;
         String displayname = symbols.get(underlyingid).getDisplayname();
         String underlying = displayname.split("_")[0];
@@ -1292,7 +1293,7 @@ public class Utilities {
         s.setExchange("NSE");
 
         s.setStreamingpriority(1);
-        s.setStrategy("TBD");
+        s.setStrategy("");
         s.setDisplayname(ul.getExchangeSymbol() + "_" + "OPT" + "_" + expiry + "_" + right + "_" + strikePrice);
         s.setSerialno(Parameters.symbol.size() + 1);
         s.setAddedToSymbols(true);
