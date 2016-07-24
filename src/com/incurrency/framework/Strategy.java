@@ -169,7 +169,9 @@ public class Strategy implements NotificationListener {
                     double tempPositionPrice = 0D;
                     if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
                         String[] input = parentsymbolname.split("_", -1);
-                        BeanSymbol s = new BeanSymbol(input[0],input[0], input[1], input[2], input[3], input[4]);
+                        String brokerSymbol=input[0].replaceAll("[^A-Za-z0-9]", "");
+                        brokerSymbol=brokerSymbol.substring(0, Math.min(brokerSymbol.length(), 9));
+                        BeanSymbol s = new BeanSymbol(brokerSymbol,input[0], input[1], input[2], input[3], input[4]);
                         if(s.getBrokerSymbol().equals("NSENIFTY")){
                             s.setBrokerSymbol("NIFTY50");
                         }

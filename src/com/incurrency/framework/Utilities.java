@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework;
 
+import com.cedarsoftware.util.io.JsonObject;
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
 import com.google.common.base.Function;
@@ -12,6 +13,7 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 import com.incurrency.RatesClient.RequestClient;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,9 +21,11 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -37,6 +41,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -50,6 +55,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.kairosdb.client.HttpClient;
+import org.kairosdb.client.builder.DataPoint;
+import org.kairosdb.client.builder.QueryBuilder;
+import org.kairosdb.client.builder.QueryMetric;
+import org.kairosdb.client.response.QueryResponse;
 
 /**
  *
@@ -100,13 +116,87 @@ public class Utilities {
         }
     }
 
-    public static double[] requestHistoricalData(BeanSymbol s, String starttime, String endtime, String timeZone, String name, String[] ts, String[] aggregators, String value, String unit) {
-        double[] out = new double[0];
+    /*
+   public static double getLastSettlePrice(int id) {
+        HashMap<String, Object> param = new HashMap();
+        param.put("TYPE", Boolean.FALSE);
+        HistoricalRequestJson request = new HistoricalRequestJson("india.nse.option.s4.daily.settle",
+                new String[]{"strike", "symbol", "option", "expiry"},
+                new String[]{"8500", "nsenifty", "CALL", "20160728"},
+                "1",
+                "days",
+                "last",
+                "1468953000000",
+                "1469125800000");
+        //http://stackoverflow.com/questions/7181534/http-post-using-json-in-java
+        String json_string = JsonWriter.objectToJson(request, param);
+        StringEntity requestEntity = new StringEntity(
+                json_string,
+                ContentType.APPLICATION_JSON);
 
+        HttpPost postMethod = new HttpPost("http://91.121.165.108:8085/api/v1/datapoints/query");
+        postMethod.setEntity(requestEntity);
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        try {
+            HttpResponse rawResponse = httpClient.execute(postMethod);
+            BufferedReader br = new BufferedReader(
+                        new InputStreamReader((rawResponse.getEntity().getContent())));
 
+		String output;
+		System.out.println("Output from Server .... \n");
+		while ((output = br.readLine()) != null) {
+                    param.clear();
+                    param.put("USE_MAPS", "true");
+                HashMap<String,Object> obj = (HashMap) JsonReader.jsonToJava(output,param);
+                System.out.println(output);
+		}
+                
+            System.out.println(rawResponse);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
+        
+        return 0D;
+    }
+*/
+      public static double getLastSettlePrice(List<BeanSymbol> symbols,int id,long startTime,long endTime,String metric){
+                double out=0D;
+                try{
+                HttpClient client = new HttpClient("http://91.121.165.108:8085/api/v1/datapoints/query:8085");
+                QueryBuilder builder = QueryBuilder.getInstance();
+                BeanSymbol s=symbols.get(id);
+                String symbol[]=s.getDisplayname().split("_",-1);
+                HashMap<String,String>tags=new HashMap<>();
+                tags.put("symbol", symbol[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase());
+                if(!symbol[2].equals("")){
+                    tags.put("expiry", symbol[2]);
+                }
+                if(!symbol[3].equals("")){
+                tags.put("option", symbol[3].toUpperCase());
+                tags.put("strike", symbol[4]);
+                }
+                builder.setStart(new Date(startTime))
+                        .setEnd(new Date(endTime))
+                        .addMetric(metric)
+                        .addTags(tags);
+                
+                builder.getMetrics().get(0).setOrder(QueryMetric.Order.ASCENDING);
+                long time = new Date().getTime();
+                QueryResponse response = client.query(builder);
+                List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
+                for (DataPoint dataPoint : dataPoints) {
+                    long lastTime = dataPoint.getTimestamp();
+                    Object value = dataPoint.getValue();
+                    out=Utilities.getDouble(value, 0D);
+                }        
+                    
+                }catch(Exception e){
+                    logger.log(Level.SEVERE,null,e);
+                }
         return out;
     }
 
+   
     public static int openPositionCount(Database<String, String> db, List<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
         HashSet<String> temp = new HashSet<>();;
