@@ -1391,6 +1391,24 @@ public class Utilities {
         return s.getSerialno() - 1;
     }
 
+    public static int getNetPositionFromOptions(List<BeanSymbol> symbols,ConcurrentHashMap<Integer, BeanPosition> position, int id){
+        int out=0;
+        ArrayList<Integer> tempSymbols=new ArrayList<>();
+        BeanSymbol ref=symbols.get(id);
+        for(BeanSymbol s: symbols){
+            if(s.getBrokerSymbol().equals(ref.getBrokerSymbol())){
+                tempSymbols.add(s.getSerialno()-1);
+            }
+        }
+        
+        for(Integer p: position.keySet()){
+            if(tempSymbols.contains(p)){
+                out=out+position.get(p).getPosition();
+            }
+        }
+        return out;
+    }
+    
     public static String formatDouble(double d, DecimalFormat df) {
         return df.format(d);
     }
