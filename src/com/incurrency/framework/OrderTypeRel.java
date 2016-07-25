@@ -41,6 +41,9 @@ public class OrderTypeRel implements Runnable,BidAskListener,OrderStatusListener
     public void run() {
         Subscribe.tes.addBidAskListener(this);
         Subscribe.tes.addOrderStatusListener(this);
+        for (BeanConnection c : Parameters.connection) {
+            c.getWrapper().addOrderStatusListener(this);
+        }
         synchronized(syncObject){
             try {
                 syncObject.wait();
