@@ -161,7 +161,7 @@ public class Strategy implements NotificationListener {
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
                         String[] input = parentsymbolname.split("_", -1);
-                        String brokerSymbol=input[0].replaceAll("[^A-Za-z0-9]", "");
+                        String brokerSymbol=input[0].replaceAll("[^A-Za-z0-9\\-]", "");
                         brokerSymbol=brokerSymbol.substring(0, Math.min(brokerSymbol.length(), 9));
                         BeanSymbol s = new BeanSymbol(brokerSymbol,input[0], input[1], input[2], input[3], input[4]);
                         if(s.getBrokerSymbol().equals("NSENIFTY")){
@@ -194,7 +194,7 @@ public class Strategy implements NotificationListener {
                     double tempPositionPrice = 0D;
                     if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
                         String[] input = parentsymbolname.split("_", -1);
-                        String brokerSymbol=input[0].replaceAll("[^A-Za-z0-9]", "");
+                        String brokerSymbol=input[0].replaceAll("[^A-Za-z0-9\\-]", "");
                         brokerSymbol=brokerSymbol.substring(0, Math.min(brokerSymbol.length(), 9));
                         BeanSymbol s = new BeanSymbol(brokerSymbol,input[0], input[1], input[2], input[3], input[4]);
                         if(s.getBrokerSymbol().equals("NSENIFTY")){
@@ -659,7 +659,9 @@ public class Strategy implements NotificationListener {
             order.put("entryorderidint", internalorderid);
             this.internalOpenOrders.put(id, internalorderid);
             String log=order.get("log")!=null?order.get("log").toString():"";
-            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades",log);
+            double lastprice=Parameters.symbol.get(id).getLastPrice();
+            lastprice=lastprice==0?Utilities.getDouble(order.get("limitprice"),0):lastprice;
+            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, lastprice, size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades",log);
             logger.log(Level.INFO, "401,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(order);

@@ -1924,7 +1924,10 @@ public class TradingUtil {
                     String symboldisplayName=Trade.getEntrySymbol(db, key);
                     int id=Utilities.getIDFromDisplayName(Parameters.symbol, symboldisplayName);
                     int contractsize=Parameters.symbol.get(id).getMinsize();
-                    int entrySizeContracts=(entrySize/contractsize);
+                    int entrySizeContracts=1;
+                    if(contractsize>0){
+                    entrySizeContracts=(entrySize/contractsize);
+                    }
                     if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (entrySide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER))) {
                         entryCost = entryCost + entrySizeContracts * b.primaryRate + (entrySizeContracts * b.primaryRate * b.secondaryRate/100);
                     }
@@ -1958,7 +1961,10 @@ public class TradingUtil {
                     String symboldisplayName=Trade.getEntrySymbol(db, key);
                     int id=Utilities.getIDFromDisplayName(Parameters.symbol, symboldisplayName);
                     int contractsize=Parameters.symbol.get(id).getMinsize();
-                    int exitSizeContracts=(exitSize/contractsize);
+                    int exitSizeContracts=1;
+                    if(contractsize>0){
+                     exitSizeContracts=(exitSize/contractsize);
+                    }
                     if (!exitTime.equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (exitSide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && exitTime.contains(entryTime.substring(0, 10))))) {
                         exitCost = exitCost + exitSizeContracts * b.primaryRate + (exitSizeContracts * b.primaryRate * b.secondaryRate/100);
                     }
