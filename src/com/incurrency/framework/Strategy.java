@@ -104,12 +104,7 @@ public class Strategy implements NotificationListener {
             for (String account : getAccounts()) {
                 allAccounts = allAccounts == null ? account : allAccounts + ":" + account;
             }
-            for (BeanSymbol s : Parameters.symbol) {
-                if (Pattern.compile(Pattern.quote(headerStrategy), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
-                    strategySymbols.add(s.getSerialno() - 1);
-                    position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, getStrategy()));
-                }
-            }
+            
             String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
             if (stratCount == null) {
                 this.strategy = tempStrategyArray[tempStrategyArray.length - 1];
@@ -160,6 +155,36 @@ public class Strategy implements NotificationListener {
                 validation = validation && stratVal;
             }
             //}
+            //Add symbols if exist in position, but not in Parameters.symbol
+            for(String key:db.getKeys("opentrades")){
+                    String parentsymbolname = Trade.getParentSymbol(db, key);
+                    int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
+                    if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
+                        String[] input = parentsymbolname.split("_", -1);
+                        String brokerSymbol=input[0].replaceAll("[^A-Za-z0-9]", "");
+                        brokerSymbol=brokerSymbol.substring(0, Math.min(brokerSymbol.length(), 9));
+                        BeanSymbol s = new BeanSymbol(brokerSymbol,input[0], input[1], input[2], input[3], input[4]);
+                        if(s.getBrokerSymbol().equals("NSENIFTY")){
+                            s.setBrokerSymbol("NIFTY50");
+                        }
+                        s.setCurrency("INR");
+                        s.setExchange("NSE");
+                        s.setStreamingpriority(1);
+                        s.setStrategy(this.getStrategy().toUpperCase());
+                        s.setDisplayname(parentsymbolname);
+                        s.setSerialno(Parameters.symbol.size() + 1);
+                        Parameters.symbol.add(s);
+                        id=Parameters.symbol.size()-1;
+                        Parameters.connection.get(0).getWrapper().getMktData(s, false);
+                    }
+            }
+            for (BeanSymbol s : Parameters.symbol) {
+                if (Pattern.compile(Pattern.quote(headerStrategy), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
+                    strategySymbols.add(s.getSerialno() - 1);
+                    position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, getStrategy()));
+                }
+            }
+            
             if (validation) {
                 //Initialize open notional orders and positions
                 for (String key : db.getKeys("opentrades")) {
