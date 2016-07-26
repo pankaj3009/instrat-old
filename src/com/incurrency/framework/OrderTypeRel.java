@@ -47,7 +47,7 @@ public class OrderTypeRel implements Runnable,BidAskListener,OrderStatusListener
         synchronized(syncObject){
             try {
                 syncObject.wait();
-                logger.log(Level.INFO,"OrderTypeRel: Notified execution completion");
+                logger.log(Level.INFO,"OrderTypeRel: Closing Manager");
                 Subscribe.tes.removeBidAskListener(this);
                 Subscribe.tes.removeOrderStatusListener(this);
             } catch (InterruptedException ex) {
@@ -92,13 +92,13 @@ public class OrderTypeRel implements Runnable,BidAskListener,OrderStatusListener
     @Override
     public void orderStatusReceived(OrderStatusEvent event) {
         OrderBean ob=c.getOrders().get(event.getOrderID());
-        logger.log(Level.INFO,"OrderTypeRel : OrderID:{0},OrderID from ob:{1}, Remaining{2}",new Object[]{event.getOrderID(),ob.getOrderID()});
+        logger.log(Level.INFO,"OrderTypeRel : OrderID:{0},OrderID from ob:{1}, Remaining{2}",new Object[]{event.getOrderID(),ob.getOrderID(),event.getRemaining()});
             if(event.getOrderID()==ob.getOrderID()){
             logger.log(Level.INFO,"Match OrderTypeRel : InternalOrderID:{0},Remaining{1}",new Object[]{event.getOrderID(),event.getRemaining()});
             if(event.getRemaining()==0){
-                logger.log(Level.INFO,"OrderTypeRel: Waiting for lock");
+                logger.log(Level.FINE,"OrderTypeRel: Waiting for lock");
                 synchronized(syncObject){
-                logger.log(Level.INFO,"OrderTypeRel: Lock obtained");
+                logger.log(Level.FINE,"OrderTypeRel: Lock obtained");
                 syncObject.notify();                   
                 }
             }
