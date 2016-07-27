@@ -4,16 +4,11 @@
  */
 package com.incurrency.framework;
 
-import com.cedarsoftware.util.io.JsonObject;
-import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 import com.incurrency.RatesClient.RequestClient;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,19 +16,15 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
@@ -41,26 +32,13 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.kairosdb.client.HttpClient;
 import org.kairosdb.client.builder.DataPoint;
 import org.kairosdb.client.builder.QueryBuilder;
@@ -159,42 +137,45 @@ public class Utilities {
         return 0D;
     }
 */
-      public static double getLastSettlePrice(List<BeanSymbol> symbols,int id,long startTime,long endTime,String metric){
-                double out=0D;
-                try{
-                HttpClient client = new HttpClient("http://91.121.165.108:8085/api/v1/datapoints/query:8085");
-                QueryBuilder builder = QueryBuilder.getInstance();
-                BeanSymbol s=symbols.get(id);
-                String symbol[]=s.getDisplayname().split("_",-1);
-                HashMap<String,String>tags=new HashMap<>();
-                tags.put("symbol", symbol[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase());
-                if(!symbol[2].equals("")){
-                    tags.put("expiry", symbol[2]);
-                }
-                if(!symbol[3].equals("")){
-                tags.put("option", symbol[3].toUpperCase());
-                tags.put("strike", symbol[4]);
-                }
-                builder.setStart(new Date(startTime))
-                        .setEnd(new Date(endTime))
-                        .addMetric(metric)
-                        .addTags(tags);
-                
-                builder.getMetrics().get(0).setOrder(QueryMetric.Order.ASCENDING);
-                long time = new Date().getTime();
-                QueryResponse response = client.query(builder);
-                List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
-                for (DataPoint dataPoint : dataPoints) {
-                    long lastTime = dataPoint.getTimestamp();
-                    Object value = dataPoint.getValue();
-                    out=Utilities.getDouble(value, 0D);
-                }        
-                    
-                }catch(Exception e){
-                    logger.log(Level.SEVERE,null,e);
-                }
-        return out;
+    public static double getLastSettlePrice(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
+        String value = "0";
+        try {
+            //HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
+            //HttpClient client = new HttpClient("http://91.121.165.108:8085/api/v1/datapoints/query:8085");
+            HttpClient client = new HttpClient("http://91.121.165.108:8085");
+            BeanSymbol s = symbols.get(id);
+            String expiry = s.getExpiry();
+            String right = s.getRight();
+            String strike = s.getOption();
+            String symbol = s.getDisplayname().split("_", -1)[0];
+            QueryBuilder builder = QueryBuilder.getInstance();
+            builder.setStart(new Date(startTime))
+                    .setEnd(new Date(endTime))
+                    .addMetric(metric)
+                    .addTag("symbol", symbol.replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase());
+            builder.getMetrics().get(0).setOrder(QueryMetric.Order.ASCENDING);
+            if (expiry != null || (expiry != null && !expiry.equals(""))) {
+                builder.getMetrics().get(0).addTag("expiry", expiry);
+            }
+            if (right != null || (right != null && !right.equals(""))) {
+                builder.getMetrics().get(0).addTag("right", right);
+                builder.getMetrics().get(0).addTag("strike", strike);
+            }
+            long time = new Date().getTime();
+            QueryResponse response = client.query(builder);
+            List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
+            for (DataPoint dataPoint : dataPoints) {
+                long lastTime = dataPoint.getTimestamp();
+                value = dataPoint.getValue().toString();
+            }
+            client.shutdown();
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
+        return Utilities.getDouble(value, 0);
+
     }
+
 
    
     public static int openPositionCount(Database<String, String> db, List<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
