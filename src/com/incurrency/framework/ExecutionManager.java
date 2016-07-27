@@ -959,7 +959,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             size = c.getPositions().get(ind) == null ? 0 : c.getPositions().get(ind).getPosition();
         }
         if (!orderids.isEmpty()) { //orders exist for the internal order id
-            if (c.getOrders().get(orderids.get(0)).getParentStatus() != EnumOrderStatus.COMPLETEFILLED) {
+            //place for amended only if acknowledged by ib and not completely filled
+            if (c.getOrders().get(orderids.get(0)).getParentStatus() != EnumOrderStatus.COMPLETEFILLED & c.getOrders().get(orderids.get(0)).getParentStatus() != EnumOrderStatus.SUBMITTED) {
                 //amend orders
                 //<Symbolid,order>
                 HashMap<Integer, Order> ordersHashMap = c.getWrapper().createOrderFromExisting(c, internalorderid, event.getOrdReference());
