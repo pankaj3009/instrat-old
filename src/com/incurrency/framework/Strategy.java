@@ -169,13 +169,13 @@ public class Strategy implements NotificationListener {
                         }
                         s.setCurrency("INR");
                         s.setExchange("NSE");
+                        s.setPrimaryexchange("NSE");
                         s.setStreamingpriority(1);
                         s.setStrategy(this.getStrategy().toUpperCase());
                         s.setDisplayname(parentsymbolname);
-                        s.setSerialno(Parameters.symbol.size() + 1);
+                        s.setSerialno(Parameters.symbol.size());
                         Parameters.symbol.add(s);
-                        id=Parameters.symbol.size()-1;
-                        Parameters.connection.get(0).getWrapper().getMktData(s, false);
+                        Parameters.connection.get(1).getWrapper().getMktData(s, false);
                     }
             }
             for (BeanSymbol s : Parameters.symbol) {
@@ -192,24 +192,6 @@ public class Strategy implements NotificationListener {
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     int tempPosition = 0;
                     double tempPositionPrice = 0D;
-                    if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
-                        String[] input = parentsymbolname.split("_", -1);
-                        String brokerSymbol=input[0].replaceAll("[^A-Za-z0-9\\-]", "");
-                        brokerSymbol=brokerSymbol.substring(0, Math.min(brokerSymbol.length(), 9));
-                        BeanSymbol s = new BeanSymbol(brokerSymbol,input[0], input[1], input[2], input[3], input[4]);
-                        if(s.getBrokerSymbol().equals("NSENIFTY")){
-                            s.setBrokerSymbol("NIFTY50");
-                        }
-                        s.setCurrency("INR");
-                        s.setExchange("NSE");
-                        s.setStreamingpriority(1);
-                        s.setStrategy(this.getStrategy().toUpperCase());
-                        s.setDisplayname(parentsymbolname);
-                        s.setSerialno(Parameters.symbol.size() + 1);
-                        Parameters.symbol.add(s);
-                        id=Parameters.symbol.size()-1;
-                        Parameters.connection.get(0).getWrapper().getMktData(s, false);
-                    }
                     if (id >= 0) {
                         if(!Parameters.symbol.get(id).getStrategy().contains(this.getStrategy().toUpperCase())){
                             String oldstrategy=Parameters.symbol.get(id).getStrategy();

@@ -1381,6 +1381,7 @@ public class Utilities {
         BeanSymbol s = new BeanSymbol(ul.getBrokerSymbol(), ul.getExchangeSymbol(), "OPT", expiry, right, strikePrice);
         s.setCurrency("INR");
         s.setExchange("NSE");
+        s.setPrimaryexchange("NSE");
 
         s.setStreamingpriority(1);
         s.setStrategy("");
