@@ -97,5 +97,10 @@ public class DataStore<K,V> implements Database<K,V> {
     public List<String> lrange(String storeName, String key, int start, int end) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public void rename(String storeName, String newStoreName) {
+       throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

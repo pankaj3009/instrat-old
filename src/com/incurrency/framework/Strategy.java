@@ -148,7 +148,7 @@ public class Strategy implements NotificationListener {
                         jr.close();
                     }        
                 }
-                stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy());
+                stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy(),Boolean.TRUE);
                 if (!stratVal) {
                     logger.log(Level.INFO, "100,IntegrityCheckFailed,{0}", new Object[]{getStrategy() + delimiter + account});
                 }
@@ -547,7 +547,7 @@ public class Strategy implements NotificationListener {
             }
                 for (BeanConnection c : Parameters.connection) {
                     if (s.accounts.contains(c.getAccountName())) {
-                        Validator.reconcile(prefix, db, s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(),this.getStrategy());
+                        Validator.reconcile(prefix, db, s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(),this.getStrategy(),Boolean.TRUE);
                     }
                     //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
                 }

@@ -60,7 +60,7 @@ public class Validator {
            }  
            return out;
     }
-    public synchronized static boolean reconcile(String prefix, Database<String,String>orderDB, Database<String,String>tradeDB, String account, String email,String strategy) {
+    public synchronized static boolean reconcile(String prefix, Database<String,String>orderDB, Database<String,String>tradeDB, String account, String email,String strategy, Boolean fix) {
         //for(BeanConnection c:Parameters.connection){
 //        String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
 //        String orderFileFullName = "logs" + File.separator + prefix + orderFile;
@@ -125,6 +125,23 @@ public class Validator {
             System.out.println(singleLegIssues + newline + comboIssues + newline + comboChildrenIssues);
             Thread t = new Thread(new Mail(email, singleLegIssues + newline + comboIssues + newline + comboChildrenIssues, "ACTION NEEDED: Recon difference, Files : " + "TradeFile" + " , " + "OrderFile"));
             t.start();
+            if(fix){
+                Set<String> openorders=orderDB.getKeys("opentrades_"+strategy+"*"+"Order"); 
+                Set<String> opentrades=tradeDB.getKeys("opentrades_"+strategy+"*"+account);
+                Set<String> closedorders=tradeDB.getKeys("closedtrades_"+strategy+"*"+"Order");
+                for(String tradekey:opentrades){
+                    String orderkey=tradekey.replace(":"+account, ":Order");
+                    if(!openorders.contains(orderkey)){//we have an opentrade with no openorder
+                        //see if the order was closed
+                        String neworderkey=orderkey.replace(":closedtrades", ":opentrades");
+                        if(closedorders.contains(neworderkey)){
+                            orderDB.rename(neworderkey, orderkey);
+                        }                    
+                    }
+                }
+            }
+            //Rerun the utility.
+            reconStatus=reconcile(prefix, orderDB, tradeDB, account, email,strategy, Boolean.FALSE); 
             return reconStatus;
         } else {
             System.out.println("Trade and Order Files Reconile for account " + account+";"+strategy + "  !");

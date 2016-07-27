@@ -39,6 +39,7 @@ public interface Database<K,V> {
     public List<String> blpop(String storeName,String key, int duration);
     public List<String> brpop(String storeName,String key,int duration);
     public List<String> lrange(String storeName,String key,int start, int end);
+    public void rename(String storeName,String newStoreName);
     //public int loadVariables();
     //public int saveVariables();
     //public Set<String> getKeys(String pattern);

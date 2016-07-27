@@ -124,4 +124,11 @@ public class RedisConnect<K, V> implements Database<K, V> {
             return jedis.lrange(storeName+key,start,end);  
                 }
     }
+
+    @Override
+    public void rename(String storeName, String newStoreName) {
+         try (Jedis jedis = pool.getResource()) {
+             jedis.rename(storeName, newStoreName);
+         }
+    }
 }
