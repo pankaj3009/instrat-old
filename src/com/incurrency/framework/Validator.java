@@ -122,23 +122,36 @@ public class Validator {
                     + newline + comboChildrenIssues;
         }
         if (!(singleLegIssues.equals("") && comboIssues.equals("") && comboChildrenIssues.equals(""))) {
-            System.out.println(singleLegIssues + newline + comboIssues + newline + comboChildrenIssues);
-            Thread t = new Thread(new Mail(email, singleLegIssues + newline + comboIssues + newline + comboChildrenIssues, "ACTION NEEDED: Recon difference, Files : " + "TradeFile" + " , " + "OrderFile"));
-            t.start();
             if(fix){
                 Set<String> openorders=orderDB.getKeys("opentrades_"+strategy+"*"+"Order"); 
                 Set<String> opentrades=tradeDB.getKeys("opentrades_"+strategy+"*"+account);
-                Set<String> closedorders=tradeDB.getKeys("closedtrades_"+strategy+"*"+"Order");
+                Set<String> closedorders=orderDB.getKeys("closedtrades_"+strategy+"*"+"Order");
                 for(String tradekey:opentrades){
                     String orderkey=tradekey.replace(":"+account, ":Order");
                     if(!openorders.contains(orderkey)){//we have an opentrade with no openorder
                         //see if the order was closed
-                        String neworderkey=orderkey.replace(":closedtrades", ":opentrades");
+                        String neworderkey=orderkey.replace("opentrades", "closedtrades");
                         if(closedorders.contains(neworderkey)){
                             orderDB.rename(neworderkey, orderkey);
+                            String subkeyOrder=orderkey.split("_")[1];
+                            String subkeyTrade=tradekey.split("_")[1];
+                            
+                            String exitsize=tradeDB.getValue("opentrades",subkeyTrade,"exitsize");
+                            String exitprice=tradeDB.getValue("opentrades",subkeyTrade,"exitprice");
+                            String exitbrokerage=tradeDB.getValue("opentrades",subkeyTrade,"exitbrokerage");
+                            exitsize=exitsize==null?"0":exitsize;
+                            exitprice=exitprice==null?"0":exitprice;
+                            exitbrokerage=exitbrokerage==null?"0":exitbrokerage;
+                            orderDB.setHash("opentrades", subkeyOrder, "exitsize", exitsize);
+                            orderDB.setHash("opentrades", subkeyOrder, "exitprice", exitprice);
+                            orderDB.setHash("opentrades", subkeyOrder, "exitbrokerage", exitbrokerage);
                         }                    
                     }
                 }
+            } else{
+            System.out.println(singleLegIssues + newline + comboIssues + newline + comboChildrenIssues);
+            Thread t = new Thread(new Mail(email, singleLegIssues + newline + comboIssues + newline + comboChildrenIssues, "ACTION NEEDED: Recon difference, Files : " + "TradeFile" + " , " + "OrderFile"));
+            t.start();
             }
             //Rerun the utility.
             reconStatus=reconcile(prefix, orderDB, tradeDB, account, email,strategy, Boolean.FALSE); 
@@ -515,9 +528,13 @@ public class Validator {
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
-            String childdisplayname = Trade.getEntrySymbol(db, key);
-            int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || isCombo(db, key)) {
+            /*
+             * Removed next three lines as not sure of their existence
+             */
+            //String childdisplayname = Trade.getEntrySymbol(db, key);
+            //int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
+           // if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || isCombo(db, key)) {
+            if (!Trade.getAccountName(db, key).equals(accountName) || !key.contains("_"+strategy)||isCombo(db, key)) {
                 iter.remove();
             }
         }
