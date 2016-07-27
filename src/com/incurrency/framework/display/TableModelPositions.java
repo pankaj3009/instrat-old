@@ -116,13 +116,16 @@ public class TableModelPositions extends AbstractTableModel {
                     return "";
                 }
 
-            case 3:
+            case 3: //P&L
                 if (Parameters.connection.get(display).getPositions().size() > 0) {
                     double pnl = 0;
                     //calculate max, min pnl
                     if (!(Parameters.connection.get(display) == null || Parameters.connection.get(display).getPositions() == null || Parameters.connection.get(display).getPositions().get(ind) == null)) {
                         if (Parameters.connection.get(display).getPositions().get(ind).getPosition() > 0) {
-                            return (int) Math.round(-Parameters.connection.get(display).getPositions().get(ind).getPosition() * Parameters.connection.get(display).getPositions().get(ind).getPointValue()*(Parameters.connection.get(display).getPositions().get(ind).getPrice() - Parameters.symbol.get(ind.getSymbolID()).getLastPrice()) + Parameters.connection.get(display).getPositions().get(ind).getProfit());
+                            return (int) Math.round(-Parameters.connection.get(display).getPositions().get(ind).getPosition() 
+                                    * Parameters.connection.get(display).getPositions().get(ind).getPointValue()
+                                    *(Parameters.connection.get(display).getPositions().get(ind).getPrice() - Parameters.symbol.get(ind.getSymbolID()).getLastPrice()) 
+                                    + Parameters.connection.get(display).getPositions().get(ind).getProfit());
                             //return String.format("%.02f",(-Parameters.connection.get(display).getPositions().get(ind).getPosition()*(Parameters.connection.get(display).getPositions().get(ind).getPrice()-Parameters.symbol.get(ind.getSymbolID()).getLastPrice())+Parameters.connection.get(display).getPositions().get(ind).getProfit())); 
 
                         } else if (Parameters.connection.get(display).getPositions().get(ind).getPosition() < 0) {
@@ -138,14 +141,17 @@ public class TableModelPositions extends AbstractTableModel {
                 } else {
                     return 0;
                 }
-            case 4:
+            case 4: //MTM
                 if (Parameters.connection.get(display).getPositions().size() > 0) {
                     double pnl = 0;
                     double value=0;
                     //calculate max, min pnl
                     if (!(Parameters.connection.get(display) == null || Parameters.connection.get(display).getPositions() == null || Parameters.connection.get(display).getPositions().get(ind) == null)) {
                         if (Parameters.connection.get(display).getPositions().get(ind).getPosition() > 0) {
-                            value= -Parameters.connection.get(display).getPositions().get(ind).getPosition() * Parameters.connection.get(display).getPositions().get(ind).getPointValue()*(Parameters.connection.get(display).getPositions().get(ind).getPrice() - Parameters.symbol.get(ind.getSymbolID()).getLastPrice()) + Parameters.connection.get(display).getPositions().get(ind).getProfit();
+                            value= -Parameters.connection.get(display).getPositions().get(ind).getPosition() 
+                                    * Parameters.connection.get(display).getPositions().get(ind).getPointValue()
+                                    *(Parameters.connection.get(display).getPositions().get(ind).getPrice() - Parameters.symbol.get(ind.getSymbolID()).getLastPrice()) 
+                                    + Parameters.connection.get(display).getPositions().get(ind).getProfit();
                             return Utilities.round(value-Parameters.connection.get(display).getMtmBySymbol().get(ind), 0);
                         } else if (Parameters.connection.get(display).getPositions().get(ind).getPosition() < 0) {
                             value=-Parameters.connection.get(display).getPositions().get(ind).getPosition() * Parameters.connection.get(display).getPositions().get(ind).getPointValue()*(Parameters.connection.get(display).getPositions().get(ind).getPrice() - Parameters.symbol.get(ind.getSymbolID()).getLastPrice()) + Parameters.connection.get(display).getPositions().get(ind).getProfit();

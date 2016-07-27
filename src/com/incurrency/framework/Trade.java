@@ -63,6 +63,7 @@ public class Trade {
         db.setHash(tradeStatus, key, "entryside", String.valueOf(side));
         db.setHash(tradeStatus, key, "entryprice", String.valueOf(price));
         db.setHash(tradeStatus, key, "entrysize", String.valueOf(size));
+        db.setHash(tradeStatus, key, "mtmtoday", String.valueOf(price));
         String entryTime;
         if (timeZone.compareTo("") == 0) {
             entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
@@ -95,6 +96,7 @@ public class Trade {
         db.setHash(tradeStatus, key, "exitorderidext", String.valueOf(exitorderidext));
         db.setHash(tradeStatus, key, "parentexitorderidint", String.valueOf(parentexitorderidint));
         db.setHash(tradeStatus, key, "accountname", accountName);
+        db.setHash(tradeStatus, key, "mtmtoday", String.valueOf(price));
         db.setHash(tradeStatus, key, "exitreason", String.valueOf(reason));
         Trade.updateExitTradeLog(db, key, tradeStatus, log);
 
