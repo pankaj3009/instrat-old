@@ -1302,8 +1302,9 @@ public class Utilities {
      * @param expiry
      * @return
      */
-    public static int getOptionIDForLongSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int underlyingid, EnumOrderSide side, String expiry) {
+    public static ArrayList<Integer> getOptionIDForLongSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int underlyingid, EnumOrderSide side, String expiry) {
         int id = -1;
+        ArrayList<Integer>out=new ArrayList<>();
         String displayname = symbols.get(underlyingid).getDisplayname();
         String underlying = displayname.split("_")[0];
         double strikeDistance = 0;
@@ -1319,14 +1320,16 @@ public class Utilities {
                 if (id == -1) {
                     id = Utilities.insertATMStrike(symbols, underlyingid, strikeDistance, expiry, "CALL");
                 }
+                out.add(id);
                 break;
             case SELL:
                 for (BeanPosition p : positions.values()) {
                     if (p.getPosition() != 0) {
                         int tradeid = p.getSymbolid();
                         String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
-                        if (displayname.contains(underlying) && tradedisplayname.contains("CALL")) {
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("CALL")) {
                             id = tradeid;
+                            out.add(id);
                         }
                     }
                 }
@@ -1342,14 +1345,16 @@ public class Utilities {
                 if (id == -1) {
                     id = Utilities.insertATMStrike(symbols, underlyingid, strikeDistance, expiry, "PUT");
                 }
+                out.add(id);
                 break;
             case COVER:
                 for (BeanPosition p : positions.values()) {
                     if (p.getPosition() != 0) {
                         int tradeid = p.getSymbolid();
                         String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
-                        if (displayname.contains(underlying) && tradedisplayname.contains("PUT")) {
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("PUT")) {
                             id = tradeid;
+                            out.add(id);
                         }
                     }
                 }
@@ -1357,7 +1362,7 @@ public class Utilities {
             default:
                 break;
         }
-        return id;
+        return out;
     }
 
     public static int getATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
