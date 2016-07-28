@@ -32,6 +32,7 @@ public class ProfitLossManager implements TradeListener {
     final Object[] symbolLock;
     String strategy;
     private final String delimiter="_";
+    final Object tradeablesymbolsLock=new Object();
 
     public ProfitLossManager(Strategy s, List<Integer> symbols, double pointValue, double periodicProfitTarget, double dayProfitTarget, double dayStopLoss, ArrayList<String> accounts) {
         this.s = s;
@@ -58,12 +59,22 @@ public class ProfitLossManager implements TradeListener {
             Subscribe.tes.addTradeListener(this);
         }
         MainAlgorithm.tes.addTradeListener(this);
+        for(BeanConnection c:Parameters.connection){
+            c.getWrapper().addTradeListener(this);
+        }
 
     }
 
+    public void init(int id){
+        synchronized(tradeablesymbolsLock){
+        this.tradeableSymbols.add(id);            
+        }
+    }
+    
     @Override
     public synchronized void tradeReceived(TradeEvent event) {
         int id = event.getSymbolID();
+        synchronized(tradeablesymbolsLock){
         if (tradeableSymbols.contains(id)) {
             int positionInArrayList = tradeableSymbols.indexOf(new Integer(id));
            // if(symbolLock.length>positionInArrayList){//in range
@@ -144,6 +155,7 @@ public class ProfitLossManager implements TradeListener {
                 }
             //}
             //}
+        }
         }
     }
 

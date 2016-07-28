@@ -171,7 +171,7 @@ public class Strategy implements NotificationListener {
                         s.setExchange("NSE");
                         s.setPrimaryexchange("NSE");
                         s.setStreamingpriority(1);
-                        s.setStrategy(this.getStrategy().toUpperCase());
+                        s.setStrategy(headerStrategy.toUpperCase());
                         s.setDisplayname(parentsymbolname);
                         s.setSerialno(Parameters.symbol.size()+1);
                         Parameters.symbol.add(s);
@@ -792,6 +792,7 @@ public class Strategy implements NotificationListener {
                 for (BeanConnection c : Parameters.connection) {
                     c.initializeConnection(this.getStrategy(), id);
                 }
+                plmanager.init(id);
             }
         }
     }
