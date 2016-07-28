@@ -87,6 +87,7 @@ public class Strategy implements NotificationListener {
     public Database<String, String> db;
     private Boolean useRedis;
     private String redisDatabaseID;
+    private int connectionidForMarketData=0;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -359,7 +360,7 @@ public class Strategy implements NotificationListener {
 
         longOnly = p.getProperty("Long") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Long")));
         shortOnly = p.getProperty("Short") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Short")));
-
+        connectionidForMarketData=Utilities.getInt(p.getProperty("ConnectionIDForMarketData","0"),0);
         logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Accounts" + delimiter + allAccounts});
         logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartDate" + delimiter + getStartDate()});
         logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EndDate" + delimiter + getEndDate()});
@@ -787,7 +788,7 @@ public class Strategy implements NotificationListener {
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
                 Index ind = new Index(this.getStrategy(), id);
                 if (Parameters.symbol.get(id).getBidPrice() == 0) {
-                    Parameters.connection.get(0).getWrapper().getMktData(Parameters.symbol.get(id), false);
+                    Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
                 }
                 for (BeanConnection c : Parameters.connection) {
                     c.initializeConnection(this.getStrategy(), id);
