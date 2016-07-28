@@ -125,7 +125,7 @@ public class MarketData implements Runnable {
                     contract.m_secType = symb.get(row).getType();
                     contract.m_currency = symb.get(row).getCurrency();
                     int i = 0;
-                    while (isSnap && mIB.getWrapper().outstandingSnapshots>= 100 - this.rtrequets && i < 20 && !contract.m_secType.equals("COMBO")) {
+                    while (isSnap && mIB.getWrapper().outstandingSnapshots>= 80 - this.rtrequets && i < 20 && !contract.m_secType.equals("COMBO")) {
                         Thread.sleep(100);
                         i = i + 1;
                         if (i >= 20) { //trim snapshots after 2 seconds. 
