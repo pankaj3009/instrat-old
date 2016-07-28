@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 import com.incurrency.RatesClient.RequestClient;
+import static com.incurrency.framework.TradingUtil.logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -64,6 +65,11 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.calendars.India;
+import org.kairosdb.client.HttpClient;
+import org.kairosdb.client.builder.DataPoint;
+import org.kairosdb.client.builder.QueryBuilder;
+import org.kairosdb.client.builder.QueryMetric;
+import org.kairosdb.client.response.QueryResponse;
 
 /**
  *
@@ -157,6 +163,59 @@ public class Utilities {
             return s;
         }
     }
+
+    
+       public static Object[] getSettlePrice(BeanSymbol s, Date d) {
+       Object[] obj=new Object[2];
+        try {
+            HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
+            String metric;
+            switch (s.getType()) {
+                case "STK":
+                    metric = "india.nse.equity.s4.daily.settle";
+                    break;
+                case "FUT":
+                    metric = "india.nse.future.s4.daily.settle";
+                    break;
+                case "OPT":
+                    metric = "india.nse.option.s4.daily.settle";
+                    break;
+                default:
+                    metric = null;
+                    break;
+            }
+            Date startDate = DateUtil.addDays(d, -10);
+            Date endDate = d;
+            QueryBuilder builder = QueryBuilder.getInstance();
+            builder.setStart(startDate)
+                    .setEnd(endDate)
+                    .addMetric(metric)
+                    .addTag("symbol", s.getBrokerSymbol().toLowerCase());
+            if (s.getExpiry()!=null && !s.getExpiry().equals("")) {
+                builder.getMetrics().get(0).addTag("expiry", s.getExpiry());
+            }
+            if (s.getRight()!=null && !s.getRight().equals("")) {
+                builder.getMetrics().get(0).addTag("option", s.getRight());
+                builder.getMetrics().get(0).addTag("strike", s.getOption());
+            }
+
+            builder.getMetrics().get(0).setLimit(1);
+            builder.getMetrics().get(0).setOrder(QueryMetric.Order.DESCENDING);
+            long time = new Date().getTime();
+            QueryResponse response = client.query(builder);
+
+            List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
+            for (DataPoint dataPoint : dataPoints) {
+                long lastTime = dataPoint.getTimestamp();
+                obj[0]=lastTime;
+                obj[1]=dataPoint.getValue();
+            }
+        } catch (Exception e) {
+            logger.log(Level.INFO, null, e);
+        }
+        return obj;
+    }
+
 
     
     public static Object[] getLastSettlePriceOption(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {

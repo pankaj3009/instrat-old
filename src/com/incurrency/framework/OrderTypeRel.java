@@ -17,6 +17,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
 
     BeanConnection c;
     int id;
+    int underlyingid;
     OrderEvent e;
     double ticksize = 0.05;
     EnumOrderSide side;
@@ -29,6 +30,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     public OrderTypeRel(int id, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         this.c = c;
         this.id = id;
+        underlyingid=Utilities.getReferenceID(Parameters.symbol, id, "STK");
         this.e = event;
         side = event.getSide();
         limitprice = event.getLimitPrice();
@@ -57,7 +59,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
 
     @Override
     public void bidaskChanged(BidAskEvent event) {
-
+        if(event.getSymbolID()==id){
         switch (side) {
             case BUY:
             case COVER:
@@ -66,33 +68,37 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                     case "OPT": {
                         int underlyingid = Utilities.getReferenceID(Parameters.symbol, id, "STK");
                         Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
-                        if(Parameters.symbol.get(id).getOptionProcess()==null){
-                            String strike=Parameters.symbol.get(id).getOption();
-                            String right=Parameters.symbol.get(id).getRight();
+                        if (Parameters.symbol.get(id).getOptionProcess() == null) {
+                            String strike = Parameters.symbol.get(id).getOption();
+                            String right = Parameters.symbol.get(id).getRight();
                             Parameters.symbol.get(id).SetOptionProcess(new Date(), right, strike);
                         }
                         double calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
+                        double tmplimitprice = limitprice;
                         if (bidprice > limitprice & bidprice < calculatedPrice) {
-                            limitprice = bidprice + ticksize;
-                            e.setLimitPrice(limitprice);
+                            tmplimitprice = bidprice + ticksize;
+                            e.setLimitPrice(tmplimitprice);
                             e.setOrderStage(EnumOrderStage.AMEND);
                             e.setAccount(c.getAccountName());
                             e.setTag("BIDASKCHANGED");
                             oms.orderReceived(e);
                         } else if (limitprice > calculatedPrice) {
-                            limitprice = Math.min(bidprice, Utilities.roundTo(calculatedPrice, ticksize));
-                            e.setLimitPrice(limitprice);
+                            tmplimitprice = Math.min(bidprice, Utilities.roundTo(calculatedPrice, ticksize));
+                            e.setLimitPrice(tmplimitprice);
                             e.setOrderStage(EnumOrderStage.AMEND);
                             e.setAccount(c.getAccountName());
                             e.setTag("BIDASKCHANGED");
                             oms.orderReceived(e);
                         }
+                    logger.log(Level.INFO, "OrderTypeRel, Symbol:{0}, Side:{1}, CalculatedOptionPrice:{2}, CurrentLimitPriceWithBroker:{3}, NewLimitPrice:{4}",
+                            new Object[]{Parameters.symbol.get(id).getDisplayname(), side, calculatedPrice, limitprice, tmplimitprice});
                     }
+
                     break;
                     default: {
                         if (bidprice > limitprice) {
-                            limitprice = bidprice + ticksize;
-                            e.setLimitPrice(limitprice);
+                            double tmplimitprice = bidprice + ticksize;
+                            e.setLimitPrice(tmplimitprice);
                             e.setOrderStage(EnumOrderStage.AMEND);
                             e.setAccount(c.getAccountName());
                             e.setTag("BIDASKCHANGED");
@@ -105,45 +111,57 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 break;
             case SHORT:
             case SELL:
+
                 double askprice = Parameters.symbol.get(id).getAskPrice();
                 switch (Parameters.symbol.get(id).getType()) {
                     case "OPT":
                         int underlyingid = Utilities.getReferenceID(Parameters.symbol, id, "STK");
                         Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
+                        if (Parameters.symbol.get(id).getOptionProcess() == null) {
+                            String strike = Parameters.symbol.get(id).getOption();
+                            String right = Parameters.symbol.get(id).getRight();
+                            Parameters.symbol.get(id).SetOptionProcess(new Date(), right, strike);
+                        }
                         double calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
+                        double tmplimitprice = limitprice;
                         if (askprice < limitprice & askprice > calculatedPrice) {
-                            limitprice = askprice - ticksize;
-                            e.setLimitPrice(limitprice);
+                            tmplimitprice = askprice - ticksize;
+                            e.setLimitPrice(tmplimitprice);
                             e.setOrderStage(EnumOrderStage.AMEND);
                             e.setAccount(c.getAccountName());
                             e.setTag("BIDASKCHANGED");
                             oms.orderReceived(e);
 
                         } else if (limitprice < calculatedPrice) {
-                            limitprice = Math.max(askprice, Utilities.roundTo(calculatedPrice, ticksize));
-                            e.setLimitPrice(limitprice);
+                            tmplimitprice = Math.max(askprice, Utilities.roundTo(calculatedPrice, ticksize));
+                            e.setLimitPrice(tmplimitprice);
                             e.setOrderStage(EnumOrderStage.AMEND);
                             e.setAccount(c.getAccountName());
                             e.setTag("BIDASKCHANGED");
                             oms.orderReceived(e);
                         }
+                        logger.log(Level.INFO, "OrderTypeRel, Symbol:{0}, Side:{1}, CalculatedOptionPrice:{2}, CurrentLimitPriceWithBroker:{3}, NewLimitPrice:{4}",
+                                new Object[]{Parameters.symbol.get(id).getDisplayname(), side, calculatedPrice, limitprice, tmplimitprice});
+
+
+
                         break;
                     default: {
                         if (askprice > 0 && askprice < limitprice) {
-                            limitprice = askprice - ticksize;
-                            e.setLimitPrice(limitprice);
+                            tmplimitprice = askprice - ticksize;
+                            e.setLimitPrice(tmplimitprice);
                             e.setOrderStage(EnumOrderStage.AMEND);
                             e.setAccount(c.getAccountName());
                             e.setTag("BIDASKCHANGED");
                             oms.orderReceived(e);
                         }
-
                     }
                     break;
-
-
                 }
+            default:
+                break;
         }
+    }
     }
 
     @Override
@@ -151,6 +169,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         OrderBean ob = c.getOrders().get(event.getOrderID());
         logger.log(Level.FINE, "OrderTypeRel : OrderID:{0},OrderID from ob:{1}, Remaining{2}", new Object[]{event.getOrderID(), ob.getOrderID(), event.getRemaining()});
         if (event.getOrderID() == ob.getOrderID()) {
+            limitprice = ob.getParentLimitPrice();
             logger.log(Level.FINE, "Match OrderTypeRel : InternalOrderID:{0},Remaining{1}", new Object[]{event.getOrderID(), event.getRemaining()});
             if (event.getRemaining() == 0) {
                 logger.log(Level.FINE, "OrderTypeRel: Waiting for lock");
