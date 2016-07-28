@@ -44,13 +44,17 @@ public class Algorithm {
     public static Database<String,String>db;
     public static String cassandraIP;
     
-    public Algorithm(HashMap<String, String> args) throws Exception {
+    public Algorithm(HashMap<String, String> args) {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));        
         String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {
+                try{
                 holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
+            }catch (Exception e){
+                logger.log(Level.SEVERE,"No Holiday File Found");
+            }
             }
         }
         

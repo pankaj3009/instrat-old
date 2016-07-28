@@ -36,7 +36,6 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
@@ -49,16 +48,13 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.jquantlib.Settings;
 import org.jquantlib.daycounters.Actual360;
 import org.jquantlib.exercise.EuropeanExercise;
+import org.jquantlib.instruments.EuropeanOption;
 import org.jquantlib.instruments.Option;
-import org.jquantlib.instruments.*;
 import org.jquantlib.instruments.PlainVanillaPayoff;
-import org.jquantlib.pricingengines.AnalyticEuropeanEngine;
 import org.jquantlib.processes.BlackScholesMertonProcess;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
@@ -68,11 +64,6 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.calendars.India;
-import org.kairosdb.client.HttpClient;
-import org.kairosdb.client.builder.DataPoint;
-import org.kairosdb.client.builder.QueryBuilder;
-import org.kairosdb.client.builder.QueryMetric;
-import org.kairosdb.client.response.QueryResponse;
 
 /**
  *
@@ -85,6 +76,7 @@ public class Utilities {
 
     
     public static double getImpliedVol(BeanSymbol s,double underlying,double price, Date evaluationDate){
+    
         new Settings().setEvaluationDate(new org.jquantlib.time.Date(evaluationDate));
         String strike=s.getOption();
         String right=s.getRight();
@@ -106,9 +98,10 @@ public class Utilities {
         BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
         double vol=option.impliedVolatility(price, process);        
         new Settings().setEvaluationDate(new org.jquantlib.time.Date(new Date()));
-        return vol;        
+        return vol;
+        
     }
-    
+    /*
     public static double getOptionCalculatedPrice(Date date,String right, String strike,String underlying, double vol){
         EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(date));
         PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
@@ -124,7 +117,7 @@ public class Utilities {
         return option.NPV();      
     }
     
-    
+    */
     /**
      *
      * @param s

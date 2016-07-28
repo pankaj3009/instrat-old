@@ -33,16 +33,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import org.jblas.DoubleMatrix;
-import static com.incurrency.framework.Algorithm.*;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import org.jquantlib.daycounters.Actual360;
 import org.jquantlib.exercise.EuropeanExercise;
 import org.jquantlib.instruments.EuropeanOption;
@@ -165,6 +159,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private SimpleQuote underlying=new SimpleQuote();
     
     public void SetOptionProcess(Date date,String right, String strike){
+        
         EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(date));
         PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
         setOptionProcess(new EuropeanOption(payoff,exercise));
