@@ -52,6 +52,22 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.jquantlib.Settings;
+import org.jquantlib.daycounters.Actual360;
+import org.jquantlib.exercise.EuropeanExercise;
+import org.jquantlib.instruments.Option;
+import org.jquantlib.instruments.*;
+import org.jquantlib.instruments.PlainVanillaPayoff;
+import org.jquantlib.pricingengines.AnalyticEuropeanEngine;
+import org.jquantlib.processes.BlackScholesMertonProcess;
+import org.jquantlib.quotes.Handle;
+import org.jquantlib.quotes.Quote;
+import org.jquantlib.quotes.SimpleQuote;
+import org.jquantlib.termstructures.BlackVolTermStructure;
+import org.jquantlib.termstructures.YieldTermStructure;
+import org.jquantlib.termstructures.volatilities.BlackConstantVol;
+import org.jquantlib.termstructures.yieldcurves.FlatForward;
+import org.jquantlib.time.calendars.India;
 import org.kairosdb.client.HttpClient;
 import org.kairosdb.client.builder.DataPoint;
 import org.kairosdb.client.builder.QueryBuilder;
@@ -67,6 +83,48 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
+    
+    public static double getImpliedVol(BeanSymbol s,double underlying,double price, Date evaluationDate){
+        new Settings().setEvaluationDate(new org.jquantlib.time.Date(evaluationDate));
+        String strike=s.getOption();
+        String right=s.getRight();
+        String expiry=s.getExpiry();
+        Date expirationDate =DateUtil.getFormattedDate(expiry, "yyyyMMdd", Algorithm.timeZone);
+        EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(expirationDate));
+        PlainVanillaPayoff payoff;
+        if(right.equals("PUT")){
+        payoff =new PlainVanillaPayoff(Option.Type.Put,Utilities.getDouble(strike, 0) );
+        }else{
+        payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );    
+        }
+        EuropeanOption option = new EuropeanOption(payoff,exercise);
+        Handle<Quote> S = new Handle<Quote>(new SimpleQuote(Utilities.getDouble(underlying, 0D)));
+        org.jquantlib.time.Calendar india=new India();
+        Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
+        Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual360()));
+        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, 0.20, new Actual360()));
+        BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
+        double vol=option.impliedVolatility(price, process);        
+        new Settings().setEvaluationDate(new org.jquantlib.time.Date(new Date()));
+        return vol;        
+    }
+    
+    public static double getOptionCalculatedPrice(Date date,String right, String strike,String underlying, double vol){
+        EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(date));
+        PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
+        EuropeanOption option = new EuropeanOption(payoff,exercise);
+        Handle<Quote> S = new Handle<Quote>(new SimpleQuote(Utilities.getDouble(underlying, 0D)));
+        org.jquantlib.time.Calendar india=new India();
+        Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
+        Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual360()));
+        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, vol, new Actual360()));
+        BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
+        AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
+        option.setPricingEngine(engine);
+        return option.NPV();      
+    }
+    
+    
     /**
      *
      * @param s
@@ -108,8 +166,8 @@ public class Utilities {
     }
 
     
-    public static double getLastSettlePriceOption(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
-        double out = 0;
+    public static Object[] getLastSettlePriceOption(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
+        Object[] out = new Object[2];
         HashMap<String, Object> param = new HashMap();
         param.put("TYPE", Boolean.FALSE);
         BeanSymbol s=symbols.get(id);
@@ -150,7 +208,7 @@ public class Utilities {
                 Object[] values = (Object[]) results.get("values");
                 int length = values.length;
                 Object[] outarray = (Object[]) values[length - 1];
-                out = Utilities.getDouble(outarray[1], 0);
+                out = outarray; //0 is long time, 1 is value
 
             }
 

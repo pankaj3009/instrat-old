@@ -43,6 +43,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import org.jquantlib.daycounters.Actual360;
+import org.jquantlib.exercise.EuropeanExercise;
+import org.jquantlib.instruments.EuropeanOption;
+import org.jquantlib.instruments.Option;
+import org.jquantlib.instruments.PlainVanillaPayoff;
+import org.jquantlib.pricingengines.AnalyticEuropeanEngine;
+import org.jquantlib.processes.BlackScholesMertonProcess;
+import org.jquantlib.quotes.Handle;
+import org.jquantlib.quotes.Quote;
+import org.jquantlib.quotes.SimpleQuote;
+import org.jquantlib.termstructures.BlackVolTermStructure;
+import org.jquantlib.termstructures.YieldTermStructure;
+import org.jquantlib.termstructures.volatilities.BlackConstantVol;
+import org.jquantlib.termstructures.yieldcurves.FlatForward;
+import org.jquantlib.time.calendars.India;
 
 /**
  *
@@ -78,6 +93,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private double bidVol;
     private double askVol;
     private double lastVol;
+    private double closeVol;
     private int lastSize;
     private double tradedValue;
     private double bidSize;
@@ -131,6 +147,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private final Object lockTradedPrices = new Object();
     private final Object lockTradedVolumes = new Object();
     private final Object lockTradedTime = new Object();
+    private final Object lockOptionProcess=new Object();
     private final Object lockPrevLastPrice = new Object();
     private static final Object lockTimeSeries = new Object();
     private int openHour = Utilities.getInt(Algorithm.globalProperties.getProperty("openhour", "9").toString().trim(),9);
@@ -144,7 +161,24 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private HashMap<BeanSymbol, Integer> combo = new HashMap<>(); //holds brokerSymbol and corresponding size
     private Fundamental fundamental = new Fundamental();
     private boolean addedToSymbols=false;
-
+    private EuropeanOption optionProcess;
+    private SimpleQuote underlying=new SimpleQuote();
+    
+    public void SetOptionProcess(Date date,String right, String strike){
+        EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(date));
+        PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
+        setOptionProcess(new EuropeanOption(payoff,exercise));
+        Handle<Quote> S = new Handle<Quote>(getUnderlying());
+        org.jquantlib.time.Calendar india=new India();
+        Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
+        Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual360()));
+        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, this.closeVol, new Actual360()));
+        BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
+        AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
+        getOptionProcess().setPricingEngine(engine);
+    }
+   
+    
     public BeanSymbol() {
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
@@ -2336,5 +2370,51 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setAddedToSymbols(boolean addedToSymbols) {
         this.addedToSymbols = addedToSymbols;
+    }
+
+    /**
+     * @return the closeVol
+     */
+    public double getCloseVol() {
+        return closeVol;
+    }
+
+    /**
+     * @param closeVol the closeVol to set
+     */
+    public void setCloseVol(double closeVol) {
+        this.closeVol = closeVol;
+    }
+
+    /**
+     * @return the optionProcess
+     */
+    public EuropeanOption getOptionProcess() {
+        synchronized(lockOptionProcess){
+        return optionProcess;            
+        }
+    }
+
+    /**
+     * @param optionProcess the optionProcess to set
+     */
+    public void setOptionProcess(EuropeanOption optionProcess) {
+        synchronized(lockOptionProcess){
+        this.optionProcess = optionProcess;
+        }
+    }
+
+    /**
+     * @return the underlying
+     */
+    public SimpleQuote getUnderlying() {
+        return underlying;
+    }
+
+    /**
+     * @param underlying the underlying to set
+     */
+    public void setUnderlying(SimpleQuote underlying) {
+        this.underlying = underlying;
     }
 }
