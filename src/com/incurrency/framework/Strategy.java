@@ -175,7 +175,7 @@ public class Strategy implements NotificationListener {
                         s.setDisplayname(parentsymbolname);
                         s.setSerialno(Parameters.symbol.size()+1);
                         Parameters.symbol.add(s);
-                        Parameters.connection.get(0).getWrapper().getMktData(s, false);
+                        Parameters.connection.get(1).getWrapper().getMktData(s, false);
                     }
             }
             for (BeanSymbol s : Parameters.symbol) {
