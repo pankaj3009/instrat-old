@@ -151,7 +151,10 @@ public class Strategy implements NotificationListener {
                 }
                 stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy(),Boolean.TRUE);
                 if (!stratVal) {
-                    logger.log(Level.INFO, "100,IntegrityCheckFailed,{0}", new Object[]{getStrategy() + delimiter + account});
+                stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy(),Boolean.FALSE);
+                if(!stratVal){
+                    logger.log(Level.INFO, "100,IntegrityCheckFailed,{0}", new Object[]{getStrategy() + delimiter + account});                    
+                }
                 }
                 validation = validation && stratVal;
             }

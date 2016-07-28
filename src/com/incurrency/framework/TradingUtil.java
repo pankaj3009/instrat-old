@@ -1923,7 +1923,10 @@ public class TradingUtil {
                 case SIZE:
                     String symboldisplayName=Trade.getEntrySymbol(db, key);
                     int id=Utilities.getIDFromDisplayName(Parameters.symbol, symboldisplayName);
-                    int contractsize=Parameters.symbol.get(id).getMinsize();
+                    int contractsize=0;
+                    if(id>=0){//symbols have moved on...
+                    contractsize=Parameters.symbol.get(id).getMinsize();                      
+                    }
                     int entrySizeContracts=1;
                     if(contractsize>0){
                     entrySizeContracts=(entrySize/contractsize);
@@ -1960,7 +1963,10 @@ public class TradingUtil {
                 case SIZE:
                     String symboldisplayName=Trade.getEntrySymbol(db, key);
                     int id=Utilities.getIDFromDisplayName(Parameters.symbol, symboldisplayName);
-                    int contractsize=Parameters.symbol.get(id).getMinsize();
+                    int contractsize=0;
+                    if(id>=0){//symbols have moved on...
+                    contractsize=Parameters.symbol.get(id).getMinsize();                      
+                    }
                     int exitSizeContracts=1;
                     if(contractsize>0){
                      exitSizeContracts=(exitSize/contractsize);

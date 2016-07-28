@@ -153,8 +153,6 @@ public class Validator {
             Thread t = new Thread(new Mail(email, singleLegIssues + newline + comboIssues + newline + comboChildrenIssues, "ACTION NEEDED: Recon difference, Files : " + "TradeFile" + " , " + "OrderFile"));
             t.start();
             }
-            //Rerun the utility.
-            reconStatus=reconcile(prefix, orderDB, tradeDB, account, email,strategy, Boolean.FALSE); 
             return reconStatus;
         } else {
             System.out.println("Trade and Order Files Reconile for account " + account+";"+strategy + "  !");

@@ -91,7 +91,7 @@ public class ProfitLossManager implements TradeListener {
                         double entryprice = Parameters.connection.get(j).getPositions().get(index) != null ? Parameters.connection.get(j).getPositions().get(index).getPrice() : 0;
                         double unrealizedPNL = 0D;
                         if (positions != 0) {
-                            unrealizedPNL = Parameters.symbol.get(id).getLastPrice() !=0 ? positions * pointValue * (Parameters.symbol.get(id).getLastPrice() - entryprice) : 0D;
+                            unrealizedPNL = Parameters.symbol.get(id).getLastPrice() !=0 ? positions * pointValue * (Parameters.symbol.get(id).getLastPrice() - entryprice) :Parameters.connection.get(j).getPositions().get(index).getUnrealizedPNLPriorDay() ;
                         }
                         double oldpnlByAccount = Parameters.connection.get(j).getPnlByAccount();
                         double oldpnlByStrategy = Parameters.connection.get(j).getPnlByStrategy().get(strategy);
