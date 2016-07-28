@@ -751,8 +751,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         cmdReload.add(cndReload, gridBagConstraints);
 
         cmdResetOrders.setText("Reset Orders Queue");
-        cmdResetOrders.setEnabled(false);
-        cmdResetOrders.setVisible(false);
+        cmdResetOrders.setVisible(true);
         cmdResetOrders.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdResetOrdersActionPerformed(evt);
@@ -1250,21 +1249,22 @@ public class DashBoardNew extends javax.swing.JFrame {
                 int connectionIndex = comboDisplay.getSelectedIndex();
                 int strategyIndex = comboStrategy.getSelectedIndex();
                 BeanConnection c=Parameters.connection.get(connectionIndex);
-                if(c.getWrapper().getRecentOrders()!=null){
-                c.getWrapper().getRecentOrders().clear();
-                }
-                c.getOrdersInProgress().clear();
-                c.getOrdersMissed().clear();
-                c.getOrdersToBeCancelled().clear();
-                c.getOrdersToBeFastTracked().clear();
-                c.getOrdersToBeRetried().clear();
-                c.getOrdersSymbols().clear();
+//                if(c.getWrapper().getRecentOrders()!=null){
+//                c.getWrapper().getRecentOrders().clear();
+//                }
+//                c.getOrdersInProgress().clear();
+//                c.getOrdersMissed().clear();
+//                c.getOrdersToBeCancelled().clear();
+//                c.getOrdersToBeFastTracked().clear();
+//                c.getOrdersToBeRetried().clear();
+//                c.getOrdersSymbols().clear();
                 Strategy s=MainAlgorithm.strategyInstances.get(strategyIndex);
-                c.getActiveOrders().clear();
-                for(int i=0;i<Parameters.connection.size();i++){
-                s.getOms().getOpenPositionCount().set(i, 0);
-                c.getWrapper().setStopTrading(false);
-                }
+                Validator.reconcile("", s.db, Algorithm.db, c.getAccountName(), c.getOwnerEmail(), s.getStrategy(), Boolean.TRUE);
+//                c.getActiveOrders().clear();
+//                for(int i=0;i<Parameters.connection.size();i++){
+//                s.getOms().getOpenPositionCount().set(i, 0);
+//                c.getWrapper().setStopTrading(false);
+//                }
     }//GEN-LAST:event_cmdResetOrdersActionPerformed
 
     private void cmdReconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdReconnectActionPerformed
