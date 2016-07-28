@@ -32,9 +32,13 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         this.id = id;
         //We need underlyingid, if we are doing options.
         //As there are only two possibilities for underlying(as of now), we test for both.
-        underlyingid = Utilities.getReferenceID(Parameters.symbol, id, "IND");
-        if (underlyingid == -1) {
-            underlyingid = Utilities.getReferenceID(Parameters.symbol, id, "STK");
+        if (Parameters.symbol.get(id).getType().equals("OPT")) {
+            String expiry = Parameters.symbol.get(id).getExpiry();
+            int symbolid = Utilities.getReferenceID(Parameters.symbol, id, "IND");
+            if (symbolid == -1) {
+                symbolid = Utilities.getReferenceID(Parameters.symbol, id, "STK");
+            }
+            underlyingid = Utilities.getFutureIDFromSymbol(Parameters.symbol, symbolid, expiry);
         }
         this.e = event;
         side = event.getSide();

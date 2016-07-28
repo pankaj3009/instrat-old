@@ -157,6 +157,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private boolean addedToSymbols=false;
     private EuropeanOption optionProcess;
     private SimpleQuote underlying=new SimpleQuote();
+    private double mtmPrice;
     
     public void SetOptionProcess(String expiry,String right, String strike){
         
@@ -2412,5 +2413,12 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setUnderlying(SimpleQuote underlying) {
         this.underlying = underlying;
+    }
+
+    /**
+     * @return the mtmPrice
+     */
+    public double getMtmPrice() {
+        return mtmPrice;
     }
 }
