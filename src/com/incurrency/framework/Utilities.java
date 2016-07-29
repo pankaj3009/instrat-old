@@ -1178,10 +1178,12 @@ public class Utilities {
         if (places < 0) {
             throw new IllegalArgumentException();
         }
-
-        BigDecimal bd = new BigDecimal(value);
-        bd = bd.setScale(places, RoundingMode.HALF_UP);
-        return bd.doubleValue();
+        if (!Double.isInfinite(value) && !Double.isNaN(value)) {
+            BigDecimal bd = new BigDecimal(value);
+            bd = bd.setScale(places, RoundingMode.HALF_UP);
+            return bd.doubleValue();
+        }
+        return value;
     }
 
     public static double round(double value, double range, int places) {
