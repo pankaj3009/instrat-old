@@ -189,7 +189,7 @@ public class Utilities {
             builder.setStart(startDate)
                     .setEnd(endDate)
                     .addMetric(metric)
-                    .addTag("symbol", s.getExchangeSymbol().replaceAll("[^A-Za-z0-9]", "").toLowerCase());
+                    .addTag("symbol", s.getExchangeSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase());
             if (s.getExpiry() != null && !s.getExpiry().equals("")) {
                 builder.getMetrics().get(0).addTag("expiry", s.getExpiry());
             }
