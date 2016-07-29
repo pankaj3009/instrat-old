@@ -1303,10 +1303,11 @@ public class TWSConnection extends Thread implements EWrapper {
     //<editor-fold defaultstate="collapsed" desc="EWrapper Overrides">
     @Override
     public void tickPrice(int tickerId, int field, double price, int canAutoExecute) {
-        if(realtime && serverInitialized.get()){
+        try {
+            if(realtime && serverInitialized.get()){
             realtime_tickPrice(tickerId,field,price,canAutoExecute);
         }else{
-        try {
+
             boolean snapshot=false;
             boolean proceed=true;
             int serialno = getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId+delimiter+c.getAccountName()).symbol.getSerialno() : 0;
@@ -1366,9 +1367,10 @@ public class TWSConnection extends Thread implements EWrapper {
                 }
             }
         }
-        } catch (Exception e) {
-            logger.log(Level.INFO, "101", e);
+        
         }
+            } catch (Exception e) {
+            logger.log(Level.INFO, "101", e);
         }
     }
 
@@ -1450,10 +1452,11 @@ public class TWSConnection extends Thread implements EWrapper {
     
     @Override
     public void tickSize(int tickerId, int field, int size) {
-        if (realtime && serverInitialized.get()) {
+            try {
+                if (realtime && serverInitialized.get()) {
             realtime_tickSize(tickerId, field, size);
         } else {
-            try {
+
                 int serialno = getRequestDetails().get(tickerId + delimiter + c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId + delimiter + c.getAccountName()).symbol.getSerialno() : 0;
                 boolean proceed = true;
                 boolean snapshot = false;
@@ -1519,10 +1522,11 @@ public class TWSConnection extends Thread implements EWrapper {
                         }
                     }
                 }
-            } catch (Exception e) {
+            
+        }
+                } catch (Exception e) {
                 logger.log(Level.INFO, "101", e);
             }
-        }
     }
 
     public void realtime_tickSize(int tickerId,int field, int size){
@@ -1580,6 +1584,7 @@ public class TWSConnection extends Thread implements EWrapper {
     
     @Override
     public void tickOptionComputation(int tickerId, int field, double impliedVol, double delta, double optPrice, double pvDividend, double gamma, double vega, double theta, double undPrice) {
+        try{
         int serialno = getRequestDetails().get(tickerId+delimiter+c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId+delimiter+c.getAccountName()).symbol.getSerialno() : 0;
         Request r;
         synchronized(lock_request){
@@ -1605,6 +1610,9 @@ public class TWSConnection extends Thread implements EWrapper {
             }
             //System.out.println("tickerid:"+tickerId+"field:"+field+"impliedVol"+impliedVol+"delta:"+delta+"optPrice:"+optPrice+"underlying price:"+undPrice);
         }
+        }catch(Exception e){
+            logger.log(Level.SEVERE,null,e);
+        }
     }
 
     @Override
@@ -1616,6 +1624,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void tickString(int tickerId, int tickType, String value) {
+        try{
         if (tickType == 48) {
             if (realtime && serverInitialized.get()) {
                 realtime_rtVolume(tickerId, value);
@@ -1671,9 +1680,13 @@ public class TWSConnection extends Thread implements EWrapper {
             }
 
         }
+        }catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
+        }
     }
 
     void realtime_rtVolume(int tickerId, String value) {
+        try{
         boolean proceed = true;
         int serialno = getRequestDetails().get(tickerId + delimiter + c.getAccountName()) != null ? (int) getRequestDetails().get(tickerId + delimiter + c.getAccountName()).symbol.getSerialno() : 0;
         int id = serialno - 1;
@@ -1715,6 +1728,9 @@ public class TWSConnection extends Thread implements EWrapper {
             }
 
         }
+        }catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
+        }
     }
     
     
@@ -1728,10 +1744,14 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
+        try{
         String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
         //logger.log(Level.FINE, "{0},{1},TWSReceive,orderStatus, OrderID:{2},Status:{3}.Filled:{4},Remaining:{5},AvgFillPrice:{6},LastFillPrice:{7}", new Object[]{c.getAccountName(), orderRef, orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
         tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-    }
+        }catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
+        }
+        }
 
     @Override
     public void openOrder(int orderId, Contract contract, Order order, OrderState orderState) {
