@@ -80,50 +80,50 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
-    
-    public static double getImpliedVol(BeanSymbol s,double underlying,double price, Date evaluationDate){
-    
+    public static double getImpliedVol(BeanSymbol s, double underlying, double price, Date evaluationDate) {
+
         new Settings().setEvaluationDate(new org.jquantlib.time.Date(evaluationDate));
-        String strike=s.getOption();
-        String right=s.getRight();
-        String expiry=s.getExpiry();
-        Date expirationDate =DateUtil.getFormattedDate(expiry, "yyyyMMdd", Algorithm.timeZone);
-        EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(expirationDate));
+        String strike = s.getOption();
+        String right = s.getRight();
+        String expiry = s.getExpiry();
+        Date expirationDate = DateUtil.getFormattedDate(expiry, "yyyyMMdd", Algorithm.timeZone);
+        EuropeanExercise exercise = new EuropeanExercise(new org.jquantlib.time.Date(expirationDate));
         PlainVanillaPayoff payoff;
-        if(right.equals("PUT")){
-        payoff =new PlainVanillaPayoff(Option.Type.Put,Utilities.getDouble(strike, 0) );
-        }else{
-        payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );    
+        if (right.equals("PUT")) {
+            payoff = new PlainVanillaPayoff(Option.Type.Put, Utilities.getDouble(strike, 0));
+        } else {
+            payoff = new PlainVanillaPayoff(Option.Type.Call, Utilities.getDouble(strike, 0));
         }
-        EuropeanOption option = new EuropeanOption(payoff,exercise);
+        EuropeanOption option = new EuropeanOption(payoff, exercise);
         Handle<Quote> S = new Handle<Quote>(new SimpleQuote(Utilities.getDouble(underlying, 0D)));
-        org.jquantlib.time.Calendar india=new India();
-        Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
-        Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual360()));
+        org.jquantlib.time.Calendar india = new India();
+        Handle<YieldTermStructure> rate = new Handle<YieldTermStructure>(new FlatForward(0, india, 0.07, new Actual360()));
+        Handle<YieldTermStructure> yield = new Handle<YieldTermStructure>(new FlatForward(0, india, 0.015, new Actual360()));
         Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, 0.20, new Actual360()));
-        BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
-        double vol=option.impliedVolatility(price, process);        
+        BlackScholesMertonProcess process = new BlackScholesMertonProcess(S, yield, rate, sigma);
+        double vol = option.impliedVolatility(price, process);
         new Settings().setEvaluationDate(new org.jquantlib.time.Date(new Date()));
         return vol;
-        
+
     }
     /*
-    public static double getOptionCalculatedPrice(Date date,String right, String strike,String underlying, double vol){
-        EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(date));
-        PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
-        EuropeanOption option = new EuropeanOption(payoff,exercise);
-        Handle<Quote> S = new Handle<Quote>(new SimpleQuote(Utilities.getDouble(underlying, 0D)));
-        org.jquantlib.time.Calendar india=new India();
-        Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
-        Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual360()));
-        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, vol, new Actual360()));
-        BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
-        AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
-        option.setPricingEngine(engine);
-        return option.NPV();      
-    }
+     public static double getOptionCalculatedPrice(Date date,String right, String strike,String underlying, double vol){
+     EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(date));
+     PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
+     EuropeanOption option = new EuropeanOption(payoff,exercise);
+     Handle<Quote> S = new Handle<Quote>(new SimpleQuote(Utilities.getDouble(underlying, 0D)));
+     org.jquantlib.time.Calendar india=new India();
+     Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
+     Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual360()));
+     Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, vol, new Actual360()));
+     BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
+     AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
+     option.setPricingEngine(engine);
+     return option.NPV();      
+     }
     
-    */
+     */
+
     /**
      *
      * @param s
@@ -164,11 +164,10 @@ public class Utilities {
         }
     }
 
-    
-       public static Object[] getSettlePrice(BeanSymbol s, Date d) {
-       Object[] obj=new Object[2];
+    public static Object[] getSettlePrice(BeanSymbol s, Date d) {
+        Object[] obj = new Object[2];
         try {
-            HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
+            HttpClient client = new HttpClient("http://" + Algorithm.cassandraIP + ":8085");
             String metric;
             switch (s.getType()) {
                 case "STK":
@@ -190,11 +189,11 @@ public class Utilities {
             builder.setStart(startDate)
                     .setEnd(endDate)
                     .addMetric(metric)
-                    .addTag("symbol", s.getBrokerSymbol().toLowerCase());
-            if (s.getExpiry()!=null && !s.getExpiry().equals("")) {
+                    .addTag("symbol", s.getExchangeSymbol().replaceAll("[^A-Za-z0-9]", "").toLowerCase());
+            if (s.getExpiry() != null && !s.getExpiry().equals("")) {
                 builder.getMetrics().get(0).addTag("expiry", s.getExpiry());
             }
-            if (s.getRight()!=null && !s.getRight().equals("")) {
+            if (s.getRight() != null && !s.getRight().equals("")) {
                 builder.getMetrics().get(0).addTag("option", s.getRight());
                 builder.getMetrics().get(0).addTag("strike", s.getOption());
             }
@@ -207,8 +206,8 @@ public class Utilities {
             List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
             for (DataPoint dataPoint : dataPoints) {
                 long lastTime = dataPoint.getTimestamp();
-                obj[0]=lastTime;
-                obj[1]=dataPoint.getValue();
+                obj[0] = lastTime;
+                obj[1] = dataPoint.getValue();
             }
         } catch (Exception e) {
             logger.log(Level.INFO, null, e);
@@ -216,17 +215,15 @@ public class Utilities {
         return obj;
     }
 
-
-    
     public static Object[] getLastSettlePriceOption(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
         Object[] out = new Object[2];
         HashMap<String, Object> param = new HashMap();
         param.put("TYPE", Boolean.FALSE);
-        BeanSymbol s=symbols.get(id);
-        String strike=s.getOption();
-        String symbol=s.getDisplayname().split("_",-1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
-        String option=s.getRight();
-        String expiry=s.getExpiry();
+        BeanSymbol s = symbols.get(id);
+        String strike = s.getOption();
+        String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
+        String option = s.getRight();
+        String expiry = s.getExpiry();
         HistoricalRequestJson request = new HistoricalRequestJson(metric,
                 new String[]{"strike", "symbol", "option", "expiry"},
                 new String[]{strike, symbol, option, expiry},
@@ -270,48 +267,48 @@ public class Utilities {
 
         return out;
     }
-/*
-    public static double getLastSettlePrice(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
-        String value = "0";
-        try {
-            //HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
-            //HttpClient client = new HttpClient("http://91.121.165.108:8085/api/v1/datapoints/query:8085");
-            HttpClient client = new HttpClient("http://91.121.165.108:8085");
-            BeanSymbol s = symbols.get(id);
-            String expiry = s.getExpiry();
-            String right = s.getRight();
-            String strike = s.getOption();
-            String symbol = s.getDisplayname().split("_", -1)[0];
-            QueryBuilder builder = QueryBuilder.getInstance();
-            builder.setStart(new Date(startTime))
-                    .setEnd(new Date(endTime))
-                    .addMetric(metric)
-                    .addTag("symbol", symbol.replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase());
-            builder.getMetrics().get(0).setOrder(QueryMetric.Order.ASCENDING);
-            if (expiry != null || (expiry != null && !expiry.equals(""))) {
-                builder.getMetrics().get(0).addTag("expiry", expiry);
-            }
-            if (right != null || (right != null && !right.equals(""))) {
-                builder.getMetrics().get(0).addTag("right", right);
-                builder.getMetrics().get(0).addTag("strike", strike);
-            }
-            long time = new Date().getTime();
-            QueryResponse response = client.query(builder);
-            List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
-            for (DataPoint dataPoint : dataPoints) {
-                long lastTime = dataPoint.getTimestamp();
-                value = dataPoint.getValue().toString();
-            }
-            client.shutdown();
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, null, e);
-        }
-        return Utilities.getDouble(value, 0);
+    /*
+     public static double getLastSettlePrice(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
+     String value = "0";
+     try {
+     //HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
+     //HttpClient client = new HttpClient("http://91.121.165.108:8085/api/v1/datapoints/query:8085");
+     HttpClient client = new HttpClient("http://91.121.165.108:8085");
+     BeanSymbol s = symbols.get(id);
+     String expiry = s.getExpiry();
+     String right = s.getRight();
+     String strike = s.getOption();
+     String symbol = s.getDisplayname().split("_", -1)[0];
+     QueryBuilder builder = QueryBuilder.getInstance();
+     builder.setStart(new Date(startTime))
+     .setEnd(new Date(endTime))
+     .addMetric(metric)
+     .addTag("symbol", symbol.replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase());
+     builder.getMetrics().get(0).setOrder(QueryMetric.Order.ASCENDING);
+     if (expiry != null || (expiry != null && !expiry.equals(""))) {
+     builder.getMetrics().get(0).addTag("expiry", expiry);
+     }
+     if (right != null || (right != null && !right.equals(""))) {
+     builder.getMetrics().get(0).addTag("right", right);
+     builder.getMetrics().get(0).addTag("strike", strike);
+     }
+     long time = new Date().getTime();
+     QueryResponse response = client.query(builder);
+     List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
+     for (DataPoint dataPoint : dataPoints) {
+     long lastTime = dataPoint.getTimestamp();
+     value = dataPoint.getValue().toString();
+     }
+     client.shutdown();
+     } catch (Exception e) {
+     logger.log(Level.SEVERE, null, e);
+     }
+     return Utilities.getDouble(value, 0);
 
-    }
+     }
 
-*/
-   
+     */
+
     public static int openPositionCount(Database<String, String> db, List<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
         HashSet<String> temp = new HashSet<>();;
@@ -1388,13 +1385,22 @@ public class Utilities {
         return getIDFromBrokerSymbol(symbols, symbol, type, expiry, right, option);
     }
 
-    public static int getFutureIDFromSymbol(List<BeanSymbol> symbols, int id, String expiry) {
+    public static int getFutureIDFromBrokerSymbol(List<BeanSymbol> symbols, int id, String expiry) {
         String s = Parameters.symbol.get(id).getBrokerSymbol();
         String t = "FUT";
         String e = expiry;
         String r = "";
         String o = "";
         return getIDFromBrokerSymbol(symbols, s, t, e, r, o);
+    }
+
+    public static int getFutureIDFromExchangeSymbol(List<BeanSymbol> symbols, int id, String expiry) {
+        String s = Parameters.symbol.get(id).getExchangeSymbol();
+        String t = "FUT";
+        String e = expiry;
+        String r = "";
+        String o = "";
+        return getIDFromExchangeSymbol(symbols, s, t, e, r, o);
     }
 
     public static int getIDFromFuture(List<BeanSymbol> symbols, int futureID) {
@@ -1417,25 +1423,27 @@ public class Utilities {
      * @param expiry
      * @return
      */
-    public static ArrayList<Integer> getOptionIDForLongSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int underlyingid, EnumOrderSide side, String expiry) {
+    public static ArrayList<Integer> getOptionIDForLongSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
         int id = -1;
-        ArrayList<Integer>out=new ArrayList<>();
-        String displayname = symbols.get(underlyingid).getDisplayname();
+        ArrayList<Integer> out = new ArrayList<>();
+        String displayname = symbols.get(symbolid).getDisplayname();
         String underlying = displayname.split("_")[0];
         double strikeDistance = 0;
         switch (side) {
             case BUY:
-                if (!Parameters.symbol.get(underlyingid).getType().equals("FUT")) {
-                    int futureid = Utilities.getFutureIDFromSymbol(symbols, underlyingid, expiry);
-                    strikeDistance = Parameters.symbol.get(futureid).getStrikeDistance();
+                if (!Parameters.symbol.get(symbolid).getType().equals("FUT")) {
+                    symbolid = Utilities.getFutureIDFromBrokerSymbol(symbols, symbolid, expiry);
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
                 } else {
-                    strikeDistance = Parameters.symbol.get(underlyingid).getStrikeDistance();
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
                 }
-                id = Utilities.getATMStrike(symbols, underlyingid, strikeDistance, expiry, "CALL");
+                id = Utilities.getATMStrike(symbols, symbolid, strikeDistance, expiry, "CALL");
                 if (id == -1) {
-                    id = Utilities.insertATMStrike(symbols, underlyingid, strikeDistance, expiry, "CALL");
+                    id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "CALL");
                 }
-                out.add(id);
+                if (id > 0) {
+                    out.add(id);
+                }
                 break;
             case SELL:
                 for (BeanPosition p : positions.values()) {
@@ -1450,17 +1458,19 @@ public class Utilities {
                 }
                 break;
             case SHORT:
-                if (!Parameters.symbol.get(underlyingid).getType().equals("FUT")) {
-                    int futureid = Utilities.getFutureIDFromSymbol(symbols, underlyingid, expiry);
+                if (!Parameters.symbol.get(symbolid).getType().equals("FUT")) {
+                    int futureid = Utilities.getFutureIDFromBrokerSymbol(symbols, symbolid, expiry);
                     strikeDistance = Parameters.symbol.get(futureid).getStrikeDistance();
                 } else {
-                    strikeDistance = Parameters.symbol.get(underlyingid).getStrikeDistance();
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
                 }
-                id = Utilities.getATMStrike(symbols, underlyingid, strikeDistance, expiry, "PUT");
+                id = Utilities.getATMStrike(symbols, symbolid, strikeDistance, expiry, "PUT");
                 if (id == -1) {
-                    id = Utilities.insertATMStrike(symbols, underlyingid, strikeDistance, expiry, "PUT");
+                    id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "PUT");
                 }
-                out.add(id);
+                if (id >= 0) {
+                    out.add(id);
+                }
                 break;
             case COVER:
                 for (BeanPosition p : positions.values()) {
@@ -1480,6 +1490,74 @@ public class Utilities {
         return out;
     }
 
+      public static ArrayList<Integer> getOptionIDForShortSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
+        int id = -1;
+        ArrayList<Integer> out = new ArrayList<>();
+        String displayname = symbols.get(symbolid).getDisplayname();
+        String underlying = displayname.split("_")[0];
+        double strikeDistance = 0;
+        switch (side) {
+            case BUY:
+                if (!Parameters.symbol.get(symbolid).getType().equals("FUT")) {
+                    symbolid = Utilities.getFutureIDFromBrokerSymbol(symbols, symbolid, expiry);
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
+                } else {
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
+                }
+                id = Utilities.getATMStrike(symbols, symbolid, strikeDistance, expiry, "PUT");
+                if (id == -1) {
+                    id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "PUT");
+                }
+                if (id > 0) {
+                    out.add(id);
+                }
+                break;
+            case SELL:
+                for (BeanPosition p : positions.values()) {
+                    if (p.getPosition() != 0) {
+                        int tradeid = p.getSymbolid();
+                        String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("PUT")) {
+                            id = tradeid;
+                            out.add(id);
+                        }
+                    }
+                }
+                break;
+            case SHORT:
+                if (!Parameters.symbol.get(symbolid).getType().equals("FUT")) {
+                    int futureid = Utilities.getFutureIDFromBrokerSymbol(symbols, symbolid, expiry);
+                    strikeDistance = Parameters.symbol.get(futureid).getStrikeDistance();
+                } else {
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
+                }
+                id = Utilities.getATMStrike(symbols, symbolid, strikeDistance, expiry, "CALL");
+                if (id == -1) {
+                    id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "CALL");
+                }
+                if (id >= 0) {
+                    out.add(id);
+                }
+                break;
+            case COVER:
+                for (BeanPosition p : positions.values()) {
+                    if (p.getPosition() != 0) {
+                        int tradeid = p.getSymbolid();
+                        String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("CALL")) {
+                            id = tradeid;
+                            out.add(id);
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        return out;
+    }
+
+    
     public static int getATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
         double price = Parameters.symbol.get(id).getLastPrice();
         price = Utilities.roundTo(price, increment);
@@ -1495,41 +1573,53 @@ public class Utilities {
 
     public static int insertATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
         double price = Parameters.symbol.get(id).getLastPrice();
-        price = Utilities.roundTo(price, increment);
-        String strikePrice = Utilities.formatDouble(price, new DecimalFormat("#.##"));
-        BeanSymbol ul = symbols.get(id);
-        BeanSymbol s = new BeanSymbol(ul.getBrokerSymbol(), ul.getExchangeSymbol(), "OPT", expiry, right, strikePrice);
-        s.setCurrency("INR");
-        s.setExchange("NSE");
-        s.setPrimaryexchange("NSE");
-
-        s.setStreamingpriority(1);
-        s.setStrategy("");
-        s.setDisplayname(ul.getExchangeSymbol() + "_" + "OPT" + "_" + expiry + "_" + right + "_" + strikePrice);
-        s.setSerialno(Parameters.symbol.size() + 1);
-        s.setAddedToSymbols(true);
-        symbols.add(s);
-        return s.getSerialno() - 1;
-    }
-
-    public static int getNetPositionFromOptions(List<BeanSymbol> symbols,ConcurrentHashMap<Integer, BeanPosition> position, int id){
-        int out=0;
-        ArrayList<Integer> tempSymbols=new ArrayList<>();
-        BeanSymbol ref=symbols.get(id);
-        for(BeanSymbol s: symbols){
-            if(s.getBrokerSymbol().equals(ref.getBrokerSymbol())){
-                tempSymbols.add(s.getSerialno()-1);
+        if (price == 0) {
+            price = Parameters.symbol.get(id).getClosePrice();
+        }
+        if (price == 0) {
+            Object[] pricedetails = Utilities.getSettlePrice(Parameters.symbol.get(id), new Date());
+            if (pricedetails.length == 2) {
+                price = Utilities.getDouble(pricedetails[1], 0);
             }
         }
-        
-        for(Integer p: position.keySet()){
-            if(tempSymbols.contains(p)){
-                out=out+position.get(p).getPosition();
+        if (price > 0) {
+            price = Utilities.roundTo(price, increment);
+            String strikePrice = Utilities.formatDouble(price, new DecimalFormat("#.##"));
+            BeanSymbol ul = symbols.get(id);
+            BeanSymbol s = new BeanSymbol(ul.getBrokerSymbol(), ul.getExchangeSymbol(), "OPT", expiry, right, strikePrice);
+            s.setCurrency("INR");
+            s.setExchange("NSE");
+            s.setPrimaryexchange("NSE");
+            s.setStreamingpriority(1);
+            s.setStrategy("");
+            s.setDisplayname(ul.getExchangeSymbol() + "_" + "OPT" + "_" + expiry + "_" + right + "_" + strikePrice);
+            s.setSerialno(Parameters.symbol.size() + 1);
+            s.setAddedToSymbols(true);
+            symbols.add(s);
+            return s.getSerialno() - 1;
+        } else {
+            return -1; //no strike inserted
+        }
+    }
+
+    public static int getNetPositionFromOptions(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id) {
+        int out = 0;
+        ArrayList<Integer> tempSymbols = new ArrayList<>();
+        BeanSymbol ref = symbols.get(id);
+        for (BeanSymbol s : symbols) {
+            if (s.getBrokerSymbol().equals(ref.getBrokerSymbol())) {
+                tempSymbols.add(s.getSerialno() - 1);
+            }
+        }
+
+        for (Integer p : position.keySet()) {
+            if (tempSymbols.contains(p)) {
+                out = out + position.get(p).getPosition();
             }
         }
         return out;
     }
-    
+
     public static String formatDouble(double d, DecimalFormat df) {
         return df.format(d);
     }

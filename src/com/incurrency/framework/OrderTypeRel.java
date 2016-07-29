@@ -38,7 +38,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             if (symbolid == -1) {
                 symbolid = Utilities.getReferenceID(Parameters.symbol, id, "STK");
             }
-            underlyingid = Utilities.getFutureIDFromSymbol(Parameters.symbol, symbolid, expiry);
+            underlyingid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, symbolid, expiry);
         }
         this.e = event;
         side = event.getSide();
