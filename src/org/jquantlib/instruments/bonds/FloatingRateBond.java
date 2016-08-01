@@ -49,7 +49,7 @@ import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.DateGeneration;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
@@ -80,7 +80,7 @@ public class FloatingRateBond extends Bond {
 			final Array floors,
 			final boolean inArrears,
 			final double redemption,
-			final Date issueDate) {
+			final JDate issueDate) {
 
 		super(settlementDays, schedule.calendar(), issueDate);
 		maturityDate_ = schedule.endDate().clone();
@@ -112,14 +112,14 @@ public class FloatingRateBond extends Bond {
 		this(settlementDays, faceAmount, schedule,index, accrualDayCounter, 
 				BusinessDayConvention.Following, Constants.NULL_INTEGER, 
 				new Array(new double[] { 1.0 }), new Array(new double[] { 0.0 }), 
-				new Array(0), new Array(0), false, 100.0, new Date());
+				new Array(0), new Array(0), false, 100.0, new JDate());
 
 	}
 
 	public FloatingRateBond(final int settlementDays,
 							final double faceAmount,
-							final Date startDate,
-							final Date maturityDate,
+							final JDate startDate,
+							final JDate maturityDate,
 							final Frequency couponFrequency,
 							final Calendar calendar,
 							final Handle<IborIndex> index,
@@ -133,23 +133,23 @@ public class FloatingRateBond extends Bond {
 							final Array floors,
 							final boolean inArrears,
 							final double redemption,
-							final Date issueDate,
-							final Date stubDate,
+							final JDate issueDate,
+							final JDate stubDate,
 							final DateGeneration.Rule rule,
 							final boolean endOfMonth) {
 		super(settlementDays, calendar, issueDate);
 
 		maturityDate_ = maturityDate.clone();
 
-		Date firstDate = null, nextToLastDate = null;
+		JDate firstDate = null, nextToLastDate = null;
 		switch (rule) {
 			case Backward:
-				firstDate = new Date();
+				firstDate = new JDate();
 				nextToLastDate = stubDate;
 				break;
 			case Forward:
 				firstDate = stubDate;
-				nextToLastDate = new Date();
+				nextToLastDate = new JDate();
 				break;
 			case Zero:
 			case ThirdWednesday:
@@ -187,8 +187,8 @@ public class FloatingRateBond extends Bond {
 	public FloatingRateBond(
 	        final int settlementDays,
 			final double faceAmount,
-			final Date startDate,
-			final Date maturityDate,
+			final JDate startDate,
+			final JDate maturityDate,
 			final Frequency couponFrequency,
 			final Calendar calendar,
 			final Handle<IborIndex> index,
@@ -198,7 +198,7 @@ public class FloatingRateBond extends Bond {
 				accrualDayCounter, BusinessDayConvention.Following, BusinessDayConvention.Following,
 				Constants.NULL_INTEGER, new Array(new double[] { 1.0 }),
 				new Array(new double[] { 0.0 }), new Array(0), new Array(0),
-				false, 100.0, new Date(), new Date(),
+				false, 100.0, new JDate(), new JDate(),
 				DateGeneration.Rule.Backward, false);
 	}
 }

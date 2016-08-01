@@ -45,7 +45,7 @@ import org.jquantlib.quotes.Quote;
 import org.jquantlib.quotes.SimpleQuote;
 import org.jquantlib.termstructures.LocalVolTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.calendars.NullCalendar;
 
 /**
@@ -64,7 +64,7 @@ public class LocalConstantVol extends LocalVolTermStructure {
     private final DayCounter dayCounter;
 
     public LocalConstantVol(
-            final Date referenceDate,
+            final JDate referenceDate,
             final /*@Volatility*/ double volatility,
             final DayCounter dayCounter) {
         super(referenceDate);
@@ -73,7 +73,7 @@ public class LocalConstantVol extends LocalVolTermStructure {
     }
 
     public LocalConstantVol(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Handle<Quote> volatility,
             final DayCounter dayCounter) {
         super(referenceDate);
@@ -109,8 +109,8 @@ public class LocalConstantVol extends LocalVolTermStructure {
         return dayCounter;
     }
 
-    public final Date maxDate() {
-        return Date.maxDate();
+    public final JDate maxDate() {
+        return JDate.maxDate();
     }
 
     @Override

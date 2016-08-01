@@ -44,7 +44,7 @@ import org.jquantlib.termstructures.volatilities.SmileSection;
 import org.jquantlib.termstructures.volatilities.VolatilityTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 
 /**
@@ -77,7 +77,7 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	 * initialize with a fixed reference date
 	 */
 	public OptionletVolatilityStructure(
-	        final Date referenceDate,
+	        final JDate referenceDate,
 			final Calendar cal,
 			final BusinessDayConvention bdc) {
 		super(referenceDate, cal, bdc, new DayCounter());
@@ -87,7 +87,7 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	 * initialize with a fixed reference date
 	 */
 	public OptionletVolatilityStructure(
-	        final Date referenceDate,
+	        final JDate referenceDate,
 			final Calendar cal,
 			final BusinessDayConvention bdc,
 			final DayCounter dc) {
@@ -130,7 +130,7 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	/**
 	 * returns the volatility for a given option date and strike rate
 	 */
-	public double volatility(final Date optionDate, final double strike) {
+	public double volatility(final JDate optionDate, final double strike) {
 		return volatility(optionDate, strike, false);
 	}
 
@@ -151,7 +151,7 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	/**
 	 * returns the Black variance for a given option date and strike rate
 	 */
-	public double blackVariance(final Date optionDate, final double strike) {
+	public double blackVariance(final JDate optionDate, final double strike) {
 		return blackVariance(optionDate, strike, false);
 	}
 
@@ -173,7 +173,7 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	/**
 	 * returns the smile for a given option date
 	 */
-	public SmileSection smileSection(final Date optionDate) {
+	public SmileSection smileSection(final JDate optionDate) {
 		return smileSection(optionDate, false);
 	}
 
@@ -203,19 +203,19 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	//
 
 	public double volatility(final Period optionTenor, final double strike, final boolean extrapolate) {
-		final Date optionDate = optionDateFromTenor(optionTenor);
+		final JDate optionDate = optionDateFromTenor(optionTenor);
 		return volatility(optionDate, strike, extrapolate);
 	}
 
 	public double blackVariance(final Period optionTenor,
 		final double strike,
 		final boolean extrapolate) {
-		final Date optionDate = optionDateFromTenor(optionTenor);
+		final JDate optionDate = optionDateFromTenor(optionTenor);
 		return blackVariance(optionDate, strike, extrapolate);
 	}
 
 	public SmileSection smileSection(final Period optionTenor, final boolean extrapolate) {
-		final Date optionDate = optionDateFromTenor(optionTenor);
+		final JDate optionDate = optionDateFromTenor(optionTenor);
 		return smileSection(optionDate, extrapolate);
 	}
 
@@ -224,7 +224,7 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	// 2. blackVariance methods rely on volatility methods
 	//
 
-	public double blackVariance(final Date optionDate, final double strike, final boolean extrapolate) {
+	public double blackVariance(final JDate optionDate, final double strike, final boolean extrapolate) {
 		final double v = volatility(optionDate, strike, extrapolate);
 		/* @Time */final double t = timeFromReference(optionDate);
 		return v*v*t;
@@ -239,7 +239,7 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	// 3. relying on xxxImpl methods
 	//
 
-	public double volatility(final Date optionDate, final double strike, final boolean extrapolate) {
+	public double volatility(final JDate optionDate, final double strike, final boolean extrapolate) {
 		checkRange(optionDate, extrapolate);
 		checkStrike(strike, extrapolate);
 		return volatilityImpl(optionDate, strike);
@@ -251,7 +251,7 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 		return volatilityImpl(optionTime, strike);
 	}
 
-	public SmileSection smileSection(final Date optionDate, final boolean extr) {
+	public SmileSection smileSection(final JDate optionDate, final boolean extr) {
 		checkRange(optionDate, extr);
 		return smileSectionImpl(optionDate);
 	}
@@ -265,11 +265,11 @@ public abstract class OptionletVolatilityStructure extends VolatilityTermStructu
 	// 4. default implementation of Date-based xxxImpl methods relying on the equivalent Time-based methods
 	//
 
-	protected SmileSection smileSectionImpl(final Date optionDate) {
+	protected SmileSection smileSectionImpl(final JDate optionDate) {
 		return smileSectionImpl(timeFromReference(optionDate));
 	}
 
-	public double volatilityImpl(final Date optionDate, final double strike) {
+	public double volatilityImpl(final JDate optionDate, final double strike) {
 		return volatilityImpl(timeFromReference(optionDate), strike);
 	}
 

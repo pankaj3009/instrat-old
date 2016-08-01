@@ -52,7 +52,7 @@ import org.jquantlib.math.interpolations.Interpolation;
 import org.jquantlib.math.interpolations.Interpolation.Interpolator;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.Pair;
 
 
@@ -73,7 +73,7 @@ public class InterpolatedForwardCurve<I extends Interpolator> extends ForwardRat
     //
     // TODO: all fields should be protected?  See: QL/C++
 
-    private Date[]              dates;
+    private JDate[]              dates;
     private /*@Time*/ double[]  times;
     private Interpolation       interpolation;
     private double[]            data;
@@ -93,14 +93,14 @@ public class InterpolatedForwardCurve<I extends Interpolator> extends ForwardRat
     
     public InterpolatedForwardCurve(
             final Class<I> classI,
-    		final Date[] dates,
+    		final JDate[] dates,
 			final double[] forwards, 
 			final DayCounter dc) {
     	this(classI, dates, forwards, dc, null, null);
     }
     public InterpolatedForwardCurve(
             final Class<I> classI,
-    		final Date[] dates,
+    		final JDate[] dates,
 			final double[] forwards, 
 			final DayCounter dc,
 			final Calendar calendar) {
@@ -108,7 +108,7 @@ public class InterpolatedForwardCurve<I extends Interpolator> extends ForwardRat
     }
     public InterpolatedForwardCurve(
             final Class<I> classI,
-    		final Date[] dates,
+    		final JDate[] dates,
 			final double[] forwards, 
 			final DayCounter dc,
 			final Calendar calendar, 
@@ -165,13 +165,13 @@ public class InterpolatedForwardCurve<I extends Interpolator> extends ForwardRat
 
     protected InterpolatedForwardCurve(
             final Class<I> classI,
-            final Date referenceDate,
+            final JDate referenceDate,
             final DayCounter dc) {
         this(classI, referenceDate, dc, null);
     }
     protected InterpolatedForwardCurve(
             final Class<I> classI,
-            final Date referenceDate,
+            final JDate referenceDate,
             final DayCounter dc,
             final Interpolator interpolator) {
         super(referenceDate, new Calendar(), dc);
@@ -228,13 +228,13 @@ public class InterpolatedForwardCurve<I extends Interpolator> extends ForwardRat
 	//
 	
 	@Override
-	public Date maxDate() {
+	public JDate maxDate() {
         final int last = dates.length-1;
         return dates[last];
 	}
 
 	@Override
-	public Date[] dates() {
+	public JDate[] dates() {
         return dates;
 	}
 
@@ -244,10 +244,10 @@ public class InterpolatedForwardCurve<I extends Interpolator> extends ForwardRat
 	}
 
 	@Override
-	public List<Pair<Date, Double>> nodes() {
-        final List<Pair<Date, Double>> nodes = new ArrayList<Pair<Date, Double>>();
+	public List<Pair<JDate, Double>> nodes() {
+        final List<Pair<JDate, Double>> nodes = new ArrayList<Pair<JDate, Double>>();
         for (int i = 0; i < dates.length; ++i) {
-            nodes.add(new Pair<Date, Double>(dates[i], data[i]));
+            nodes.add(new Pair<JDate, Double>(dates[i], data[i]));
         }
         return nodes;
 	}
@@ -273,7 +273,7 @@ public class InterpolatedForwardCurve<I extends Interpolator> extends ForwardRat
 	}
 
     @Override
-    public void setDates(final Date[] dates) {
+    public void setDates(final JDate[] dates) {
         this.dates = dates; // TODO: clone() ?
     }
 

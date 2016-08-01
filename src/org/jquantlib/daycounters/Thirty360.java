@@ -26,7 +26,7 @@ import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.lang.exceptions.LibraryException;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * 30/360 day count convention
@@ -112,7 +112,7 @@ public class Thirty360 extends DayCounter {
         }
 
         @Override
-        protected long dayCount(final Date d1, final Date d2) /* @ReadOnly */ {
+        protected long dayCount(final JDate d1, final JDate d2) /* @ReadOnly */ {
             final int dd1 = d1.dayOfMonth();
             int dd2 = d2.dayOfMonth();
             final int mm1 = d1.month().value();
@@ -127,8 +127,8 @@ public class Thirty360 extends DayCounter {
 
         @Override
         public /*@Time*/ final double yearFraction(
-                final Date dateStart, final Date dateEnd,
-                final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */{
+                final JDate dateStart, final JDate dateEnd,
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
             return /*@Time*/ dayCount(dateStart, dateEnd) / 360.0;
         }
 
@@ -150,13 +150,13 @@ public class Thirty360 extends DayCounter {
 
         @Override
         public /*@Time*/ final double yearFraction(
-                final Date dateStart, final Date dateEnd,
-                final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */{
+                final JDate dateStart, final JDate dateEnd,
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
             return /*@Time*/ dayCount(dateStart, dateEnd) / 360.0;
         }
 
         @Override
-        protected long dayCount(final Date d1, final Date d2) /* @ReadOnly */ {
+        protected long dayCount(final JDate d1, final JDate d2) /* @ReadOnly */ {
             final int dd1 = d1.dayOfMonth();
             final int dd2 = d2.dayOfMonth();
             final int mm1 = d1.month().value();
@@ -185,13 +185,13 @@ public class Thirty360 extends DayCounter {
 
         @Override
         public /*@Time*/ final double yearFraction(
-                final Date dateStart, final Date dateEnd,
-                final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */{
+                final JDate dateStart, final JDate dateEnd,
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
             return /*@Time*/ dayCount(dateStart, dateEnd) / 360.0;
         }
 
         @Override
-        protected long dayCount(final Date d1, final Date d2) /* @ReadOnly */ {
+        protected long dayCount(final JDate d1, final JDate d2) /* @ReadOnly */ {
             int dd1 = d1.dayOfMonth();
             int dd2 = d2.dayOfMonth();
             final int mm1 = d1.month().value();

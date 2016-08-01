@@ -25,7 +25,7 @@ package org.jquantlib.daycounters;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Simple day counter for reproducing theoretical calculations.
@@ -68,14 +68,14 @@ public class SimpleDayCounter extends DayCounter {
         }
 
         @Override
-        protected long dayCount(final Date dateStart, final Date dateEnd) /* @ReadOnly */ {
+        protected long dayCount(final JDate dateStart, final JDate dateEnd) /* @ReadOnly */ {
             return fallback.dayCount(dateStart, dateEnd);
         }
 
         @Override
         protected /*@Time*/ final double yearFraction(
-                final Date dateStart, final Date dateEnd,
-                final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */{
+                final JDate dateStart, final JDate dateEnd,
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
             final int dm1 = dateStart.dayOfMonth();
             final int dm2 = dateEnd.dayOfMonth();
             final int mm1 = dateStart.month().value();
@@ -85,9 +85,9 @@ public class SimpleDayCounter extends DayCounter {
 
             if (dm1 == dm2 ||
                     // e.g., Aug 30 -> Feb 28 ?
-                    (dm1 > dm2 && Date.isEndOfMonth(dateEnd)) ||
+                    (dm1 > dm2 && JDate.isEndOfMonth(dateEnd)) ||
                     // e.g., Feb 28 -> Aug 30 ?
-                    (dm1 < dm2 && Date.isEndOfMonth(dateStart)))
+                    (dm1 < dm2 && JDate.isEndOfMonth(dateStart)))
                 return (yy2 - yy1) + (mm2 - mm1) / 12.0;
             else
                 return fallback.yearFraction(dateStart, dateEnd, refPeriodStart, refPeriodEnd);

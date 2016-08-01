@@ -49,7 +49,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 
 /**
@@ -233,10 +233,10 @@ public class IborIndex extends InterestRateIndex {
     //
     
     @Override
-    protected double forecastFixing(final Date fixingDate) {
+    protected double forecastFixing(final JDate fixingDate) {
         QL.require(! termStructure.empty() , "no forecasting term structure set to " + name());  // TODO: message
-        final Date fixingValueDate = valueDate(fixingDate);
-        final Date endValueDate = maturityDate(fixingValueDate);
+        final JDate fixingValueDate = valueDate(fixingDate);
+        final JDate endValueDate = maturityDate(fixingValueDate);
         final double fixingDiscount = termStructure.currentLink().discount(fixingValueDate);
         final double endDiscount = termStructure.currentLink().discount(endValueDate);
         final double fixingPeriod = dayCounter().yearFraction(fixingValueDate, endValueDate);
@@ -249,7 +249,7 @@ public class IborIndex extends InterestRateIndex {
     }
 
     @Override
-    public Date maturityDate(final Date valueDate) {
+    public JDate maturityDate(final JDate valueDate) {
         return fixingCalendar().advance(valueDate, tenor, convention, endOfMonth);
     }
 

@@ -28,7 +28,7 @@ import org.jquantlib.indexes.InterestRateIndex;
 import org.jquantlib.lang.annotation.Natural;
 import org.jquantlib.lang.annotation.Rate;
 import org.jquantlib.lang.exceptions.LibraryException;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 public class AverageBMACouponPricer extends FloatingRateCouponPricer {
 
@@ -42,14 +42,14 @@ public class AverageBMACouponPricer extends FloatingRateCouponPricer {
 	@Override
 	public /* @Real */ double swapletRate() {
 
-		List<Date> fixingDates = coupon.fixingDates();
+		List<JDate> fixingDates = coupon.fixingDates();
 		InterestRateIndex index = coupon.index();
 		
 		@Natural int cutoffDays = 0; // to be verified
-		Date startDate = coupon.accrualStartDate().sub(cutoffDays);
-		Date endDate = coupon.accrualEndDate().sub(cutoffDays);
-		Date d1 = new Date(startDate.serialNumber());
-		Date d2 = new Date(startDate.serialNumber());
+		JDate startDate = coupon.accrualStartDate().sub(cutoffDays);
+		JDate endDate = coupon.accrualEndDate().sub(cutoffDays);
+		JDate d1 = new JDate(startDate.serialNumber());
+		JDate d2 = new JDate(startDate.serialNumber());
 
 		QL.require(fixingDates.size() > 0, "fixing date list empty");
 		QL.require(index.valueDate(fixingDates.get(0)).le(startDate), "first fixing date valid after period start");
@@ -59,8 +59,8 @@ public class AverageBMACouponPricer extends FloatingRateCouponPricer {
 		int days = 0;
 		
 		for (int i=0;i<(fixingDates.size()-1);i++) {
-			Date valueDate = index.valueDate(fixingDates.get(i));
-			Date nextValueDate = index.valueDate(fixingDates.get(i+1));
+			JDate valueDate = index.valueDate(fixingDates.get(i));
+			JDate nextValueDate = index.valueDate(fixingDates.get(i+1));
 			
 			if (fixingDates.get(i).ge(endDate) || valueDate.ge(valueDate)) {
 				break;
@@ -70,7 +70,7 @@ public class AverageBMACouponPricer extends FloatingRateCouponPricer {
 				continue;
 			}
 			
-			d2 = Date.min(nextValueDate, endDate);
+			d2 = JDate.min(nextValueDate, endDate);
 			avgBMA += (index.fixing(fixingDates.get(i))) * (d2.sub(d1));
 			days += d2.sub(d1);
 			

@@ -46,7 +46,7 @@ import java.util.List;
 import org.jquantlib.QL;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.DefaultObservable;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
@@ -189,7 +189,7 @@ public abstract class StochasticProcess implements Observable, Observer {
      * functionality, a default implementation is given
      * which raises an exception.
      */
-    public /*@Time*/ double time(final Date date) /*@ReadOnly*/ {
+    public /*@Time*/ double time(final JDate date) /*@ReadOnly*/ {
         throw new UnsupportedOperationException("date/time conversion not supported");
     }
 

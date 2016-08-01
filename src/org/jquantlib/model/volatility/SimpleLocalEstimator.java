@@ -41,7 +41,7 @@ package org.jquantlib.model.volatility;
 
 import java.util.Iterator;
 
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeSeries;
 
 /**
@@ -62,10 +62,10 @@ public class SimpleLocalEstimator {
 
     public TimeSeries<Double> calculate(final TimeSeries<Double> quotes) {
         final TimeSeries<Double> retval = new TimeSeries<Double>(Double.class);
-        final Iterator<Date> dates = quotes.navigableKeySet().iterator();
+        final Iterator<JDate> dates = quotes.navigableKeySet().iterator();
     	double prev = quotes.get(dates.next());
     	while (dates.hasNext()) {
-    	    final Date date = dates.next();
+    	    final JDate date = dates.next();
             final double curr = quotes.get(date) ;
             final double value = Math.abs(Math.log(curr/prev))/Math.sqrt(yearFraction) ;
             retval.put(date, value);

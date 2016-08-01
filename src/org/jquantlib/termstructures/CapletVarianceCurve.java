@@ -44,7 +44,7 @@ import org.jquantlib.termstructures.volatilities.SmileSection;
 import org.jquantlib.termstructures.volatilities.optionlet.OptionletVolatilityStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * caplet variance curve
@@ -61,8 +61,8 @@ public class CapletVarianceCurve extends OptionletVolatilityStructure {
 	//
 
 	public CapletVarianceCurve(
-	        final Date referenceDate,
-            final Date [] dates,
+	        final JDate referenceDate,
+            final JDate [] dates,
             final double [] capletVolCurve,
             final DayCounter dayCounter) {
 		super(referenceDate, new Calendar(), BusinessDayConvention.Following);
@@ -74,7 +74,7 @@ public class CapletVarianceCurve extends OptionletVolatilityStructure {
     // overrides TermStructure
     //
 
-    public Date maxDate() {
+    public JDate maxDate() {
         return blackCurve.maxDate();
     }
 

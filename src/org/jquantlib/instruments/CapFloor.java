@@ -54,7 +54,7 @@ import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.pricingengines.PricingEngine;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Base class for cap-like instruments
@@ -110,7 +110,7 @@ public class CapFloor extends Instrument {
             }
         }
 
-        final Date evaluationDate = new Settings().evaluationDate();
+        final JDate evaluationDate = new Settings().evaluationDate();
         for (final CashFlow cashFlow : floatingLeg_) {
             cashFlow.addObserver(this);
         }
@@ -154,7 +154,7 @@ public class CapFloor extends Instrument {
         } else
             throw new LibraryException("only Cap/Floor types allowed in this constructor"); // TODO: message
 
-        final Date evaluationDate = new Settings().evaluationDate();
+        final JDate evaluationDate = new Settings().evaluationDate();
         for (final CashFlow cashFlow : floatingLeg_) {
             cashFlow.addObserver(this);
         }
@@ -172,7 +172,7 @@ public class CapFloor extends Instrument {
 
     @Override
     public boolean isExpired(){
-        Date lastPaymentDate = Date.minDate();
+        JDate lastPaymentDate = JDate.minDate();
         for (int i=0; i<floatingLeg_.size(); i++) {
             //FIXME: kind of ugly... intention: get the last date of all dates in the floatingdate c++ max syntax.
             lastPaymentDate = lastPaymentDate.le(floatingLeg_.get(i).date())?floatingLeg_.get(i).date():lastPaymentDate;
@@ -180,15 +180,15 @@ public class CapFloor extends Instrument {
         return lastPaymentDate.le(termStructure_.currentLink().referenceDate());
     }
 
-    public Date startDate(){
+    public JDate startDate(){
         return CashFlows.getInstance().startDate(floatingLeg_);
     }
 
-    public Date maturityDate() {
+    public JDate maturityDate() {
         return CashFlows.getInstance().maturityDate(floatingLeg_);
     }
 
-    public Date lastFixingDate() {
+    public JDate lastFixingDate() {
         final CashFlow lastCoupon = floatingLeg_.get(floatingLeg_.size() - 1); // no linkedlist :-(
         final FloatingRateCoupon lastFloatingCoupon = (FloatingRateCoupon) lastCoupon;
         return lastFloatingCoupon.fixingDate();

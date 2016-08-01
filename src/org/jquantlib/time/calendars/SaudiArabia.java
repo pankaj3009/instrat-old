@@ -34,7 +34,7 @@ import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Month;
 import org.jquantlib.time.Weekday;
 
@@ -99,7 +99,7 @@ public class SaudiArabia extends Calendar{
 		}
 
 		@Override
-		public boolean isBusinessDay(final Date date)  {
+		public boolean isBusinessDay(final JDate date)  {
 			final Weekday w = date.weekday();
 			final int d = date.dayOfMonth();
 			final Month m = date.month();

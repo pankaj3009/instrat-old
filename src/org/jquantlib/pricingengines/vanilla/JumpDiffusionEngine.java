@@ -74,7 +74,7 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Jump-diffusion engine for vanilla options
@@ -144,10 +144,10 @@ public class JumpDiffusionEngine extends VanillaOption.EngineImpl {
 
         final DayCounter voldc = process.blackVolatility().currentLink().dayCounter();
         final Calendar volcal = process.blackVolatility().currentLink().calendar();
-        final Date volRefDate = process.blackVolatility().currentLink().referenceDate();
+        final JDate volRefDate = process.blackVolatility().currentLink().referenceDate();
         final double /* @Time */t = voldc.yearFraction(volRefDate, A.exercise.lastDate());
         final double /* @Rate */riskFreeRate = -Math.log(process.riskFreeRate().currentLink().discount(A.exercise.lastDate())) / t;
-        final Date rateRefDate = process.riskFreeRate().currentLink().referenceDate();
+        final JDate rateRefDate = process.riskFreeRate().currentLink().referenceDate();
 
         final PoissonDistribution p = new PoissonDistribution(lambda * t);
 

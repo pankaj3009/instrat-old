@@ -49,7 +49,7 @@ import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
 import org.jquantlib.termstructures.BlackVarianceTermStructure;
 import org.jquantlib.termstructures.TermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -76,7 +76,7 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
     //
 
     private final DayCounter dayCounter;
-    private final Date maxDate;
+    private final JDate maxDate;
     private final /* @Time */ Array times;
     private /* @Real */ Array strikes;
     private final /* @Variance */ Matrix variances;
@@ -90,7 +90,7 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
     // public constructors
     //
 
-    public BlackVarianceSurface(final Date referenceDate, final Date[] dates,
+    public BlackVarianceSurface(final JDate referenceDate, final JDate[] dates,
             final/* @Real */ Array strikes, final/* @Volatility */ Matrix blackVolMatrix, final DayCounter dayCounter) {
 
         this(referenceDate, dates, strikes, blackVolMatrix, dayCounter,
@@ -99,8 +99,8 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
     }
 
     public BlackVarianceSurface(
-            final Date referenceDate,
-            final Date[] dates,
+            final JDate referenceDate,
+            final JDate[] dates,
             final/* @Real */ Array strikes,
             final/* @Volatility */ Matrix blackVolMatrix,
             final DayCounter dayCounter,
@@ -165,7 +165,7 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
     }
 
     @Override
-    public final Date maxDate() {
+    public final JDate maxDate() {
         return maxDate;
     }
 

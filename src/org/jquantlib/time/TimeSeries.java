@@ -39,10 +39,10 @@ package org.jquantlib.time;
  *
  * @author Richard Gomes
  */
-public class TimeSeries<V> extends Series<Date,V> { 
+public class TimeSeries<V> extends Series<JDate,V> { 
 	
 	public TimeSeries(final Class<V> classV) {
-		super(Date.class, classV);
+		super(JDate.class, classV);
 	}
 	
 }

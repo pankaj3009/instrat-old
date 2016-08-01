@@ -40,7 +40,7 @@
 package org.jquantlib.termstructures;
 
 import org.jquantlib.daycounters.DayCounter;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
 
@@ -61,7 +61,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @category zero yield rates
      */
     public abstract InterestRate zeroRate(
-            final Date d,
+            final JDate d,
             final DayCounter resultDayCounter,
             final Compounding comp);
 
@@ -74,7 +74,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @category zero yield rates
      */
     public abstract InterestRate zeroRate(
-            final Date d,
+            final JDate d,
             final DayCounter resultDayCounter,
             final Compounding comp,
             final Frequency freq);
@@ -88,7 +88,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @category zero yield rates
      */
     public abstract InterestRate zeroRate(
-            final Date d,
+            final JDate d,
             final DayCounter dayCounter,
             final Compounding comp,
             final Frequency freq,
@@ -121,8 +121,8 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @category forward rates
      */
     public abstract InterestRate forwardRate(
-            final Date d1,
-            final Date d2,
+            final JDate d1,
+            final JDate d2,
             final DayCounter resultDayCounter,
             final Compounding comp);
 
@@ -137,8 +137,8 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @see #forwardRate(Date, Date, DayCounter, Compounding)
      */
     public abstract InterestRate forwardRate(
-            final Date d1,
-            final Date d2,
+            final JDate d1,
+            final JDate d2,
             final DayCounter resultDayCounter,
             final Compounding comp,
             final Frequency freq);
@@ -154,8 +154,8 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @see #forwardRate(Date, Date, DayCounter, Compounding)
      */
     public abstract InterestRate forwardRate(
-            final Date d1,
-            final Date d2,
+            final JDate d1,
+            final JDate d2,
             final DayCounter dayCounter,
             final Compounding comp,
             final Frequency freq,
@@ -224,7 +224,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @see #forwardRate(Date, Date, DayCounter, Compounding)
      */
     public abstract InterestRate forwardRate(
-            final Date d,
+            final JDate d,
             final Period p,
             final DayCounter resultDayCounter,
             Compounding comp,
@@ -236,7 +236,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @see #forwardRate(Date, Date, DayCounter, Compounding)
      */
     public abstract InterestRate forwardRate(
-            final Date d,
+            final JDate d,
             final Period p,
             final DayCounter dayCounter,
             final Compounding comp,
@@ -250,7 +250,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      *
      * @category discount factors
      */
-    public abstract/* @DiscountFactor */double discount(final Date d);
+    public abstract/* @DiscountFactor */double discount(final JDate d);
 
     /**
      * Returns the discount factor for a given date or time. In the
@@ -261,7 +261,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      *
      * @see org.jquantlib.termstructures.YieldTermStructureImpl#discount(org.jquantlib.time.Date, boolean)
      */
-    public abstract/* @DiscountFactor */double discount(final Date d, boolean extrapolate);
+    public abstract/* @DiscountFactor */double discount(final JDate d, boolean extrapolate);
 
     /**
      * Returns the discount factor for a given date or time. In the
@@ -296,7 +296,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      *       not take into account all the market conventions' details. The correct way to evaluate such rate is to instantiate a
      *       SimpleSwap with the correct conventions, pass it the term structure and call the swap's fairRate() method.
      */
-    public abstract/* @Rate */double parRate(int tenor, final Date startDate, final Frequency freq, boolean extrapolate);
+    public abstract/* @Rate */double parRate(int tenor, final JDate startDate, final Frequency freq, boolean extrapolate);
 
     /**
      * Returns the implied par rate for a given sequence of payments at the given dates or times. In the former case, times are
@@ -315,7 +315,7 @@ public abstract interface YieldTermStructure extends TermStructure {
      *
      * @see YieldTermStructure#parRate(int, Date, Frequency, boolean)
      */
-    public abstract/* @Rate */double parRate(final Date[] dates, final Frequency freq, boolean extrapolate);
+    public abstract/* @Rate */double parRate(final JDate[] dates, final Frequency freq, boolean extrapolate);
 
     /**
      * Returns the implied par rate for a given sequence of payments at the given dates or times. In the former case, times are

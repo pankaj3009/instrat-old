@@ -36,7 +36,7 @@ import org.jquantlib.termstructures.BootstrapHelper;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.util.PolymorphicVisitor;
@@ -55,7 +55,7 @@ public class DepositRateHelper extends RelativeDateRateHelper {
 	// private fields 
 	//
 	private final static String TS_NOT_SET = "term structure not set";
-    private Date fixingDate;
+    private JDate fixingDate;
     private final IborIndex iborIndex;
     private final RelinkableHandle<YieldTermStructure> termStructureHandle = new RelinkableHandle <YieldTermStructure> (null);
 

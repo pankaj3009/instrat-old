@@ -44,7 +44,7 @@ package org.jquantlib.cashflow;
 
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.indexes.SwapIndex;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -61,20 +61,20 @@ public class CmsCoupon extends FloatingRateCoupon {
 
     protected SwapIndex swapIndex_;
 
-    public CmsCoupon(final Date paymentDate,
+    public CmsCoupon(final JDate paymentDate,
                      final double nominal,
-                     final Date startDate,
-                     final Date endDate,
+                     final JDate startDate,
+                     final JDate endDate,
                      final int fixingDays,
                      final SwapIndex index) {
         // gearing default
         this (paymentDate, nominal, startDate, endDate, fixingDays, index, 1.0);
     }
 
-    public CmsCoupon(final Date paymentDate,
+    public CmsCoupon(final JDate paymentDate,
                      final double nominal,
-                     final Date startDate,
-                     final Date endDate,
+                     final JDate startDate,
+                     final JDate endDate,
                      final int fixingDays,
                      final SwapIndex index,
                      final double gearing) {
@@ -82,30 +82,30 @@ public class CmsCoupon extends FloatingRateCoupon {
         this (paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, 0.0);
     }
 
-    public CmsCoupon(final Date paymentDate,
+    public CmsCoupon(final JDate paymentDate,
                      final double nominal,
-                     final Date startDate,
-                     final Date endDate,
+                     final JDate startDate,
+                     final JDate endDate,
                      final int fixingDays,
                      final SwapIndex index,
                      final double gearing,
                      final double spread) {
         // reference dates defaults
         this (paymentDate, nominal, startDate, endDate, fixingDays,
-              index, gearing, spread, new Date(), new Date());
+              index, gearing, spread, new JDate(), new JDate());
     }
 
 
-    public CmsCoupon(final Date paymentDate,
+    public CmsCoupon(final JDate paymentDate,
                      final double nominal,
-                     final Date startDate,
-                     final Date endDate,
+                     final JDate startDate,
+                     final JDate endDate,
                      final int fixingDays,
                      final SwapIndex index,
                      final double gearing,
                      final double spread,
-                     final Date refPeriodStart,
-                     final Date refPeriodEnd) {
+                     final JDate refPeriodStart,
+                     final JDate refPeriodEnd) {
         // daycounter default
         this (paymentDate, nominal, startDate, endDate, fixingDays,
               index, gearing, spread, refPeriodStart, refPeriodEnd,
@@ -113,16 +113,16 @@ public class CmsCoupon extends FloatingRateCoupon {
     }
 
 
-    public CmsCoupon(final Date paymentDate,
+    public CmsCoupon(final JDate paymentDate,
                      final double nominal,
-                     final Date startDate,
-                     final Date endDate,
+                     final JDate startDate,
+                     final JDate endDate,
                      final int fixingDays,
                      final SwapIndex index,
                      final double gearing,
                      final double spread,
-                     final Date refPeriodStart,
-                     final Date refPeriodEnd,
+                     final JDate refPeriodStart,
+                     final JDate refPeriodEnd,
                      final DayCounter dayCounter) {
         // inArrears default
         this (paymentDate, nominal, startDate, endDate, fixingDays,
@@ -131,16 +131,16 @@ public class CmsCoupon extends FloatingRateCoupon {
     }
 
 
-    public CmsCoupon(final Date paymentDate,
+    public CmsCoupon(final JDate paymentDate,
                      final double nominal,
-                     final Date startDate,
-                     final Date endDate,
+                     final JDate startDate,
+                     final JDate endDate,
                      final int fixingDays,
                      final SwapIndex index,
                      final double gearing,
                      final double spread,
-                     final Date refPeriodStart,
-                     final Date refPeriodEnd,
+                     final JDate refPeriodStart,
+                     final JDate refPeriodEnd,
                      final DayCounter dayCounter,
                      final boolean isInArrears) {
         super (paymentDate, nominal, startDate, endDate, fixingDays,

@@ -31,7 +31,7 @@ import org.jquantlib.math.Constants;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.util.Observer;
@@ -98,7 +98,7 @@ public abstract class InterestRateIndex extends Index implements Observer {
     }
 
     @Override
-    public boolean isValidFixingDate(final Date fixingDate) {
+    public boolean isValidFixingDate(final JDate fixingDate) {
         return fixingCalendar.isBusinessDay(fixingDate);
     }
 
@@ -128,7 +128,7 @@ public abstract class InterestRateIndex extends Index implements Observer {
     // protected abstract methods
     //
 
-    protected abstract double forecastFixing(Date fixingDate);
+    protected abstract double forecastFixing(JDate fixingDate);
 
 
     //
@@ -136,17 +136,17 @@ public abstract class InterestRateIndex extends Index implements Observer {
     //
 
     public abstract Handle<YieldTermStructure> termStructure();
-    public abstract Date maturityDate(Date valueDate);
+    public abstract JDate maturityDate(JDate valueDate);
 
 
     //
     // public methods
     //
     @Override
-    public double fixing(final Date fixingDate, 
+    public double fixing(final JDate fixingDate, 
     					 final boolean forecastTodaysFixing) {
         QL.require(isValidFixingDate(fixingDate) , "Fixing date " + fixingDate.toString() + " is not valid"); // QA:[RG]::verified 
-        final Date today = new Settings().evaluationDate();
+        final JDate today = new Settings().evaluationDate();
         final boolean enforceTodaysHistoricFixings = new Settings().isEnforcesTodaysHistoricFixings();
 
         if (fixingDate.lt(today) || (fixingDate.equals(today) && enforceTodaysHistoricFixings && !forecastTodaysFixing)) {
@@ -176,17 +176,17 @@ public abstract class InterestRateIndex extends Index implements Observer {
     }
 
     @Override
-    public double fixing(final Date fixingDate) {
+    public double fixing(final JDate fixingDate) {
         return fixing(fixingDate, false);
     }
 
-    public Date fixingDate(final Date valueDate) {
-        final Date fixingDate = fixingCalendar().advance(valueDate, fixingDays, TimeUnit.Days);
+    public JDate fixingDate(final JDate valueDate) {
+        final JDate fixingDate = fixingCalendar().advance(valueDate, fixingDays, TimeUnit.Days);
         QL.ensure(isValidFixingDate(fixingDate) , "fixing date " + fixingDate + " is not valid"); 
         return fixingDate;
     }
 
-    public Date valueDate(final Date fixingDate) {
+    public JDate valueDate(final JDate fixingDate) {
         QL.require(isValidFixingDate(fixingDate) , "Fixing date is not valid"); // TODO: message
         return fixingCalendar().advance(fixingDate, fixingDays, TimeUnit.Days);
     }

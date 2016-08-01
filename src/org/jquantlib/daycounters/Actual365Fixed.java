@@ -43,7 +43,7 @@ package org.jquantlib.daycounters;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * "Actual/365 (Fixed)" day count convention, also know as
@@ -84,8 +84,8 @@ public class Actual365Fixed extends DayCounter {
 
         @Override
         public /*@Time*/ final double yearFraction(
-                final Date dateStart, final Date dateEnd,
-                final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */{
+                final JDate dateStart, final JDate dateEnd,
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
             return /*@Time*/ dayCount(dateStart, dateEnd)/365.0;
         }
 

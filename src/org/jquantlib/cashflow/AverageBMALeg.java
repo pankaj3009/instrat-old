@@ -48,7 +48,7 @@ import org.jquantlib.indexes.BMAIndex;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 
 /**
@@ -131,8 +131,8 @@ public class AverageBMALeg {
         // the following is not always correct
         Calendar calendar = schedule.calendar();
 
-        Date refStart, start, refEnd, end;
-        Date paymentDate;
+        JDate refStart, start, refEnd, end;
+        JDate paymentDate;
 
         int n = schedule.size()-1;
         	

@@ -28,7 +28,7 @@ import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.termstructures.volatilities.VolatilityTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitable;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
@@ -123,7 +123,7 @@ public abstract class BlackVolTermStructure extends VolatilityTermStructure impl
     /**
      *  initialize with a fixed reference date
      */
-    public BlackVolTermStructure(final Date referenceDate) {
+    public BlackVolTermStructure(final JDate referenceDate) {
         this(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter());
     }
 
@@ -131,7 +131,7 @@ public abstract class BlackVolTermStructure extends VolatilityTermStructure impl
      *  initialize with a fixed reference date
      */
     public BlackVolTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal) {
         this(referenceDate, cal, BusinessDayConvention.Following, new DayCounter());
     }
@@ -140,7 +140,7 @@ public abstract class BlackVolTermStructure extends VolatilityTermStructure impl
      *  initialize with a fixed reference date
      */
     public BlackVolTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc) {
         this(referenceDate, cal, bdc, new DayCounter());
@@ -150,7 +150,7 @@ public abstract class BlackVolTermStructure extends VolatilityTermStructure impl
      *  initialize with a fixed reference date
      */
     public BlackVolTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc,
             final DayCounter dc) {
@@ -195,14 +195,14 @@ public abstract class BlackVolTermStructure extends VolatilityTermStructure impl
     /**
      * Present (a.k.a spot) volatility
      */
-    public final /*@Volatility*/ double blackVol(final Date maturity, final /*@Real*/ double strike) {
+    public final /*@Volatility*/ double blackVol(final JDate maturity, final /*@Real*/ double strike) {
         return blackVol(maturity, strike, false);
     }
 
     /**
      * Present (a.k.a spot) volatility
      */
-    public final /*@Volatility*/ double blackVol(final Date maturity, final /*@Real*/ double strike, final boolean extrapolate) {
+    public final /*@Volatility*/ double blackVol(final JDate maturity, final /*@Real*/ double strike, final boolean extrapolate) {
         checkRange(maturity, extrapolate);
         checkStrike(strike, extrapolate);
         /*@Time*/ final double t = timeFromReference(maturity);
@@ -228,14 +228,14 @@ public abstract class BlackVolTermStructure extends VolatilityTermStructure impl
     /**
      * Present (a.k.a spot) variance
      */
-    public final /*@Variance*/ double blackVariance(final Date maturity, final /*@Real*/ double strike) {
+    public final /*@Variance*/ double blackVariance(final JDate maturity, final /*@Real*/ double strike) {
         return blackVariance(maturity, strike, false);
     }
 
     /**
      * Present (a.k.a spot) variance
      */
-    public final /*@Variance*/ double blackVariance(final Date maturity, final /*@Real*/ double strike, final boolean extrapolate) {
+    public final /*@Variance*/ double blackVariance(final JDate maturity, final /*@Real*/ double strike, final boolean extrapolate) {
         checkRange(maturity, extrapolate);
         checkStrike(strike, extrapolate);
         /*@Time*/ final double t = timeFromReference(maturity);
@@ -268,7 +268,7 @@ public abstract class BlackVolTermStructure extends VolatilityTermStructure impl
      * @param extrapolate
      * @return
      */
-    public final /*@Volatility*/ double blackForwardVol(final Date date1, final Date date2, final /*@Real*/ double strike, final boolean extrapolate) {
+    public final /*@Volatility*/ double blackForwardVol(final JDate date1, final JDate date2, final /*@Real*/ double strike, final boolean extrapolate) {
         QL.require(date1.le(date2), "date1 later than date2"); // TODO: message
         /*@Time*/ final double time1 = timeFromReference(date1);
         /*@Time*/ final double time2 = timeFromReference(date2);
@@ -319,7 +319,7 @@ public abstract class BlackVolTermStructure extends VolatilityTermStructure impl
      * @param extrapolate
      * @return
      */
-    public final /*@Variance*/ double blackForwardVariance(final Date date1, final Date date2, final /*@Real*/ double strike, final boolean extrapolate) {
+    public final /*@Variance*/ double blackForwardVariance(final JDate date1, final JDate date2, final /*@Real*/ double strike, final boolean extrapolate) {
         QL.require(date1.le(date2) , "date1 later than date2"); // TODO: message
         /*@Time*/ final double time1 = timeFromReference(date1);
         /*@Time*/ final double time2 = timeFromReference(date2);

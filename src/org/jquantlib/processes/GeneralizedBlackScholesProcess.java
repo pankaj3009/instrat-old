@@ -54,7 +54,7 @@ import org.jquantlib.termstructures.volatilities.BlackVarianceCurve;
 import org.jquantlib.termstructures.volatilities.LocalConstantVol;
 import org.jquantlib.termstructures.volatilities.LocalVolCurve;
 import org.jquantlib.termstructures.volatilities.LocalVolSurface;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 
 /**
@@ -237,7 +237,7 @@ public class GeneralizedBlackScholesProcess extends StochasticProcess1D {
     }
 
     @Override
-    public final/* @Time */double time(final Date d) {
+    public final/* @Time */double time(final JDate d) {
         final YieldTermStructure yts = riskFreeRate.currentLink();
         return yts.dayCounter().yearFraction(yts.referenceDate(), d);
     }

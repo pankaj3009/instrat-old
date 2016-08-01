@@ -51,7 +51,7 @@ import org.jquantlib.pricingengines.vanilla.AnalyticDividendEuropeanEngine;
 import org.jquantlib.pricingengines.vanilla.finitedifferences.FDDividendAmericanEngine;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 import org.jquantlib.quotes.SimpleQuote;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Single-asset vanilla option (no barriers) with discrete dividends
@@ -74,7 +74,7 @@ public class DividendVanillaOption extends VanillaOption {
     public DividendVanillaOption(
             final Payoff payoff,
             final Exercise exercise,
-            final List<Date> dates,
+            final List<JDate> dates,
             final List<Double> dividends) {
         super(payoff, exercise);
         cashFlow = Dividend.DividendVector(dates, dividends);
@@ -192,9 +192,9 @@ public class DividendVanillaOption extends VanillaOption {
         @Override
         public void validate() {
             super.validate();
-            final Date exerciseDate = exercise.lastDate();
+            final JDate exerciseDate = exercise.lastDate();
             for (int i = 0; i < cashFlow.size(); i++) {
-                final Date d = cashFlow.get(i).date();
+                final JDate d = cashFlow.get(i).date();
                 QL.require(d.le(exerciseDate), "dividend date later than the exercise date"); // TODO: message
             }
         }

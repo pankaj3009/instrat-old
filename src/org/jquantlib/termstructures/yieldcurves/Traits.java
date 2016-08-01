@@ -27,7 +27,7 @@ import java.util.List;
 import org.jquantlib.math.interpolations.Interpolation;
 import org.jquantlib.math.interpolations.Interpolation.Interpolator;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.Pair;
 
 /**
@@ -54,7 +54,7 @@ public interface Traits {
     /**
      * further guesses
      */
-    public double guess(final YieldTermStructure curve, final Date d);
+    public double guess(final YieldTermStructure curve, final JDate d);
 
     /**
      * possible constraints based on previous values
@@ -72,28 +72,28 @@ public interface Traits {
     public void updateGuess(final double[] data, double value, int i);
 
     public boolean dummyInitialValue() /* @ReadOnly */;
-    public Date initialDate(final YieldTermStructure curve) /* @ReadOnly */;
+    public JDate initialDate(final YieldTermStructure curve);
     public int maxIterations() /* @ReadOnly */;
 
 
     public interface Curve extends YieldTermStructure /* TODO: public boost::noncopyable*/ {
 
         @Override
-        public Date maxDate() /* @ReadOnly */;
+        public JDate maxDate();
         
-        public Date[] dates() /* @ReadOnly */;
+        public JDate[] dates() /* @ReadOnly */;
         
         public /*@Time*/ double[] times() /* @ReadOnly */;
 
-        public List<Pair<Date, /* @Rate */Double>> nodes() /* @ReadOnly */;
+        public List<Pair<JDate, /* @Rate */Double>> nodes() /* @ReadOnly */;
 
         public double[] data();
         
         @Override
-        public Date referenceDate() /* @ReadOnly */;
+        public JDate referenceDate();
         
         @Override
-        public double timeFromReference(final Date date) /* @ReadOnly */;
+        public double timeFromReference(final JDate date) /* @ReadOnly */;
 
         @Override
         public void update();
@@ -104,7 +104,7 @@ public interface Traits {
         
         public void setInterpolation(final Interpolation interpolation);
 
-        public void setDates (final Date[] dates);
+        public void setDates (final JDate[] dates);
         
         public void setTimes (/*@Time*/ double[] times);
         

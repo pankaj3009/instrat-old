@@ -45,7 +45,7 @@ import org.jquantlib.Settings;
 import org.jquantlib.math.Constants;
 import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 
 /**
@@ -74,7 +74,7 @@ public class ZeroYield implements Traits {
     }
 
     @Override
-    public double guess(final YieldTermStructure c, final Date d) {
+    public double guess(final YieldTermStructure c, final JDate d) {
         return c.zeroRate(d, c.dayCounter(), Compounding.Continuous, Frequency.Annual, true).rate();
     }
 
@@ -107,7 +107,7 @@ public class ZeroYield implements Traits {
     }
 
     @Override
-    public Date initialDate(final YieldTermStructure curve) {
+    public JDate initialDate(final YieldTermStructure curve) {
         return curve.referenceDate();
     }
 

@@ -26,7 +26,7 @@ import org.jquantlib.daycounters.Actual365Fixed;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.calendars.NullCalendar;
 
@@ -36,7 +36,7 @@ public abstract class CapVolatilityStructure extends AbstractTermStructure {
         super(dc == null ? new Actual365Fixed() : dc);
     }
 
-    public CapVolatilityStructure(final Date referenceDate, final Calendar cal, final DayCounter dc) {
+    public CapVolatilityStructure(final JDate referenceDate, final Calendar cal, final DayCounter dc) {
         super(referenceDate, cal == null ? new NullCalendar() : cal, dc == null ? new Actual365Fixed() : dc);
     }
 
@@ -44,11 +44,11 @@ public abstract class CapVolatilityStructure extends AbstractTermStructure {
         super(settlementDays, cal == null ? new NullCalendar() : cal, dc == null ? new Actual365Fixed() : dc);
     }
 
-    public double volatility(final Date end, final double strike) {
+    public double volatility(final JDate end, final double strike) {
         return volatility(end, strike, false);
     }
 
-    public double volatility(final Date end, final double strike, final boolean extrapolate) {
+    public double volatility(final JDate end, final double strike, final boolean extrapolate) {
         final double t = timeFromReference(end);
         checkRange(t, strike, extrapolate);
         return volatilityImpl(t, strike);
@@ -63,7 +63,7 @@ public abstract class CapVolatilityStructure extends AbstractTermStructure {
 
     // ! returns the volatility for a given cap/floor length and strike rate
     public double volatility(final Period optionTenor, final double strike, final boolean extrapolate) {
-        final Date exerciseDate = calendar().advance(referenceDate(), optionTenor, BusinessDayConvention.Following); // FIXME: Original
+        final JDate exerciseDate = calendar().advance(referenceDate(), optionTenor, BusinessDayConvention.Following); // FIXME: Original
         // C++ comment
         return volatility(exerciseDate, strike, extrapolate);
     }

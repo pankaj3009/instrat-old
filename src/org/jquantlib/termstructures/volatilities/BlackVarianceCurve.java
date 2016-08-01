@@ -47,7 +47,7 @@ import org.jquantlib.math.interpolations.factories.Linear;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.termstructures.BlackVarianceTermStructure;
 import org.jquantlib.termstructures.TermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -73,8 +73,8 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
     //
 
     private final DayCounter dayCounter;
-    private final Date maxDate;
-    private final Date[] dates;
+    private final JDate maxDate;
+    private final JDate[] dates;
     private final /*@Time*/ Array times;
     private final /*@Variance*/ Array variances;
     private Interpolation varianceCurve;
@@ -86,16 +86,16 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
     //
 
     public BlackVarianceCurve(
-            final Date referenceDate,
-            final Date[] dates,
+            final JDate referenceDate,
+            final JDate[] dates,
             final /*@Volatility*/ double[] blackVolCurve,
             final DayCounter dayCounter) {
         this(referenceDate, dates, blackVolCurve, dayCounter, true);
     }
 
     public BlackVarianceCurve(
-            final Date referenceDate,
-            final Date[] dates,
+            final JDate referenceDate,
+            final JDate[] dates,
             final /*@Volatility*/ double[] blackVolCurve,
             final DayCounter dayCounter,
             final boolean forceMonotoneVariance) {
@@ -154,7 +154,7 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
     }
 
     @Override
-    public final Date maxDate() {
+    public final JDate maxDate() {
         return maxDate;
     }
 

@@ -5,7 +5,7 @@ import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.termstructures.AbstractTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 
 /**
@@ -64,7 +64,7 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
      * initialize with a fixed reference date
      */
     public VolatilityTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc) {
         this(referenceDate, cal, bdc, new DayCounter());
@@ -74,7 +74,7 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
      * initialize with a fixed reference date
      */
     public VolatilityTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc,
             final DayCounter dc) {
@@ -119,7 +119,7 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
     /**
      * Period/date conversion
      */
-    public Date optionDateFromTenor(final Period p) /* @ReadOnly */ {
+    public JDate optionDateFromTenor(final Period p) /* @ReadOnly */ {
         // swaption style
         return calendar().advance(referenceDate(), p, businessDayConvention());
     }

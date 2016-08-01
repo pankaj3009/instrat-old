@@ -42,7 +42,7 @@ package org.jquantlib.termstructures;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.math.interpolations.Extrapolator;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
 
@@ -56,7 +56,7 @@ public abstract interface TermStructure extends Extrapolator, Observer, Observab
     /**
      * @return the latest date for which the curve can return values
      */
-    public abstract Date maxDate() /* @ReadOnly */;
+    public abstract JDate maxDate();
 
     /**
      * Return the calendar used for reference date calculation
@@ -84,7 +84,7 @@ public abstract interface TermStructure extends Extrapolator, Observer, Observab
      * @param date
      * @return the fraction of the year as a double
      */
-    public abstract /*@Time*/ double timeFromReference(final Date date) /* @ReadOnly */;
+    public abstract /*@Time*/ double timeFromReference(final JDate date) /* @ReadOnly */;
 
     /**
      * Return the day counter used for date/double conversion
@@ -112,6 +112,6 @@ public abstract interface TermStructure extends Extrapolator, Observer, Observab
      * @category Dates and Time
      * @returns the Date at which discount = 1.0 and/or variance = 0.0
      */
-    public abstract Date referenceDate() /* @ReadOnly */;
+    public abstract JDate referenceDate();
 
 }

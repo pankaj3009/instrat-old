@@ -43,7 +43,7 @@ package org.jquantlib.termstructures.volatilities;
 
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.math.Constants;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Flat SmileSection
@@ -61,18 +61,18 @@ public class FlatSmileSection extends SmileSection {
     //
 
     public FlatSmileSection(
-            final Date d,
+            final JDate d,
             final double vol,
             final DayCounter dc,
-            final Date referenceDate) {
+            final JDate referenceDate) {
     	this(d, vol, dc, referenceDate, Constants.NULL_REAL);
     }
 
     public FlatSmileSection(
-            final Date d,
+            final JDate d,
             final double vol,
             final DayCounter dc,
-            final Date referenceDate,
+            final JDate referenceDate,
             final /* @Real */ double atmLevel) {
 
         super(d, dc, referenceDate);

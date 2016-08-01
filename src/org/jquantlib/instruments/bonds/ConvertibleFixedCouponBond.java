@@ -33,7 +33,7 @@ import org.jquantlib.instruments.CallabilitySchedule;
 import org.jquantlib.instruments.DividendSchedule;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 
 /**
@@ -55,7 +55,7 @@ public class ConvertibleFixedCouponBond extends ConvertibleBond {
 	          final DividendSchedule dividends,
 	          final CallabilitySchedule callability,
 	          final Handle<Quote> creditSpread,
-	          final Date issueDate,
+	          final JDate issueDate,
 	          final int settlementDays,
 	          /*@Rate*/final double[] coupons,
 	          final DayCounter dayCounter,
@@ -70,7 +70,7 @@ public class ConvertibleFixedCouponBond extends ConvertibleBond {
 	        final DividendSchedule dividends,
 	        final CallabilitySchedule callability,
 			final Handle<Quote> creditSpread,
-			final Date issueDate,
+			final JDate issueDate,
 			final int settlementDays,
 			/*Rate*/final double[] coupons,
 			final DayCounter dayCounter,

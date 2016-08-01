@@ -8,6 +8,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.logging.Logger;
 import java.util.HashMap;
@@ -18,6 +19,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import javax.swing.JOptionPane;
+import org.jquantlib.time.JDate;
+import org.jquantlib.time.calendars.India;
 
 /**
  *
@@ -30,6 +33,7 @@ public class Algorithm {
     public static Properties globalProperties;
     public static Properties instratInfo=new Properties();
     public static List<String> holidays;
+    public static India ind=new India();
     public static String timeZone;
     public static int openHour=9;
     public static int openMinute=15;
@@ -47,11 +51,15 @@ public class Algorithm {
     public Algorithm(HashMap<String, String> args) {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));        
         String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();
+        SimpleDateFormat sdf_yyyymmdd=new SimpleDateFormat("yyyyMMdd");
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {
                 try{
                 holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
+                for(String h:holidays){
+                    ind.addHoliday(new JDate(DateUtil.getFormattedDate(h, "yyyyMMdd", timeZone)));
+                }
             }catch (Exception e){
                 logger.log(Level.SEVERE,"No Holiday File Found");
             }

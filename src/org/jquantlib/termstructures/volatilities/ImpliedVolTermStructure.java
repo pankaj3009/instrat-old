@@ -44,7 +44,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.BlackVarianceTermStructure;
 import org.jquantlib.termstructures.BlackVolTermStructure;
 import org.jquantlib.termstructures.TermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -65,7 +65,7 @@ public class ImpliedVolTermStructure extends BlackVarianceTermStructure {
 
     private final Handle<BlackVolTermStructure> originalTS;
 
-    public ImpliedVolTermStructure(final Handle<BlackVolTermStructure> originalTS, final Date referenceDate) {
+    public ImpliedVolTermStructure(final Handle<BlackVolTermStructure> originalTS, final JDate referenceDate) {
         super(referenceDate);
         this.originalTS = originalTS;
 
@@ -80,7 +80,7 @@ public class ImpliedVolTermStructure extends BlackVarianceTermStructure {
     //
 
     @Override
-    public Date maxDate() {
+    public JDate maxDate() {
         return originalTS.currentLink().maxDate();
     }
 

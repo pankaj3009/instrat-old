@@ -41,7 +41,7 @@ package org.jquantlib.model.volatility;
 
 import org.jquantlib.lang.iterators.Iterables;
 import org.jquantlib.math.IntervalPrice;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeSeries;
 
 /**
@@ -66,7 +66,7 @@ public abstract class GarmanKlassAbstract implements LocalVolatilityEstimator<In
 	@Override
 	public TimeSeries<Double> calculate(final TimeSeries<IntervalPrice> quotes) {
 		final TimeSeries<Double> retval = new TimeSeries<Double>(Double.class);
-		for (final Date date : Iterables.unmodifiableIterable(quotes.navigableKeySet())) {
+		for (final JDate date : Iterables.unmodifiableIterable(quotes.navigableKeySet())) {
             final IntervalPrice curr = quotes.get(date);
             retval.put(date, Math.sqrt(Math.abs(calculatePoint(curr)) / yearFraction) );
 		}

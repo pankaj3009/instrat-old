@@ -47,7 +47,7 @@ import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
 import org.jquantlib.quotes.SimpleQuote;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.DefaultObservable;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
@@ -68,8 +68,8 @@ public abstract class BootstrapHelper <TS extends TermStructure> implements Obse
 
     protected Handle <Quote> quote;
     protected TS termStructure;
-    protected Date earliestDate;
-    protected Date latestDate;
+    protected JDate earliestDate;
+    protected JDate latestDate;
 
     public BootstrapHelper(final Handle<Quote> quote) {
         this.quote = quote;
@@ -95,11 +95,11 @@ public abstract class BootstrapHelper <TS extends TermStructure> implements Obse
         this.termStructure = c;
     }
 
-    public Date earliestDate() {
+    public JDate earliestDate() {
         return this.earliestDate;
     }
 
-    public Date latestDate() {
+    public JDate latestDate() {
         return this.latestDate;
     }
 

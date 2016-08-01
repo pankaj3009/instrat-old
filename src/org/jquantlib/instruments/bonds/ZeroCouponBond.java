@@ -41,7 +41,7 @@ package org.jquantlib.instruments.bonds;
 import org.jquantlib.instruments.Bond;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * ZeroCouponBond class
@@ -59,13 +59,13 @@ public class ZeroCouponBond extends Bond {
 			final /* @Natural */ int settlementDays,
             final Calendar calendar,
             final double faceAmount,
-            final Date maturityDate,
+            final JDate maturityDate,
             final BusinessDayConvention paymentConvention,
             final double redemption,
-            final Date issueDate) {
+            final JDate issueDate) {
 		super(settlementDays, calendar, issueDate);
         maturityDate_ = maturityDate.clone();
-        final Date redemptionDate = calendar_.adjust(maturityDate,
+        final JDate redemptionDate = calendar_.adjust(maturityDate,
                                                paymentConvention);
         setSingleRedemption(faceAmount, redemption, redemptionDate);
 	}
@@ -74,26 +74,26 @@ public class ZeroCouponBond extends Bond {
 	        final /* @Natural */ int settlementDays,
             final Calendar calendar,
             final double faceAmount,
-            final Date maturityDate) {
-		this(settlementDays, calendar, faceAmount, maturityDate, BusinessDayConvention.Following, 100.0, new Date());
+            final JDate maturityDate) {
+		this(settlementDays, calendar, faceAmount, maturityDate, BusinessDayConvention.Following, 100.0, new JDate());
 	}
 
 	public ZeroCouponBond(
 	        final /* @Natural */ int settlementDays,
             final Calendar calendar,
             final double faceAmount,
-            final Date maturityDate,
+            final JDate maturityDate,
             final BusinessDayConvention paymentConvention,
             final double redemption) {
-		this(settlementDays, calendar, faceAmount, maturityDate, paymentConvention, redemption, new Date());
+		this(settlementDays, calendar, faceAmount, maturityDate, paymentConvention, redemption, new JDate());
 	}
 
 	public ZeroCouponBond(
 	        final /* @Natural */ int settlementDays,
             final Calendar calendar,
             final double faceAmount,
-            final Date maturityDate,
+            final JDate maturityDate,
             final BusinessDayConvention paymentConvention) {
-		this(settlementDays, calendar, faceAmount, maturityDate, paymentConvention, 100.0, new Date());
+		this(settlementDays, calendar, faceAmount, maturityDate, paymentConvention, 100.0, new JDate());
 	}
 }

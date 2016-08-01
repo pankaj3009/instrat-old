@@ -46,7 +46,7 @@ import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.termstructures.AbstractYieldTermStructure;
 import org.jquantlib.termstructures.TermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.calendars.Target;
 
 /**
@@ -97,7 +97,7 @@ public abstract class ZeroYieldStructure extends AbstractYieldTermStructure {
 	 * @param cal
 	 * @param dc
 	 */
-	public ZeroYieldStructure(final Date refDate, final Calendar cal) {
+	public ZeroYieldStructure(final JDate refDate, final Calendar cal) {
 		this(refDate, cal, new Actual365Fixed());
         QL.validateExperimentalMode();
 	}
@@ -109,7 +109,7 @@ public abstract class ZeroYieldStructure extends AbstractYieldTermStructure {
 	 * @param cal
 	 * @param dc
 	 */
-	public ZeroYieldStructure(final Date refDate, final DayCounter dc) {
+	public ZeroYieldStructure(final JDate refDate, final DayCounter dc) {
 		this(refDate, new Target(), dc); // FIXME: code review : default calendar
         QL.validateExperimentalMode();
 	}
@@ -121,7 +121,7 @@ public abstract class ZeroYieldStructure extends AbstractYieldTermStructure {
 	 * @param cal
 	 * @param dc
 	 */
-	public ZeroYieldStructure(final Date refDate) {
+	public ZeroYieldStructure(final JDate refDate) {
 		this(refDate, new Target(), new Actual365Fixed()); // FIXME: code review : default calendar
         QL.validateExperimentalMode();
 	}
@@ -134,7 +134,7 @@ public abstract class ZeroYieldStructure extends AbstractYieldTermStructure {
 	 * @param cal
 	 * @param dc
 	 */
-	public ZeroYieldStructure(final Date refDate, final Calendar cal, final DayCounter dc) {
+	public ZeroYieldStructure(final JDate refDate, final Calendar cal, final DayCounter dc) {
 		super(refDate, cal, dc);
         QL.validateExperimentalMode();
 	}

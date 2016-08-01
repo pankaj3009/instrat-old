@@ -32,7 +32,7 @@ import org.jquantlib.quotes.SimpleQuote;
 import org.jquantlib.termstructures.RateHelper;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.IMM;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
@@ -76,7 +76,7 @@ public class FuturesRateHelper extends RateHelper {
 	 *            dayCounter
 	 */
 	public FuturesRateHelper(final Handle<Quote> price, 
-			                  final Date immDate,
+			                  final JDate immDate,
 			                  final/* Natural */int lengthInMonths, 
 			                  final Calendar calendar,
 			                  final BusinessDayConvention convention, 
@@ -103,7 +103,7 @@ public class FuturesRateHelper extends RateHelper {
 	 *            <Quote> convAdj
 	 */
 	public FuturesRateHelper(final Handle<Quote> price, 
-			                  final Date immDate,
+			                  final JDate immDate,
 			                  final/* Natural */int lengthInMonths, 
 			                  final Calendar calendar,
 			                  final BusinessDayConvention convention, 
@@ -139,7 +139,7 @@ public class FuturesRateHelper extends RateHelper {
 	 *            dayCounter
 	 */
 	public FuturesRateHelper(final/* Real */double price, 
-			                  final Date immDate,
+			                  final JDate immDate,
 			                  final/* Natural */ int lengthInMonths, 
 			                  final Calendar calendar,
 			                  final BusinessDayConvention convention, 
@@ -164,7 +164,7 @@ public class FuturesRateHelper extends RateHelper {
 	 *  @param double  convAdj         
 	 */
 	public FuturesRateHelper(final/* Real */double price, 
-			                  final Date immDate,
+			                  final JDate immDate,
 			                  final/* Natural */int lengthInMonths, 
 			                  final Calendar calendar,
 			                  final BusinessDayConvention convention, 
@@ -191,7 +191,7 @@ public class FuturesRateHelper extends RateHelper {
 	 *            index
 	 */
 	public FuturesRateHelper(final Handle<Quote> price, 
-			                  final Date immDate,
+			                  final JDate immDate,
 			                  final IborIndex i) {
 		this(price, immDate, i, new Handle<Quote>());
 	}
@@ -207,7 +207,7 @@ public class FuturesRateHelper extends RateHelper {
 	 *            <Quote> convAdj
 	 */
 	public FuturesRateHelper(final Handle<Quote> price, 
-			                  final Date immDate,
+			                  final JDate immDate,
 		                      final IborIndex i, 
 		                      final Handle<Quote> convAdj) {
 
@@ -234,7 +234,7 @@ public class FuturesRateHelper extends RateHelper {
 	 *            index
 	 */
 	public FuturesRateHelper(final /* Real */ double price, 
-			                  final Date immDate,
+			                  final JDate immDate,
 			                  final IborIndex i) {
 		this(price, immDate, i, 0.0);
 	}
@@ -249,7 +249,7 @@ public class FuturesRateHelper extends RateHelper {
 	 * 
 	 */  
     public FuturesRateHelper(final /* Real */ double price,
-                              final Date immDate,
+                              final JDate immDate,
                               final IborIndex i,
                               final /* Rate */ double convAdj) {
         super(price);   

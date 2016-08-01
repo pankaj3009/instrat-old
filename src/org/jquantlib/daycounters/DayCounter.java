@@ -44,7 +44,7 @@ import org.jquantlib.QL;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 
 /**
@@ -105,7 +105,7 @@ public class DayCounter {
 	 * @param dateEnd is the ending Date
 	 * @return the number of days between two dates.
 	 */
-	public long dayCount(final Date dateStart, final Date dateEnd) /* @ReadOnly */ {
+	public long dayCount(final JDate dateStart, final JDate dateEnd) /* @ReadOnly */ {
         QL.require(impl != null, NO_IMPLEMENTATION_PROVIDED);
         return impl.dayCount(dateStart, dateEnd);
 	}
@@ -117,7 +117,7 @@ public class DayCounter {
      * @param dateEnd
      * @return the period between two dates as a fraction of year
      */
-    public /*@Time*/ double yearFraction(final Date dateStart, final Date dateEnd) /* @ReadOnly */ {
+    public /*@Time*/ double yearFraction(final JDate dateStart, final JDate dateEnd) /* @ReadOnly */ {
         return yearFraction(dateStart, dateEnd, null, null);
     }
 
@@ -131,7 +131,7 @@ public class DayCounter {
 	 * @param refPeriodEnd
 	 * @return the period between two dates as a fraction of year, considering referencing dates for both.
 	 */
-	public /*@Time*/ double yearFraction(final Date dateStart, final Date dateEnd, final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */ {
+	public /*@Time*/ double yearFraction(final JDate dateStart, final JDate dateEnd, final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */ {
         QL.require(impl != null, NO_IMPLEMENTATION_PROVIDED);
         return impl.yearFraction(dateStart, dateEnd, refPeriodStart, refPeriodEnd);
 	}
@@ -223,7 +223,7 @@ public class DayCounter {
         //
 
         protected abstract String name() /* @ReadOnly */;
-        protected abstract /*@Time*/ double yearFraction(final Date dateStart, final Date dateEnd, final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */;
+        protected abstract /*@Time*/ double yearFraction(final JDate dateStart, final JDate dateEnd, final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */;
 
 
 	    //
@@ -237,7 +237,7 @@ public class DayCounter {
 	     * @param dateEnd is the ending Date
 	     * @return the period between two dates as a fraction of year
 	     */
-	    protected long dayCount(final Date dateStart, final Date dateEnd) /* @ReadOnly */ {
+	    protected long dayCount(final JDate dateStart, final JDate dateEnd) /* @ReadOnly */ {
 	        return dateEnd.sub(dateStart);
 	    }
 

@@ -46,7 +46,7 @@ import org.jquantlib.QL;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * A European option can only be exercised at one (expiry) date.
@@ -61,7 +61,7 @@ public class EuropeanExercise extends Exercise {
 	 *
 	 * @param date is the exercise date
 	 */
-    public EuropeanExercise(final Date date) {
+    public EuropeanExercise(final JDate date) {
 		super(Exercise.Type.European);
 		QL.require(date!=null , "empty exercise date");  // TODO: message
 		super.dates.add(date.clone());

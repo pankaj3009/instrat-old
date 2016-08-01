@@ -48,7 +48,7 @@ import org.jquantlib.QL;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * A Bermudan option can only be exercised at a set of fixed dates.
@@ -73,7 +73,7 @@ public class BermudanExercise extends EarlyExercise {
 	 * @see EuropeanExercise
 	 * @see BermudanExercise#BermudanExercise(List, boolean)
 	 */
-	public BermudanExercise(final Date[] dates) {
+	public BermudanExercise(final JDate[] dates) {
 		this(dates, false);
 	}
 
@@ -90,14 +90,14 @@ public class BermudanExercise extends EarlyExercise {
 	 *
 	 * @see EuropeanExercise
 	 */
-	public BermudanExercise(final Date[] dates, final boolean payoffAtExpiry) {
+	public BermudanExercise(final JDate[] dates, final boolean payoffAtExpiry) {
 		super(Exercise.Type.Bermudan, payoffAtExpiry);
 		QL.require(dates!=null && dates.length>0 , "empty exercise dates");  // TODO: message
 		if (dates.length==1) {
 			super.type = Exercise.Type.European;
 			super.payoffAtExpiry = false;
 		}
-		for (final Date date : dates) {
+		for (final JDate date : dates) {
             super.dates.add(date);
         }
 		Arrays.sort(dates);

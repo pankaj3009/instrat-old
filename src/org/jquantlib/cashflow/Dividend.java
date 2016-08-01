@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jquantlib.QL;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -40,9 +40,9 @@ import org.jquantlib.util.Visitor;
 @SuppressWarnings("PMD.AbstractNaming")
 public abstract class Dividend extends CashFlow {
 
-	protected Date date;
+	protected JDate date;
 
-	public Dividend (final Date date) {
+	public Dividend (final JDate date) {
 		super();
 		this.date = date;
 	}
@@ -53,7 +53,7 @@ public abstract class Dividend extends CashFlow {
 	//
 
 	@Override
-	public Date date() {
+	public JDate date() {
 		return date;
 	}
 
@@ -69,7 +69,7 @@ public abstract class Dividend extends CashFlow {
 	// public static methods
 	//
 
-	public static List<? extends Dividend> DividendVector(final List<Date> dividendDates, final List<Double> dividends) {
+	public static List<? extends Dividend> DividendVector(final List<JDate> dividendDates, final List<Double> dividends) {
 	    QL.require(dividendDates.size() == dividends.size() , "size mismatch between dividend dates and amounts");  // TODO: message
         final List<Dividend> items = new ArrayList<Dividend>(dividendDates.size());
         for (int i=0; i<dividendDates.size(); i++) {

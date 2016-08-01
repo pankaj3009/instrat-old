@@ -41,7 +41,7 @@ import org.jquantlib.util.Observer;
  *
  * @author Richard Gomes
  */
-public class Date implements Observable, Comparable<Date>, Serializable, Cloneable {
+public class JDate implements Observable, Comparable<JDate>, Serializable, Cloneable {
 
 	private static final long serialVersionUID = -7150540867519744332L;
 
@@ -207,7 +207,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
     /**
      *  Default constructor returning a null date.
      */
-    public Date() {
+    public JDate() {
         this(0);
     }
 
@@ -217,7 +217,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      * @param serialNumber
      * @return
      */
-    public Date(final long serialNumber) {
+    public JDate(final long serialNumber) {
         this.serialNumber = serialNumber;
     }
 
@@ -228,7 +228,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      * @param moreGreeks
      * @param y
      */
-    public Date(final int day, final Month month, final int year) {
+    public JDate(final int day, final Month month, final int year) {
         this(fromDMY(day, month.value(), year));
     }
 
@@ -239,7 +239,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      * @param moreGreeks
      * @param y
      */
-    public Date(final int day, final int month, final int year) {
+    public JDate(final int day, final int month, final int year) {
         this(fromDMY(day, month, year));
     }
 
@@ -252,7 +252,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      * 
      * @author Richard Gomes
      */
-    public Date(final java.util.Date date) {
+    public JDate(final java.util.Date date) {
 //    	this(25569+(date.getTime()/86400000L));
     	final Calendar c = Calendar.getInstance();
     	c.setTime(date);
@@ -322,7 +322,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return this
      */
     //-- Date& operator+=(BigInteger days);
-    public Date addAssign(final int days) {
+    public JDate addAssign(final int days) {
         serialNumber += days;
         checkSerialNumber();
         delegatedObservable.notifyObservers();
@@ -335,7 +335,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return this
      */
     //-- Date& operator+=(const Period&);
-    public Date addAssign(final Period period) {
+    public JDate addAssign(final Period period) {
         serialNumber = advance(this, period.length(), period.units());
         checkSerialNumber();
         delegatedObservable.notifyObservers();
@@ -348,7 +348,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return this
      */
     //-- Date& operator-=(BigInteger days);
-    public Date subAssign(final int days) {
+    public JDate subAssign(final int days) {
         serialNumber -= days;
         checkSerialNumber();
         delegatedObservable.notifyObservers();
@@ -361,7 +361,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return this
      */
     //-- Date& operator-=(const Period&);
-    public Date subAssign(final Period period) {
+    public JDate subAssign(final Period period) {
         serialNumber = advance(this, -1 * period.length(), period.units());
         checkSerialNumber();
         delegatedObservable.notifyObservers();
@@ -383,7 +383,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return this
      */
     //-- Date operator++(int );
-    public Date inc() {
+    public JDate inc() {
         serialNumber++;
         checkSerialNumber();
         return this;
@@ -403,7 +403,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return this
      */
     //-- Date operator--(int );
-    public Date dec() {
+    public JDate dec() {
         serialNumber--;
         checkSerialNumber();
         return this;
@@ -417,8 +417,8 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return a new instance
      */
     //-- Date operator+(BigInteger days) const;
-    public Date add(final int days) /* @ReadOnly */ {
-        return new Date(this.serialNumber + days);
+    public JDate add(final int days) /* @ReadOnly */ {
+        return new JDate(this.serialNumber + days);
     }
 
 
@@ -428,8 +428,8 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return a new instance
      */
     //-- Date operator+(const Period&) const;
-    public Date add(final Period period) /* @ReadOnly */ {
-        return new Date( advance(this, period.length(), period.units()) );
+    public JDate add(final Period period) /* @ReadOnly */ {
+        return new JDate( advance(this, period.length(), period.units()) );
     }
 
     /**
@@ -438,8 +438,8 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return a new instance
      */
     //-- Date operator-(BigInteger days) const;
-    public Date sub(final int days) /* @ReadOnly */ {
-        return new Date(this.serialNumber - days);
+    public JDate sub(final int days) /* @ReadOnly */ {
+        return new JDate(this.serialNumber - days);
     }
 
     /**
@@ -448,14 +448,14 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *  @return a new instance
      */
     //-- Date operator-(const Period&) const;
-    public Date sub(final Period period) /* @ReadOnly */ {
-        return new Date( advance(this, -1 * period.length(), period.units()) );
+    public JDate sub(final Period period) /* @ReadOnly */ {
+        return new JDate( advance(this, -1 * period.length(), period.units()) );
     }
 
     /**
      * Difference in days between dates
      */
-    public long sub(final Date another) {
+    public long sub(final JDate another) {
         return serialNumber - another.serialNumber;
     }
 
@@ -465,32 +465,32 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
     //
 
     //-- bool operator==(const Date&, const Date&);
-    public boolean eq(final Date another) {
+    public boolean eq(final JDate another) {
         return serialNumber == another.serialNumber;
     }
 
     //-- bool operator!=(const Date&, const Date&);
-    public boolean ne(final Date another) {
+    public boolean ne(final JDate another) {
         return serialNumber != another.serialNumber;
     }
 
     //-- bool operator<(const Date&, const Date&);
-    public boolean lt(final Date another) {
+    public boolean lt(final JDate another) {
         return serialNumber < another.serialNumber;
     }
 
     //-- bool operator<=(const Date&, const Date&);
-    public boolean le(final Date another) {
+    public boolean le(final JDate another) {
         return serialNumber <= another.serialNumber;
     }
 
     //-- bool operator>(const Date&, const Date&);
-    public boolean gt(final Date another) {
+    public boolean gt(final JDate another) {
         return serialNumber > another.serialNumber;
     }
 
     //-- bool operator>=(const Date&, const Date&);
-    public boolean ge(final Date another) {
+    public boolean ge(final JDate another) {
         return serialNumber >= another.serialNumber;
     }
 
@@ -558,7 +558,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
     //
 
     @Override
-    public int compareTo(final Date o) {
+    public int compareTo(final JDate o) {
         if (this.equals(o))
             return 0;
         if (this.le(o))
@@ -628,11 +628,11 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
     	if (anObject == null)
     		return false;
     	
-        return anObject instanceof Date &&
-        ((Date) anObject).fEquals(this);
+        return anObject instanceof JDate &&
+        ((JDate) anObject).fEquals(this);
     }
 
-    protected boolean fEquals(final Date other) {
+    protected boolean fEquals(final JDate other) {
         return eq(other);
     }
     
@@ -648,9 +648,9 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
     //
 
     @Override
-    public Date clone() {
+    public JDate clone() {
         try {
-            return (Date) super.clone();
+            return (JDate) super.clone();
         } catch (final CloneNotSupportedException e) {
             throw new LibraryException(e);
         }
@@ -693,7 +693,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      * @see inner class DateProxy in {@link Settings}
      */
     //TODO: consider @PackagePrivate
-    protected final Date assign(final long serialNumber) {
+    protected final JDate assign(final long serialNumber) {
         this.serialNumber = serialNumber;
         return this;
     }
@@ -710,7 +710,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
     }
 
 
-    private long advance(final Date date, final int n, final TimeUnit units) {
+    private long advance(final JDate date, final int n, final TimeUnit units) {
         switch (units) {
         case Days:
             return (n + date.serialNumber);
@@ -765,12 +765,12 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *
      * @return a new instance
      */
-    public static final Date todaysDate() {
+    public static final JDate todaysDate() {
         final java.util.Calendar cal = java.util.Calendar.getInstance();
         final int d = cal.get(java.util.Calendar.DAY_OF_MONTH);
         final int m = cal.get(java.util.Calendar.MONTH);
         final int y = cal.get(java.util.Calendar.YEAR);
-        return new Date(d, m + 1, y);
+        return new JDate(d, m + 1, y);
     }
 
     /**
@@ -778,8 +778,8 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *
      * @return a new instance
      */
-    public static final Date minDate() {
-        return new Date(minimumSerialNumber());
+    public static final JDate minDate() {
+        return new JDate(minimumSerialNumber());
     }
 
     /**
@@ -787,8 +787,8 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *
      * @return a new instance
      */
-    public static final Date maxDate() {
-        return new Date(maximumSerialNumber());
+    public static final JDate maxDate() {
+        return new JDate(maximumSerialNumber());
     }
 
     /**
@@ -806,10 +806,10 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *
      * @return a new instance
      */
-    public static final Date endOfMonth(final Date d) {
+    public static final JDate endOfMonth(final JDate d) {
         final int m = d.month().value();
         final int y = d.year();
-        return new Date(monthLength(m, isLeap(y)), m, y);
+        return new JDate(monthLength(m, isLeap(y)), m, y);
     }
 
     /**
@@ -817,7 +817,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *
      * @return
      */
-    public static final boolean isEndOfMonth(final Date d) {
+    public static final boolean isEndOfMonth(final JDate d) {
         return (d.dayOfMonth() == monthLength(d.month().value(), isLeap(d.year())));
     }
 
@@ -830,10 +830,10 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *
      * @return a new instance
      */
-    public static final Date nextWeekday(final Date d, final Weekday w) {
+    public static final JDate nextWeekday(final JDate d, final Weekday w) {
         final int wd = d.weekday().value();
         final int dow = w.value();
-        return new Date(d.serialNumber + (wd > dow ? 7 : 0) - wd + dow);
+        return new JDate(d.serialNumber + (wd > dow ? 7 : 0) - wd + dow);
     }
 
     /**
@@ -850,7 +850,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *
      * @return a new instance
      */
-    public static final Date nthWeekday(final int n, final Weekday w, final Month m, final int y) {
+    public static final JDate nthWeekday(final int n, final Weekday w, final Month m, final int y) {
         return nthWeekday(n, w, m.value(), y);
     }
 
@@ -864,29 +864,29 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
      *
      * @return a new instance
      */
-    public static final Date nthWeekday(final int nth, final Weekday dayOfWeek, final int month, final int year) {
+    public static final JDate nthWeekday(final int nth, final Weekday dayOfWeek, final int month, final int year) {
         QL.require(nth > 0, "zeroth day of week in a given (month, year) is undefined"); // TODO: message
         QL.require(nth < 6, "no more than 5 weekday in a given (month, year)"); // TODO: message
         final int m = month;
         final int y = year;
         final int dow = dayOfWeek.value();
         // FIXME: code review
-        final int first = new Date(1, m, y).weekday().value();
+        final int first = new JDate(1, m, y).weekday().value();
         final int skip = nth - (dow >= first ? 1 : 0);
-        return new Date(1 + dow - first + skip * 7, m, y);
+        return new JDate(1 + dow - first + skip * 7, m, y);
     }
 
     /**
      * Return the minimum Date in a range.
      */
-    public static Date min(final Date... t) {
+    public static JDate min(final JDate... t) {
         QL.require(t!=null , "argument cannot be null"); // TODO: message
         if (t.length == 0)
-            return new Date();
+            return new JDate();
         else {
-            Date min = t[0];
+            JDate min = t[0];
             for (int i=1; i<t.length; i++) {
-                final Date curr = t[i];
+                final JDate curr = t[i];
                 if (curr.lt(min)) {
                     min = curr;
                 }
@@ -898,14 +898,14 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
     /**
      * Return the maximum Date in a range.
      */
-    public static Date max(final Date... t) {
+    public static JDate max(final JDate... t) {
         QL.require(t!=null , "argument cannot be null"); // TODO: message
         if (t.length == 0)
-            return new Date();
+            return new JDate();
         else {
-            Date max = t[0];
+            JDate max = t[0];
             for (int i=1; i<t.length; i++) {
-                final Date curr = t[i];
+                final JDate curr = t[i];
                 if (curr.gt(max)) {
                     max = curr;
                 }
@@ -988,7 +988,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
 	 * @param value Date to be compared
 	 * @return index to element which is >= passed value
 	 */
-	public static int lowerBound(final List<Date> dates, final Date value) {
+	public static int lowerBound(final List<JDate> dates, final JDate value) {
         int len = dates.size();
         int from = 0;
         int half;
@@ -1018,7 +1018,7 @@ public class Date implements Observable, Comparable<Date>, Serializable, Cloneab
 	 * @param value Date to be compared
 	 * @return index to element which is > passed value
 	 */
-	public static int upperBound(final List<Date> dates, final Date value) {
+	public static int upperBound(final List<JDate> dates, final JDate value) {
 
         int len = dates.size();
         int from = 0;

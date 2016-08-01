@@ -50,7 +50,7 @@ import org.jquantlib.math.Constants;
 import org.jquantlib.pricingengines.BlackCalculator;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 import org.jquantlib.termstructures.Compounding;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 
 /**
@@ -97,7 +97,7 @@ public class AnalyticDividendEuropeanEngine extends DividendVanillaOption.Engine
         final StrikedTypePayoff payoff = (StrikedTypePayoff) a.payoff;
         QL.require(payoff!=null, "non-striked payoff given"); // TODO: message
 
-        final Date settlementDate = process.riskFreeRate().currentLink().referenceDate();
+        final JDate settlementDate = process.riskFreeRate().currentLink().referenceDate();
         double riskless = 0.0;
         for (int i=0; i<a.cashFlow.size(); i++) {
             final CashFlow cashflow = a.cashFlow.get(i);
@@ -128,7 +128,7 @@ public class AnalyticDividendEuropeanEngine extends DividendVanillaOption.Engine
         double delta_theta = 0.0, delta_rho = 0.0;
         for (int i = 0; i < a.cashFlow.size(); i++) {
             final CashFlow cashflow = a.cashFlow.get(i);
-            final Date d = cashflow.date();
+            final JDate d = cashflow.date();
             if (d.gt(settlementDate)) {
                 delta_theta -= cashflow.amount()
                 * process.riskFreeRate().currentLink().zeroRate(d, rfdc, Compounding.Continuous, Frequency.Annual).rate()

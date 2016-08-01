@@ -28,7 +28,7 @@ import org.jquantlib.math.interpolations.Interpolation;
 import org.jquantlib.math.interpolations.Interpolation.Interpolator;
 import org.jquantlib.termstructures.RateHelper;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.Pair;
 
 /**
@@ -44,16 +44,16 @@ import org.jquantlib.util.Pair;
 public interface PiecewiseCurve<I extends Interpolator> extends YieldTermStructure {
 
     @Override
-    public Date maxDate() /* @ReadOnly */;
+    public JDate maxDate();
     public RateHelper[] instruments() /* @ReadOnly */;
-    public Date[] dates() /* @ReadOnly */;
+    public JDate[] dates() /* @ReadOnly */;
     public/* @Time */ double[] times() /* @ReadOnly */;
     public double accuracy() /* @ReadOnly */;
 
-    public Date[] jumpDates() /* @ReadOnly */;
+    public JDate[] jumpDates() /* @ReadOnly */;
     public/* @Time */ double[] jumpTimes() /* @ReadOnly */;
     
-    public List<Pair<Date, /* @Rate */Double>> nodes() /* @ReadOnly */;
+    public List<Pair<JDate, /* @Rate */Double>> nodes() /* @ReadOnly */;
     public double[] data();
 
     public Traits traits() /* @ReadOnly */;
@@ -69,7 +69,7 @@ public interface PiecewiseCurve<I extends Interpolator> extends YieldTermStructu
     // data structure, but we could simply rezise it and add more data.
     // Then these 3 methods below could be removed.
     // The same issue happens in Traits.Curve
-    public void setDates (final Date[] dates);
+    public void setDates (final JDate[] dates);
     public void setTimes (/*@Time*/ double[] times);
     public void setData (final double[] data);
 

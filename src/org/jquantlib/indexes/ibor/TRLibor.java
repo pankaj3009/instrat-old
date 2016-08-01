@@ -46,7 +46,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.AbstractYieldTermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.calendars.Turkey;
 
@@ -67,7 +67,7 @@ public class TRLibor extends IborIndex {
 								throw new UnsupportedOperationException();
 							}
 							@Override
-							public Date maxDate() {
+							public JDate maxDate() {
 								throw new UnsupportedOperationException();
 							}
 						}

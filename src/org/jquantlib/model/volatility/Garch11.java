@@ -43,7 +43,7 @@ import java.util.Iterator;
 
 import org.jquantlib.QL;
 import org.jquantlib.lang.iterators.Iterables;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeSeries;
 
 /**
@@ -86,7 +86,7 @@ public class Garch11 implements VolatilityCompositor {
 		final TimeSeries<Double> test = calculate(vs, alpha, beta, omega);
         QL.require(test.size() == vs.size(), "quote and test values do not match"); // TODO: message
         double retval = 0.0;
-        for (final Date date : Iterables.unmodifiableIterable(test.navigableKeySet())) {
+        for (final JDate date : Iterables.unmodifiableIterable(test.navigableKeySet())) {
             double v = test.get(date);
             double u = vs.get(date);
             v *= v;
@@ -98,8 +98,8 @@ public class Garch11 implements VolatilityCompositor {
 
 	private TimeSeries<Double> calculate(final TimeSeries<Double> vs, final double alpha, final double beta, final double omega) {
 		final TimeSeries<Double> retValue = new TimeSeries<Double>(Double.class);
-        final Iterator<Date> dates = vs.navigableKeySet().iterator();
-		Date date = dates.next();
+        final Iterator<JDate> dates = vs.navigableKeySet().iterator();
+		JDate date = dates.next();
 
 		final double zerothDayValue = vs.get(date);
 		retValue.put(date, zerothDayValue) ;

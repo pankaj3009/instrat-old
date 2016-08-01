@@ -34,7 +34,7 @@ import org.jquantlib.quotes.RelinkableHandle;
 import org.jquantlib.termstructures.RateHelper;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
@@ -77,7 +77,7 @@ public class FixedRateBondHelper extends RateHelper {
                                 final /* Rate */ double[] coupons,
                                 final DayCounter dayCounter) {
 		this(cleanPrice, settlementDays, faceAmount, schedule, coupons,
-				dayCounter, BusinessDayConvention.Following, 100.0, new Date());
+				dayCounter, BusinessDayConvention.Following, 100.0, new JDate());
 	}
 	
 	/**
@@ -100,7 +100,7 @@ public class FixedRateBondHelper extends RateHelper {
                                 final DayCounter dayCounter,
                                 final BusinessDayConvention paymentConvention,
                                 final /* Real */ double redemption,
-                                final Date issueDate) {
+                                final JDate issueDate) {
 		super(cleanPrice);
 		QL.validateExperimentalMode();  
 		

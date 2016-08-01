@@ -46,7 +46,7 @@ import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.math.Constants;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Discount-curve traits
@@ -74,7 +74,7 @@ public class Discount implements Traits {
     }
 
     @Override
-    public double guess(final YieldTermStructure c, final Date d) {
+    public double guess(final YieldTermStructure c, final JDate d) {
         return c.discount(d,true);
     }
 
@@ -106,7 +106,7 @@ public class Discount implements Traits {
     }
 
     @Override
-    public Date initialDate(final YieldTermStructure curve) {
+    public JDate initialDate(final YieldTermStructure curve) {
         return curve.referenceDate();
     }
 

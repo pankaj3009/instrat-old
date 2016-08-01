@@ -162,7 +162,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void SetOptionProcess(String expiry,String right, String strike){
         
         Date date=DateUtil.getFormattedDate(expiry, "yyyyMMdd", MainAlgorithm.timeZone);
-        EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(date));
+        EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.JDate(date));
         PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
         setOptionProcess(new EuropeanOption(payoff,exercise));
         Handle<Quote> S = new Handle<Quote>(getUnderlying());

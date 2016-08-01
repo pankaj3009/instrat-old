@@ -26,7 +26,7 @@ package org.jquantlib.termstructures;
 import org.jquantlib.QL;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.lang.exceptions.LibraryException;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 
 /**
@@ -152,12 +152,12 @@ public class InterestRate {
         }
     }
 
-    public final double compoundFactor(final Date d1, final Date d2) {
-    	return compoundFactor(d1, d2, new Date(), new Date());
+    public final double compoundFactor(final JDate d1, final JDate d2) {
+    	return compoundFactor(d1, d2, new JDate(), new JDate());
     }
     
-    public final double compoundFactor(final Date d1, final Date d2, 
-    		final Date refStart, final Date refEnd) {
+    public final double compoundFactor(final JDate d1, final JDate d2, 
+    		final JDate refStart, final JDate refEnd) {
     	/* @Time */double t = dc.yearFraction(d1, d2, refStart, refEnd);
     	return compoundFactor(t);
 }
@@ -213,8 +213,8 @@ public class InterestRate {
      *
      * @category discount/compound factor calculations
      */
-    public final/* @DiscountFactor */double discountFactor(final Date d1, final Date d2) {
-        return discountFactor(d1, d2, new Date());
+    public final/* @DiscountFactor */double discountFactor(final JDate d1, final JDate d2) {
+        return discountFactor(d1, d2, new JDate());
     }
 
     /**
@@ -226,8 +226,8 @@ public class InterestRate {
      *
      * @category discount/compound factor calculations
      */
-    public final/* @DiscountFactor */double discountFactor(final Date d1, final Date d2, final Date refStart) {
-        return discountFactor(d1, d2, refStart, new Date());
+    public final/* @DiscountFactor */double discountFactor(final JDate d1, final JDate d2, final JDate refStart) {
+        return discountFactor(d1, d2, refStart, new JDate());
     }
 
     /**
@@ -235,7 +235,7 @@ public class InterestRate {
      *
      * @category discount/compound factor calculations
      */
-    public final/* @DiscountFactor */double discountFactor(final Date d1, final Date d2, final Date refStart, final Date refEnd) {
+    public final/* @DiscountFactor */double discountFactor(final JDate d1, final JDate d2, final JDate refStart, final JDate refEnd) {
         /* @Time */final double t = this.dc.yearFraction(d1, d2, refStart, refEnd);
         return discountFactor(t);
     }
@@ -257,7 +257,7 @@ public class InterestRate {
         return impliedRate(compoundFactor(t), t, this.dc, comp, freq);
     }
 
-    public final InterestRate equivalentRate(final Date d1, final Date d2, final DayCounter resultDC, final Compounding comp) {
+    public final InterestRate equivalentRate(final JDate d1, final JDate d2, final DayCounter resultDC, final Compounding comp) {
         return equivalentRate(d1, d2, resultDC, comp, Frequency.Annual);
     }
 
@@ -266,8 +266,8 @@ public class InterestRate {
      * day-counting rule into account.
      */
     public final InterestRate equivalentRate(
-            final Date d1,
-            final Date d2,
+            final JDate d1,
+            final JDate d2,
             final DayCounter resultDC,
             final Compounding comp,
             final Frequency freq) {
@@ -325,7 +325,7 @@ public class InterestRate {
         return impliedRate(compound, t, resultDC, comp, Frequency.Annual);
     }
 
-    static public InterestRate impliedRate(final/* @CompoundFactor */double compound, final Date d1, final Date d2,
+    static public InterestRate impliedRate(final/* @CompoundFactor */double compound, final JDate d1, final JDate d2,
             final DayCounter resultDC, final Compounding comp) {
         return impliedRate(compound, d1, d2, resultDC, comp, Frequency.Annual);
     }
@@ -334,7 +334,7 @@ public class InterestRate {
      * Implied rate for a given compound factor between two dates. The resulting rate is calculated taking the required day-counting
      * rule into account.
      */
-    static public InterestRate impliedRate(final/* @CompoundFactor */double compound, final Date d1, final Date d2,
+    static public InterestRate impliedRate(final/* @CompoundFactor */double compound, final JDate d1, final JDate d2,
             final DayCounter resultDC, final Compounding comp, final Frequency freq) {
         QL.require(d1.le(d2) , "d1 later than or equal to d2"); // TODO: message
         /* @Time */final double t = resultDC.yearFraction(d1, d2);

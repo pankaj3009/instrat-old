@@ -48,7 +48,7 @@ import org.jquantlib.instruments.OneAssetOption;
 import org.jquantlib.instruments.Option;
 import org.jquantlib.instruments.StrikedTypePayoff;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Pricing engine for European vanilla options using analytical formulae
@@ -132,7 +132,7 @@ public class AnalyticEuropeanEngine extends OneAssetOption.EngineImpl {
         final DayCounter rfdc = process.riskFreeRate().currentLink().dayCounter();
         final DayCounter divdc = process.dividendYield().currentLink().dayCounter();
         final DayCounter voldc = process.blackVolatility().currentLink().dayCounter();
-        final Date refDate = process.riskFreeRate().currentLink().referenceDate();
+        final JDate refDate = process.riskFreeRate().currentLink().referenceDate();
         /* @Time */double t = rfdc.yearFraction(refDate, a.exercise.lastDate());
         greeks.rho = black.rho(t);
 

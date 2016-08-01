@@ -51,7 +51,7 @@ import org.jquantlib.instruments.DividendVanillaOption;
 import org.jquantlib.lang.reflect.ReflectConstants;
 import org.jquantlib.pricingengines.PricingEngine.Arguments;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Abstract base class for dividend engines
@@ -121,7 +121,7 @@ public abstract class FDDividendEngineBase extends FDMultiPeriodEngine {
 
     protected double getDiscountedDividend(final int i) /* @ReadOnly */ {
         final double dividend = getDividendAmount(i);
-        final Date date = events.get(i).date();
+        final JDate date = events.get(i).date();
         final double discount = process.riskFreeRate().currentLink().discount(date)
                               / process.dividendYield().currentLink().discount(date);
         return dividend * discount;

@@ -53,7 +53,7 @@ public class Schedule {
     private final BusinessDayConvention terminationDateConvention_;
     private final boolean endOfMonth_;
     private final boolean finalIsRegular_;
-    private final List< Date > dates_;
+    private final List< JDate > dates_;
     private final List<Boolean> isRegular_;
 
 
@@ -63,8 +63,8 @@ public class Schedule {
 
     private Period tenor_;
     private DateGeneration.Rule rule_;
-    private Date firstDate_;
-    private Date nextToLastDate_;
+    private JDate firstDate_;
+    private JDate nextToLastDate_;
 
 
 
@@ -72,15 +72,15 @@ public class Schedule {
     // public methods
     //
 
-    public Schedule(final List<Date> dates) {
+    public Schedule(final List<JDate> dates) {
     	this(dates, new NullCalendar(), BusinessDayConvention.Unadjusted);
     }
 
-    public Schedule(final List<Date> dates, final Calendar calendar) {
+    public Schedule(final List<JDate> dates, final Calendar calendar) {
     	this(dates, calendar, BusinessDayConvention.Unadjusted);
     }
 
-    public Schedule(final List<Date> dates, final Calendar calendar, final BusinessDayConvention convention) {
+    public Schedule(final List<JDate> dates, final Calendar calendar, final BusinessDayConvention convention) {
     	this.dates_ = dates;
         this.isRegular_ = new ArrayList<Boolean>(); // TODO: use a data structure backed by primitive types instead
 
@@ -96,29 +96,29 @@ public class Schedule {
     	this.finalIsRegular_ = true;
     }
 
-    public Schedule(final Date  effectiveDate,
-    				final Date  terminationDate,
+    public Schedule(final JDate  effectiveDate,
+    				final JDate  terminationDate,
     				final Period  tenor,
     				final Calendar  calendar,
     				final BusinessDayConvention convention,
     				final BusinessDayConvention terminationDateConvention,
     				final DateGeneration.Rule rule,
     				final boolean endOfMonth) {
-    	this(effectiveDate, terminationDate, tenor, calendar, convention, terminationDateConvention, rule, endOfMonth, new Date(), new Date());
+    	this(effectiveDate, terminationDate, tenor, calendar, convention, terminationDateConvention, rule, endOfMonth, new JDate(), new JDate());
     }
 
-    public Schedule(final Date  effectiveDate,
-			final Date  terminationDate,
+    public Schedule(final JDate  effectiveDate,
+			final JDate  terminationDate,
 			final Period  tenor,
 			final Calendar  calendar,
 			BusinessDayConvention convention,
 			final BusinessDayConvention terminationDateConvention,
 			final DateGeneration.Rule rule,
 			final boolean endOfMonth,
-			final Date firstDate,
-			final Date nextToLastDate) {
+			final JDate firstDate,
+			final JDate nextToLastDate) {
 
-        this.dates_ = new ArrayList<Date>(); // TODO: use a data structure backed by primitive types instead
+        this.dates_ = new ArrayList<JDate>(); // TODO: use a data structure backed by primitive types instead
         this.isRegular_ = new ArrayList<Boolean>(); // TODO: use a data structure backed by primitive types instead
 
         this.fullInterface_ = true;
@@ -205,7 +205,7 @@ public class Schedule {
         // calendar needed for endOfMonth adjustment
         final Calendar nullCalendar = new NullCalendar();
         int periods = 1;
-        Date seed, exitDate;
+        JDate seed, exitDate;
         switch (rule_) {
 
           case Zero:
@@ -222,7 +222,7 @@ public class Schedule {
             seed = terminationDate.clone();
             if ( nextToLastDate != null && !nextToLastDate.isNull() ) {
                 dates_.add(0, nextToLastDate);
-                final Date temp = nullCalendar.advance(seed, tenor_.mul(periods).negative(), convention, endOfMonth);
+                final JDate temp = nullCalendar.advance(seed, tenor_.mul(periods).negative(), convention, endOfMonth);
                 if (temp.ne(nextToLastDate)) {
                     isRegular_.add(0, new Boolean(false));
                 } else {
@@ -237,7 +237,7 @@ public class Schedule {
             }
 
             while (true) {
-                final Date temp = nullCalendar.advance(seed, tenor_.mul(periods).negative(), convention, endOfMonth);
+                final JDate temp = nullCalendar.advance(seed, tenor_.mul(periods).negative(), convention, endOfMonth);
                 if (temp .lt(exitDate)) {
                     break;
                 } else {
@@ -273,7 +273,7 @@ public class Schedule {
 
             if (firstDate != null && !firstDate.isNull() ) {
                 dates_.add(firstDate);
-                final Date temp = nullCalendar.advance(seed, tenor_.mul(periods), convention, endOfMonth);
+                final JDate temp = nullCalendar.advance(seed, tenor_.mul(periods), convention, endOfMonth);
                 if (temp.ne(firstDate) ) {
                     isRegular_.add(new Boolean(false));
                 } else {
@@ -282,7 +282,7 @@ public class Schedule {
                 seed = firstDate.clone();
             } else if (rule_ == DateGeneration.Rule.Twentieth ||
                        rule_ == DateGeneration.Rule.TwentiethIMM) {
-                final Date next20th = nextTwentieth(effectiveDate, rule_);
+                final JDate next20th = nextTwentieth(effectiveDate, rule_);
                 if (next20th.ne(effectiveDate)) {
                     dates_.add(next20th);
                     isRegular_.add(new Boolean(false));
@@ -296,7 +296,7 @@ public class Schedule {
             }
 
             while (true) {
-                final Date temp = nullCalendar.advance(seed, tenor_.mul(periods), convention, endOfMonth);
+                final JDate temp = nullCalendar.advance(seed, tenor_.mul(periods), convention, endOfMonth);
                 if ( temp.gt(exitDate) ) {
                     break;
                 } else {
@@ -331,7 +331,7 @@ public class Schedule {
         // adjustments
         if (rule_== DateGeneration.Rule.ThirdWednesday) {
             for (int i=1; i<dates_.size()-1; ++i) {
-                dates_.set(i, Date.nthWeekday(3, Weekday.Wednesday,
+                dates_.set(i, JDate.nthWeekday(3, Weekday.Wednesday,
                                              dates_.get(i).month(),
                                              dates_.get(i).year()));
             }
@@ -358,32 +358,32 @@ public class Schedule {
     	return dates_.size();
     }
 
-    public final Date at(final int i) /* @ReadOnly */ {
+    public final JDate at(final int i) /* @ReadOnly */ {
     	return dates_.get(i);
     }
 
-    public final Date date(final int i) /* @ReadOnly */ {
+    public final JDate date(final int i) /* @ReadOnly */ {
     	return dates_.get(i);
     }
 
 
-    public Date previousDate(final Date  refDate) /* @ReadOnly */ {
-        final int index = Date.lowerBound(dates_, refDate);
+    public JDate previousDate(final JDate  refDate) /* @ReadOnly */ {
+        final int index = JDate.lowerBound(dates_, refDate);
     	if ( index > 0 )
             return dates_.get(index-1).clone();
         else
-            return new Date();
+            return new JDate();
     }
 
-    public Date nextDate(final Date  refDate) /* @ReadOnly */ {
-    	final int index = Date.lowerBound(dates_, refDate);
+    public JDate nextDate(final JDate  refDate) /* @ReadOnly */ {
+    	final int index = JDate.lowerBound(dates_, refDate);
     	if ( index < dates_.size() )
             return dates_.get(index).clone();
         else
-            return new Date();
+            return new JDate();
     }
 
-    public List<Date> dates() /* @ReadOnly */ {
+    public List<JDate> dates() /* @ReadOnly */ {
         return dates_;
     }
 
@@ -405,11 +405,11 @@ public class Schedule {
         return calendar_;
     }
 
-    public final Date  startDate() /* @ReadOnly */ {
+    public final JDate  startDate() /* @ReadOnly */ {
          return dates_.isEmpty() ? null :  dates_.get(0);
     }
 
-    public final Date  endDate() /* @ReadOnly */ {
+    public final JDate  endDate() /* @ReadOnly */ {
         return dates_.isEmpty() ? null : dates_.get(dates_.size()-1);
     }
 
@@ -440,23 +440,23 @@ public class Schedule {
 
     @Deprecated
     //FIXME: this method will probably disappear as begin() and end() does not make sense withou pointers
-    public Iterator<Date> begin() /* @ReadOnly */ {
+    public Iterator<JDate> begin() /* @ReadOnly */ {
         throw new UnsupportedOperationException();
     }
 
     @Deprecated
     //FIXME: this method will probably disappear as begin() and end() does not make sense withou pointers
-    public Iterator<Date> end() /* @ReadOnly */ {
+    public Iterator<JDate> end() /* @ReadOnly */ {
         throw new UnsupportedOperationException();
     }
 
     public int lowerBound() /* @ReadOnly */ {
-        return lowerBound( new Date() );
+        return lowerBound( new JDate() );
      }
 
-    public int lowerBound(final Date refDate) /* @ReadOnly */{
-        final Date d = (refDate.isNull() ? new Settings().evaluationDate() : refDate);
-        return Date.lowerBound(dates_, d.clone());
+    public int lowerBound(final JDate refDate) /* @ReadOnly */{
+        final JDate d = (refDate.isNull() ? new Settings().evaluationDate() : refDate);
+        return JDate.lowerBound(dates_, d.clone());
     }
 
 
@@ -464,8 +464,8 @@ public class Schedule {
     //TODO :: operator Schedule() const;
 
 
-    private Date nextTwentieth(final Date d, final DateGeneration.Rule rule) {
-        final Date result = new Date(20, d.month(), d.year());
+    private JDate nextTwentieth(final JDate d, final DateGeneration.Rule rule) {
+        final JDate result = new JDate(20, d.month(), d.year());
         if (result.lt(d) ) {
             result.addAssign(new Period(1, TimeUnit.Months)); //result +=1*Months
         }
@@ -488,14 +488,14 @@ public class Schedule {
      * @see http://www.sgi.com/tech/stl/lower_bound.html
      */
     // FIXME: http://bugs.jquantlib.org/view.php?id=67
-    private Iterator<Date> std_lower_bound(final Date date) {
+    private Iterator<JDate> std_lower_bound(final JDate date) {
 
-        final List<Date> ldates = new ArrayList<Date>();
+        final List<JDate> ldates = new ArrayList<JDate>();
 
         if (dates_.size() > 0) {
             int index = -1;
             for (int i = 0; i < dates_.size(); i++) {
-                final Date d = dates_.get(i);
+                final JDate d = dates_.get(i);
                 if (d.equals(date)) {
                     index = i;
                     break;
@@ -511,7 +511,7 @@ public class Schedule {
         return ldates.iterator();
     }
 
-    public Iterator<Date> getDatesAfter(final Date date) {
+    public Iterator<JDate> getDatesAfter(final JDate date) {
     	return std_lower_bound(date);
     }
 }

@@ -22,7 +22,7 @@
 package org.jquantlib.instruments.bonds;
 
 import org.jquantlib.cashflow.Callability;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * %callability leaving to the holder the possibility to convert
@@ -34,7 +34,7 @@ public class SoftCallability extends Callability {
 
 	private final double trigger;
 	
-	public SoftCallability(final Price price, final Date date, final double trigger){
+	public SoftCallability(final Price price, final JDate date, final double trigger){
 		super(price, Callability.Type.Call, date);
 		this.trigger = trigger;
 	}

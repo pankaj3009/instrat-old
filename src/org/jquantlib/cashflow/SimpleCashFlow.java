@@ -35,7 +35,7 @@
  */
 package org.jquantlib.cashflow;
 
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -54,14 +54,14 @@ public class SimpleCashFlow extends CashFlow {
     //
 
     protected double amount;
-    protected Date paymentDate;
+    protected JDate paymentDate;
 
     //
     // public constructors
     //
 
     public SimpleCashFlow(final double amount,
-            final Date paymentDate){
+            final JDate paymentDate){
         this.amount = amount;
         this.paymentDate = paymentDate;
     }
@@ -80,7 +80,7 @@ public class SimpleCashFlow extends CashFlow {
     //
 
     @Override
-    public Date date() {
+    public JDate date() {
         return paymentDate.clone();
     }
 

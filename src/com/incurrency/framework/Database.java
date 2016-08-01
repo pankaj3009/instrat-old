@@ -22,6 +22,7 @@ public interface Database<K,V> {
     //public Long setList(J key, Object value);
     //public Long setSet(String key, String value);
     public Long setHash (String StoreName,String key, K field, V value);
+    public Long setHash (String key, K field, V value);
     //public void removeValue(String StoreName,String key, K field);
     //public String setMMap(String key,String[]field,Object[]value);
     //public void removeMValue(String key, String[]field);
@@ -38,6 +39,7 @@ public interface Database<K,V> {
     public ConcurrentHashMap<K,V> getValues(String storeName,String Key);
     public List<String> blpop(String storeName,String key, int duration);
     public List<String> brpop(String storeName,String key,int duration);
+    public void lpush(String key, String value);
     public List<String> lrange(String storeName,String key,int start, int end);
     public void rename(String storeName,String newStoreName);
     //public int loadVariables();

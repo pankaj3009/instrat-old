@@ -55,7 +55,7 @@ import org.jquantlib.lang.reflect.ReflectConstants;
 import org.jquantlib.math.Constants;
 import org.jquantlib.pricingengines.GenericEngine;
 import org.jquantlib.pricingengines.PricingEngine;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Discrete-averaging Asian option
@@ -69,20 +69,20 @@ public class DiscreteAveragingAsianOption extends OneAssetOption {
     protected final AverageType averageType;
     protected final /* @Real */ double runningAccumulator;
     protected final /* @Size */ int pastFixings;
-    protected final List<Date> fixingDates;
+    protected final List<JDate> fixingDates;
 
     public DiscreteAveragingAsianOption(
             final AverageType averageType,
             final /* @Real */ double runningAccumulator,
             final /* @Size */ int pastFixings,
-            final List<Date> fixingDates,
+            final List<JDate> fixingDates,
             final StrikedTypePayoff payoff,
             final Exercise exercise) {
         super(payoff, exercise);
         this.averageType = averageType;
         this.runningAccumulator = runningAccumulator;
         this.pastFixings = pastFixings;
-        this.fixingDates = new ArrayList<Date>(fixingDates);
+        this.fixingDates = new ArrayList<JDate>(fixingDates);
         Collections.sort(this.fixingDates);
     }
 
@@ -113,7 +113,7 @@ public class DiscreteAveragingAsianOption extends OneAssetOption {
         public AverageType averageType;
         public /*@Real*/ double runningAccumulator;
         public /*@Size*/ int pastFixings;
-        public List<Date> fixingDates;
+        public List<JDate> fixingDates;
 
 
         //
@@ -124,7 +124,7 @@ public class DiscreteAveragingAsianOption extends OneAssetOption {
             averageType = null;
             runningAccumulator = Constants.NULL_REAL; //FIXME is there central values?
             pastFixings = Constants.NULL_INTEGER; //FIXME is there central values?
-            fixingDates = new ArrayList<Date>();
+            fixingDates = new ArrayList<JDate>();
         }
 
 

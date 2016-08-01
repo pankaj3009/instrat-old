@@ -35,7 +35,7 @@ import org.jquantlib.methods.finitedifferences.TridiagonalOperator;
 import org.jquantlib.pricingengines.PricingEngine.Arguments;
 import org.jquantlib.pricingengines.PricingEngine.Results;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Finite-differences pricing engine for BSM one asset options
@@ -49,7 +49,7 @@ public class FDVanillaEngine {
     protected /* @Size */ int timeSteps, gridPoints;
     protected boolean timeDependent;
     protected /* Real */ double requiredGridValue;
-    protected Date exerciseDate;
+    protected JDate exerciseDate;
     protected Payoff payoff;
     protected TridiagonalOperator finiteDifferenceOperator;
     protected SampledCurve intrinsicValues;

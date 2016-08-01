@@ -60,7 +60,7 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.TimeGrid;
 
@@ -163,11 +163,11 @@ public class BinomialVanillaEngine<T extends Tree> extends VanillaOption.EngineI
         final double s0 = process.stateVariable().currentLink().value();
         QL.require(s0 > 0.0 , "negative or null underlying given"); // TODO: message
         final double v = process.blackVolatility().currentLink().blackVol(a.exercise.lastDate(), s0);
-        final Date maturityDate = a.exercise.lastDate();
+        final JDate maturityDate = a.exercise.lastDate();
 
         final double rRate = process.riskFreeRate().currentLink().zeroRate(maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
         final double qRate = process.dividendYield().currentLink().zeroRate(maturityDate, divdc, Compounding.Continuous, Frequency.NoFrequency).rate();
-        final Date referenceDate = process.riskFreeRate().currentLink().referenceDate();
+        final JDate referenceDate = process.riskFreeRate().currentLink().referenceDate();
 
         // binomial trees with constant coefficient
         final Handle<YieldTermStructure> flatRiskFree = new Handle<YieldTermStructure>(new FlatForward(referenceDate, rRate, rfdc));

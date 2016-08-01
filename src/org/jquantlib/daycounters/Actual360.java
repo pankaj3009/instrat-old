@@ -43,7 +43,7 @@ package org.jquantlib.daycounters;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Actual/360 day count convention, also known as "Act/360", or "A/360".
@@ -81,8 +81,8 @@ public class Actual360 extends DayCounter {
 
         @Override
         public /*@Time*/ final double yearFraction(
-                final Date dateStart, final Date dateEnd,
-                final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */{
+                final JDate dateStart, final JDate dateEnd,
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
             return /*@Time*/ dayCount(dateStart, dateEnd) / 360.0;
         }
 

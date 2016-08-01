@@ -28,7 +28,7 @@ import org.jquantlib.daycounters.Actual360;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.JointCalendar;
@@ -82,7 +82,7 @@ public class EURLibor extends IborIndex {
      * @see <a href="http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412">http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412</a>
 	 */
 	@Override
-    public Date valueDate (final Date fixingDate) {
+    public JDate valueDate (final JDate fixingDate) {
         // http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412 :
         // In the case of EUR the Value Date shall be two TARGET
         // business days after the Fixing Date.
@@ -92,7 +92,7 @@ public class EURLibor extends IborIndex {
     }
     
 	@Override
-    public Date maturityDate (final Date valueDate) {
+    public JDate maturityDate (final JDate valueDate) {
         // http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412 :
         // In the case of EUR only, maturity dates will be based on days in
         // which the Target system is open.

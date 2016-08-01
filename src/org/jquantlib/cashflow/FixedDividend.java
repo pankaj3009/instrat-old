@@ -22,7 +22,7 @@
 
 package org.jquantlib.cashflow;
 
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Predetermined cash flow
@@ -36,7 +36,7 @@ public class FixedDividend extends Dividend {
 
 	protected double amount;
 
-	public FixedDividend(final double amount, final Date date) {
+	public FixedDividend(final double amount, final JDate date) {
 		super(date);
 		this.amount = amount;
 	}

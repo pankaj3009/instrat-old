@@ -54,7 +54,7 @@ import org.jquantlib.math.Constants;
 import org.jquantlib.pricingengines.BlackCalculator;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 import org.jquantlib.termstructures.Compounding;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 
 
@@ -98,7 +98,7 @@ public class AnalyticContinuousGeometricAveragePriceAsianEngine extends Continuo
     public void calculate() /*@ReadOnly*/ {
         QL.require(a.averageType==AverageType.Geometric , "not a geometric average option"); // TODO: message
         QL.require(a.exercise.type()==Exercise.Type.European , "not an European Option"); // TODO: message
-        final Date exercise = a.exercise.lastDate();
+        final JDate exercise = a.exercise.lastDate();
 
         QL.require(a.payoff instanceof PlainVanillaPayoff , "non-plain payoff given"); // TODO: message
         final PlainVanillaPayoff payoff = (PlainVanillaPayoff)arguments_.payoff;

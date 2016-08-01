@@ -46,7 +46,7 @@ import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.math.Constants;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.DefaultObservable;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
@@ -59,8 +59,8 @@ import org.jquantlib.util.Observer;
  */
 public abstract class SmileSection implements Observer, Observable {
 
-    private Date exerciseDate_;
-    private Date reference_;
+    private JDate exerciseDate_;
+    private JDate reference_;
 
     private final DayCounter dc_;
     private final boolean isFloating_;
@@ -73,9 +73,9 @@ public abstract class SmileSection implements Observer, Observable {
     //
 
     public SmileSection(
-            final Date d,
+            final JDate d,
             final DayCounter dc,
-            final Date referenceDate) {
+            final JDate referenceDate) {
     	exerciseDate_ = d;
     	dc_ = dc;
     	isFloating_ = referenceDate.isNull();
@@ -146,7 +146,7 @@ public abstract class SmileSection implements Observer, Observable {
         return volatilityImpl(strike);
     }
 
-    public Date exerciseDate() {
+    public JDate exerciseDate() {
         return exerciseDate_;
     }
 

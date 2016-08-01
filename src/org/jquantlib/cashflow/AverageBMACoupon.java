@@ -47,7 +47,7 @@ import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.indexes.BMAIndex;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.Schedule;
 import org.jquantlib.time.TimeUnit;
@@ -77,15 +77,15 @@ public class AverageBMACoupon extends FloatingRateCoupon {
     private final static int bmaCutoffDays = 0;
     
     public AverageBMACoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final BMAIndex index,
             final double gearing,
             final double spread,
-            final Date refPeriodStart,
-            final Date refPeriodEnd,
+            final JDate refPeriodStart,
+            final JDate refPeriodEnd,
             final DayCounter dayCounter) {
         super(paymentDate, nominal, startDate, endDate, index.fixingDays(), index,
                 gearing, spread, refPeriodStart, refPeriodEnd,
@@ -100,12 +100,12 @@ public class AverageBMACoupon extends FloatingRateCoupon {
     }
 
 
-    public /*@Rate*/ Date fixingDate() {
+    public /*@Rate*/ JDate fixingDate() {
 		throw new LibraryException("no single fixing for average-BMA coupon");
     }
     
 
-    public List<Date> fixingDates() {
+    public List<JDate> fixingDates() {
     	return fixingSchedule.dates();
     }   
     

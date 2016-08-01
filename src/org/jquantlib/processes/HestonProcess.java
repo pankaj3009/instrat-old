@@ -33,7 +33,7 @@ import org.jquantlib.quotes.RelinkableHandle;
 import org.jquantlib.quotes.SimpleQuote;
 import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 // TODO: code review :: please verify against QL/C++ code
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
@@ -162,7 +162,7 @@ public class HestonProcess extends StochasticProcess {
     }
 
     @Override
-    public final/* @Time */double time(final Date d) {
+    public final/* @Time */double time(final JDate d) {
         return riskFreeRate_.currentLink().dayCounter().yearFraction(riskFreeRate_.currentLink().referenceDate(), d);
     }
 

@@ -43,7 +43,7 @@ package org.jquantlib.termstructures;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -114,7 +114,7 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
     /**
      * Initialize with a fixed reference date
      */
-    public BlackVolatilityTermStructure(final Date referenceDate) {
+    public BlackVolatilityTermStructure(final JDate referenceDate) {
         super(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter());
     }
 
@@ -122,7 +122,7 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
      * Initialize with a fixed reference date
      */
     public BlackVolatilityTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal) {
         super(referenceDate, cal, BusinessDayConvention.Following, new DayCounter());
     }
@@ -131,7 +131,7 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
      * Initialize with a fixed reference date
      */
     public BlackVolatilityTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc) {
         super(referenceDate, cal, bdc, new DayCounter());
@@ -141,7 +141,7 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
      * Initialize with a fixed reference date
      */
     public BlackVolatilityTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc,
             final DayCounter dc) {

@@ -44,7 +44,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.AbstractYieldTermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Implied term structure at a given date in the future.
@@ -59,7 +59,7 @@ public class ImpliedTermStructure<T extends YieldTermStructure> extends Abstract
 
     private final Handle<T>	originalCurve;
 
-    public ImpliedTermStructure(final Handle<T> h, final Date referenceDate) {
+    public ImpliedTermStructure(final Handle<T> h, final JDate referenceDate) {
         super(referenceDate);
         this.originalCurve = h;
         this.originalCurve.addObserver(this);
@@ -80,7 +80,7 @@ public class ImpliedTermStructure<T extends YieldTermStructure> extends Abstract
         return originalCurve.currentLink().settlementDays();
     }
 
-    public Date maxDate() /* @ReadOnly */ {
+    public JDate maxDate() /* @ReadOnly */ {
         return originalCurve.currentLink().maxDate();
     }
 
@@ -89,7 +89,7 @@ public class ImpliedTermStructure<T extends YieldTermStructure> extends Abstract
         /* t is relative to the current reference date
            and needs to be converted to the time relative
            to the reference date of the original curve */
-        final Date ref = referenceDate();
+        final JDate ref = referenceDate();
         final /*@Time*/ double originalTime = t + dayCounter().yearFraction(originalCurve.currentLink().referenceDate(), ref);
         /* discount at evaluation date cannot be cached
            since the original curve could change between

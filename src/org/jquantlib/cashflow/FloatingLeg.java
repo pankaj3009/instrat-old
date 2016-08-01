@@ -56,7 +56,7 @@ import org.jquantlib.math.Constants;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 
 /**
@@ -147,13 +147,13 @@ public class FloatingLeg< InterestRateIndexType extends InterestRateIndex,
         // the following is not always correct
         final Calendar calendar = schedule.calendar();
 
-        Date refStart, start, refEnd, end;
-        final Date lastPaymentDate = calendar.adjust(schedule.date(n), paymentAdj);
+        JDate refStart, start, refEnd, end;
+        final JDate lastPaymentDate = calendar.adjust(schedule.date(n), paymentAdj);
 
         for (int i=0; i<n; ++i) {
             refStart = start = schedule.date(i);
             refEnd   =   end = schedule.date(i+1);
-            final Date paymentDate =
+            final JDate paymentDate =
                 isZero ? lastPaymentDate : calendar.adjust(end, paymentAdj);
             if (i==0   && !schedule.isRegular(i+1)) {
                 final BusinessDayConvention bdc = schedule.businessDayConvention();
@@ -175,16 +175,16 @@ public class FloatingLeg< InterestRateIndexType extends InterestRateIndex,
         	   FloatingCouponType frc;
         	   try {
         		   frc = (FloatingCouponType) typeFCT.getConstructor(
-                      Date.class, // paymentdate
+                      JDate.class, // paymentdate
                       double.class, // nominal
-                      Date.class, // start date
-                      Date.class, // enddate
+                      JDate.class, // start date
+                      JDate.class, // enddate
                       int.class, // fixing days
                       IborIndex.class, // IbotIndex
                       double.class, // gearing
                       double.class, // spread
-                      Date.class, // refperiodstart
-                      Date.class, // refperiodend
+                      JDate.class, // refperiodstart
+                      JDate.class, // refperiodend
                       DayCounter.class,// daycounter
                       boolean.class) // inarrears
                       // then create a new instance
@@ -211,18 +211,18 @@ public class FloatingLeg< InterestRateIndexType extends InterestRateIndex,
                 CappedFlooredCouponType cfctc;
                 try {
                     cfctc = (CappedFlooredCouponType) typeCFC.getConstructor(
-                            Date.class, // paymentdate
+                            JDate.class, // paymentdate
                             double.class, // nominal
-                            Date.class, // start date
-                            Date.class, // enddate
+                            JDate.class, // start date
+                            JDate.class, // enddate
                             int.class, // fixing days
                             IborIndex.class, // IborIndex
                             double.class, // gearing
                             double.class, // spread
                             double.class, //caps
                             double.class, //floors
-                            Date.class, // refperiodstart
-                            Date.class, // refperiodend
+                            JDate.class, // refperiodstart
+                            JDate.class, // refperiodend
                             DayCounter.class,// daycounter
                             boolean.class) // inarrears
                             // then create a new instance

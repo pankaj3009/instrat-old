@@ -34,7 +34,7 @@ import org.jquantlib.math.solvers1D.Brent;
 import org.jquantlib.termstructures.yieldcurves.PiecewiseCurve;
 import org.jquantlib.termstructures.yieldcurves.PiecewiseYieldCurve;
 import org.jquantlib.termstructures.yieldcurves.Traits;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Universal piecewise-term-structure boostrapper.
@@ -117,7 +117,7 @@ public class IterativeBootstrap<Curve extends PiecewiseYieldCurve> implements Bo
     public void calculate () {
 
         final int n = instruments.length;
-        Date dates[] = ts.dates();
+        JDate dates[] = ts.dates();
         /*@Time*/ double times[] = ts.times();
         double data[] = ts.data();
 
@@ -126,8 +126,8 @@ public class IterativeBootstrap<Curve extends PiecewiseYieldCurve> implements Bo
 
         // check that there is no instruments with the same maturity
         for (int i=1; i<n; ++i) {
-            final Date m1 = instruments[i-1].latestDate();
-            final Date m2 = instruments[i].latestDate();
+            final JDate m1 = instruments[i-1].latestDate();
+            final JDate m2 = instruments[i].latestDate();
             QL.require(m1 != m2, "two instruments have the same maturity");
         }
 
@@ -145,7 +145,7 @@ public class IterativeBootstrap<Curve extends PiecewiseYieldCurve> implements Bo
         }
 
         // calculate dates and times
-        dates = new Date[n+1];
+        dates = new JDate[n+1];
         times = new /*@Time*/ double[n+1];
         dates[0] = traits.initialDate(ts);
         times[0] = ts.timeFromReference(dates[0]);

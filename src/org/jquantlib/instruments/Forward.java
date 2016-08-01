@@ -48,7 +48,7 @@ import org.jquantlib.termstructures.InterestRate;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
@@ -90,8 +90,8 @@ public abstract class Forward extends Instrument {
     //
 
     protected int settlementDays;
-    protected Date maturityDate;
-    protected Date valueDate;
+    protected JDate maturityDate;
+    protected JDate valueDate;
     protected Calendar calendar;
     protected DayCounter dayCounter;
     protected BusinessDayConvention businessDayConvention;
@@ -112,8 +112,8 @@ public abstract class Forward extends Instrument {
             final BusinessDayConvention bdc,
             final int /* @Natural */settlementDays,
             final Payoff payoff,
-            final Date valueDate,
-            final Date maturityDate) {
+            final JDate valueDate,
+            final JDate maturityDate) {
         this (dc, cal, bdc, settlementDays, payoff, valueDate, maturityDate, new Handle <YieldTermStructure>());
     }
 
@@ -123,8 +123,8 @@ public abstract class Forward extends Instrument {
             final BusinessDayConvention bdc,
             final int /* @Natural */settlementDays,
             final Payoff payoff,
-            final Date valueDate,
-            final Date maturityDate,
+            final JDate valueDate,
+            final JDate maturityDate,
             final Handle <YieldTermStructure> discountCurve) {
         this.dayCounter = dc;
         this.calendar = cal;
@@ -180,7 +180,7 @@ public abstract class Forward extends Instrument {
     public InterestRate impliedYield(
             final double underlyingSpotValue,
             final double forwardValue,
-            final Date settlementDate,
+            final JDate settlementDate,
             final Compounding compoundingConvention,
             final DayCounter dayCounter) {
         final double tenor = dayCounter.yearFraction (settlementDate, maturityDate);
@@ -196,9 +196,9 @@ public abstract class Forward extends Instrument {
         return this.calendar;
     }
 
-    public Date settlementDate() {
+    public JDate settlementDate() {
         final Period advance = new Period (settlementDays, TimeUnit.Days);
-        final Date settle = calendar.advance (new Settings ().evaluationDate (), advance);
+        final JDate settle = calendar.advance (new Settings ().evaluationDate (), advance);
         if (settle.gt (valueDate)) {
             return settle;
         }

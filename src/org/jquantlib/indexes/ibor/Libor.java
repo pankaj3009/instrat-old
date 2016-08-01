@@ -47,7 +47,7 @@ import org.jquantlib.indexes.IborIndex;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.JointCalendar;
@@ -131,7 +131,7 @@ public class Libor extends IborIndex {
      * @see <a href="http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412">http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412</a>
 	 */
 	@Override
-    public Date valueDate(final Date fixingDate) {
+    public JDate valueDate(final JDate fixingDate) {
 
 		QL.require(isValidFixingDate(fixingDate),
 				"Fixing date " + fixingDate + " is not valid");
@@ -143,12 +143,12 @@ public class Libor extends IborIndex {
 		// business day and a business day in the principal financial centre
 		// of the currency concerned, the next following day which is a
 		// business day in both centres shall be the Value Date.
-		final Date d = fixingCalendar().advance(fixingDate, fixingDays(), TimeUnit.Days);
+		final JDate d = fixingCalendar().advance(fixingDate, fixingDays(), TimeUnit.Days);
 		return jointCalendar.adjust(d);
 	}
 
 	@Override
-    public Date maturityDate(final Date valueDate) {
+    public JDate maturityDate(final JDate valueDate) {
 		// Where a deposit is made on the final business day of a
 		// particular calendar month, the maturity of the deposit shall
 		// be on the final business day of the month in which it matures

@@ -36,7 +36,7 @@ import org.jquantlib.quotes.RelinkableHandle;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.MakeSchedule;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.Schedule;
@@ -118,7 +118,7 @@ public class BMASwapRateHelper extends RelativeDateRateHelper {
     			                        BusinessDayConvention.Following);
     	
 
-    	Date maturity = earliestDate.add(tenor);
+    	JDate maturity = earliestDate.add(tenor);
     	BMAIndex clonedIndex = bmaIndex.clone(termStructureHandle);
     	Schedule bmaSchedule = new MakeSchedule(earliestDate,
     			                                maturity,
@@ -149,9 +149,9 @@ public class BMASwapRateHelper extends RelativeDateRateHelper {
     	
     	this.swap.setPricingEngine(new DiscountingSwapEngine(iborIndex.termStructure()));
     	
-    	Date d = calendar.adjust(swap.maturityDate(), BusinessDayConvention.Following);
+    	JDate d = calendar.adjust(swap.maturityDate(), BusinessDayConvention.Following);
     	Weekday w = d.weekday();
-    	Date nextWednesday = w.value() >=4 ? d.add(11 - w.value()) :  d.add(4 - w.value());
+    	JDate nextWednesday = w.value() >=4 ? d.add(11 - w.value()) :  d.add(4 - w.value());
     	
     	latestDate = clonedIndex.valueDate(clonedIndex.fixingCalendar().adjust(nextWednesday));
     }

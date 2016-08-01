@@ -39,7 +39,7 @@ import org.jquantlib.termstructures.BootstrapHelper;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
@@ -274,9 +274,9 @@ public class SwapRateHelper extends RelativeDateRateHelper {
         // ...but due to adjustments, the last floating coupon might need a later date for fixing
         if (new Settings().isUseIndexedCoupon()) {
             final FloatingRateCoupon lastFloating = (FloatingRateCoupon) this.swap.floatingLeg().last();
-            final Date fixingValueDate = this.iborIndex.valueDate(lastFloating.fixingDate());
-            final Date endValueDate = this.iborIndex.maturityDate(fixingValueDate);
-            this.latestDate = Date.max(latestDate, endValueDate);
+            final JDate fixingValueDate = this.iborIndex.valueDate(lastFloating.fixingDate());
+            final JDate endValueDate = this.iborIndex.maturityDate(fixingValueDate);
+            this.latestDate = JDate.max(latestDate, endValueDate);
         }
     }
 

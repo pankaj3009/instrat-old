@@ -49,7 +49,7 @@ import org.jquantlib.math.Closeness;
 import org.jquantlib.math.interpolations.DefaultExtrapolator;
 import org.jquantlib.math.interpolations.Extrapolator;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.util.DefaultObservable;
 import org.jquantlib.util.Observable;
@@ -105,7 +105,7 @@ public abstract class AbstractTermStructure implements TermStructure {
      * be overridden in derived classes so that it fetches and
      * return the appropriate date.
      */
-    private Date referenceDate;
+    private JDate referenceDate;
 
     /**
      * Beware that this variable must always be accessed via {@link #dayCounter()} method.
@@ -199,7 +199,7 @@ public abstract class AbstractTermStructure implements TermStructure {
      *
      * @see TermStructure documentation for more details about constructors.
      */
-    public AbstractTermStructure(final Date referenceDate, final Calendar calendar) {
+    public AbstractTermStructure(final JDate referenceDate, final Calendar calendar) {
         this(referenceDate, calendar, new Actual365Fixed());
     }
 
@@ -213,7 +213,7 @@ public abstract class AbstractTermStructure implements TermStructure {
      *
      * @see TermStructure documentation for more details about constructors.
      */
-    public AbstractTermStructure(final Date referenceDate, final Calendar calendar, final DayCounter dc) {
+    public AbstractTermStructure(final JDate referenceDate, final Calendar calendar, final DayCounter dc) {
         QL.require(referenceDate!=null , "reference date must be informed"); // TODO: message
         QL.require(calendar!=null , "calendar must be informed"); // TODO: message
         QL.require(dc!=null , "day counter must be informed"); // TODO: message
@@ -267,7 +267,7 @@ public abstract class AbstractTermStructure implements TermStructure {
         this.updated = false;
 
         // observes date changes
-        final Date today = new Settings().evaluationDate();
+        final JDate today = new Settings().evaluationDate();
         today.addObserver(this);
 
         this.referenceDate = calendar.advance(today, settlementDays, TimeUnit.Days);
@@ -281,7 +281,7 @@ public abstract class AbstractTermStructure implements TermStructure {
     /**
      * This method performs date-range check
      */
-    protected void checkRange(final Date d, final boolean extrapolate) /* @ReadOnly */ {
+    protected void checkRange(final JDate d, final boolean extrapolate) /* @ReadOnly */ {
         QL.require(d.ge(referenceDate()) , "date before reference date"); // TODO: message
         QL.require(extrapolate || allowsExtrapolation() || d.le(maxDate()) , "date is past max curve"); // TODO: message
     }
@@ -319,7 +319,7 @@ public abstract class AbstractTermStructure implements TermStructure {
      * @see org.jquantlib.termstructures.TermStructure#timeFromReference(org.jquantlib.util.Date)
      */
     @Override
-    public final /*@Time*/ double timeFromReference(final Date date) /* @ReadOnly */ {
+    public final /*@Time*/ double timeFromReference(final JDate date) /* @ReadOnly */ {
         return dayCounter().yearFraction(referenceDate(), date);
     }
 
@@ -344,9 +344,9 @@ public abstract class AbstractTermStructure implements TermStructure {
      * @see org.jquantlib.termstructures.TermStructure#referenceDate()
      */
     @Override
-    public Date referenceDate() /* @ReadOnly */ {
+    public JDate referenceDate() /* @ReadOnly */ {
         if (!updated) {
-        	final Date today = new Settings().evaluationDate();
+        	final JDate today = new Settings().evaluationDate();
         	referenceDate = calendar().advance(today, settlementDays, TimeUnit.Days);
             updated = true;
         }

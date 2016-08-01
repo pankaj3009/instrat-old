@@ -48,7 +48,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.MakeSchedule;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.Schedule;
@@ -94,7 +94,7 @@ public class BMAIndex extends InterestRateIndex {
         return "BMA";
     }
             
-    public Schedule fixingSchedule(final Date start, final Date end) {
+    public Schedule fixingSchedule(final JDate start, final JDate end) {
     	return (new MakeSchedule(previousWednesday(start),
     							nextWednesday(end),
     							new Period (1,TimeUnit.Weeks),
@@ -103,10 +103,10 @@ public class BMAIndex extends InterestRateIndex {
     }
     
     @Override
-    protected double forecastFixing(final Date fixingDate) {
+    protected double forecastFixing(final JDate fixingDate) {
         QL.require(! termStructure.empty() , "no forecasting term structure set to " + name());  // TODO: message
-        final Date start = fixingCalendar().advance(fixingDate, 1, TimeUnit.Days);
-        final Date end  = maturityDate(start);
+        final JDate start = fixingCalendar().advance(fixingDate, 1, TimeUnit.Days);
+        final JDate end  = maturityDate(start);
         return termStructure.currentLink().forwardRate(start, 
         											   end,
         											   dayCounter,
@@ -114,11 +114,11 @@ public class BMAIndex extends InterestRateIndex {
     }
     
     @Override
-    public boolean isValidFixingDate(final Date fixingDate) {
+    public boolean isValidFixingDate(final JDate fixingDate) {
         // either the fixing date is last Wednesday, or all days
         // between last Wednesday included and the fixing date are
         // holidays
-    	for (Date d = previousWednesday(fixingDate); d.lt(fixingDate); d.inc()) {
+    	for (JDate d = previousWednesday(fixingDate); d.lt(fixingDate); d.inc()) {
     		if (fixingCalendar.isBusinessDay(d)) {
     			return false;
     		}
@@ -133,13 +133,13 @@ public class BMAIndex extends InterestRateIndex {
     }
 
     @Override
-    public Date maturityDate(final Date valueDate) {
-    	Date fixingDate = fixingCalendar().advance(valueDate, -1, TimeUnit.Days);
-    	Date nextWednesday = nextWednesday(fixingDate);
+    public JDate maturityDate(final JDate valueDate) {
+    	JDate fixingDate = fixingCalendar().advance(valueDate, -1, TimeUnit.Days);
+    	JDate nextWednesday = nextWednesday(fixingDate);
         return fixingCalendar().advance(nextWednesday, 1, TimeUnit.Days);
     }
  
-    private Date previousWednesday(final Date date) {
+    private JDate previousWednesday(final JDate date) {
         Weekday w = date.weekday();
         if (w.value() >= 4) // roll back w-4 days
             return date.subAssign((w.value() - 4));
@@ -147,7 +147,7 @@ public class BMAIndex extends InterestRateIndex {
             return date.addAssign(4 - w.value() - 7);
     }
 
-    private Date nextWednesday(final Date date) {
+    private JDate nextWednesday(final JDate date) {
         return previousWednesday(date.addAssign(7));
     }
     

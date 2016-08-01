@@ -44,7 +44,7 @@ import org.jquantlib.daycounters.Actual365Fixed;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
@@ -103,7 +103,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      *
      * @note TermStructure#TermStructure() documentation for issues regarding constructors.
      */
-    protected AbstractYieldTermStructure(final Date referenceDate, final Calendar cal, final DayCounter dc) {
+    protected AbstractYieldTermStructure(final JDate referenceDate, final Calendar cal, final DayCounter dc) {
         super(referenceDate, cal, dc);
     }
 
@@ -116,7 +116,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @param cal
      * @see YieldTermStructure#YieldTermStructure(Date, Calendar, DayCounter)
      */
-    protected AbstractYieldTermStructure(final Date referenceDate, final Calendar cal) {
+    protected AbstractYieldTermStructure(final JDate referenceDate, final Calendar cal) {
         super(referenceDate, cal, new Actual365Fixed());
     }
 
@@ -129,7 +129,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @param dc
      * @see YieldTermStructure#YieldTermStructure(Date, Calendar, DayCounter)
      */
-    protected AbstractYieldTermStructure(final Date referenceDate, final DayCounter dc) {
+    protected AbstractYieldTermStructure(final JDate referenceDate, final DayCounter dc) {
         super(referenceDate, new Target(), dc);
     }
 
@@ -141,7 +141,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @param referenceDate
      * @see YieldTermStructure#YieldTermStructure(Date, Calendar, DayCounter)
      */
-    protected AbstractYieldTermStructure(final Date referenceDate) {
+    protected AbstractYieldTermStructure(final JDate referenceDate) {
         super(referenceDate, new Target(), new Actual365Fixed());
     }
 
@@ -219,7 +219,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#zeroRate(org.jquantlib.util.Date, org.jquantlib.daycounters.DayCounter, org.jquantlib.termstructures.Compounding)
      */
     @Override
-    public final InterestRate zeroRate(final Date d, final DayCounter resultDayCounter, final Compounding comp) {
+    public final InterestRate zeroRate(final JDate d, final DayCounter resultDayCounter, final Compounding comp) {
         return zeroRate(d, resultDayCounter, comp, Frequency.Annual);
     }
 
@@ -227,7 +227,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#zeroRate(org.jquantlib.util.Date, org.jquantlib.daycounters.DayCounter, org.jquantlib.termstructures.Compounding, org.jquantlib.time.Frequency)
      */
     @Override
-    public final InterestRate zeroRate(final Date d, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
+    public final InterestRate zeroRate(final JDate d, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
         return zeroRate(d, resultDayCounter, comp, freq, false);
     }
 
@@ -235,7 +235,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#zeroRate(org.jquantlib.util.Date, org.jquantlib.daycounters.DayCounter, org.jquantlib.termstructures.Compounding, org.jquantlib.time.Frequency, boolean)
      */
     @Override
-    public final InterestRate zeroRate(final Date d, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
+    public final InterestRate zeroRate(final JDate d, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         if (d == referenceDate()) {
             /*@Time*/ final double t = 0.0001;
             /*@CompoundFactor*/ final double compound = 1/discount(t, extrapolate); // 1/discount(t,extrapolate)
@@ -266,7 +266,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#forwardRate(org.jquantlib.util.Date, org.jquantlib.util.Date, org.jquantlib.daycounters.DayCounter, org.jquantlib.termstructures.Compounding)
      */
     @Override
-    public InterestRate forwardRate(final Date d1, final Date d2, final DayCounter resultDayCounter, final Compounding comp) {
+    public InterestRate forwardRate(final JDate d1, final JDate d2, final DayCounter resultDayCounter, final Compounding comp) {
         return forwardRate(d1, d2, resultDayCounter, comp, Frequency.Annual);
     }
 
@@ -279,7 +279,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#forwardRate(org.jquantlib.util.Date, org.jquantlib.util.Date, org.jquantlib.daycounters.DayCounter, org.jquantlib.termstructures.Compounding, org.jquantlib.time.Frequency)
      */
     @Override
-    public InterestRate forwardRate(final Date d1, final Date d2, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
+    public InterestRate forwardRate(final JDate d1, final JDate d2, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
         return forwardRate(d1, d2, resultDayCounter, comp, freq, false);
     }
 
@@ -287,7 +287,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#forwardRate(org.jquantlib.util.Date, org.jquantlib.util.Date, org.jquantlib.daycounters.DayCounter, org.jquantlib.termstructures.Compounding, org.jquantlib.time.Frequency, boolean)
      */
     @Override
-    public InterestRate forwardRate(final Date d1, final Date d2, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
+    public InterestRate forwardRate(final JDate d1, final JDate d2, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         if (d1.equals(d2)) {
             /*@Time*/ final double  t1 = timeFromReference(d1);
             /*@Time*/ final double  t2 = t1+0.0001;
@@ -344,7 +344,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#forwardRate(org.jquantlib.util.Date, org.jquantlib.time.Period, org.jquantlib.daycounters.DayCounter, org.jquantlib.termstructures.Compounding, org.jquantlib.time.Frequency)
      */
     @Override
-    public InterestRate forwardRate(final Date d, final Period p, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
+    public InterestRate forwardRate(final JDate d, final Period p, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
         return forwardRate(d, p, resultDayCounter, comp, freq, false);
     }
 
@@ -352,7 +352,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#forwardRate(org.jquantlib.util.Date, org.jquantlib.time.Period, org.jquantlib.daycounters.DayCounter, org.jquantlib.termstructures.Compounding, org.jquantlib.time.Frequency, boolean)
      */
     @Override
-    public InterestRate forwardRate(final Date d, final Period p, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
+    public InterestRate forwardRate(final JDate d, final Period p, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         return forwardRate(d, d.add(p), dayCounter, comp, freq, extrapolate);
     }
 
@@ -363,7 +363,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#discount(org.jquantlib.util.Date)
      */
     @Override
-    public /*@DiscountFactor*/ double discount(final Date d) {
+    public /*@DiscountFactor*/ double discount(final JDate d) {
         return discount(d, false);
     }
 
@@ -371,7 +371,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#discount(org.jquantlib.util.Date, boolean)
      */
     @Override
-    public /*@DiscountFactor*/ double discount(final Date d, final boolean extrapolate) {
+    public /*@DiscountFactor*/ double discount(final JDate d, final boolean extrapolate) {
         checkRange(d, extrapolate);
         return discountImpl(timeFromReference(d));
     }
@@ -400,8 +400,8 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#parRate(int, org.jquantlib.util.Date, org.jquantlib.time.Frequency, boolean)
      */
     @Override
-    public /*@Rate*/ double parRate(final int tenor, final Date startDate, final Frequency freq, final boolean extrapolate) {
-        final Date[] dates = new Date[tenor + 1];
+    public /*@Rate*/ double parRate(final int tenor, final JDate startDate, final Frequency freq, final boolean extrapolate) {
+        final JDate[] dates = new JDate[tenor + 1];
         dates[0] = startDate;
         for (int i = 1; i <= tenor; i++) {
             dates[i] = startDate.add(new Period(i, TimeUnit.Years));
@@ -413,7 +413,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#parRate(org.jquantlib.util.Date[], org.jquantlib.time.Frequency, boolean)
      */
     @Override
-    public /*@Rate*/ double parRate(final Date[] dates, final Frequency freq, final boolean extrapolate) {
+    public /*@Rate*/ double parRate(final JDate[] dates, final Frequency freq, final boolean extrapolate) {
         /*@Time*/ final double [] times = new /*@Time*/ double [dates.length];
         for (int i = 0; i < dates.length; i++) {
             times[i] = timeFromReference(dates[i]);

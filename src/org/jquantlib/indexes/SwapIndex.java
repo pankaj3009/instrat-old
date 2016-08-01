@@ -8,7 +8,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 
 /**
@@ -60,7 +60,7 @@ public class SwapIndex extends InterestRateIndex {
     //
 
     @Override
-    protected /*@Rate*/ double forecastFixing(final Date fixingDate) /* @ReadOnly */ {
+    protected /*@Rate*/ double forecastFixing(final JDate fixingDate) /* @ReadOnly */ {
         return underlyingSwap(fixingDate).fairRate();
     }
 
@@ -81,7 +81,7 @@ public class SwapIndex extends InterestRateIndex {
         return fixedLegConvention;
     }
 
-    public VanillaSwap underlyingSwap(final Date fixingDate) /* @ReadOnly */ {
+    public VanillaSwap underlyingSwap(final JDate fixingDate) /* @ReadOnly */ {
         /*@Rate*/ final double fixedRate = 0.0;
         return new MakeVanillaSwap(tenor, iborIndex, fixedRate)
         .withEffectiveDate(valueDate(fixingDate))
@@ -93,8 +93,8 @@ public class SwapIndex extends InterestRateIndex {
     }
 
     @Override
-    public Date maturityDate(final Date valueDate) /* @ReadOnly */ {
-        final Date fixDate = fixingDate(valueDate);
+    public JDate maturityDate(final JDate valueDate) /* @ReadOnly */ {
+        final JDate fixDate = fixingDate(valueDate);
         return underlyingSwap(fixDate).maturityDate();
     }
 

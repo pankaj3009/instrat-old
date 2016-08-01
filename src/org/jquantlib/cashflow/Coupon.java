@@ -24,7 +24,7 @@
 package org.jquantlib.cashflow;
 
 import org.jquantlib.daycounters.DayCounter;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -45,11 +45,11 @@ public abstract class Coupon extends CashFlow {
     //
 
     protected double nominal;
-    protected Date paymentDate_;
-    protected Date accrualStartDate_;
-    protected Date accrualEndDate_;
-    protected Date refPeriodStart_;
-    protected Date refPeriodEnd_;
+    protected JDate paymentDate_;
+    protected JDate accrualStartDate_;
+    protected JDate accrualEndDate_;
+    protected JDate refPeriodStart_;
+    protected JDate refPeriodEnd_;
 
 
     //
@@ -57,18 +57,18 @@ public abstract class Coupon extends CashFlow {
     //
 
     public Coupon(final double nominal,
-            final Date paymentDate,
-            final Date accrualStartDate,
-            final Date accrualEndDate){
-        this(nominal, paymentDate, accrualStartDate, accrualEndDate, new Date(), new Date());
+            final JDate paymentDate,
+            final JDate accrualStartDate,
+            final JDate accrualEndDate){
+        this(nominal, paymentDate, accrualStartDate, accrualEndDate, new JDate(), new JDate());
     }
 
     public Coupon(final double nominal,
-            final Date paymentDate,
-            final Date accrualStartDate,
-            final Date accrualEndDate,
-            final Date refPeriodStart,
-            final Date refPeriodEnd){
+            final JDate paymentDate,
+            final JDate accrualStartDate,
+            final JDate accrualEndDate,
+            final JDate refPeriodStart,
+            final JDate refPeriodEnd){
         this.nominal = nominal;
         this.paymentDate_ = paymentDate.clone();
         this.accrualStartDate_ = accrualStartDate.clone();
@@ -86,7 +86,7 @@ public abstract class Coupon extends CashFlow {
 
     public abstract DayCounter dayCounter();
 
-    public abstract double accruedAmount(final Date date);
+    public abstract double accruedAmount(final JDate date);
 
 
     //
@@ -97,19 +97,19 @@ public abstract class Coupon extends CashFlow {
         return nominal;
     }
 
-    public Date accrualStartDate(){
+    public JDate accrualStartDate(){
         return accrualStartDate_;
     }
 
-    public Date accrualEndDate(){
+    public JDate accrualEndDate(){
         return accrualEndDate_;
     }
 
-    public Date referencePeriodStart() {
+    public JDate referencePeriodStart() {
         return refPeriodStart_;
     }
 
-    public Date referencePeriodEnd() {
+    public JDate referencePeriodEnd() {
         return refPeriodEnd_;
     }
 
@@ -131,7 +131,7 @@ public abstract class Coupon extends CashFlow {
     //
 
     @Override
-    public Date date() {
+    public JDate date() {
         return paymentDate_.clone();
     }
 

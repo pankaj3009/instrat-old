@@ -46,7 +46,7 @@ import org.jquantlib.lang.annotation.Rate;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Month;
 import org.jquantlib.time.Period;
@@ -98,7 +98,7 @@ public abstract class InflationTermStructure extends AbstractTermStructure {
     	this.nominalTermStructure.addObserver(this); 	
     }
 
-    public InflationTermStructure(final Date referenceDate,
+    public InflationTermStructure(final JDate referenceDate,
     		  final Period lag,
 			  final Frequency frequency,
 			  final @Rate double baseRate,
@@ -107,7 +107,7 @@ public abstract class InflationTermStructure extends AbstractTermStructure {
     	this(referenceDate, lag, frequency, baseRate, yTS, new NullCalendar() ,new Actual365Fixed());
     }
 
-    public InflationTermStructure(final Date referenceDate,
+    public InflationTermStructure(final JDate referenceDate,
   		  	  final Period lag,
 			  final Frequency frequency,
 			  final @Rate double baseRate,
@@ -173,13 +173,13 @@ public abstract class InflationTermStructure extends AbstractTermStructure {
     /*! Important in inflation since it starts before nominal
         reference date.
     */
-    public Date baseDate() {
-    	return new Date(0);
+    public JDate baseDate() {
+    	return new JDate(0);
     }
 
     @Override
-    public Date maxDate() {
-    	return new Date(0);
+    public JDate maxDate() {
+    	return new JDate(0);
     }
     
 	// This next part is required for piecewise- constructors
@@ -193,7 +193,7 @@ public abstract class InflationTermStructure extends AbstractTermStructure {
     }
  
     //! utility function giving the inflation period for a given date   
-    public static Pair<Date,Date> inflationPeriod(final Date date,
+    public static Pair<JDate,JDate> inflationPeriod(final JDate date,
     									   final Frequency frequency) {
     	
         Month month = date.month();
@@ -221,10 +221,10 @@ public abstract class InflationTermStructure extends AbstractTermStructure {
           
         };
 
-        Date startDate = new Date(1, startMonth, year);
-        Date endDate = Date.endOfMonth(new Date(1, endMonth, year));   	
+        JDate startDate = new JDate(1, startMonth, year);
+        JDate endDate = JDate.endOfMonth(new JDate(1, endMonth, year));   	
         
-        return new Pair<Date,Date>(startDate, endDate);
+        return new Pair<JDate,JDate>(startDate, endDate);
     }
     
 

@@ -26,7 +26,7 @@ import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Month;
 import org.jquantlib.time.Weekday;
 
@@ -70,11 +70,11 @@ public class SouthAfrica extends Calendar {
         impl = new Impl();
 
         // once-off holidays
-        addHoliday(new Date(31,12,1999));   // Y2K changeover
-        addHoliday(new Date(2,1,2000));     // Y2K changeover
-        addHoliday(new Date(3,1,2000));     // Y2K changeover
-        addHoliday(new Date(2,5,2008));     // Human Rights Day and Good Friday was on same day in 2008
-        addHoliday(new Date(22,4,2009));    // 2009 election day
+        addHoliday(new JDate(31,12,1999));   // Y2K changeover
+        addHoliday(new JDate(2,1,2000));     // Y2K changeover
+        addHoliday(new JDate(3,1,2000));     // Y2K changeover
+        addHoliday(new JDate(2,5,2008));     // Human Rights Day and Good Friday was on same day in 2008
+        addHoliday(new JDate(22,4,2009));    // 2009 election day
     }
 
     //
@@ -88,7 +88,7 @@ public class SouthAfrica extends Calendar {
         }
 
         @Override
-        public boolean isBusinessDay(final Date date) {
+        public boolean isBusinessDay(final JDate date) {
             final Weekday w = date.weekday();
             final int d = date.dayOfMonth(), dd = date.dayOfYear();
             final Month m = date.month();

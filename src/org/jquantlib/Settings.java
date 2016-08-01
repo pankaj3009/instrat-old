@@ -25,7 +25,7 @@ package org.jquantlib;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Settings for the application.
@@ -141,7 +141,7 @@ public class Settings {
     /**
      * @return the value of field evaluationDate
      */
-    public Date evaluationDate() {
+    public JDate evaluationDate() {
         return ((DateProxy) attrs.get().get(EVALUATION_DATE)).value();
     }
 
@@ -152,7 +152,7 @@ public class Settings {
      * Notice that a successful change of evaluationDate notifies all its
      * listeners.
      */
-    public Date setEvaluationDate(final Date evaluationDate) {
+    public JDate setEvaluationDate(final JDate evaluationDate) {
         final DateProxy proxy = (DateProxy) attrs.get().get(EVALUATION_DATE);
         proxy.assign(evaluationDate);
         return proxy;
@@ -199,7 +199,7 @@ public class Settings {
     // private inner classes
     //
 
-    private static class DateProxy extends Date {
+    private static class DateProxy extends JDate {
 
         // outside world cannot instantiate
         private DateProxy() {
@@ -213,7 +213,7 @@ public class Settings {
             return this;
         }
 
-        private Date assign(final Date date) {
+        private JDate assign(final JDate date) {
             super.assign(date.serialNumber());
             super.notifyObservers();
             return this;

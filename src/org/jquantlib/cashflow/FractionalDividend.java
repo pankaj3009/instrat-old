@@ -23,7 +23,7 @@
 package org.jquantlib.cashflow;
 
 import org.jquantlib.QL;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Predetermined cash flow
@@ -37,12 +37,12 @@ public class FractionalDividend extends Dividend {
 	protected double rate;
 	protected double nominal;
 
-	public FractionalDividend(final double rate, final Date date) {
+	public FractionalDividend(final double rate, final JDate date) {
 		super(date);
 		this.rate=rate;
 	}
 
-	public FractionalDividend(final double rate, final double nominal, final Date date) {
+	public FractionalDividend(final double rate, final double nominal, final JDate date) {
 		super(date);
 		this.rate=rate;
 		this.nominal=nominal;

@@ -47,7 +47,7 @@ import java.util.List;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 
 /**
@@ -63,7 +63,7 @@ public abstract class Exercise {
 	//
 	
     protected Exercise.Type type;
-	protected final List<Date> dates;
+	protected final List<JDate> dates;
 	
 
 	//
@@ -79,7 +79,7 @@ public abstract class Exercise {
 	 */
 	protected Exercise(final Exercise.Type type) {
 		this.type = type;
-		this.dates = new ArrayList<Date>(5); // some reasonable prime number
+		this.dates = new ArrayList<JDate>(5); // some reasonable prime number
 	}
 
 	
@@ -98,18 +98,18 @@ public abstract class Exercise {
 		return type;
 	}
 	
-	public List<Date> dates() {
+	public List<JDate> dates() {
 		return dates;
 	}
 	public final int size() {
 		return dates.size();
 	}
 	
-	public final Date date(final int index) /* @ReadOnly */ {
-		return (Date)dates.get(index);
+	public final JDate date(final int index) /* @ReadOnly */ {
+		return (JDate)dates.get(index);
 	}
 	
-	public final Date lastDate() /* @ReadOnly */ {
+	public final JDate lastDate() /* @ReadOnly */ {
 		return date(dates.size()-1);
 	}
 	

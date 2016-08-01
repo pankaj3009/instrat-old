@@ -56,7 +56,7 @@ import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.Constants;
 import org.jquantlib.pricingengines.PricingEngine;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 
 /**
@@ -239,8 +239,8 @@ public class VanillaSwap extends Swap {
 
             final Leg fixedCoupons = fixedLeg();
 
-            a.fixedResetDates = new ArrayList<Date>(fixedCoupons.size());
-            a.fixedPayDates = new ArrayList<Date>(fixedCoupons.size());
+            a.fixedResetDates = new ArrayList<JDate>(fixedCoupons.size());
+            a.fixedPayDates = new ArrayList<JDate>(fixedCoupons.size());
             a.fixedCoupons = new ArrayList</*@Real*/ Double>(fixedCoupons.size());
 
             for (int i=0; i<fixedCoupons.size(); i++) {
@@ -252,9 +252,9 @@ public class VanillaSwap extends Swap {
 
             final Leg floatingCoupons = floatingLeg();
 
-            a.floatingResetDates = new ArrayList<Date>(floatingCoupons.size());
-            a.floatingPayDates = new ArrayList<Date>(floatingCoupons.size());
-            a.floatingFixingDates = new ArrayList<Date>(floatingCoupons.size());
+            a.floatingResetDates = new ArrayList<JDate>(floatingCoupons.size());
+            a.floatingPayDates = new ArrayList<JDate>(floatingCoupons.size());
+            a.floatingFixingDates = new ArrayList<JDate>(floatingCoupons.size());
 
             a.floatingAccrualTimes = new ArrayList</*@Time*/ Double>(floatingCoupons.size());
             a.floatingSpreads = new ArrayList</*@Spread*/ Double>(floatingCoupons.size());
@@ -373,12 +373,12 @@ public class VanillaSwap extends Swap {
         public Type type;
         public /*@Real*/ double nominal;
 
-        public List<Date> fixedResetDates;
-        public List<Date> fixedPayDates;
+        public List<JDate> fixedResetDates;
+        public List<JDate> fixedPayDates;
         public List</*@Time*/ Double> floatingAccrualTimes;
-        public List<Date> floatingResetDates;
-        public List<Date> floatingFixingDates;
-        public List<Date> floatingPayDates;
+        public List<JDate> floatingResetDates;
+        public List<JDate> floatingFixingDates;
+        public List<JDate> floatingPayDates;
 
         public List</*@Real*/ Double> fixedCoupons;
         public List</*@Spread*/ Double> floatingSpreads;

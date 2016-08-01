@@ -45,7 +45,7 @@ import org.jquantlib.QL;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * American exercise
@@ -66,7 +66,7 @@ public class AmericanExercise extends EarlyExercise {
 	 * @param earliestDate
 	 * @param latestDate
 	 */
-	public AmericanExercise(final Date earliestDate, final Date latestDate) {
+	public AmericanExercise(final JDate earliestDate, final JDate latestDate) {
 		this(earliestDate, latestDate, false);
 	}
 
@@ -77,7 +77,7 @@ public class AmericanExercise extends EarlyExercise {
 	 * @param latestDate is the latest Date of exercise
 	 * @param payoffAtExpiry is <code>true</code> if a payoff is expected to happen on exercise date
 	 */
-	public AmericanExercise(final Date earliestDate, final Date latestDate, final boolean payoffAtExpiry) {
+	public AmericanExercise(final JDate earliestDate, final JDate latestDate, final boolean payoffAtExpiry) {
 		super(Exercise.Type.American, payoffAtExpiry);
 		QL.require(earliestDate.le(latestDate) , "earliest > latest exercise date");  // TODO: message
 		super.dates.add(earliestDate.clone());

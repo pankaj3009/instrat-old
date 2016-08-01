@@ -41,7 +41,7 @@
 package org.jquantlib.cashflow;
 
 import org.jquantlib.QL;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * @author Daniel Kong
@@ -52,16 +52,16 @@ public class Callability extends Event {
 
 	private final Price price;
 	private final Type type;
-	private final Date date;
+	private final JDate date;
 
-	public Callability(final Price price, final Type type, final Date date){
+	public Callability(final Price price, final Type type, final JDate date){
         this.price=price;
         this.type=type;
         this.date=date;
 	}
 
 	@Override
-	public Date date() {
+	public JDate date() {
 		return date;
 	}
 

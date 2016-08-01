@@ -46,7 +46,7 @@ import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.termstructures.volatilities.VolatilityTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitable;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
@@ -117,7 +117,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     /**
      *  initialize with a fixed reference date
      */
-    public LocalVolTermStructure(final Date referenceDate) {
+    public LocalVolTermStructure(final JDate referenceDate) {
         this(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter());
     }
 
@@ -125,7 +125,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
      *  initialize with a fixed reference date
      */
     public LocalVolTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal) {
         this(referenceDate, cal, BusinessDayConvention.Following, new DayCounter());
     }
@@ -134,7 +134,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
      *  initialize with a fixed reference date
      */
     public LocalVolTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc) {
         this(referenceDate, cal, bdc, new DayCounter());
@@ -144,7 +144,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
      *  initialize with a fixed reference date
      */
     public LocalVolTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc,
             final DayCounter dc) {
@@ -184,7 +184,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
 
     //! \name Local Volatility
 
-    public final /*@Volatility*/ double localVol(final Date d, final /*@Real*/ double underlyingLevel, final boolean extrapolate) {
+    public final /*@Volatility*/ double localVol(final JDate d, final /*@Real*/ double underlyingLevel, final boolean extrapolate) {
         /*@Time*/ final double t = timeFromReference(d);
         checkRange(t, underlyingLevel, extrapolate);
         return localVolImpl(t, underlyingLevel);

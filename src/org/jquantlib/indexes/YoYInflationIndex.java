@@ -30,7 +30,7 @@ import org.jquantlib.lang.annotation.Real;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.InflationTermStructure;
 import org.jquantlib.termstructures.YoYInflationTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
@@ -81,16 +81,16 @@ public abstract class YoYInflationIndex extends InflationIndex {
     }
  
     @Override
-    public double fixing(Date fixingDate) {
+    public double fixing(JDate fixingDate) {
     	return this.fixing(fixingDate, false);
     }	
     
     @Override
-    public double fixing(Date fixingDate, boolean forecastTodaysFixing) {
-    	Date today = new Settings().evaluationDate();
-    	Date todayMinusLag = today.sub(availabilityLag);
+    public double fixing(JDate fixingDate, boolean forecastTodaysFixing) {
+    	JDate today = new Settings().evaluationDate();
+    	JDate todayMinusLag = today.sub(availabilityLag);
     	
-    	Pair<Date,Date> lim = InflationTermStructure.inflationPeriod(todayMinusLag, frequency);
+    	Pair<JDate,JDate> lim = InflationTermStructure.inflationPeriod(todayMinusLag, frequency);
     	todayMinusLag = lim.second().inc();
     	
     	if ((fixingDate.lt(todayMinusLag)) ||
@@ -99,7 +99,7 @@ public abstract class YoYInflationIndex extends InflationIndex {
     		@Real double pastFixing = IndexManager.getInstance().getHistory(name()).get(fixingDate);
     		QL.require(!(Double.isNaN(pastFixing)) , "Missing " + name() + " fixing for " + fixingDate);
     		
-    		Date previousDate = fixingDate.sub(new Period(1,TimeUnit.Years));
+    		JDate previousDate = fixingDate.sub(new Period(1,TimeUnit.Years));
     		@Rate double previousFixing = IndexManager.getInstance().getHistory(name()).get(previousDate);
     		QL.require(!(Double.isNaN(pastFixing)) , "Missing " + name() + " fixing for " + previousFixing);
 
@@ -118,13 +118,13 @@ public abstract class YoYInflationIndex extends InflationIndex {
         return ratio;
     }
     
-    private /* @Rate */ double forecastFixing(final Date fixingDate) {
+    private /* @Rate */ double forecastFixing(final JDate fixingDate) {
         // if the value is not interpolated get the value for
         // half way along the period.
-        Date d = fixingDate;
+        JDate d = fixingDate;
         
         if (!interpolated()) {
-            Pair<Date,Date> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
+            Pair<JDate,JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
             int n = (int)(lim.second().sub(lim.first())) / 2;
     		d = lim.first().add(n);
         }

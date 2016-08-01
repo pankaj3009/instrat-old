@@ -35,7 +35,7 @@ import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.InterestRate;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
@@ -106,26 +106,26 @@ public class CashFlows {
     // public methods
     //
 
-    public Date startDate(final Leg cashflows) {
-        Date d = Date.maxDate();
+    public JDate startDate(final Leg cashflows) {
+        JDate d = JDate.maxDate();
         for (int i = 0; i < cashflows.size(); ++i) {
             final Coupon c = (Coupon) cashflows.get(i);
             if (c != null) {
-                d = Date.min(c.accrualStartDate(), d);
+                d = JDate.min(c.accrualStartDate(), d);
             }
         }
         // TODO: code review :: please verify against QL/C++ code
-        QL.ensure(d.lt(Date.maxDate()) , not_enough_information_available); // QA:[RG]::verified
+        QL.ensure(d.lt(JDate.maxDate()) , not_enough_information_available); // QA:[RG]::verified
         return d;
     }
 
-    public Date maturityDate(final Leg cashflows) {
-        Date d = Date.minDate();
+    public JDate maturityDate(final Leg cashflows) {
+        JDate d = JDate.minDate();
         for (int i = 0; i < cashflows.size(); i++) {
-            d = Date.max(d, cashflows.get(i).date());
+            d = JDate.max(d, cashflows.get(i).date());
         }
         // TODO: code review :: please verify against QL/C++ code
-        QL.ensure (d.gt(Date.minDate()), no_cashflows);
+        QL.ensure (d.gt(JDate.minDate()), no_cashflows);
         return d;
     }
 
@@ -133,8 +133,8 @@ public class CashFlows {
     public double npv(
             final Leg cashflows,
             final Handle<YieldTermStructure> discountCurve,
-            final Date settlementDate,
-            final Date npvDate) {
+            final JDate settlementDate,
+            final JDate npvDate) {
         return npv(cashflows, discountCurve, settlementDate, npvDate, 0);
     }
 
@@ -154,11 +154,11 @@ public class CashFlows {
     public double npv(
             final Leg cashflows,
             final Handle<YieldTermStructure> discountCurve,
-            final Date settlementDate,
-            final Date npvDate,
+            final JDate settlementDate,
+            final JDate npvDate,
             final int exDividendDays) {
 
-        Date date = settlementDate;
+        JDate date = settlementDate;
         if (date.isNull()) {
             date = discountCurve.currentLink().referenceDate();
         }
@@ -179,7 +179,7 @@ public class CashFlows {
     public double npv(
             final Leg leg,
             final Handle<YieldTermStructure> discountCurve) {
-        return npv(leg, discountCurve, new Date(), new Date(), 0);
+        return npv(leg, discountCurve, new JDate(), new JDate(), 0);
     }
 
     /**
@@ -189,9 +189,9 @@ public class CashFlows {
      * given constant interest rate. The result is affected by the choice of the
      * interest-rate compounding and the relative frequency and day counter.
      */
-    public double npv(final Leg cashflows, final InterestRate irr, final Date settlementDate) {
+    public double npv(final Leg cashflows, final InterestRate irr, final JDate settlementDate) {
 
-        Date date = settlementDate;
+        JDate date = settlementDate;
         if (date.isNull()) {
             date = new Settings().evaluationDate();
         }
@@ -201,7 +201,7 @@ public class CashFlows {
     }
 
     public double npv(final Leg leg, final InterestRate interestRate) {
-        return npv(leg, interestRate, new Date());
+        return npv(leg, interestRate, new JDate());
     }
 
 
@@ -218,14 +218,14 @@ public class CashFlows {
     }
 
     public double bps (final Leg cashflows, final Handle <YieldTermStructure> discountCurve,
-                       final Date settlementDate)
+                       final JDate settlementDate)
     {
         // default variable of npv date
         return bps (cashflows, discountCurve, settlementDate, settlementDate);
     }
 
     public double bps (final Leg cashflows, final Handle <YieldTermStructure> discountCurve,
-                       final Date settlementDate, final Date npvDate)
+                       final JDate settlementDate, final JDate npvDate)
     {
         // default variable of ex-dividend days
         return bps (cashflows, discountCurve, settlementDate, npvDate, 0);
@@ -244,9 +244,9 @@ public class CashFlows {
      * according to the given term structure.
      */
     public double bps(final Leg cashflows, final Handle<YieldTermStructure> discountCurve,
-                      final Date settlementDate, final Date npvDate, final int exDividendDays) {
+                      final JDate settlementDate, final JDate npvDate, final int exDividendDays) {
 
-        Date date = settlementDate;
+        JDate date = settlementDate;
         if (date.isNull()) {
             date = discountCurve.currentLink().referenceDate();
         }
@@ -267,7 +267,7 @@ public class CashFlows {
      * the rate paid by the cash flows. The change for each coupon is discounted
      * according to the given term structure.
      */
-    public double bps(final Leg cashflows, final InterestRate irr, Date settlementDate){
+    public double bps(final Leg cashflows, final InterestRate irr, JDate settlementDate){
         if (settlementDate.isNull())
         {
             settlementDate = new Settings().evaluationDate();
@@ -285,8 +285,8 @@ public class CashFlows {
      * given term structure. If the required NPV is not given, the input cash
      * flow vector's NPV is used instead.
      */
-    public double atmRate(final Leg leg, final Handle<YieldTermStructure> discountCurve, final Date settlementDate,
-            final Date npvDate, final int exDividendDays, double npv) {
+    public double atmRate(final Leg leg, final Handle<YieldTermStructure> discountCurve, final JDate settlementDate,
+            final JDate npvDate, final int exDividendDays, double npv) {
         final double bps = bps(leg, discountCurve, settlementDate, npvDate, exDividendDays);
         if (npv == 0) {
             npv = npv(leg, discountCurve, settlementDate, npvDate, exDividendDays);
@@ -295,7 +295,7 @@ public class CashFlows {
     }
 
     public double atmRate(final Leg leg, final Handle<YieldTermStructure> discountCurve) {
-        return atmRate(leg, discountCurve, new Date(), new Date(), 0, 0);
+        return atmRate(leg, discountCurve, new JDate(), new JDate(), 0, 0);
     }
 
     /**
@@ -306,10 +306,10 @@ public class CashFlows {
      * of an IRR and numerically establishes the IRR to the desired precision.
      */
     public double irr(final Leg cashflows, final double marketPrice, final DayCounter dayCounter, final Compounding compounding,
-            final Frequency frequency, final Date settlementDate, final double tolerance, final int maxIterations,
+            final Frequency frequency, final JDate settlementDate, final double tolerance, final int maxIterations,
             final double guess) {
 
-        Date date = settlementDate;
+        JDate date = settlementDate;
         if (date.isNull()) {
             date = new Settings().evaluationDate();
         }
@@ -356,7 +356,7 @@ public class CashFlows {
     public double irr(final Leg leg, final double marketPrice, final DayCounter dayCounter, final Compounding compounding) {
         return irr(
                 leg, marketPrice, dayCounter, compounding,
-                Frequency.NoFrequency, new Date(),
+                Frequency.NoFrequency, new JDate(),
                 1.0e-10, 10000, 0.05);
     }
 
@@ -375,9 +375,9 @@ public class CashFlows {
      * {@latex[ D_ \mathrm{Macaulay} = \left( 1 + \frac{y}{N} \right) D_{\mathrm{modified}} } where
      * {@latex$ y } is the IRR and {@latex$ N } is the number of cash flows per year.
      */
-    public double duration(final Leg leg, final InterestRate y, final Duration duration, final Date settlementDate) {
+    public double duration(final Leg leg, final InterestRate y, final Duration duration, final JDate settlementDate) {
 
-        Date date = settlementDate;
+        JDate date = settlementDate;
         if (date.isNull()) {
             date = new Settings().evaluationDate();
         }
@@ -395,7 +395,7 @@ public class CashFlows {
     }
 
     public double duration(final Leg leg, final InterestRate y) {
-        return duration(leg, y, Duration.Modified, new Date());
+        return duration(leg, y, Duration.Modified, new JDate());
     }
 
     /**
@@ -404,9 +404,9 @@ public class CashFlows {
      * The convexity of a string of cash flows is defined as {@latex[ C = \frac{1}{P} \frac{\partial^2 P}{\partial y^2} } where
      * {@latex$ P } is the present value of the cash flows according to the given IRR {@latex$ y }.
      */
-    public double convexity(final Leg cashFlows, final InterestRate rate, final Date settlementDate) {
+    public double convexity(final Leg cashFlows, final InterestRate rate, final JDate settlementDate) {
 
-        Date date = settlementDate;
+        JDate date = settlementDate;
         if (date.isNull()) {
             date = new Settings().evaluationDate();
         }
@@ -448,7 +448,7 @@ public class CashFlows {
     }
 
     public double convexity(final Leg leg, final InterestRate y) {
-        return convexity(leg, y, new Date());
+        return convexity(leg, y, new JDate());
     }
 
 
@@ -458,7 +458,7 @@ public class CashFlows {
 
 
 
-    private double simpleDuration(final Leg cashflows, final InterestRate rate, final Date settlementDate) {
+    private double simpleDuration(final Leg cashflows, final InterestRate rate, final JDate settlementDate) {
 
         double P = 0.0;
         double tP = 0.0;
@@ -481,7 +481,7 @@ public class CashFlows {
         return tP / P;
     }
 
-    private double modifiedDuration(final Leg cashflows, final InterestRate rate, final Date settlementDate) {
+    private double modifiedDuration(final Leg cashflows, final InterestRate rate, final JDate settlementDate) {
 
         double P = 0.0;
         double dPdy = 0.0;
@@ -518,7 +518,7 @@ public class CashFlows {
         return -dPdy / P;
     }
 
-    private double macaulayDuration(final Leg cashflows, final InterestRate rate, final Date settlementDate) {
+    private double macaulayDuration(final Leg cashflows, final InterestRate rate, final JDate settlementDate) {
 
         final double y = rate.rate();
         final int N = rate.frequency().toInteger();
@@ -537,10 +537,10 @@ public class CashFlows {
     }
 
     final public int previousCashFlow(final Leg leg) {
-        return previousCashFlow(leg, new Date());
+        return previousCashFlow(leg, new JDate());
     }
 
-    final public int previousCashFlow(final Leg leg, Date refDate) {
+    final public int previousCashFlow(final Leg leg, JDate refDate) {
         if (refDate.isNull()) {
             refDate = new Settings().evaluationDate();
         }
@@ -549,24 +549,24 @@ public class CashFlows {
             return leg.size();
 
         final int i = nextCashFlowIndex(leg, refDate);
-        final Date beforeLastPaymentDate = leg.get(i - 1).date();// (*--i)->date()-1;
+        final JDate beforeLastPaymentDate = leg.get(i - 1).date();// (*--i)->date()-1;
         return nextCashFlowIndex(leg, beforeLastPaymentDate);
     }
 
     final public double previousCouponRate(final Leg cashFlows) {
-        return previousCouponRate(cashFlows, new Date());
+        return previousCouponRate(cashFlows, new JDate());
     }
 
-    final public double previousCouponRate(final Leg cashFlows, final Date settlement) {
+    final public double previousCouponRate(final Leg cashFlows, final JDate settlement) {
         final int cf = previousCashFlow(cashFlows, settlement);
         return couponRate(cashFlows, cashFlows, cf);
     }
 
     final public double nextCouponRate(final Leg leg) {
-        return nextCouponRate(leg, new Date());
+        return nextCouponRate(leg, new JDate());
     }
 
-    final public double nextCouponRate(final Leg cashFlows, final Date settlement) {
+    final public double nextCouponRate(final Leg cashFlows, final JDate settlement) {
         final int cf = nextCashFlowIndex(cashFlows, settlement);
         return couponRate(cashFlows, cashFlows, cf);
     }
@@ -578,7 +578,7 @@ public class CashFlows {
      * @param settlement
      * @return
      */
-    final public CashFlow nextCashFlow(final Leg cashFlows, Date settlement) {
+    final public CashFlow nextCashFlow(final Leg cashFlows, JDate settlement) {
         if (settlement.isNull()) {
             settlement = new Settings().evaluationDate();
         }
@@ -598,7 +598,7 @@ public class CashFlows {
      * @param settlement
      * @return
      */
-    final public int nextCashFlowIndex(final Leg cashFlows, Date settlement) {
+    final public int nextCashFlowIndex(final Leg cashFlows, JDate settlement) {
         if (settlement.isNull()) {
             settlement = new Settings().evaluationDate();
         }
@@ -611,7 +611,7 @@ public class CashFlows {
     }
 
     final public CashFlow nextCashFlow(final Leg cashFlows) {
-        return nextCashFlow(cashFlows, new Date());
+        return nextCashFlow(cashFlows, new JDate());
     }
 
     /**
@@ -624,7 +624,7 @@ public class CashFlows {
      * @param settlmentDate
      * @return
      */
-    final public double yieldValueBasisPoint(final Leg leg, final InterestRate y, final Date settlementDate) {
+    final public double yieldValueBasisPoint(final Leg leg, final InterestRate y, final JDate settlementDate) {
         final double shift = 0.01;
 
         final double dirtyPrice = npv(leg, y, settlementDate);
@@ -634,7 +634,7 @@ public class CashFlows {
     }
 
     final public double yieldValueBasisPoint(final Leg leg, final InterestRate y) {
-        return yieldValueBasisPoint(leg, y, new Date());
+        return yieldValueBasisPoint(leg, y, new JDate());
 
     }
 
@@ -643,7 +643,7 @@ public class CashFlows {
         if (iteratorLeg.size() <= iteratorIndex)
             return 0.0;
 
-        final Date paymentDate = iteratorLeg.get(iteratorIndex).date();
+        final JDate paymentDate = iteratorLeg.get(iteratorIndex).date();
         boolean firstCouponFound = false;
         /* @Real */double nominal = Constants.NULL_REAL;
         /* @Time */double accrualPeriod = Constants.NULL_TIME;
@@ -686,7 +686,7 @@ public class CashFlows {
      * @param settlementDate
      * @return
      */
-    final private double basisPointValue(final Leg leg, final InterestRate y, final Date settlementDate) {
+    final private double basisPointValue(final Leg leg, final InterestRate y, final JDate settlementDate) {
         /* @Real */final double shift = 0.0001;
         /* @Real */final double dirtyPrice = npv(leg, y, settlementDate);
         /* @Real */final double modifiedDuration = duration(leg, y, Duration.Modified, settlementDate);
@@ -703,7 +703,7 @@ public class CashFlows {
     }
 
     final private double basisPointValue(final Leg leg, final InterestRate y) {
-        return basisPointValue(leg, y, new Date());
+        return basisPointValue(leg, y, new JDate());
     }
 
 
@@ -731,10 +731,10 @@ public class CashFlows {
         private final DayCounter dayCounter_;
         private final Compounding compounding_;
         private final Frequency frequency_;
-        private final Date settlementDate_;
+        private final JDate settlementDate_;
 
         public IRRFinder(final Leg cashflows, final double marketPrice, final DayCounter dayCounter, final Compounding compounding,
-                final Frequency frequency, final Date settlementDate) {
+                final Frequency frequency, final JDate settlementDate) {
             this.cashflows_ = cashflows;
             this.marketPrice_ = marketPrice;
             this.dayCounter_ = dayCounter;
@@ -756,11 +756,11 @@ public class CashFlows {
         private static final String UNKNOWN_VISITABLE = "unknow visitable object";
 
         private final Handle<YieldTermStructure> termStructure;
-        private final Date npvDate;
+        private final JDate npvDate;
 
         private double result;
 
-        public BPSCalculator(final Handle<YieldTermStructure> termStructure, final Date npvDate) {
+        public BPSCalculator(final Handle<YieldTermStructure> termStructure, final JDate npvDate) {
             this.termStructure = termStructure;
             this.npvDate = npvDate;
             this.result = 0.0;

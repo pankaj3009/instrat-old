@@ -31,7 +31,7 @@ import org.jquantlib.lang.annotation.Time;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.InflationTermStructure;
 import org.jquantlib.termstructures.ZeroInflationTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
 import org.jquantlib.util.Pair;
@@ -72,16 +72,16 @@ public abstract class ZeroInflationIndex extends InflationIndex {
     }
  
     @Override
-    public double fixing(Date fixingDate) {
+    public double fixing(JDate fixingDate) {
     	return this.fixing(fixingDate, false);
     }	
     
     @Override
-    public double fixing(Date fixingDate, boolean forecastTodaysFixing) {
-    	Date today = new Settings().evaluationDate();
-    	Date todayMinusLag = today.sub(availabilityLag);
+    public double fixing(JDate fixingDate, boolean forecastTodaysFixing) {
+    	JDate today = new Settings().evaluationDate();
+    	JDate todayMinusLag = today.sub(availabilityLag);
     	
-    	Pair<Date,Date> lim = InflationTermStructure.inflationPeriod(todayMinusLag, frequency);
+    	Pair<JDate,JDate> lim = InflationTermStructure.inflationPeriod(todayMinusLag, frequency);
     	todayMinusLag = lim.second().inc();
     	
     	if ((fixingDate.lt(todayMinusLag)) ||
@@ -99,20 +99,20 @@ public abstract class ZeroInflationIndex extends InflationIndex {
     	return zeroInflation;
     }
     
-    private /* @Rate */ double forecastFixing(final Date fixingDate) {
+    private /* @Rate */ double forecastFixing(final JDate fixingDate) {
     	// the term structure is relative to the fixing value at the base date.
-    	Date baseDate = zeroInflation.currentLink().baseDate();
+    	JDate baseDate = zeroInflation.currentLink().baseDate();
     	@Real double baseFixing = fixing(baseDate);
     	
     	// get the relevant period end
-    	Pair<Date, Date> limBase = InflationTermStructure.inflationPeriod(baseDate, frequency);
-    	Date trueBaseDate = limBase.second();
+    	Pair<JDate, JDate> limBase = InflationTermStructure.inflationPeriod(baseDate, frequency);
+    	JDate trueBaseDate = limBase.second();
     	
         // if the value is not interpolated, get the value for half
         // way along the period.
-    	Date d = fixingDate;
+    	JDate d = fixingDate;
     	if (!interpolated()) {
-    		Pair<Date, Date> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
+    		Pair<JDate, JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
     		int n = (int)(lim.second().sub(lim.first())) / 2;
     		
     		d = lim.first().add(n);

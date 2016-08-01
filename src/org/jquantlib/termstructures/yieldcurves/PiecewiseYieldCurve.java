@@ -55,7 +55,7 @@ import org.jquantlib.termstructures.InterestRate;
 import org.jquantlib.termstructures.IterativeBootstrap;
 import org.jquantlib.termstructures.RateHelper;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Month;
 import org.jquantlib.time.Period;
@@ -116,8 +116,8 @@ public class PiecewiseYieldCurve<
     
     
     private /*@Time*/ double[] jumpTimes;
-    private Date[] jumpDates;
-    private Date latestReference;
+    private JDate[] jumpDates;
+    private JDate latestReference;
 
 
     //
@@ -141,13 +141,13 @@ public class PiecewiseYieldCurve<
             final Class<I> classI,
             final Class<B> classB,
             //--
-            final Date referenceDate,
+            final JDate referenceDate,
             final RateHelper[] instruments,
             final DayCounter dayCounter) {
     	this(	classT, classI, classB,
                 referenceDate, instruments, dayCounter,
                 new Handle/*<Quote>*/[0],
-                new Date[0],
+                new JDate[0],
                 1.0e-12,
                 constructInterpolator(classI),
                 new IterativeBootstrap<PiecewiseYieldCurve<T,I,B>>(PiecewiseYieldCurve.class)
@@ -158,7 +158,7 @@ public class PiecewiseYieldCurve<
             final Class<I> classI,
             final Class<B> classB,
             //--
-            final Date referenceDate,
+            final JDate referenceDate,
             final RateHelper[] instruments,
             final DayCounter dayCounter,
             //----
@@ -166,7 +166,7 @@ public class PiecewiseYieldCurve<
     	this(	classT, classI, classB,
                 referenceDate, instruments, dayCounter,
                 jumps,
-                new Date[0],
+                new JDate[0],
                 1.0e-12,
                 constructInterpolator(classI),
                 new IterativeBootstrap<PiecewiseYieldCurve<T,I,B>>(PiecewiseYieldCurve.class)
@@ -177,12 +177,12 @@ public class PiecewiseYieldCurve<
             final Class<I> classI,
             final Class<B> classB,
             //--
-            final Date referenceDate,
+            final JDate referenceDate,
             final RateHelper[] instruments,
             final DayCounter dayCounter,
             //----
             final Handle<Quote>[] jumps,
-            final Date[] jumpDates) {
+            final JDate[] jumpDates) {
     	this(	classT, classI, classB,
                 referenceDate, instruments, dayCounter,
                 jumps,
@@ -197,12 +197,12 @@ public class PiecewiseYieldCurve<
             final Class<I> classI,
             final Class<B> classB,
             //--
-            final Date referenceDate,
+            final JDate referenceDate,
             final RateHelper[] instruments,
             final DayCounter dayCounter,
             //----
             final Handle<Quote>[] jumps,
-            final Date[] jumpDates,
+            final JDate[] jumpDates,
             final /*@Real*/ double accuracy) {
     	this(	classT, classI, classB,
                 referenceDate, instruments, dayCounter,
@@ -218,12 +218,12 @@ public class PiecewiseYieldCurve<
             final Class<I> classI,
             final Class<B> classB,
             //--
-            final Date referenceDate,
+            final JDate referenceDate,
             final RateHelper[] instruments,
             final DayCounter dayCounter,
             //----
             final Handle<Quote>[] jumps,
-            final Date[] jumpDates,
+            final JDate[] jumpDates,
             final /*@Real*/ double accuracy,
             final Interpolator interpolator) {
     	this(	classT, classI, classB,
@@ -240,12 +240,12 @@ public class PiecewiseYieldCurve<
             final Class<I> classI,
             final Class<B> classB,
             //--
-            final Date referenceDate,
+            final JDate referenceDate,
             final RateHelper[] instruments,
             final DayCounter dayCounter,
             //----
             final Handle<Quote>[] jumps,
-            final Date[] jumpDates,
+            final JDate[] jumpDates,
             final /*@Real*/ double accuracy,
             final Interpolator interpolator,
             final Bootstrap bootstrap) {
@@ -269,7 +269,7 @@ public class PiecewiseYieldCurve<
         this.instruments = instruments; // TODO: clone() ?
         
         this.jumps        = jumps==null            ?  new Handle /*<Quote>*/ [0]   : jumps;
-        this.jumpDates    = jumpDates==null        ? new Date[0]                   : jumpDates;
+        this.jumpDates    = jumpDates==null        ? new JDate[0]                   : jumpDates;
         this.accuracy     = Double.isNaN(accuracy) ? 1.0e-12                       : accuracy;
         this.traits       = constructTraits(classT);
 
@@ -300,7 +300,7 @@ public class PiecewiseYieldCurve<
         		classT, classI, classB,
                 settlementDays, calendar, instruments, dayCounter,
                 new Handle /*<Quote>*/ [0],
-                new Date[0],
+                new JDate[0],
                 1.0e-12,
                 constructInterpolator(classI),
                 new IterativeBootstrap<PiecewiseYieldCurve<T,I,B>>(PiecewiseYieldCurve.class)
@@ -321,7 +321,7 @@ public class PiecewiseYieldCurve<
         		classT, classI, classB,
                 settlementDays, calendar, instruments, dayCounter,
                 jumps,
-                new Date[0],
+                new JDate[0],
                 1.0e-12,
                 constructInterpolator(classI),
                 new IterativeBootstrap<PiecewiseYieldCurve<T,I,B>>(PiecewiseYieldCurve.class)
@@ -338,7 +338,7 @@ public class PiecewiseYieldCurve<
             final DayCounter dayCounter,
             //----
             final Handle<Quote>[] jumps,
-            final Date[] jumpDates) {
+            final JDate[] jumpDates) {
         this(
         		classT, classI, classB,
                 settlementDays, calendar, instruments, dayCounter,
@@ -360,7 +360,7 @@ public class PiecewiseYieldCurve<
             final DayCounter dayCounter,
             //----
             final Handle<Quote>[] jumps,
-            final Date[] jumpDates,
+            final JDate[] jumpDates,
             final /*@Real*/ double accuracy) {
         this(
         		classT, classI, classB,
@@ -383,7 +383,7 @@ public class PiecewiseYieldCurve<
             final DayCounter dayCounter,
             //----
             final Handle<Quote>[] jumps,
-            final Date[] jumpDates,
+            final JDate[] jumpDates,
             final /*@Real*/ double accuracy,
             final Interpolator interpolator) {
         this(
@@ -407,7 +407,7 @@ public class PiecewiseYieldCurve<
             final DayCounter dayCounter,
             //----
             final Handle<Quote>[] jumps,
-            final Date[] jumpDates,
+            final JDate[] jumpDates,
             final /*@Real*/ double accuracy,
             final Interpolator interpolator,
             final Bootstrap bootstrap) {
@@ -431,7 +431,7 @@ public class PiecewiseYieldCurve<
         this.instruments = instruments;
         
         this.jumps        = jumps==null            ? new Handle /*<Quote>*/ [0]    : jumps;
-        this.jumpDates    = jumpDates==null        ? new Date[0]                   : jumpDates;
+        this.jumpDates    = jumpDates==null        ? new JDate[0]                   : jumpDates;
         this.accuracy     = Double.isNaN(accuracy) ? 1.0e-12                       : accuracy;
         this.traits       = constructTraits(classT);
 
@@ -450,7 +450,7 @@ public class PiecewiseYieldCurve<
     static private Traits.Curve constructBaseClass(
             final Class<?> classT,
             final Class<?> classI,
-            final Date referenceDate,
+            final JDate referenceDate,
             final DayCounter dayCounter,
             final Interpolator interpolator) {
         if (classT == Discount.class)
@@ -543,7 +543,7 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public Date maxDate() /* @ReadOnly */ {
+    public JDate maxDate() /* @ReadOnly */ {
         calculate();
         return baseCurve.maxDate();
     }
@@ -555,7 +555,7 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public Date[] dates() /* @ReadOnly */ {
+    public JDate[] dates() /* @ReadOnly */ {
         calculate();
         return baseCurve.dates();
     }
@@ -567,13 +567,13 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public List<Pair<Date, Double>> nodes() /* @ReadOnly */ {
+    public List<Pair<JDate, Double>> nodes() /* @ReadOnly */ {
         calculate();
         return baseCurve.nodes();
     }
 
     @Override
-    public Date[] jumpDates() /* @ReadOnly */ {
+    public JDate[] jumpDates() /* @ReadOnly */ {
         calculate();
         return baseCurve.dates();
     }
@@ -590,7 +590,7 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public void setDates(final Date[] dates) {
+    public void setDates(final JDate[] dates) {
         baseCurve.setDates(dates);
     }
 
@@ -647,12 +647,12 @@ public class PiecewiseYieldCurve<
 
     public void setJumps() {
         final int nJumps = jumps.length;
-        final Date referenceDate = baseCurve.referenceDate();
+        final JDate referenceDate = baseCurve.referenceDate();
         if (this.jumpDates.length==0 && jumps.length!=0) { // turn of year dates
-            this.jumpDates = new Date[nJumps];
+            this.jumpDates = new JDate[nJumps];
             this.jumpTimes = new double[nJumps];
             for (int i=0; i<jumps.length; ++i) {
-                jumpDates[i] = new Date(31, Month.December, referenceDate.year()+i);
+                jumpDates[i] = new JDate(31, Month.December, referenceDate.year()+i);
             }
         } else { // fixed dates
             QL.require(jumpDates.length==nJumps, "mismatch between number of jumps and jump dates");
@@ -678,12 +678,12 @@ public class PiecewiseYieldCurve<
     //
 
     @Override
-    public double discount(final Date d, final boolean extrapolate) {
+    public double discount(final JDate d, final boolean extrapolate) {
         return baseCurve.discount(d, extrapolate);
     }
 
     @Override
-    public double discount(final Date d) {
+    public double discount(final JDate d) {
         return baseCurve.discount(d);
     }
 
@@ -698,27 +698,27 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public InterestRate forwardRate(final Date d1, final Date d2, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
+    public InterestRate forwardRate(final JDate d1, final JDate d2, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         return baseCurve.forwardRate(d1, d2, dayCounter, comp, freq, extrapolate);
     }
 
     @Override
-    public InterestRate forwardRate(final Date d1, final Date d2, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
+    public InterestRate forwardRate(final JDate d1, final JDate d2, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
         return baseCurve.forwardRate(d1, d2, resultDayCounter, comp, freq);
     }
 
     @Override
-    public InterestRate forwardRate(final Date d1, final Date d2, final DayCounter resultDayCounter, final Compounding comp) {
+    public InterestRate forwardRate(final JDate d1, final JDate d2, final DayCounter resultDayCounter, final Compounding comp) {
         return baseCurve.forwardRate(d1, d2, resultDayCounter, comp);
     }
 
     @Override
-    public InterestRate forwardRate(final Date d, final Period p, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
+    public InterestRate forwardRate(final JDate d, final Period p, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         return baseCurve.forwardRate(d, p, dayCounter, comp, freq, extrapolate);
     }
 
     @Override
-    public InterestRate forwardRate(final Date d, final Period p, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
+    public InterestRate forwardRate(final JDate d, final Period p, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
         return baseCurve.forwardRate(d, p, resultDayCounter, comp, freq);
     }
 
@@ -738,7 +738,7 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public double parRate(final Date[] dates, final Frequency freq, final boolean extrapolate) {
+    public double parRate(final JDate[] dates, final Frequency freq, final boolean extrapolate) {
         return baseCurve.parRate(dates, freq, extrapolate);
     }
 
@@ -749,22 +749,22 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public double parRate(final int tenor, final Date startDate, final Frequency freq, final boolean extrapolate) {
+    public double parRate(final int tenor, final JDate startDate, final Frequency freq, final boolean extrapolate) {
         return baseCurve.parRate(tenor, startDate, freq, extrapolate);
     }
 
     @Override
-    public InterestRate zeroRate(final Date d, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
+    public InterestRate zeroRate(final JDate d, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         return baseCurve.zeroRate(d, dayCounter, comp, freq, extrapolate);
     }
 
     @Override
-    public InterestRate zeroRate(final Date d, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
+    public InterestRate zeroRate(final JDate d, final DayCounter resultDayCounter, final Compounding comp, final Frequency freq) {
         return baseCurve.zeroRate(d, resultDayCounter, comp, freq);
     }
 
     @Override
-    public InterestRate zeroRate(final Date d, final DayCounter resultDayCounter, final Compounding comp) {
+    public InterestRate zeroRate(final JDate d, final DayCounter resultDayCounter, final Compounding comp) {
         return baseCurve.zeroRate(d, resultDayCounter, comp);
     }
 
@@ -794,7 +794,7 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public Date referenceDate() {
+    public JDate referenceDate() {
         return baseCurve.referenceDate();
     }
 
@@ -804,7 +804,7 @@ public class PiecewiseYieldCurve<
     }
 
     @Override
-    public double timeFromReference(final Date date) {
+    public double timeFromReference(final JDate date) {
         return baseCurve.timeFromReference(date);
     }
 

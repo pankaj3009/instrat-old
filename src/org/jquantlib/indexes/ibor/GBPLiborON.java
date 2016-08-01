@@ -42,7 +42,7 @@ package org.jquantlib.indexes.ibor;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.AbstractYieldTermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * base class for all BBA LIBOR indexes but the EUR, O/N, and S/N ones
@@ -61,7 +61,7 @@ public class GBPLiborON extends DailyTenorGBPLibor {
 						throw new UnsupportedOperationException();
 					}
 					@Override
-					public Date maxDate() {
+					public JDate maxDate() {
 						throw new UnsupportedOperationException();
 					}
 				}

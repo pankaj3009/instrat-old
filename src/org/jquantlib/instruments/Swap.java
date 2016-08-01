@@ -53,7 +53,7 @@ import org.jquantlib.cashflow.Leg;
 import org.jquantlib.math.Constants;
 import org.jquantlib.pricingengines.GenericEngine;
 import org.jquantlib.pricingengines.PricingEngine;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Interest rate swap
@@ -143,20 +143,20 @@ public class Swap extends Instrument {
     // public methods
     //
 
-    public Date startDate() /* @ReadOnly */ {
+    public JDate startDate() /* @ReadOnly */ {
         QL.require(legs.size() > 0 , "no legs given"); // TODO: message
-        Date d = CashFlows.getInstance().startDate(this.legs.get(0));
+        JDate d = CashFlows.getInstance().startDate(this.legs.get(0));
         for (int j = 1; j < this.legs.size(); j++) {
-            d = Date.min(d, CashFlows.getInstance().startDate(this.legs.get(j)));
+            d = JDate.min(d, CashFlows.getInstance().startDate(this.legs.get(j)));
         }
         return d;
     }
 
-    public Date maturityDate() /* @ReadOnly */ {
+    public JDate maturityDate() /* @ReadOnly */ {
         QL.require(legs.size() > 0 , "no legs given"); // TODO: message
-        Date d = CashFlows.getInstance().maturityDate(this.legs.get(0));
+        JDate d = CashFlows.getInstance().maturityDate(this.legs.get(0));
         for (int j = 1; j < this.legs.size(); j++) {
-            d = Date.max(d, CashFlows.getInstance().maturityDate(this.legs.get(j)));
+            d = JDate.max(d, CashFlows.getInstance().maturityDate(this.legs.get(j)));
         }
         return d;
     }
@@ -168,7 +168,7 @@ public class Swap extends Instrument {
 
     @Override
     public boolean isExpired() /* @ReadOnly */ {
-        final Date today = new Settings().evaluationDate();
+        final JDate today = new Settings().evaluationDate();
         for (int i = 0; i < legs.size(); i++) {
             for (final CashFlow item : legs.get(i)) {
                 if (!item.hasOccurred(today)) {

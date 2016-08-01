@@ -48,7 +48,7 @@ import org.jquantlib.termstructures.AbstractYieldTermStructure;
 import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.InterestRate;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.calendars.NullCalendar;
 import org.jquantlib.util.Observable;
@@ -74,7 +74,7 @@ public class FlatForward extends AbstractYieldTermStructure {
     //
 
     public FlatForward(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Handle<? extends Quote> forward,
             final DayCounter dayCounter,
             final Compounding compounding,
@@ -88,7 +88,7 @@ public class FlatForward extends AbstractYieldTermStructure {
     }
 
     public FlatForward(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Handle<? extends Quote> forward,
             final DayCounter dayCounter,
             final Compounding compounding) {
@@ -96,7 +96,7 @@ public class FlatForward extends AbstractYieldTermStructure {
     }
 
     public FlatForward(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Handle<? extends Quote> forward,
             final DayCounter dayCounter) {
         this(referenceDate, forward, dayCounter, Compounding.Continuous);
@@ -105,7 +105,7 @@ public class FlatForward extends AbstractYieldTermStructure {
     // --------------------------------------------
 
     public FlatForward(
-            final Date referenceDate,
+            final JDate referenceDate,
             final /*@Rate*/ double forward,
             final DayCounter dayCounter,
             final Compounding compounding,
@@ -118,7 +118,7 @@ public class FlatForward extends AbstractYieldTermStructure {
     }
 
     public FlatForward(
-            final Date referenceDate,
+            final JDate referenceDate,
             final /*@Rate*/ double forward,
             final DayCounter dayCounter,
             final Compounding compounding) {
@@ -126,7 +126,7 @@ public class FlatForward extends AbstractYieldTermStructure {
     }
 
     public FlatForward(
-            final Date referenceDate,
+            final JDate referenceDate,
             final /*@Rate*/ double forward,
             final DayCounter dayCounter) {
         this(referenceDate, forward, dayCounter, Compounding.Continuous);
@@ -236,8 +236,8 @@ public class FlatForward extends AbstractYieldTermStructure {
     //
 
     @Override
-    public final Date maxDate() {
-        return Date.maxDate();
+    public final JDate maxDate() {
+        return JDate.maxDate();
     }
 
 

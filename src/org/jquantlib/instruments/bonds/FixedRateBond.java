@@ -49,7 +49,7 @@ import org.jquantlib.instruments.Bond;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.DateGeneration;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
@@ -86,7 +86,7 @@ public class FixedRateBond extends Bond {
             final DayCounter accrualDayCounter,
             final BusinessDayConvention paymentConvention,
             /*Real*/final double redemption,
-            final Date  issueDate){
+            final JDate  issueDate){
     	
         super(settlementDays, schedule.calendar(), issueDate);
         
@@ -125,7 +125,7 @@ public class FixedRateBond extends Bond {
              accrualDayCounter,
              paymentConvention,
              redemption,
-             new Date());
+             new JDate());
     }
 
     /**
@@ -147,7 +147,7 @@ public class FixedRateBond extends Bond {
                 accrualDayCounter,
                 paymentConvention,
                 100.0,
-                new Date());
+                new JDate());
     }
 
     /**
@@ -169,7 +169,7 @@ public class FixedRateBond extends Bond {
                 accrualDayCounter,
                 BusinessDayConvention.Following,
                 100.0,
-                new Date());
+                new JDate());
     }
 
 
@@ -195,16 +195,16 @@ public class FixedRateBond extends Bond {
     public FixedRateBond(/*@Natural*/final int settlementDays,
             final Calendar  calendar,
             /*@Real*/ final double faceAmount,
-            final Date  startDate,
-            final Date  maturityDate,
+            final JDate  startDate,
+            final JDate  maturityDate,
             final Period  tenor,
             final double[] coupons,
             final DayCounter  accrualDayCounter,
             final BusinessDayConvention accrualConvention,
             final BusinessDayConvention paymentConvention,
             /*@Real*/ final double redemption,
-            final Date  issueDate ,
-            final Date  stubDate ,
+            final JDate  issueDate ,
+            final JDate  stubDate ,
             final DateGeneration.Rule  rule  ,
             final boolean endOfMonth){
 
@@ -214,16 +214,16 @@ public class FixedRateBond extends Bond {
         dayCounter_= accrualDayCounter;
         maturityDate_ = maturityDate.clone();
 
-        Date firstDate = new Date();
-        Date nextToLastDate = new Date();
+        JDate firstDate = new JDate();
+        JDate nextToLastDate = new JDate();
         switch (rule) {
         case Backward:
-            firstDate = new Date();
+            firstDate = new JDate();
             nextToLastDate = stubDate.clone();
             break;
         case Forward:
             firstDate = stubDate.clone();
-            nextToLastDate = new Date();
+            nextToLastDate = new JDate();
             break;
         case Zero:
         case ThirdWednesday:
@@ -257,16 +257,16 @@ public class FixedRateBond extends Bond {
     public FixedRateBond(/*@Natural*/final int settlementDays,
             final Calendar  calendar,
             /*@Real*/ final double faceAmount,
-            final Date  startDate,
-            final Date  maturityDate,
+            final JDate  startDate,
+            final JDate  maturityDate,
             final Period  tenor,
             final double[] coupons,
             final DayCounter  accrualDayCounter,
             final BusinessDayConvention accrualConvention,
             final BusinessDayConvention paymentConvention,
             /*@Real*/ final double redemption,
-            final Date  issueDate ,
-            final Date  stubDate ,
+            final JDate  issueDate ,
+            final JDate  stubDate ,
             final DateGeneration.Rule  rule) {
 
     	this(settlementDays,
@@ -293,16 +293,16 @@ public class FixedRateBond extends Bond {
     public FixedRateBond(/*@Natural*/final int settlementDays,
             final Calendar  calendar,
             /*@Real*/ final double faceAmount,
-            final Date  startDate,
-            final Date  maturityDate,
+            final JDate  startDate,
+            final JDate  maturityDate,
             final Period  tenor,
             final double[] coupons,
             final DayCounter  accrualDayCounter,
             final BusinessDayConvention accrualConvention,
             final BusinessDayConvention paymentConvention,
             /*@Real*/ final double redemption,
-            final Date  issueDate ,
-            final Date  stubDate) {
+            final JDate  issueDate ,
+            final JDate  stubDate) {
 
     	this(settlementDays,
              calendar,
@@ -330,15 +330,15 @@ public class FixedRateBond extends Bond {
     public FixedRateBond(/*@Natural*/final int settlementDays,
             final Calendar  calendar,
             /*@Real*/ final double faceAmount,
-            final Date  startDate,
-            final Date  maturityDate,
+            final JDate  startDate,
+            final JDate  maturityDate,
             final Period  tenor,
             final double[] coupons,
             final DayCounter  accrualDayCounter,
             final BusinessDayConvention accrualConvention,
             final BusinessDayConvention paymentConvention,
             /*@Real*/ final double redemption,
-            final Date  issueDate) {
+            final JDate  issueDate) {
 
     	this(settlementDays,
              calendar,
@@ -352,7 +352,7 @@ public class FixedRateBond extends Bond {
              paymentConvention,
              redemption,
              issueDate ,
-             new Date(),
+             new JDate(),
              DateGeneration.Rule.Backward, 
              false);
     }
@@ -366,8 +366,8 @@ public class FixedRateBond extends Bond {
     public FixedRateBond(/*@Natural*/final int settlementDays,
             final Calendar  calendar,
             /*@Real*/ final double faceAmount,
-            final Date  startDate,
-            final Date  maturityDate,
+            final JDate  startDate,
+            final JDate  maturityDate,
             final Period  tenor,
             final double[] coupons,
             final DayCounter  accrualDayCounter,
@@ -386,8 +386,8 @@ public class FixedRateBond extends Bond {
              accrualConvention,
              paymentConvention,
              redemption,
-             new Date(),
-             new Date(),
+             new JDate(),
+             new JDate(),
              DateGeneration.Rule.Backward, 
              false);
     }
@@ -403,8 +403,8 @@ public class FixedRateBond extends Bond {
     public FixedRateBond(/*@Natural*/final int settlementDays,
             final Calendar  calendar,
             /*@Real*/ final double faceAmount,
-            final Date  startDate,
-            final Date  maturityDate,
+            final JDate  startDate,
+            final JDate  maturityDate,
             final Period  tenor,
             final double[] coupons,
             final DayCounter  accrualDayCounter,
@@ -422,8 +422,8 @@ public class FixedRateBond extends Bond {
              accrualConvention,
              paymentConvention,
              100.0,
-             new Date(),
-             new Date(),
+             new JDate(),
+             new JDate(),
              DateGeneration.Rule.Backward, 
              false);
     }
@@ -440,8 +440,8 @@ public class FixedRateBond extends Bond {
     public FixedRateBond(/*@Natural*/final int settlementDays,
             final Calendar  calendar,
             /*@Real*/ final double faceAmount,
-            final Date  startDate,
-            final Date  maturityDate,
+            final JDate  startDate,
+            final JDate  maturityDate,
             final Period  tenor,
             final double[] coupons,
             final DayCounter  accrualDayCounter,
@@ -458,8 +458,8 @@ public class FixedRateBond extends Bond {
              accrualConvention,
              BusinessDayConvention.Following,
              100.0,
-             new Date(),
-             new Date(),
+             new JDate(),
+             new JDate(),
              DateGeneration.Rule.Backward, 
              false);
     }
@@ -477,8 +477,8 @@ public class FixedRateBond extends Bond {
     public FixedRateBond(/*@Natural*/final int settlementDays,
             final Calendar  calendar,
             /*@Real*/ final double faceAmount,
-            final Date  startDate,
-            final Date  maturityDate,
+            final JDate  startDate,
+            final JDate  maturityDate,
             final Period  tenor,
             final double[] coupons,
             final DayCounter  accrualDayCounter) {
@@ -494,8 +494,8 @@ public class FixedRateBond extends Bond {
              BusinessDayConvention.Following,
              BusinessDayConvention.Following,
              100.0,
-             new Date(),
-             new Date(),
+             new JDate(),
+             new JDate(),
              DateGeneration.Rule.Backward, 
              false);
     }
@@ -508,7 +508,7 @@ public class FixedRateBond extends Bond {
         return dayCounter_;
     }
 
-    private String reportFalseDateGenerationRule(final Date stubDate, final DateGeneration.Rule rule) {
+    private String reportFalseDateGenerationRule(final JDate stubDate, final DateGeneration.Rule rule) {
         final StringBuilder sb = new StringBuilder();
         sb.append("stub date (").append(stubDate).append(") not allowed with DateGeneration.Rule (").append(rule).append(")");
         return sb.toString();

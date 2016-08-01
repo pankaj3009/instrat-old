@@ -43,14 +43,14 @@ public class DateParser {
      * @param str
      * @return Date
      */
-    public static Date parseISO(final String str) {
+    public static JDate parseISO(final String str) {
         QL.require(str.length() == 10 && str.charAt(4) == '-' && str.charAt(7) == '-', "invalid format"); // TODO: message
 
         final int year = Integer.parseInt(str.substring(0, 4));
         final int month = Integer.parseInt(str.substring(5, 7));
         final int day = Integer.parseInt(str.substring(8, 10));
 
-        final Date date = new Date(day, Month.valueOf(month), year);
+        final JDate date = new JDate(day, Month.valueOf(month), year);
         // QL.debug(date.isoDate().toString());
         return date;
     }
@@ -64,7 +64,7 @@ public class DateParser {
      * @param fmt
      * @return Date
      */
-    public static Date parse(final String str, final String fmt) {
+    public static JDate parse(final String str, final String fmt) {
         String[] slist = null;
         String[] flist = null;
         int d = 0, m = 0, y = 0;
@@ -72,10 +72,10 @@ public class DateParser {
         slist = str.split("/");
         flist = fmt.split("/");
 
-        Date date;
+        JDate date;
 
         if (slist.length != flist.length) {
-            date = new Date();
+            date = new JDate();
         } else {
             for (int i = 0; i < flist.length; i++) {
                 final String sub = flist[i];
@@ -90,7 +90,7 @@ public class DateParser {
                     }
                 }
             }
-            date = new Date(d, m, y);
+            date = new JDate(d, m, y);
         }
 
         // QL.debug(date.isoDate().toString());

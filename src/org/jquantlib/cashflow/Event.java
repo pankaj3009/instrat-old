@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.jquantlib.Settings;
 import org.jquantlib.lang.exceptions.LibraryException;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.DefaultObservable;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
@@ -57,7 +57,7 @@ public abstract class Event implements Observable, PolymorphicVisitable {
     /**
      * Keeps the date at which the event occurs
      */
-    public abstract Date date() /* @ReadOnly */;
+    public abstract JDate date();
 
 
     //
@@ -87,7 +87,7 @@ public abstract class Event implements Observable, PolymorphicVisitable {
      * This should be the only place in the code that is affected
      * directly by {@link Settings#isTodaysPayments()}
      */
-    public boolean hasOccurred(final Date d) /* @ReadOnly */ {
+    public boolean hasOccurred(final JDate d) /* @ReadOnly */ {
         return hasOccurred(d, new Settings().isTodaysPayments());
     }
 
@@ -98,7 +98,7 @@ public abstract class Event implements Observable, PolymorphicVisitable {
      * @param d is a Date
      * @return true if an event has already occurred before a date
      */
-    public boolean hasOccurred(final Date d, final boolean includeToday) /* @ReadOnly */{
+    public boolean hasOccurred(final JDate d, final boolean includeToday) /* @ReadOnly */{
         if (includeToday) {
             return date().compareTo(d) < 0;
         } else {

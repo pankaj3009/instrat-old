@@ -56,7 +56,7 @@ import org.jquantlib.math.distributions.NormalDistribution;
 import org.jquantlib.pricingengines.BlackCalculator;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 import org.jquantlib.termstructures.Compounding;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 
 
@@ -132,7 +132,7 @@ public class AnalyticDiscreteGeometricAveragePriceAsianEngine extends DiscreteAv
             pastFixings = 0;
         }
 
-        final Date referenceDate = process.riskFreeRate().currentLink().referenceDate();
+        final JDate referenceDate = process.riskFreeRate().currentLink().referenceDate();
         final DayCounter rfdc  = process.riskFreeRate().currentLink().dayCounter();
         final DayCounter divdc = process.dividendYield().currentLink().dayCounter();
         final DayCounter voldc = process.blackVolatility().currentLink().dayCounter();
@@ -172,7 +172,7 @@ public class AnalyticDiscreteGeometricAveragePriceAsianEngine extends DiscreteAv
         /*@Real*/ final double sigG = vola * dsigG_dsig;
         /*@Real*/ final double dmuG_dsig = -(vola * timeSum)/N;
 
-        final Date exDate = a.exercise.lastDate();
+        final JDate exDate = a.exercise.lastDate();
         /*@Rate*/ final double dividendRate = process.dividendYield().currentLink().
         zeroRate(exDate, divdc, Compounding.Continuous, Frequency.NoFrequency).rate();
         /*@Rate*/ final double riskFreeRate = process.riskFreeRate().currentLink().

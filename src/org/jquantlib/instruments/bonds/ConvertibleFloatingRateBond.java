@@ -31,7 +31,7 @@ import org.jquantlib.instruments.DividendSchedule;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 
 /**
@@ -53,7 +53,7 @@ public class ConvertibleFloatingRateBond extends ConvertibleBond {
 	          final DividendSchedule dividends,
 	          final CallabilitySchedule callability,
 	          final Handle<Quote> creditSpread,
-	          final Date issueDate,
+	          final JDate issueDate,
 	          final int settlementDays,
 	          final IborIndex index,
 	          final /*@Natural*/ int fixingDays,
@@ -70,7 +70,7 @@ public class ConvertibleFloatingRateBond extends ConvertibleBond {
 	          final DividendSchedule dividends,
 	          final CallabilitySchedule callability,
 			final Handle<Quote> creditSpread,
-			final Date issueDate,
+			final JDate issueDate,
 			final int settlementDays,
 			final IborIndex index,
             final /*@Natural*/ int fixingDays,

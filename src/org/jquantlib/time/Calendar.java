@@ -120,7 +120,7 @@ public class Calendar {
     /**
      * Returns <tt>true</tt> if the date is a business day for the given market.
      */
-    public boolean isBusinessDay(final Date d) /* @ReadOnly */{
+    public boolean isBusinessDay(final JDate d) /* @ReadOnly */{
         if (impl.addedHolidays.contains(d))
             return false;
         if (impl.removedHolidays.contains(d))
@@ -131,7 +131,7 @@ public class Calendar {
     /**
      * Returns <tt>true</tt> if the date is a holiday for the given market.
      */
-    public boolean isHoliday(final Date d) /* @ReadOnly */{
+    public boolean isHoliday(final JDate d) /* @ReadOnly */{
         return !isBusinessDay(d);
     }
 
@@ -147,7 +147,7 @@ public class Calendar {
      * Returns <tt>true</tt> if the date is last business day for the month in
      * given market.
      */
-    public boolean isEndOfMonth(final Date d) /* @ReadOnly */{
+    public boolean isEndOfMonth(final JDate d) /* @ReadOnly */{
         return (d.month() != adjust(d.add(1)).month());
     }
 
@@ -157,8 +157,8 @@ public class Calendar {
      * @param d
      * @return last business Date based on passed date
      */
-    public Date endOfMonth(final Date d) /* @ReadOnly */{
-        return adjust(Date.endOfMonth(d), BusinessDayConvention.Preceding);
+    public JDate endOfMonth(final JDate d) /* @ReadOnly */{
+        return adjust(JDate.endOfMonth(d), BusinessDayConvention.Preceding);
     }
 
     /**
@@ -167,7 +167,7 @@ public class Calendar {
      * <b>NOTE</b>: This method does not affect <i>pre-defined</i> calendars, returning
      * silently.
      * */
-    public void addHoliday(final Date d) {
+    public void addHoliday(final JDate d) {
         // if d was a genuine holiday previously removed, revert the change
         impl.removedHolidays.remove(d);
         // if it's already a holiday, leave the calendar alone.
@@ -183,7 +183,7 @@ public class Calendar {
      * <b>NOTE</b>: This method does not affect <i>pre-defined</i> calendars, returning
      * silently.
      */
-    public void removeHoliday(final Date d) {
+    public void removeHoliday(final JDate d) {
         // if d was an artificially-added holiday, revert the change
         impl.addedHolidays.remove(d);
         // if it's already a business day, leave the calendar alone.
@@ -196,13 +196,13 @@ public class Calendar {
     /**
      * Returns the holidays between two dates
      */
-    public static List<Date> holidayList(final Calendar c, final Date from, final Date to, final boolean includeWeekEnds) {
+    public static List<JDate> holidayList(final Calendar c, final JDate from, final JDate to, final boolean includeWeekEnds) {
 
         QL.require(to.gt(from), "'from' date (" + from.toString()
                 + ") must be earlier than 'to' date (" + to.toString() + ")");
 
-        final List<Date> result = new ArrayList<Date>();
-        for (Date d = from.clone(); d.le(to); d=d.add(1)) {
+        final List<JDate> result = new ArrayList<JDate>();
+        for (JDate d = from.clone(); d.le(to); d=d.add(1)) {
             if (c.isHoliday(d)
                     && (includeWeekEnds || !c.isWeekend(d.weekday()))) {
                 result.add(d);
@@ -219,7 +219,7 @@ public class Calendar {
      *
      * @note The input date is not modified
      */
-    public Date adjust(final Date date) /* @ReadOnly */ {
+    public JDate adjust(final JDate date) /* @ReadOnly */ {
         return adjust(date, BusinessDayConvention.Following);
     }
 
@@ -230,10 +230,10 @@ public class Calendar {
      *
      * @note The input date is not modified
      */
-    public Date adjust(final Date d, final BusinessDayConvention c) /* @ReadOnly */ {
+    public JDate adjust(final JDate d, final BusinessDayConvention c) /* @ReadOnly */ {
         if (c == BusinessDayConvention.Unadjusted)
             return d.clone();
-        final Date d1 = d.clone();
+        final JDate d1 = d.clone();
         if (c == BusinessDayConvention.Following || c == BusinessDayConvention.ModifiedFollowing) {
             while (isHoliday(d1)) {
                 d1.inc();
@@ -260,7 +260,7 @@ public class Calendar {
      * @note The input date is not modified.
      */
 
-    public Date advance(final Date date, final Period period, final BusinessDayConvention convention) /* @ReadOnly */ {
+    public JDate advance(final JDate date, final Period period, final BusinessDayConvention convention) /* @ReadOnly */ {
         return advance(date, period, convention, false);
     }
 
@@ -271,8 +271,8 @@ public class Calendar {
      *
      * @note The input date is not modified.
      */
-    public Date advance(
-            final Date date,
+    public JDate advance(
+            final JDate date,
             final Period period,
             final BusinessDayConvention convention,
             final boolean endOfMonth) /* @ReadOnly */{
@@ -287,8 +287,8 @@ public class Calendar {
      * returns the result.
      * @note The input date is not modified.
      */
-    public Date advance(
-            final Date date,
+    public JDate advance(
+            final JDate date,
             final int n,
             final TimeUnit unit) /* @ReadOnly */ {
         return advance(date, n, unit, BusinessDayConvention.Following, false);
@@ -300,7 +300,7 @@ public class Calendar {
      *
      * @note The input date is not modified.
      */
-    public Date advance(final Date date, final Period period) /* @ReadOnly */ {
+    public JDate advance(final JDate date, final Period period) /* @ReadOnly */ {
         return advance(date, period, BusinessDayConvention.Following, false);
     }
 
@@ -309,8 +309,8 @@ public class Calendar {
      * returns the result.
      * @note The input date is not modified.
      */
-    public Date advance(
-            final Date d,
+    public JDate advance(
+            final JDate d,
             int n,
             final TimeUnit unit,
             final BusinessDayConvention c,
@@ -319,7 +319,7 @@ public class Calendar {
         if (n == 0)
             return adjust(d, c);
         else if (unit == TimeUnit.Days) {
-            final Date d1 = d.clone();
+            final JDate d1 = d.clone();
             if (n > 0) {
                 while (n > 0) {
                     d1.inc();
@@ -339,10 +339,10 @@ public class Calendar {
             }
             return d1;
         } else if (unit == TimeUnit.Weeks) {
-            final Date d1 = d.add(new Period(n, unit));
+            final JDate d1 = d.add(new Period(n, unit));
             return adjust(d1, c);
         } else {
-            final Date d1 = d.add(new Period(n, unit));
+            final JDate d1 = d.add(new Period(n, unit));
 
             // we are sure the unit is Months or Years
             if (endOfMonth && isEndOfMonth(d))
@@ -356,18 +356,18 @@ public class Calendar {
      * Calculates the number of business days between two given dates and
      * returns the result.
      */
-    public int businessDaysBetween(final Date from, final Date to) /* @ReadOnly */{
+    public int businessDaysBetween(final JDate from, final JDate to) /* @ReadOnly */{
         return businessDaysBetween(from, to, true, false);
     }
 
-    public int businessDaysBetween(final Date from, final Date to,
+    public int businessDaysBetween(final JDate from, final JDate to,
             final boolean includeFirst, final boolean includeLast) /* @ReadOnly */{
         int wd = 0;
         if (from.ne(to)) {
             if (from.lt(to)) {
                 // the last one is treated separately to avoid
                 // incrementing Date::maxDate()
-                for (Date d = from.clone(); d.lt(to); d=d.add(1)) {
+                for (JDate d = from.clone(); d.lt(to); d=d.add(1)) {
                     if (isBusinessDay(d)) {
                         ++wd;
                     }
@@ -376,7 +376,7 @@ public class Calendar {
                     ++wd;
                 }
             } else if (from.gt(to)) {
-                for (Date d = to.clone(); d.lt(from); d=d.add(1)) {
+                for (JDate d = to.clone(); d.lt(from); d=d.add(1)) {
                     if (isBusinessDay(d)) {
                         ++wd;
                     }
@@ -421,15 +421,15 @@ public class Calendar {
 
     protected abstract class Impl {
 
-        private final Set<Date> addedHolidays = new HashSet<Date>();
-        private final Set<Date> removedHolidays = new HashSet<Date>();
+        private final Set<JDate> addedHolidays = new HashSet<JDate>();
+        private final Set<JDate> removedHolidays = new HashSet<JDate>();
 
         protected Impl() {
             // only extended classes can instantiate
         }
 
         public abstract String name();
-        public abstract boolean isBusinessDay(final Date d);
+        public abstract boolean isBusinessDay(final JDate d);
         public abstract boolean isWeekend(Weekday w);
 
     }

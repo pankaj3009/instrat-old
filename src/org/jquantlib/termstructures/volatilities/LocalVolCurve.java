@@ -43,7 +43,7 @@ import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.LocalVolTermStructure;
 import org.jquantlib.termstructures.TermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -70,7 +70,7 @@ public class LocalVolCurve extends LocalVolTermStructure {
     //
 
     @Override
-    public final Date referenceDate() {
+    public final JDate referenceDate() {
         return blackVarianceCurve.referenceDate();
     }
 
@@ -80,7 +80,7 @@ public class LocalVolCurve extends LocalVolTermStructure {
     }
 
     @Override
-    public final Date maxDate() {
+    public final JDate maxDate() {
         return blackVarianceCurve.maxDate();
     }
 

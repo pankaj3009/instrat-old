@@ -44,7 +44,7 @@ import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.termstructures.yieldcurves.FixedRateBondHelper;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -123,7 +123,7 @@ public abstract class BlackVarianceTermStructure extends BlackVolTermStructure {
     /**
      *  initialize with a fixed reference date
      */
-    public BlackVarianceTermStructure(final Date referenceDate) {
+    public BlackVarianceTermStructure(final JDate referenceDate) {
         this(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter());
     }
 
@@ -131,7 +131,7 @@ public abstract class BlackVarianceTermStructure extends BlackVolTermStructure {
      *  initialize with a fixed reference date
      */
     public BlackVarianceTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal) {
         this(referenceDate, cal, BusinessDayConvention.Following, new DayCounter());
     }
@@ -140,7 +140,7 @@ public abstract class BlackVarianceTermStructure extends BlackVolTermStructure {
      *  initialize with a fixed reference date
      */
     public BlackVarianceTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc) {
         this(referenceDate, cal, bdc, new DayCounter());
@@ -150,7 +150,7 @@ public abstract class BlackVarianceTermStructure extends BlackVolTermStructure {
      *  initialize with a fixed reference date
      */
     public BlackVarianceTermStructure(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             final BusinessDayConvention bdc,
             final DayCounter dc) {

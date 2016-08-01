@@ -27,7 +27,7 @@ package org.jquantlib.cashflow;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.InterestRate;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -46,17 +46,17 @@ public class FixedRateCoupon extends Coupon {
 	// constructors
 	//
 
-	public FixedRateCoupon(final double nominal, final Date paymentDate,
+	public FixedRateCoupon(final double nominal, final JDate paymentDate,
 			final double rate, final DayCounter dayCounter,
-			final Date accrualStartDate, final Date accrualEndDate) {
+			final JDate accrualStartDate, final JDate accrualEndDate) {
 		this(nominal, paymentDate, rate, dayCounter, accrualStartDate,
-				accrualEndDate, new Date(), new Date());
+				accrualEndDate, new JDate(), new JDate());
 	}
 
-	public FixedRateCoupon(final double nominal, final Date paymentDate,
+	public FixedRateCoupon(final double nominal, final JDate paymentDate,
 			final double rate, final DayCounter dayCounter,
-			final Date accrualStartDate, final Date accrualEndDate,
-			final Date refPeriodStart, final Date refPeriodEnd) {
+			final JDate accrualStartDate, final JDate accrualEndDate,
+			final JDate refPeriodStart, final JDate refPeriodEnd) {
 		super(nominal, paymentDate, accrualStartDate, accrualEndDate,
 				refPeriodStart, refPeriodEnd);
 
@@ -64,17 +64,17 @@ public class FixedRateCoupon extends Coupon {
 		this.dayCounter = dayCounter;
 	}
 
-	public FixedRateCoupon(final double nominal, final Date paymentDate,
+	public FixedRateCoupon(final double nominal, final JDate paymentDate,
 			final InterestRate interestRate, final DayCounter dayCounter,
-			final Date accrualStartDate, final Date accrualEndDate) {
+			final JDate accrualStartDate, final JDate accrualEndDate) {
 		this(nominal, paymentDate, interestRate, dayCounter, accrualStartDate,
-				accrualEndDate, new Date(), new Date());
+				accrualEndDate, new JDate(), new JDate());
 	}
 
-	public FixedRateCoupon(final double nominal, final Date paymentDate,
+	public FixedRateCoupon(final double nominal, final JDate paymentDate,
 			final InterestRate interestRate, final DayCounter dayCounter,
-			final Date accrualStartDate, final Date accrualEndDate,
-			final Date refPeriodStart, final Date refPeriodEnd) {
+			final JDate accrualStartDate, final JDate accrualEndDate,
+			final JDate refPeriodStart, final JDate refPeriodEnd) {
 		super(nominal, paymentDate, accrualStartDate, accrualEndDate,
 				refPeriodStart, refPeriodEnd);
 
@@ -105,11 +105,11 @@ public class FixedRateCoupon extends Coupon {
 	}
 
 	@Override
-	public double accruedAmount(final Date d) {
+	public double accruedAmount(final JDate d) {
 		if (d.le(accrualStartDate_) || d.gt(paymentDate_))
             return 0.0;
         else {
-			final Date minD = d.le(accrualEndDate_) ? d : accrualEndDate_;
+			final JDate minD = d.le(accrualEndDate_) ? d : accrualEndDate_;
 			return nominal()
 					* (rate.compoundFactor(accrualStartDate_, minD,
 							refPeriodStart_, refPeriodEnd_) - 1.0);

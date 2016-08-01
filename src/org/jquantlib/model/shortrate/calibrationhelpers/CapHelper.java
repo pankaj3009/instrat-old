@@ -11,7 +11,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.DateGeneration;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
@@ -49,7 +49,7 @@ public class CapHelper extends CalibrationHelper {
 
         final Period indexTenor = index.tenor();
         final double fixedRate = 0.04; //dummy value
-        Date startDate, maturity;
+        JDate startDate, maturity;
         if(includeFirstSwaplet){
             startDate = termStructure.currentLink().referenceDate();
             maturity = termStructure.currentLink().referenceDate().add(length);

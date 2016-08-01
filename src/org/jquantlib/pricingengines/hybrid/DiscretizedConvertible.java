@@ -55,7 +55,7 @@ import org.jquantlib.math.Constants;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 import org.jquantlib.termstructures.Compounding;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.TimeGrid;
 import org.jquantlib.util.Std;
@@ -101,7 +101,7 @@ public class DiscretizedConvertible extends DiscretizedAsset {
 
        dividendValues = new Array(this.arguments.dividends.size()).fill(0.0);
 
-       final Date settlementDate = this.process.riskFreeRate().currentLink().referenceDate();
+       final JDate settlementDate = this.process.riskFreeRate().currentLink().referenceDate();
        for (int i=0; i<this.arguments.dividends.size(); i++) {
            if (this.arguments.dividends.get(i).date().ge(settlementDate)) {
                final double value =  this.arguments.dividends.get(i).amount() *
@@ -112,7 +112,7 @@ public class DiscretizedConvertible extends DiscretizedAsset {
        }
 
        final DayCounter dayCounter = this.process.riskFreeRate().currentLink().dayCounter();
-       final Date bondSettlement = this.arguments.settlementDate;
+       final JDate bondSettlement = this.arguments.settlementDate;
 
        stoppingTimes = new ArrayList<Double>(this.arguments.exercise.dates().size());
        for (int i=0; i<this.arguments.exercise.dates().size(); ++i)
@@ -282,7 +282,7 @@ public class DiscretizedConvertible extends DiscretizedAsset {
 
             final double creditSpread = this.arguments.creditSpread.currentLink().value();
 
-            final Date exercise = this.arguments.exercise.lastDate();
+            final JDate exercise = this.arguments.exercise.lastDate();
 
             final double riskFreeRate =
                 this.process.riskFreeRate().currentLink().zeroRate(exercise, rfdc,

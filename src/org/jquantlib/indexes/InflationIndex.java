@@ -30,7 +30,7 @@ import org.jquantlib.currencies.Currency;
 import org.jquantlib.lang.annotation.Real;
 import org.jquantlib.termstructures.InflationTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.calendars.NullCalendar;
@@ -90,7 +90,7 @@ public abstract class InflationIndex extends Index implements Observer {
     }
 
     @Override
-    public boolean isValidFixingDate(final Date fixingDate) {
+    public boolean isValidFixingDate(final JDate fixingDate) {
         return true;
     }
 
@@ -138,15 +138,15 @@ public abstract class InflationIndex extends Index implements Observer {
      * period of the index.  E.g. for monthly indices it will put
      * the same value in every calendar day in the month.
      **/
-    public void addFixing (final Date fixingDate,
+    public void addFixing (final JDate fixingDate,
     				       final @Real double fixing,
     				       boolean forceOverwrite) {
     	
-    	Pair<Date,Date> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
+    	Pair<JDate,JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
     	
     	int n = (int)(lim.second().inc().sub(lim.first()));
     	
-    	List<Date> dates = new ArrayList<Date>();
+    	List<JDate> dates = new ArrayList<JDate>();
     	List<Double> rates = new ArrayList<Double>();
     	
     	for (int i = 0; i < n; i++) {

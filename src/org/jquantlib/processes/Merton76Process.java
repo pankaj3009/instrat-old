@@ -46,7 +46,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
 import org.jquantlib.termstructures.BlackVolTermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Merton-76 jump diffusion process
@@ -154,7 +154,7 @@ public class Merton76Process extends StochasticProcess1D {
     //
 
     @Override
-    public double /* @Time */time(final Date d) {
+    public double /* @Time */time(final JDate d) {
         return blackProcess.time(d);
     }
 

@@ -44,7 +44,7 @@ import org.jquantlib.lang.annotation.Rate;
 import org.jquantlib.lang.annotation.Time;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.Period;
 
@@ -69,7 +69,7 @@ public abstract class YoYInflationTermStructure extends InflationTermStructure {
     }
 
 
-    public YoYInflationTermStructure(final Date referenceDate,
+    public YoYInflationTermStructure(final JDate referenceDate,
 									  final Calendar calendar,
 									  final DayCounter dayCounter,
 						  		  	  final Period lag,
@@ -93,11 +93,11 @@ public abstract class YoYInflationTermStructure extends InflationTermStructure {
     }  
     
     
-    public /*@Rate*/ double yoyRate(final Date date) {
+    public /*@Rate*/ double yoyRate(final JDate date) {
     	return this.yoyRate(date, false);
     }
     
-    public /*@Rate*/ double yoyRate(final Date date,
+    public /*@Rate*/ double yoyRate(final JDate date,
             						 final boolean extrapolate) {
     	this.checkRange(date, extrapolate);
     	return this.yoyRate(timeFromReference(date));

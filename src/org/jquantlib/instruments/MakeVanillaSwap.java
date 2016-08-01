@@ -51,7 +51,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.DateGeneration;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.Schedule;
@@ -69,7 +69,7 @@ public class MakeVanillaSwap {
     private final /*@Rate*/ double fixedRate;
     private final Period forwardStart;
 
-    private Date effectiveDate;
+    private JDate effectiveDate;
     private Calendar fixedCalendar;
 	private Calendar floatCalendar;
 
@@ -85,14 +85,14 @@ public class MakeVanillaSwap {
 	private DateGeneration.Rule floatRule;
     private boolean fixedEndOfMonth;
 	private boolean floatEndOfMonth;
-    private Date fixedFirstDate;
-	private Date fixedNextToLastDate;
-    private Date floatFirstDate;
-	private Date floatNextToLastDate;
+    private JDate fixedFirstDate;
+	private JDate fixedNextToLastDate;
+    private JDate floatFirstDate;
+	private JDate floatNextToLastDate;
     private /*@Spread*/ double floatSpread;
     private DayCounter fixedDayCount;
 	private DayCounter floatDayCount;
-    private Date terminationDate;
+    private JDate terminationDate;
     private PricingEngine engine;
 
     
@@ -117,7 +117,7 @@ public class MakeVanillaSwap {
         this.iborIndex 	= index;
         this.fixedRate 	= fixedRate;
         this.forwardStart 	= forwardStart;
-        this.effectiveDate = new Date();
+        this.effectiveDate = new JDate();
         this.fixedCalendar = index.fixingCalendar();
         this.floatCalendar = index.fixingCalendar();
         this.type 					= VanillaSwap.Type.Payer;
@@ -132,10 +132,10 @@ public class MakeVanillaSwap {
         this.floatRule 			= DateGeneration.Rule.Backward;
         this.fixedEndOfMonth 		= false;
         this.floatEndOfMonth 		= false;
-        this.fixedFirstDate      	= new Date();
-        this.fixedNextToLastDate 	= new Date();
-        this.floatFirstDate      	= new Date();
-        this.floatNextToLastDate 	= new Date();
+        this.fixedFirstDate      	= new JDate();
+        this.fixedNextToLastDate 	= new JDate();
+        this.floatFirstDate      	= new JDate();
+        this.floatNextToLastDate 	= new JDate();
         this.floatSpread 			= 0.0;
         this.fixedDayCount 		= new Thirty360();
         this.floatDayCount 		= index.dayCounter();
@@ -146,17 +146,17 @@ public class MakeVanillaSwap {
     public VanillaSwap value() /* @ReadOnly */ {
         QL.validateExperimentalMode();
 
-        Date startDate;
+        JDate startDate;
         if (!effectiveDate.isNull()) {
             startDate = effectiveDate;
         } else {
             /*@Natural*/ final int fixingDays = iborIndex.fixingDays();
-            final Date referenceDate = new Settings().evaluationDate();
-            final Date spotDate = floatCalendar.advance(referenceDate, fixingDays, TimeUnit.Days);
+            final JDate referenceDate = new Settings().evaluationDate();
+            final JDate spotDate = floatCalendar.advance(referenceDate, fixingDays, TimeUnit.Days);
             startDate = spotDate.add(forwardStart);
         }
 
-        Date endDate;
+        JDate endDate;
         if (terminationDate != null && !terminationDate.isNull()) {
             endDate = terminationDate;
         } else {
@@ -231,12 +231,12 @@ public class MakeVanillaSwap {
         return this;
     }
 
-    public MakeVanillaSwap withEffectiveDate(final Date effectiveDate) {
+    public MakeVanillaSwap withEffectiveDate(final JDate effectiveDate) {
         this.effectiveDate = effectiveDate;
         return this;
     }
 
-    public MakeVanillaSwap withTerminationDate(final Date terminationDate) {
+    public MakeVanillaSwap withTerminationDate(final JDate terminationDate) {
     	this.terminationDate = terminationDate;
         return this;
     }
@@ -282,12 +282,12 @@ public class MakeVanillaSwap {
         return this;
     }
 
-    public MakeVanillaSwap withFixedLegFirstDate(final Date d) {
+    public MakeVanillaSwap withFixedLegFirstDate(final JDate d) {
     	this.fixedFirstDate = d;
         return this;
     }
 
-    public MakeVanillaSwap withFixedLegNextToLastDate(final Date d) {
+    public MakeVanillaSwap withFixedLegNextToLastDate(final JDate d) {
     	this.fixedNextToLastDate = d;
         return this;
     }
@@ -327,12 +327,12 @@ public class MakeVanillaSwap {
         return this;
     }
 
-    public MakeVanillaSwap withFloatingLegFirstDate(final Date d) {
+    public MakeVanillaSwap withFloatingLegFirstDate(final JDate d) {
     	this.floatFirstDate = d;
         return this;
     }
 
-    public MakeVanillaSwap withFloatingLegNextToLastDate(final Date d) {
+    public MakeVanillaSwap withFloatingLegNextToLastDate(final JDate d) {
     	this.floatNextToLastDate = d;
         return this;
     }

@@ -47,7 +47,7 @@ import org.jquantlib.indexes.IborIndex;
 import org.jquantlib.indexes.IndexManager;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
@@ -62,20 +62,20 @@ public class IborCoupon extends FloatingRateCoupon {
 
     private final static String NULL_TERM_STRUCTURE = "null term structure set to par coupon";
 
-    public IborCoupon(final Date paymentDate,
+    public IborCoupon(final JDate paymentDate,
                       final double nominal,
-                      final Date startDate,
-                      final Date endDate,
+                      final JDate startDate,
+                      final JDate endDate,
                       final int fixingDays,
                       final IborIndex index) {
         // gearing default constructor
         this (paymentDate, nominal, startDate, endDate, fixingDays, index, 1.0);
     }
 
-    public IborCoupon(final Date paymentDate,
+    public IborCoupon(final JDate paymentDate,
                       final double nominal,
-                      final Date startDate,
-                      final Date endDate,
+                      final JDate startDate,
+                      final JDate endDate,
                       final int fixingDays,
                       final IborIndex index,
                       final double gearing) {
@@ -83,44 +83,44 @@ public class IborCoupon extends FloatingRateCoupon {
         this (paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, 0.0);
     }
 
-    public IborCoupon(final Date paymentDate,
+    public IborCoupon(final JDate paymentDate,
                       final double nominal,
-                      final Date startDate,
-                      final Date endDate,
+                      final JDate startDate,
+                      final JDate endDate,
                       final int fixingDays,
                       final IborIndex index,
                       final double gearing,
                       final double spread) {
         // refperiodStart, refperiod end default constructor
         this (paymentDate, nominal, startDate, endDate, fixingDays,
-              index, gearing, spread, new Date(), new Date());
+              index, gearing, spread, new JDate(), new JDate());
     }
 
-    public IborCoupon(final Date paymentDate,
+    public IborCoupon(final JDate paymentDate,
                       final double nominal,
-                      final Date startDate,
-                      final Date endDate,
+                      final JDate startDate,
+                      final JDate endDate,
                       final int fixingDays,
                       final IborIndex index,
                       final double gearing,
                       final double spread,
-                      final Date refPeriodStart,
-                      final Date refPeriodEnd) {
+                      final JDate refPeriodStart,
+                      final JDate refPeriodEnd) {
         // default daycounter constructor
         this (paymentDate, nominal, startDate, endDate, fixingDays,
               index, gearing, spread, refPeriodStart, refPeriodEnd, new DayCounter());
     }
 
-    public IborCoupon(final Date paymentDate,
+    public IborCoupon(final JDate paymentDate,
                       final double nominal,
-                      final Date startDate,
-                      final Date endDate,
+                      final JDate startDate,
+                      final JDate endDate,
                       final int fixingDays,
                       final IborIndex index,
                       final double gearing,
                       final double spread,
-                      final Date refPeriodStart,
-                      final Date refPeriodEnd,
+                      final JDate refPeriodStart,
+                      final JDate refPeriodEnd,
                       final DayCounter dayCounter) {
         // default inArrears constructor
         this (paymentDate, nominal, startDate, endDate, fixingDays,
@@ -128,16 +128,16 @@ public class IborCoupon extends FloatingRateCoupon {
     }
 
     public IborCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final int fixingDays,
             final IborIndex index,
             final double gearing,
             final double spread,
-            final Date refPeriodStart,
-            final Date refPeriodEnd,
+            final JDate refPeriodStart,
+            final JDate refPeriodEnd,
             final DayCounter dayCounter,
             final boolean isInArrears) {
         super(paymentDate, nominal, startDate, endDate, fixingDays, index,
@@ -155,8 +155,8 @@ public class IborCoupon extends FloatingRateCoupon {
         else {
             final Handle<YieldTermStructure> termStructure = index_.termStructure();
             QL.require(termStructure != null , NULL_TERM_STRUCTURE);  // QA:[RG]::verified
-            final Date today = settings.evaluationDate();
-            final Date fixing_date = fixingDate();
+            final JDate today = settings.evaluationDate();
+            final JDate fixing_date = fixingDate();
             final IndexManager indexManager = IndexManager.getInstance();
             if (fixing_date.lt(today)) {
                 final double pastFixing = indexManager.getHistory(index_.name()).get(fixing_date);
@@ -174,14 +174,14 @@ public class IborCoupon extends FloatingRateCoupon {
             }
 
             // start discount
-            final Date fixingValueDate = index_.fixingCalendar()
+            final JDate fixingValueDate = index_.fixingCalendar()
                 .advance(fixing_date, index_.fixingDays(), TimeUnit.Days);
             final double startDiscount = termStructure.currentLink().discount(fixingValueDate);
 
             // end discount
-            final Date nextFixingDate = index_.fixingCalendar()
+            final JDate nextFixingDate = index_.fixingCalendar()
                 .advance(accrualEndDate_, -(fixingDays()), TimeUnit.Days);
-            final Date nextFixingValueDate = index_.fixingCalendar()
+            final JDate nextFixingValueDate = index_.fixingCalendar()
                 .advance (nextFixingDate, index_.fixingDays(), TimeUnit.Days);
             final double endDiscount = termStructure.currentLink().discount(nextFixingValueDate);
 

@@ -48,7 +48,7 @@ import org.jquantlib.termstructures.volatilities.FlatSmileSection;
 import org.jquantlib.termstructures.volatilities.SmileSection;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Constant caplet volatility, no time-strike dependence
@@ -73,7 +73,7 @@ public class ConstantOptionletVolatility extends OptionletVolatilityStructure {
 	/**
 	 * fixed reference date, floating market data
 	 */
-	public ConstantOptionletVolatility(final Date referenceDate,
+	public ConstantOptionletVolatility(final JDate referenceDate,
 			final Calendar cal, final BusinessDayConvention bdc,
 			final Handle<Quote> vol, final DayCounter dc) {
 		super(referenceDate, cal, bdc, dc);
@@ -94,7 +94,7 @@ public class ConstantOptionletVolatility extends OptionletVolatilityStructure {
 	/**
 	 * fixed reference date, fixed market data
 	 */
-	public ConstantOptionletVolatility(final Date referenceDate,
+	public ConstantOptionletVolatility(final JDate referenceDate,
 			final Calendar cal, final BusinessDayConvention bdc, final double vol,
 			final DayCounter dc) {
 		super(referenceDate, cal, bdc, dc);
@@ -107,8 +107,8 @@ public class ConstantOptionletVolatility extends OptionletVolatilityStructure {
 	//
 
 	@Override
-    public Date maxDate() {
-		return Date.maxDate();
+    public JDate maxDate() {
+		return JDate.maxDate();
 	}
 
 
@@ -132,7 +132,7 @@ public class ConstantOptionletVolatility extends OptionletVolatilityStructure {
     //
 
     @Override
-    protected SmileSection smileSectionImpl(final Date d) {
+    protected SmileSection smileSectionImpl(final JDate d) {
 
         final double /* Volatility */atmVol = volatility_.currentLink().value();
         return new FlatSmileSection(d, atmVol, dayCounter(), referenceDate());

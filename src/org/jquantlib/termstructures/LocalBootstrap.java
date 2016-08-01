@@ -34,7 +34,7 @@ import org.jquantlib.math.optimization.LevenbergMarquardt;
 import org.jquantlib.math.optimization.NoConstraint;
 import org.jquantlib.math.optimization.PositiveConstraint;
 import org.jquantlib.termstructures.yieldcurves.PiecewiseYieldCurve;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 
 /**
@@ -128,8 +128,8 @@ public class LocalBootstrap<Curve extends PiecewiseYieldCurve> {
 
         // check that there is no instruments with the same maturity
         for (/*Size*/ int i=1; i<nInsts; ++i) {
-            final Date m1 = ts_.instruments()[i-1].latestDate();
-            final Date m2 = ts_.instruments()[i].latestDate();
+            final JDate m1 = ts_.instruments()[i-1].latestDate();
+            final JDate m2 = ts_.instruments()[i].latestDate();
             QL.require(m1 != m2, "two instruments have the same maturity");
         }
 
@@ -159,7 +159,7 @@ public class LocalBootstrap<Curve extends PiecewiseYieldCurve> {
 
         // calculate dates
         {
-            final Date[] dates = new Date[nInsts+1];
+            final JDate[] dates = new JDate[nInsts+1];
             dates[0] = ts_.traits().initialDate(ts_);
             ts_.setDates(dates);
         }

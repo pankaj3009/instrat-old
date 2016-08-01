@@ -43,7 +43,7 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.TimeGrid;
 
@@ -100,12 +100,12 @@ public class BinomialConvertibleEngine<T extends BinomialTree> extends Convertib
         QL.require(s0 > 0.0, "negative or null underlying");
         final double /*Volatility*/ v = process_.blackVolatility().currentLink().blackVol(
                                          this.a.exercise.lastDate(), s0);
-        final Date maturityDate = this.a.exercise.lastDate();
+        final JDate maturityDate = this.a.exercise.lastDate();
         final double /*Rate*/ riskFreeRate = process_.riskFreeRate().currentLink().zeroRate(
                                  maturityDate, rfdc, Compounding.Continuous, Frequency.NoFrequency).rate();
         final double q = process_.dividendYield().currentLink().zeroRate(
                                 maturityDate, divdc, Compounding.Continuous, Frequency.NoFrequency).rate();
-        final Date referenceDate = process_.riskFreeRate().currentLink().referenceDate();
+        final JDate referenceDate = process_.riskFreeRate().currentLink().referenceDate();
 
         // subtract dividends
         int i;

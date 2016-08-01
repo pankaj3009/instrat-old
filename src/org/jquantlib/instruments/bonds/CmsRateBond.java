@@ -28,7 +28,7 @@ import org.jquantlib.indexes.SwapIndex;
 import org.jquantlib.instruments.Bond;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 
 /**
@@ -53,7 +53,7 @@ public class CmsRateBond extends Bond {
             final Array floors,
             final boolean inArrears,
             final /*Real*/ double  redemption,
-            final Date issueDate) {
+            final JDate issueDate) {
 		
 		super(settlementDays, schedule.calendar(), issueDate);
 		maturityDate_ = schedule.endDate().clone();
@@ -91,7 +91,7 @@ public class CmsRateBond extends Bond {
 				new Array(0), 					//default floor
 				false, 							//defaul in Arrears
 				100.0,							// default redemption
-				new Date() 						// default issue date
+				new JDate() 						// default issue date
 				);
 	}
 

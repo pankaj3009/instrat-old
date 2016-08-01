@@ -51,7 +51,7 @@ import org.jquantlib.indexes.InterestRateIndex;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.util.Observer;
@@ -74,16 +74,16 @@ public class FloatingRateCoupon extends Coupon implements Observer {
     protected FloatingRateCouponPricer pricer_;
 
     public FloatingRateCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final int fixingDays,
             final InterestRateIndex index,
             final double gearing,
             final double spread,
-            final Date refPeriodStart,
-            final Date refPeriodEnd,
+            final JDate refPeriodStart,
+            final JDate refPeriodEnd,
             final DayCounter dayCounter,
             final boolean isInArrears) {
         super(nominal, paymentDate, startDate, endDate, refPeriodStart, refPeriodEnd);
@@ -100,7 +100,7 @@ public class FloatingRateCoupon extends Coupon implements Observer {
         if (dayCounter_.empty())
             dayCounter_ = index.dayCounter();
 
-        Date evaluationDate = new Settings().evaluationDate();
+        JDate evaluationDate = new Settings().evaluationDate();
         this.index_.addObserver(this);
         evaluationDate.addObserver(this);
     }
@@ -124,14 +124,14 @@ public class FloatingRateCoupon extends Coupon implements Observer {
         return rate() * accrualPeriod() * nominal();
     }
 
-    public /*Real*/ double accruedAmount(final Date d) {
+    public /*Real*/ double accruedAmount(final JDate d) {
     	
         if (d.le(accrualStartDate_) || d.gt(paymentDate_)) {
             return 0.0;
         } else {
             return nominal() * rate() *
                 dayCounter().yearFraction(accrualStartDate_,
-                                          Date.min(d,accrualEndDate_),
+                                          JDate.min(d,accrualEndDate_),
                                           refPeriodStart_,
                                           refPeriodEnd_);
         }
@@ -153,9 +153,9 @@ public class FloatingRateCoupon extends Coupon implements Observer {
         return fixingDays_;
     }
 
-    public Date fixingDate() {
+    public JDate fixingDate() {
         // if isInArrears_ fix at the end of period
-        Date refDate = isInArrears_ ? accrualEndDate_ : accrualStartDate_;
+        JDate refDate = isInArrears_ ? accrualEndDate_ : accrualStartDate_;
         return index_.fixingCalendar().advance(refDate, new Period(-fixingDays_, TimeUnit.Days), BusinessDayConvention.Preceding);
     }
 

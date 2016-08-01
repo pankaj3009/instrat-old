@@ -41,7 +41,7 @@ package org.jquantlib.model.volatility;
 
 import java.util.Iterator;
 
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeSeries;
 
 /**
@@ -77,9 +77,9 @@ public class ConstantEstimator implements VolatilityCompositor {
 
 		final TimeSeries<Double> retval = new TimeSeries<Double>(Double.class);
 
-		final Iterator<Date> it1 = quotes.navigableKeySet().iterator();
+		final Iterator<JDate> it1 = quotes.navigableKeySet().iterator();
 		double sumu2 = 0.0, sumu = 0.0;
-		Date d1 = null;
+		JDate d1 = null;
 
 		// advance 'size' elements and accumulate results
 		for (int i=0; i<size; i++) {
@@ -91,8 +91,8 @@ public class ConstantEstimator implements VolatilityCompositor {
 		// assign first result
 		retval.put(d1, Math.sqrt(sumu2/size - sumu*sumu/size/(size+1)) );
 
-        final Iterator<Date> it2 = quotes.navigableKeySet().iterator();
-        Date d2;
+        final Iterator<JDate> it2 = quotes.navigableKeySet().iterator();
+        JDate d2;
         while (it1.hasNext()) {
             // add a new element to calculation
             d1 = it1.next();

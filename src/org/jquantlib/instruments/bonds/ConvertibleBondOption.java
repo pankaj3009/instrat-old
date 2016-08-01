@@ -41,7 +41,7 @@ import org.jquantlib.pricingengines.GenericEngine;
 import org.jquantlib.pricingengines.PricingEngine;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 
 /**
@@ -58,7 +58,7 @@ public class ConvertibleBondOption extends OneAssetOption {
     private final Handle<Quote> creditSpread_;
     private final Leg cashflows_;
     private final DayCounter dayCounter_;
-    private final Date issueDate_;
+    private final JDate issueDate_;
     private final Schedule schedule_;
     private final int settlementDays_;
     private final double redemption_;
@@ -72,7 +72,7 @@ public class ConvertibleBondOption extends OneAssetOption {
                                  final Leg cashflows,
                                  final DayCounter dayCounter,
                                  final Schedule schedule,
-                                 final Date issueDate,
+                                 final JDate issueDate,
                                  final int  settlementDays,
                                  final double redemption) {
         super(new PlainVanillaPayoff(Option.Type.Call,bond.faceAmount()/100.0 * redemption/conversionRatio), exercise);
@@ -102,7 +102,7 @@ public class ConvertibleBondOption extends OneAssetOption {
 
         moreArgs.conversionRatio = conversionRatio_;
 
-        final Date settlement = bond_.settlementDate().clone();
+        final JDate settlement = bond_.settlementDate().clone();
 
         final int n = callability_.size();
         moreArgs.callabilityDates.clear();
@@ -186,15 +186,15 @@ public class ConvertibleBondOption extends OneAssetOption {
         public double conversionRatio;
         public Handle<Quote> creditSpread;
         public DividendSchedule dividends;
-        public List<Date> dividendDates;
-        public List<Date> callabilityDates;
+        public List<JDate> dividendDates;
+        public List<JDate> callabilityDates;
         public List<Callability.Type> callabilityTypes;
         public List<Double> callabilityPrices;
         public List<Double> callabilityTriggers;
-        public List<Date> couponDates;
+        public List<JDate> couponDates;
         public List<Double> couponAmounts;
-        public Date issueDate;
-        public Date settlementDate;
+        public JDate issueDate;
+        public JDate settlementDate;
         public int settlementDays;
         public double redemption;
 
@@ -204,12 +204,12 @@ public class ConvertibleBondOption extends OneAssetOption {
             redemption = Constants.NULL_REAL;
 
             dividends = new DividendSchedule();
-            dividendDates = new ArrayList<Date>();
-            callabilityDates = new ArrayList<Date>();
+            dividendDates = new ArrayList<JDate>();
+            callabilityDates = new ArrayList<JDate>();
             callabilityTypes = new ArrayList<Callability.Type>();
             callabilityPrices = new ArrayList<Double>();
             callabilityTriggers = new ArrayList<Double>();
-            couponDates = new ArrayList<Date>();
+            couponDates = new ArrayList<JDate>();
             couponAmounts = new ArrayList<Double>();
         }
 

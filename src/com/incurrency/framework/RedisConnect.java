@@ -58,6 +58,13 @@ public class RedisConnect<K, V> implements Database<K, V> {
             }
         }
     }
+    
+      public Long setHash(String key, K field, V value) {
+        try (Jedis jedis = pool.getResource()) {
+                return jedis.hset(key, field.toString(), value.toString());
+            }
+    }
+    /*
     /*
      @Override
      public void removeValue(String StoreName, String key, K field) {
@@ -129,6 +136,13 @@ public class RedisConnect<K, V> implements Database<K, V> {
     public void rename(String storeName, String newStoreName) {
          try (Jedis jedis = pool.getResource()) {
              jedis.rename(storeName, newStoreName);
+         }
+    }
+
+    @Override
+    public void lpush(String key, String value) {
+        try (Jedis jedis = pool.getResource()) {
+             jedis.lpush(key, value);
          }
     }
 }

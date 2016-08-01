@@ -28,7 +28,7 @@ import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.calendars.Brazil;
 
 /**
@@ -75,14 +75,14 @@ public class Business252 extends DayCounter {
         }
 
         @Override
-        public long dayCount(final Date d1, final Date d2) {
+        public long dayCount(final JDate d1, final JDate d2) {
         	return calendar.businessDaysBetween(d1, d2);
         }
 
         @Override
         public /*@Time*/ final double yearFraction(
-                final Date dateStart, final Date dateEnd,
-                final Date refPeriodStart, final Date refPeriodEnd) /* @ReadOnly */{
+                final JDate dateStart, final JDate dateEnd,
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
             return /*@Time*/ dayCount(dateStart, dateEnd) / 252.0;
         }
 

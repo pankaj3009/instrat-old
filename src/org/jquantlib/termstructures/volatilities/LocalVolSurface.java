@@ -48,7 +48,7 @@ import org.jquantlib.termstructures.BlackVolTermStructure;
 import org.jquantlib.termstructures.LocalVolTermStructure;
 import org.jquantlib.termstructures.TermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -118,7 +118,7 @@ public class LocalVolSurface extends LocalVolTermStructure {
     //
 
     @Override
-    public final Date referenceDate() {
+    public final JDate referenceDate() {
         return this.blackTS_.currentLink().referenceDate();
     }
 
@@ -128,7 +128,7 @@ public class LocalVolSurface extends LocalVolTermStructure {
     }
 
     @Override
-    public final Date maxDate() {
+    public final JDate maxDate() {
         return blackTS_.currentLink().maxDate();
     }
 

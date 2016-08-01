@@ -45,7 +45,7 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.InterestRate;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.TimeUnit;
 
@@ -106,8 +106,8 @@ public class ForwardRateAgreement extends Forward {
     //
 
     public ForwardRateAgreement(
-            final Date valueDate,
-            final Date maturityDate,
+            final JDate valueDate,
+            final JDate maturityDate,
             final Position type,
             final double strikeForwardRate,
             final double notionalAmount,
@@ -117,8 +117,8 @@ public class ForwardRateAgreement extends Forward {
 
 
     public ForwardRateAgreement(
-            final Date valueDate,
-            final Date maturityDate,
+            final JDate valueDate,
+            final JDate maturityDate,
             final Position type,
             final double strikeForwardRate,
             final double notionalAmount,
@@ -132,7 +132,7 @@ public class ForwardRateAgreement extends Forward {
 
         // do I adjust this ?
         // valueDate_ = calendar_.adjust(valueDate_,businessDayConvention_);
-        final Date fixingDate = calendar.advance (valueDate, -1 * settlementDays, TimeUnit.Days);
+        final JDate fixingDate = calendar.advance (valueDate, -1 * settlementDays, TimeUnit.Days);
 
         forwardRate = new InterestRate(index.fixing(fixingDate), index.dayCounter(), Compounding.Simple, Frequency.Once);
         this.strikeForwardRate = new InterestRate(strikeForwardRate, index.dayCounter(), Compounding.Simple, Frequency.Once);
@@ -147,7 +147,7 @@ public class ForwardRateAgreement extends Forward {
     }
 
     @Override
-    public Date settlementDate() {
+    public JDate settlementDate() {
         return calendar.advance(new Settings().evaluationDate(), settlementDays, TimeUnit.Days);
     }
 
@@ -187,7 +187,7 @@ public class ForwardRateAgreement extends Forward {
 
     @Override
     public void performCalculations() {
-        final Date fixingDate = calendar.advance(valueDate, -1 * settlementDays, TimeUnit.Days);
+        final JDate fixingDate = calendar.advance(valueDate, -1 * settlementDays, TimeUnit.Days);
         forwardRate = new InterestRate(index.fixing(fixingDate), index.dayCounter(), Compounding.Simple, Frequency.Once);
         underlyingSpotValue = spotValue();
         underlyingIncome = 0.0;

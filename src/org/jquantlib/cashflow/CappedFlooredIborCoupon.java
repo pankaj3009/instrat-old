@@ -26,7 +26,7 @@ import org.jquantlib.QL;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.indexes.IborIndex;
 import org.jquantlib.math.Constants;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * @author Ueli Hofstetter
@@ -35,10 +35,10 @@ import org.jquantlib.time.Date;
 public class CappedFlooredIborCoupon extends CappedFlooredCoupon {
 
     public CappedFlooredIborCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final /*@Real*/double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final /*@Natural*/int fixingDays,
             final IborIndex index) {
         // default gearing to 1.0
@@ -46,10 +46,10 @@ public class CappedFlooredIborCoupon extends CappedFlooredCoupon {
     }
 
     public CappedFlooredIborCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final /*@Real*/double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final /*@Natural*/int fixingDays,
             final IborIndex index,
             final double gearing) {
@@ -58,10 +58,10 @@ public class CappedFlooredIborCoupon extends CappedFlooredCoupon {
     }
 
     public CappedFlooredIborCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final /*Real*/double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final /*Natural*/int fixingDays,
             final IborIndex index,
             final double gearing,
@@ -71,10 +71,10 @@ public class CappedFlooredIborCoupon extends CappedFlooredCoupon {
     }
 
     public CappedFlooredIborCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final /*@Real*/double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final /*@Natural*/int fixingDays,
             final IborIndex index,
             final double gearing,
@@ -84,22 +84,22 @@ public class CappedFlooredIborCoupon extends CappedFlooredCoupon {
         // default reference dates
         this (paymentDate, nominal, startDate, endDate, 
               fixingDays, index, gearing, spread, 
-              cap, floor, new Date(), new Date()); 
+              cap, floor, new JDate(), new JDate()); 
     }
 
     public CappedFlooredIborCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final /*@Real*/double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final /*@Natural*/int fixingDays,
             final IborIndex index,
             final double gearing,
             final double spread,
             final double cap,
             final double floor,
-            final Date refPeriodStart,
-            final Date refPeriodEnd) {
+            final JDate refPeriodStart,
+            final JDate refPeriodEnd) {
         // default day counter
         this (paymentDate, nominal, startDate, endDate, 
               fixingDays, index, gearing, spread, 
@@ -108,18 +108,18 @@ public class CappedFlooredIborCoupon extends CappedFlooredCoupon {
 
 
     public CappedFlooredIborCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final /*Real*/double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final /*Natural*/int fixingDays,
             final IborIndex index,
             final double gearing,
             final double spread,
             final double cap,
             final double floor,
-            final Date refPeriodStart,
-            final Date refPeriodEnd,
+            final JDate refPeriodStart,
+            final JDate refPeriodEnd,
             final DayCounter dayCounter) {
         // default isInArrears false
         this (paymentDate, nominal, startDate, endDate, 
@@ -129,18 +129,18 @@ public class CappedFlooredIborCoupon extends CappedFlooredCoupon {
     }
 
     public CappedFlooredIborCoupon(
-            final Date paymentDate,
+            final JDate paymentDate,
             final /*@Real*/double nominal,
-            final Date startDate,
-            final Date endDate,
+            final JDate startDate,
+            final JDate endDate,
             final /*@Natural*/int fixingDays,
             final IborIndex index,
             final double gearing,
             final double spread,
             final double cap,
             final double floor,
-            final Date refPeriodStart,
-            final Date refPeriodEnd,
+            final JDate refPeriodStart,
+            final JDate refPeriodEnd,
             final DayCounter dayCounter,
             boolean isInArrears) {
         super (new IborCoupon(paymentDate, nominal, startDate, endDate, fixingDays,

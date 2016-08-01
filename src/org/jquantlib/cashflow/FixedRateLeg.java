@@ -6,7 +6,7 @@ import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.InterestRate;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Schedule;
 
 // TODO: code review :: please verify against QL/C++ code
@@ -86,8 +86,8 @@ public class FixedRateLeg extends Leg {
         final Calendar calendar = schedule_.calendar();
 
         // first period might be short or long
-        Date start = schedule_.date(0), end = schedule_.date(1);
-        Date paymentDate = calendar.adjust(end, paymentAdjustment_);
+        JDate start = schedule_.date(0), end = schedule_.date(1);
+        JDate paymentDate = calendar.adjust(end, paymentAdjustment_);
         InterestRate rate = couponRates_[0];
         /*@Real*/ double nominal = notionals_[0];
         if (schedule_.isRegular(1)) {
@@ -95,7 +95,7 @@ public class FixedRateLeg extends Leg {
             QL.require(firstPeriodDayCounter_==null || !firstPeriodDayCounter_.equals(paymentDayCounter_) , "regular first coupon does not allow a first-period day count"); // TODO: message
             leg.add(new FixedRateCoupon(nominal, paymentDate, rate, paymentDayCounter_, start, end, start, end));
         } else {
-            Date ref = end.sub(schedule_.tenor());
+            JDate ref = end.sub(schedule_.tenor());
             ref = calendar.adjust(ref, schedule_.businessDayConvention());
             // FIXME: empty() method on dayCounter missing --> substituted by == null (probably incorrect)
             final DayCounter dc = (firstPeriodDayCounter_ == null) ? paymentDayCounter_ : firstPeriodDayCounter_;
@@ -138,7 +138,7 @@ public class FixedRateLeg extends Leg {
             if (schedule_.isRegular(N - 1)) {
                 leg.add(new FixedRateCoupon(nominal, paymentDate, rate, paymentDayCounter_, start, end, start, end));
             } else {
-                Date ref = start.add(schedule_.tenor());
+                JDate ref = start.add(schedule_.tenor());
                 ref = calendar.adjust(ref, schedule_.businessDayConvention());
                 leg.add(new FixedRateCoupon(nominal, paymentDate, rate, paymentDayCounter_, start, end, start, ref));
             }

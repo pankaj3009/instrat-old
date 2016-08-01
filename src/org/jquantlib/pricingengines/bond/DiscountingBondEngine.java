@@ -7,7 +7,7 @@ import org.jquantlib.instruments.Bond;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.AbstractYieldTermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 public class DiscountingBondEngine extends Bond.EngineImpl {
 
@@ -24,7 +24,7 @@ public class DiscountingBondEngine extends Bond.EngineImpl {
                         throw new UnsupportedOperationException();
                     }
                     @Override
-                    public Date maxDate() {
+                    public JDate maxDate() {
                         throw new UnsupportedOperationException();
                     }
                 }
@@ -47,8 +47,8 @@ public class DiscountingBondEngine extends Bond.EngineImpl {
         final Bond.ResultsImpl   r = (Bond.ResultsImpl)results_;
 
     	final Leg cashflows = a.cashflows;
-    	final Date settlementDate = a.settlementDate;
-    	final Date valuationDate = discountCurve.currentLink().referenceDate();
+    	final JDate settlementDate = a.settlementDate;
+    	final JDate valuationDate = discountCurve.currentLink().referenceDate();
         QL.require(! discountCurve.empty() , "no discounting term structure set"); //// TODO: message
 
         r.value           = CashFlows.getInstance().npv(cashflows, discountCurve, valuationDate,  valuationDate);

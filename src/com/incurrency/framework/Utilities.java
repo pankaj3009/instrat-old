@@ -82,12 +82,12 @@ public class Utilities {
 
     public static double getImpliedVol(BeanSymbol s, double underlying, double price, Date evaluationDate) {
 
-        new Settings().setEvaluationDate(new org.jquantlib.time.Date(evaluationDate));
+        new Settings().setEvaluationDate(new org.jquantlib.time.JDate(evaluationDate));
         String strike = s.getOption();
         String right = s.getRight();
         String expiry = s.getExpiry();
         Date expirationDate = DateUtil.getFormattedDate(expiry, "yyyyMMdd", Algorithm.timeZone);
-        EuropeanExercise exercise = new EuropeanExercise(new org.jquantlib.time.Date(expirationDate));
+        EuropeanExercise exercise = new EuropeanExercise(new org.jquantlib.time.JDate(expirationDate));
         PlainVanillaPayoff payoff;
         if (right.equals("PUT")) {
             payoff = new PlainVanillaPayoff(Option.Type.Put, Utilities.getDouble(strike, 0));
@@ -102,7 +102,7 @@ public class Utilities {
         Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, 0.20, new Actual360()));
         BlackScholesMertonProcess process = new BlackScholesMertonProcess(S, yield, rate, sigma);
         double vol = option.impliedVolatility(price, process);
-        new Settings().setEvaluationDate(new org.jquantlib.time.Date(new Date()));
+        new Settings().setEvaluationDate(new org.jquantlib.time.JDate(new Date()));
         return vol;
 
     }
@@ -265,6 +265,60 @@ public class Utilities {
             logger.log(Level.SEVERE, null, e);
         }
 
+        return out;
+    }
+    
+    public static Object[] getOptionStrikesFromKDB(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric){
+        Object[] out=new Object[1];
+        HashMap<String, Object> param = new HashMap();
+        param.put("TYPE", Boolean.FALSE);
+        BeanSymbol s = symbols.get(id);
+        String strike = s.getOption();
+        String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
+        String option = s.getRight();
+        String expiry = s.getExpiry();
+        HistoricalRequestJson request = new HistoricalRequestJson(metric,
+                new String[]{"strike", "symbol", "expiry"},
+                new String[]{strike, symbol, expiry},
+                null,
+                null,
+                null,
+                String.valueOf(startTime),
+                String.valueOf(endTime));
+        //http://stackoverflow.com/questions/7181534/http-post-using-json-in-java
+        String json_string = JsonWriter.objectToJson(request, param);
+        StringEntity requestEntity = new StringEntity(
+                json_string,
+                ContentType.APPLICATION_JSON);
+
+        HttpPost postMethod = new HttpPost("http://91.121.165.108:8085/api/v1/datapoints/query/tags");
+        postMethod.setEntity(requestEntity);
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        try {
+            HttpResponse rawResponse = httpClient.execute(postMethod);
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader((rawResponse.getEntity().getContent())));
+
+            String output;
+            System.out.println("Output from Server .... \n");
+            while ((output = br.readLine()) != null) {
+                param.clear();
+                param.put("USE_MAPS", "false");
+                JsonObject obj = (JsonObject) JsonReader.jsonToJava(output, param);
+                JsonObject t = (JsonObject) ((Object[]) obj.get("queries"))[0];
+                JsonObject results = (JsonObject) ((Object[]) t.get("results"))[0];
+                Object[] values = (Object[]) results.get("values");
+                int length = values.length;
+                Object[] outarray = (Object[]) values[length - 1];
+                out = values; //0 is long time, 1 is value
+
+            }
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
+
+       
         return out;
     }
     /*

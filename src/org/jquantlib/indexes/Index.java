@@ -30,7 +30,7 @@ import org.jquantlib.lang.iterators.Iterables;
 import org.jquantlib.math.Closeness;
 import org.jquantlib.math.Constants;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeSeries;
 import org.jquantlib.util.DefaultObservable;
 import org.jquantlib.util.Observable;
@@ -61,13 +61,13 @@ public abstract class Index implements Observable {
 	/**
 	 *  @return TRUE if the fixing date is a valid one
 	 */
-	public abstract boolean isValidFixingDate(Date fixingDate);
+	public abstract boolean isValidFixingDate(JDate fixingDate);
 
 	/**
 	 * @return the fixing at the given date. The date passed as arguments must be the actual calendar date of the
 	 * fixing; no settlement days must be used.
 	 */
-	public abstract double fixing(Date fixingDate, boolean forecastTodaysFixing);
+	public abstract double fixing(JDate fixingDate, boolean forecastTodaysFixing);
 
 
 	//
@@ -87,7 +87,7 @@ public abstract class Index implements Observable {
 	 * The date passed as arguments must be the actual calendar date of the
 	 * fixing; no settlement days must be used.
 	 */
-	public void addFixing(final Date date, final double value) {
+	public void addFixing(final JDate date, final double value) {
 		addFixing(date, value, false);
 	}
 	
@@ -97,7 +97,7 @@ public abstract class Index implements Observable {
 	 * The date passed as arguments must be the actual calendar date of the
 	 * fixing; no settlement days must be used.
 	 */
-	public void addFixing(final Date date, final double value, final boolean forceOverwrite) {
+	public void addFixing(final JDate date, final double value, final boolean forceOverwrite) {
 		final String tag = name();
 		boolean missingFixing;
 		boolean validFixing;
@@ -132,7 +132,7 @@ public abstract class Index implements Observable {
 	 * The dates passed as arguments must be the actual calendar dates of the
 	 * fixings; no settlement days must be used.
 	 */
-	public final void addFixings(final Iterator<Date> dates, final Iterator<Double> values, final boolean forceOverwrite) {
+	public final void addFixings(final Iterator<JDate> dates, final Iterator<Double> values, final boolean forceOverwrite) {
 		final String tag = name();
 		boolean missingFixing;
 		boolean validFixing;
@@ -140,7 +140,7 @@ public abstract class Index implements Observable {
 		boolean noDuplicatedFixing = true;
 		final TimeSeries<Double> h = IndexManager.getInstance().getHistory(tag);
 
-		for (final Date date : Iterables.unmodifiableIterable(dates)) {
+		for (final JDate date : Iterables.unmodifiableIterable(dates)) {
             final double value = values.next();
             validFixing = isValidFixingDate(date);
             final double currentValue = h.get(date);
@@ -172,7 +172,7 @@ public abstract class Index implements Observable {
 		IndexManager.getInstance().clearHistory(name());
 	}
 
-	public double fixing(final Date fixingDate){
+	public double fixing(final JDate fixingDate){
         return fixing(fixingDate, false);
     }
 

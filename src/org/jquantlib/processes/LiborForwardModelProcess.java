@@ -32,7 +32,7 @@ import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.indexes.IborIndex;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 
 /**
  * Libor-forward-model process
@@ -64,7 +64,7 @@ public class LiborForwardModelProcess extends StochasticProcess {
     private LfmCovarianceParameterization lfmParam_;
     private final Array initialValues_;
     private final List</*@Time*/Double> fixingTimes_;
-    private final List</*@Time*/Date> fixingDates_;
+    private final List</*@Time*/JDate> fixingDates_;
     private final List</*@Time*/Double> accrualStartTimes_;
     private final List</*@Time*/Double> accrualEndTimes_;
     private final List</*@Time*/Double> accrualPeriod_;
@@ -80,7 +80,7 @@ public class LiborForwardModelProcess extends StochasticProcess {
         this.size_ = size;
         this.index_ = index;
         this.initialValues_ = new Array(size_);
-        this.fixingDates_ = new ArrayList<Date>(size_);
+        this.fixingDates_ = new ArrayList<JDate>(size_);
         this.fixingTimes_ = new ArrayList<Double>(size_);
         this.accrualStartTimes_ = new ArrayList<Double>(size_);
         this.accrualEndTimes_ = new ArrayList<Double>(size_);
@@ -93,8 +93,8 @@ public class LiborForwardModelProcess extends StochasticProcess {
 
         QL.require(this.size_ == flows.size() , wrong_number_of_cashflows); // TODO: message
 
-        final Date settlement = index_.termStructure().currentLink().referenceDate();
-        final Date startDate = ((IborCoupon) flows.get(0)).fixingDate();
+        final JDate settlement = index_.termStructure().currentLink().referenceDate();
+        final JDate startDate = ((IborCoupon) flows.get(0)).fixingDate();
         for (int i = 0; i < size_; ++i) {
             final IborCoupon coupon = (IborCoupon) flows.get(i);
             QL.require(coupon.date().eq(coupon.accrualEndDate()) , irregular_coupon_types); // TODO: message

@@ -47,7 +47,7 @@ import org.jquantlib.quotes.Quote;
 import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
 
 /**
@@ -100,12 +100,12 @@ public class ForwardSpreadedTermStructure extends ForwardRateStructure {
     }
 
     @Override
-    public Date referenceDate() {
+    public JDate referenceDate() {
         return originalCurve.currentLink().referenceDate();
     }
 
     @Override
-    public Date maxDate() {
+    public JDate maxDate() {
         return originalCurve.currentLink().maxDate();
     }
 

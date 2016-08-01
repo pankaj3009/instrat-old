@@ -43,7 +43,7 @@ import java.util.Iterator;
 
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.IntervalPrice;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeSeries;
 
 /**
@@ -94,8 +94,8 @@ public class GarmanKlassOpenClose<T extends GarmanKlassAbstract> implements Loca
     @Override
     public TimeSeries<Double> calculate(final TimeSeries<IntervalPrice> quotes) {
         final TimeSeries<Double> retval = new TimeSeries<Double>(Double.class);
-        final Iterator<Date> it = quotes.navigableKeySet().iterator();
-        Date date = it.next();
+        final Iterator<JDate> it = quotes.navigableKeySet().iterator();
+        JDate date = it.next();
         IntervalPrice prev = quotes.get(date);
         while (it.hasNext()) {
             date = it.next();

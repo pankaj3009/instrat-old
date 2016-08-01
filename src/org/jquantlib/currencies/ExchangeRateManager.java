@@ -67,7 +67,7 @@ import org.jquantlib.currencies.Europe.TRLCurrency;
 import org.jquantlib.currencies.Europe.TRYCurrency;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.lang.iterators.Iterables;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Month;
 
 /**
@@ -102,9 +102,9 @@ public class ExchangeRateManager {
      * Helper class to decide whether or a date is in the range of a specific entry.
      */
     public static class Valid_at /* implements Ops.DoublePredicate */{
-        Date d;
+        JDate d;
 
-        public Valid_at(final Date d) {
+        public Valid_at(final JDate d) {
             this.d = d;
         }
 
@@ -126,7 +126,7 @@ public class ExchangeRateManager {
         /** The ExchangeRate of this Entry. */
         public ExchangeRate rate;
         /** Start and end date for this currency (note: they can be present multiple times in the repository) */
-        public Date startDate, endDate;
+        public JDate startDate, endDate;
 
         /**
          * Constructs a new Entry
@@ -135,7 +135,7 @@ public class ExchangeRateManager {
          * @param start The start date of the period this ExchangeRate should be used (ie. when it should be used)
          * @param end The end date of the period this ExchangeRate should be used (ie. when it should be used)
          */
-        public Entry(final ExchangeRate rate, final Date start, final Date end) {
+        public Entry(final ExchangeRate rate, final JDate start, final JDate end) {
             this.rate = (rate);
             this.startDate = (start);
             this.endDate = (end);
@@ -162,7 +162,7 @@ public class ExchangeRateManager {
      * @param startDate The start date of the period for which the above Exchange rate should be valid.
      * @param endDate The end date of the period for which the above Exchange rate should be valid.
      */
-    public void add(final ExchangeRate rate, final Date startDate, final Date endDate) {
+    public void add(final ExchangeRate rate, final JDate startDate, final JDate endDate) {
         /* @Key */final int k = hash(rate.source(), rate.target());
         if (data_.get(k) == null) {
             data_.put(k, new ArrayList<Entry>());
@@ -176,7 +176,7 @@ public class ExchangeRateManager {
      * @param rate
      */
     public void add(final ExchangeRate rate) {
-        add(rate, Date.minDate(), Date.maxDate());
+        add(rate, JDate.minDate(), JDate.maxDate());
     }
 
     /**
@@ -187,10 +187,10 @@ public class ExchangeRateManager {
      * @return
      */
     public ExchangeRate lookup(final Currency source, final Currency target) {
-        return lookup(source, target, Date.todaysDate(), ExchangeRate.Type.Derived);
+        return lookup(source, target, JDate.todaysDate(), ExchangeRate.Type.Derived);
     }
 
-    public ExchangeRate lookup(final Currency source, final Currency target, final Date date) {
+    public ExchangeRate lookup(final Currency source, final Currency target, final JDate date) {
         return lookup(source, target, date, ExchangeRate.Type.Derived);
     }
 
@@ -207,7 +207,7 @@ public class ExchangeRateManager {
      * @param type The type of the exchange rate. ExchangeRate.Type
      * @return The exchange rate fulfilling all these properties. ExchangeRate
      */
-    public ExchangeRate lookup(final Currency source, final Currency target, Date date, final ExchangeRate.Type type) {
+    public ExchangeRate lookup(final Currency source, final Currency target, JDate date, final ExchangeRate.Type type) {
         if (source.eq(target))
             return new ExchangeRate(source, target, 1.0);
 
@@ -267,88 +267,88 @@ public class ExchangeRateManager {
      * Adds obsoleted currencies to the repository.
      */
     private void addKnownRates() {
-        final Date maxDate = Date.maxDate();
+        final JDate maxDate = JDate.maxDate();
         // currencies obsoleted by Euro
         add(new ExchangeRate(
                 new EURCurrency(),
                 new ATSCurrency(), 13.7603),
-                new Date(1, Month.January,1999),
+                new JDate(1, Month.January,1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new BEFCurrency(), 40.3399),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new DEMCurrency(), 1.95583),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new ESPCurrency(), 166.386),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new FIMCurrency(), 5.94573),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new FRFCurrency(), 6.55957),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new GRDCurrency(), 340.750),
-                new Date(1, Month.January, 2001),
+                new JDate(1, Month.January, 2001),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new IEPCurrency(), 0.787564),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new ITLCurrency(), 1936.27),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new LUFCurrency(), 40.3399),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new NLGCurrency(), 2.20371),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         add(new ExchangeRate(
                 new EURCurrency(),
                 new PTECurrency(), 200.482),
-                new Date(1, Month.January, 1999),
+                new JDate(1, Month.January, 1999),
                 maxDate);
         // other obsoleted currencies
         add(new ExchangeRate(
                 new TRYCurrency(),
                 new TRLCurrency(), 1000000.0),
-                new Date(1, Month.January, 2005),
+                new JDate(1, Month.January, 2005),
                 maxDate);
         add(new ExchangeRate(
                 new RONCurrency(),
                 new ROLCurrency(), 10000.0),
-                new Date(1, Month.July, 2005),
+                new JDate(1, Month.July, 2005),
                 maxDate);
         add(new ExchangeRate(
                 new PENCurrency(),
                 new PEICurrency(), 1000000.0),
-                new Date(1, Month.July, 1991),
+                new JDate(1, Month.July, 1991),
                 maxDate);
         add(new ExchangeRate(
                 new PEICurrency(),
                 new PEHCurrency(), 1000.0),
-                new Date(1, Month.February, 1985),
+                new JDate(1, Month.February, 1985),
                 maxDate);
     }
 
@@ -360,7 +360,7 @@ public class ExchangeRateManager {
      * @param date The date the exchange rate should be valid at. Date
      * @return The found exchange rate. ExchangeRate
      */
-    private ExchangeRate directLookup(final Currency source, final Currency target, final Date date) {
+    private ExchangeRate directLookup(final Currency source, final Currency target, final JDate date) {
         if (System.getProperty("EXPERIMENTAL") == null)
             throw new UnsupportedOperationException("Work in progress");
 
@@ -373,7 +373,7 @@ public class ExchangeRateManager {
     /**
      * @see #smartLookup(Currency, Currency, Date, int[])
      */
-    private ExchangeRate smartLookup(final Currency source, final Currency target, final Date date) {
+    private ExchangeRate smartLookup(final Currency source, final Currency target, final JDate date) {
         return smartLookup(source, target, date, new int[0]);
     }
 
@@ -386,7 +386,7 @@ public class ExchangeRateManager {
      * @param forbidden The index array of forbidden source currencies.
      * @return The found ExchangeRate
      */
-    private ExchangeRate smartLookup(final Currency source, final Currency target, final Date date, int[] forbidden) {
+    private ExchangeRate smartLookup(final Currency source, final Currency target, final JDate date, int[] forbidden) {
         // direct exchange rates are preferred.
         final ExchangeRate direct = fetch(source, target, date);
         if (direct != null)
@@ -442,7 +442,7 @@ public class ExchangeRateManager {
      * @param date The date when the exchange rate should be valid.
      * @return The found ExchangeRate.
      */
-    public ExchangeRate fetch(final Currency source, final Currency target, final Date date) {
+    public ExchangeRate fetch(final Currency source, final Currency target, final JDate date) {
         final List<Entry> rates = data_.get(hash(source, target));
         final int i = matchValidateAt(rates, date);
         return i == rates.size() - 1 ? rates.get(i).rate : null;
@@ -470,7 +470,7 @@ public class ExchangeRateManager {
      * @param date The date the rate has to be valid at. Date
      * @return The index of the first valid entry. int
      */
-    private int matchValidateAt(final List<Entry> rates, final Date date) {
+    private int matchValidateAt(final List<Entry> rates, final JDate date) {
         final Valid_at va = new Valid_at(date);
         for (int i = 0; i < rates.size(); i++) {
             if (va.operator(rates.get(i)))

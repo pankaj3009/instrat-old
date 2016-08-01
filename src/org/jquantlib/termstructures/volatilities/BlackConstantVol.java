@@ -49,7 +49,7 @@ import org.jquantlib.termstructures.BlackVolatilityTermStructure;
 import org.jquantlib.termstructures.TermStructure;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.Date;
+import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
@@ -67,7 +67,7 @@ public class BlackConstantVol extends BlackVolatilityTermStructure {
     private final Handle<? extends Quote> volatility;
 
     public BlackConstantVol(
-            final Date referenceDate,
+            final JDate referenceDate,
             final Calendar cal,
             /*@Volatility*/ final double volatility,
             final DayCounter dc) {
@@ -76,7 +76,7 @@ public class BlackConstantVol extends BlackVolatilityTermStructure {
     }
 
     public BlackConstantVol(
-                final Date referenceDate,
+                final JDate referenceDate,
                 final Calendar cal,
                 final Handle<? extends Quote> volatility,
                 final DayCounter dc) {
@@ -110,8 +110,8 @@ public class BlackConstantVol extends BlackVolatilityTermStructure {
     //
 
     @Override
-    public final Date maxDate() {
-        return Date.maxDate();
+    public final JDate maxDate() {
+        return JDate.maxDate();
     }
 
 

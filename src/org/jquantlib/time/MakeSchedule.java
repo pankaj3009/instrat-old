@@ -36,17 +36,17 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 @QualityAssurance(quality = Quality.Q0_UNFINISHED, version = Version.V097, reviewers = "Richard Gomes")
 public class MakeSchedule implements Cloneable {
 	private Calendar calendar_;
-	private Date effectiveDate_;
-	private Date terminationDate_;
+	private JDate effectiveDate_;
+	private JDate terminationDate_;
 	private Period tenor_;
 	private BusinessDayConvention convention_;
 	private BusinessDayConvention terminationDateConvention_;
 	private DateGeneration.Rule rule_;
 	private boolean endOfMonth_;
-	private Date firstDate_;
-	private Date nextToLastDate_;
+	private JDate firstDate_;
+	private JDate nextToLastDate_;
 
-	public MakeSchedule(final Date effectiveDate, final Date terminationDate,
+	public MakeSchedule(final JDate effectiveDate, final JDate terminationDate,
 			final Period tenor, final Calendar calendar,
 			final BusinessDayConvention convention) {
 		this.calendar_ = calendar;
@@ -57,8 +57,8 @@ public class MakeSchedule implements Cloneable {
 		this.terminationDateConvention_ = convention;
 		this.rule_ = DateGeneration.Rule.Backward;
 		this.endOfMonth_ = false;
-		this.firstDate_ = new Date();
-		this.nextToLastDate_ = new Date();
+		this.firstDate_ = new JDate();
+		this.nextToLastDate_ = new JDate();
 	}
 
 	public MakeSchedule withTerminationDateConvention(
@@ -94,12 +94,12 @@ public class MakeSchedule implements Cloneable {
 		return this.clone();
 	}
 
-	public MakeSchedule withFirstDate(final Date d) {
+	public MakeSchedule withFirstDate(final JDate d) {
 		firstDate_ = d;
 		return this.clone();
 	}
 
-	public MakeSchedule withNextToLastDate(final Date d) {
+	public MakeSchedule withNextToLastDate(final JDate d) {
 		nextToLastDate_ = d;
 		return this.clone();
 	}
