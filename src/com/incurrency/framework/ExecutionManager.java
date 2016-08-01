@@ -27,6 +27,7 @@ import static com.incurrency.framework.EnumPrimaryApplication.VALUE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -59,6 +60,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private final Object lockLinkedAction = new Object();
     private final String delimiter = "_";
     private double estimatedBrokerage = 0;
+    private ConcurrentHashMap <Integer,EnumOrderStatus> orderStatus=new ConcurrentHashMap<>();
 
     public ExecutionManager(Strategy s, Boolean aggression, double tickSize, Date endDate, String orderReference, double pointValue, Integer maxOpenPositions, String timeZone, ArrayList<String> accounts, String executionFile) {
         this.s = s;
@@ -1174,9 +1176,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         }
 
                     }
-
-                    logger.log(Level.INFO, "203,inStratOrderStatus,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + fillStatus});
-
+                    if (orderStatus.get(orderid) == null || orderStatus.get(orderid) != fillStatus) {
+                        logger.log(Level.INFO, "203,inStratOrderStatus,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + fillStatus});
+                        orderStatus.put(orderid, fillStatus);
+                    }
                     switch (fillStatus) {
                         case COMPLETEFILLED:
                             updateFilledOrders(event.getC(), orderid, event.getFilled(), event.getAvgFillPrice(), event.getLastFillPrice());

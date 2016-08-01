@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import static com.incurrency.framework.Algorithm.globalProperties;
+import java.util.concurrent.ConcurrentHashMap;
 /**
  *
  * @author pankaj
@@ -31,7 +32,7 @@ public class TradingEventSupport {
     private CopyOnWriteArrayList barListeners=new CopyOnWriteArrayList();
     private static final Logger logger = Logger.getLogger(TradingEventSupport.class.getName());
     private static final String delimiter="_";
-
+    private ConcurrentHashMap <Integer,String> orderStatus=new ConcurrentHashMap<>();
    
 
     public void addOrderStatusListener(OrderStatusListener l) {
@@ -92,9 +93,12 @@ public class TradingEventSupport {
     
 //**************EVENT HANDLERS
     public void fireOrderStatus(BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-
+        
         OrderStatusEvent ordStatus = new OrderStatusEvent(new Object(), c, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-        logger.log(Level.INFO,"302,IBOrderStatus,{0}",new Object[]{ordStatus.getC().getAccountName()+delimiter+ordStatus.getClientId()+delimiter+ordStatus.getOrderID()+delimiter+ordStatus.getStatus()+delimiter+ordStatus.getFilled()+delimiter+ordStatus.getRemaining()+delimiter+ordStatus.getAvgFillPrice()+delimiter+ordStatus.getLastFillPrice()+delimiter+ordStatus.getPermId()+delimiter+ordStatus.getParentId()+delimiter+ordStatus.getWhyHeld()});
+        if(orderStatus.get(orderId)==null ||orderStatus.get(orderId)!=status){
+            logger.log(Level.INFO,"302,IBOrderStatus,{0}",new Object[]{ordStatus.getC().getAccountName()+delimiter+ordStatus.getClientId()+delimiter+ordStatus.getOrderID()+delimiter+ordStatus.getStatus()+delimiter+ordStatus.getFilled()+delimiter+ordStatus.getRemaining()+delimiter+ordStatus.getAvgFillPrice()+delimiter+ordStatus.getLastFillPrice()+delimiter+ordStatus.getPermId()+delimiter+ordStatus.getParentId()+delimiter+ordStatus.getWhyHeld()});
+            orderStatus.put(orderId, status);
+        }
         Iterator itrListeners = orderStatusListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderStatusListener) itrListeners.next()).orderStatusReceived(ordStatus);
