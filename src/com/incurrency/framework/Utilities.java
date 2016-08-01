@@ -1479,7 +1479,7 @@ public class Utilities {
      * @param expiry
      * @return
      */
-    public static ArrayList<Integer> getOptionIDForLongSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
+    public static ArrayList<Integer> getOrInsertOptionIDForLongSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
         int id = -1;
         ArrayList<Integer> out = new ArrayList<>();
         String displayname = symbols.get(symbolid).getDisplayname();
@@ -1546,7 +1546,7 @@ public class Utilities {
         return out;
     }
 
-      public static ArrayList<Integer> getOptionIDForShortSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
+      public static ArrayList<Integer> getOrInsertATMOptionIDForShortSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
         int id = -1;
         ArrayList<Integer> out = new ArrayList<>();
         String displayname = symbols.get(symbolid).getDisplayname();
@@ -1612,8 +1612,7 @@ public class Utilities {
         }
         return out;
     }
-
-    
+   
     public static int getATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
         double price = Parameters.symbol.get(id).getLastPrice();
         price = Utilities.roundTo(price, increment);
@@ -1626,7 +1625,7 @@ public class Utilities {
         }
         return -1;
     }
-
+    
     public static int insertATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
         double price = Parameters.symbol.get(id).getLastPrice();
         if (price == 0) {
@@ -1658,6 +1657,33 @@ public class Utilities {
         }
     }
 
+    public static int insertStrike(List<BeanSymbol> symbols, String displayName) {
+        int id = Utilities.getIDFromDisplayName(symbols, displayName);
+        if (id >= 0) {
+            return id;
+        } else {
+            String[] symbol = displayName.split("_", -1);
+            String exchangeSymbol = symbol[0];
+            String brokerSymbol = symbol[0].replaceAll("[^A-Za-z0-9\\-]", "");
+            String type = symbol[1];
+            String expiry = symbol[2];
+            String right = symbol[3];
+            String strike = symbol[4];
+            BeanSymbol s = new BeanSymbol(brokerSymbol, exchangeSymbol, "OPT", expiry, right, strike);
+            s.setCurrency("INR");
+            s.setExchange("NSE");
+            s.setPrimaryexchange("NSE");
+            s.setStreamingpriority(1);
+            s.setStrategy("");
+            s.setDisplayname(displayName);
+            s.setSerialno(Parameters.symbol.size() + 1);
+            s.setAddedToSymbols(true);
+            symbols.add(s);
+            return s.getSerialno() - 1;
+        }
+    }
+
+    
     public static int getNetPositionFromOptions(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id) {
         int out = 0;
         ArrayList<Integer> tempSymbols = new ArrayList<>();

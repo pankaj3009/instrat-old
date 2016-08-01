@@ -51,6 +51,7 @@ import org.jquantlib.termstructures.BlackVolTermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.calendars.India;
 
 /**
@@ -158,6 +159,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private EuropeanOption optionProcess;
     private SimpleQuote underlying=new SimpleQuote();
     private double mtmPrice;
+    private int dte;
     
     public void SetOptionProcess(String expiry,String right, String strike){
         
@@ -2420,5 +2422,25 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public double getMtmPrice() {
         return mtmPrice;
+    }
+
+    /**
+     * @return the dte
+     */
+    public int getDte() {
+        if (dte != 0) {
+            return dte;
+        } else {
+            try {
+                SimpleDateFormat sdf_yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
+                JDate expiryDate = new JDate(sdf_yyyyMMdd.parse(this.getExpiry()));
+                dte = Algorithm.ind.businessDaysBetween(new JDate(new Date()), expiryDate);
+                return dte;
+            } catch (Exception e) {
+                dte = 0;
+                logger.log(Level.SEVERE, null, e);
+                return dte;
+            }
+        }
     }
 }
