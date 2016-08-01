@@ -162,6 +162,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private int dte;
     
     public void SetOptionProcess(String expiry,String right, String strike){
+        if(this.closeVol==0){
+            Object[] optionlastpriceset = Utilities.getSettlePrice(this, new Date());
+            int futureid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, this.getSerialno()-1, expiry);
+            Object[] underlyinglastpriceset = Utilities.getSettlePrice(Parameters.symbol.get(futureid), new Date());
+               double underlyingpriorclose = Utilities.getDouble(underlyinglastpriceset[1], 0);
+
+            if (optionlastpriceset != null && optionlastpriceset.length == 2) {
+                long settletime = Utilities.getLong(optionlastpriceset[0], 0);
+                double optionlastprice = Utilities.getDouble(optionlastpriceset[1], 0);
+                double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, new Date(settletime));
+                this.setCloseVol(vol);
+            }
+        }
         
         Date date=DateUtil.getFormattedDate(expiry, "yyyyMMdd", MainAlgorithm.timeZone);
         EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.JDate(date));
@@ -2390,7 +2403,12 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public EuropeanOption getOptionProcess() {
         synchronized(lockOptionProcess){
-        return optionProcess;            
+        if(optionProcess==null){
+            this.SetOptionProcess(expiry, right, type);
+            return optionProcess;
+        }else{
+            return optionProcess;                        
+        }
         }
     }
 
