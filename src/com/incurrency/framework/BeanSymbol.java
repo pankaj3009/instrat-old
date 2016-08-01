@@ -159,7 +159,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private EuropeanOption optionProcess;
     private SimpleQuote underlying=new SimpleQuote();
     private double mtmPrice;
-    private int dte;
+    private int bdte;
+    private long cdte;
     private int underlyingID=-1;
 
     
@@ -2464,19 +2465,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @return the dte
      */
-    public int getDte() {
-        if (dte != 0) {
-            return dte;
+    public int getBdte() {
+        if (bdte != 0) {
+            return bdte;
         } else {
             try {
                 SimpleDateFormat sdf_yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
                 JDate expiryDate = new JDate(sdf_yyyyMMdd.parse(this.getExpiry()));
-                dte = Algorithm.ind.businessDaysBetween(new JDate(new Date()), expiryDate);
-                return dte;
+                bdte = Algorithm.ind.businessDaysBetween(new JDate(new Date()), expiryDate);
+                return bdte;
             } catch (Exception e) {
-                dte = 0;
+                bdte = 0;
                 logger.log(Level.SEVERE, null, e);
-                return dte;
+                return bdte;
             }
         }
     }
@@ -2493,5 +2494,25 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setUnderlyingID(int underlyingID) {
         this.underlyingID = underlyingID;
+    }
+
+    /**
+     * @return the cdte
+     */
+    public long getCdte() {
+        if (cdte != 0) {
+            return bdte;
+        } else {
+            try {
+                SimpleDateFormat sdf_yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
+                JDate expiryDate = new JDate(sdf_yyyyMMdd.parse(this.getExpiry()));
+                cdte = expiryDate.sub(new JDate(new Date()));
+                return cdte;
+            } catch (Exception e) {
+                cdte = 0;
+                logger.log(Level.SEVERE, null, e);
+                return cdte;
+            }
+        }
     }
 }
