@@ -60,6 +60,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             c.getWrapper().addOrderStatusListener(this);
             c.getWrapper().addBidAskListener(this);
         }
+        MainAlgorithm.tes.addBidAskListener(this);
         synchronized (syncObject) {
             try {
                 syncObject.wait();
