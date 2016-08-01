@@ -80,6 +80,75 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
+       public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize) {
+        double price = symbols.get(id).getLastPrice();
+        try {
+            double optionlastprice = 0;
+//        Object[] optionlastpriceset = Utilities.getLastSettlePriceOption(Parameters.symbol, id, new Date().getTime() - 10 * 24 * 60 * 60 * 1000, new Date().getTime() - 1000000, "india.nse.option.s4.daily.settle");
+            Object[] optionlastpriceset = Utilities.getSettlePrice(symbols.get(id), new Date());
+            Object[] underlyinglastpriceset = Utilities.getSettlePrice(symbols.get(underlyingid), new Date());
+            double underlyingpriorclose = Utilities.getDouble(underlyinglastpriceset[1], 0);
+
+            if (optionlastpriceset != null && optionlastpriceset.length == 2) {
+                long settletime = Utilities.getLong(optionlastpriceset[0], 0);
+                optionlastprice = Utilities.getDouble(optionlastpriceset[1], 0);
+                double vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date(settletime));
+                symbols.get(id).setCloseVol(vol);
+
+            }
+
+            if (price == 0 && optionlastprice > 0) {
+                double underlyingprice = symbols.get(underlyingid).getLastPrice();
+                double underlyingchange = 0;
+                if (underlyingprice != 0) {
+                    underlyingchange = underlyingprice - underlyingpriorclose;//+ve if up
+                }
+                switch (right) {
+                    case "CALL":
+                        price = optionlastprice + 0.5 * underlyingchange;
+                        break;
+                    case "PUT":
+                        price = optionlastprice - 0.5 * underlyingchange;
+                        break;
+                }
+            }
+            double bidprice = symbols.get(id).getBidPrice();
+            double askprice = symbols.get(id).getAskPrice();
+            logger.log(Level.INFO, "Symbol:{0},price:{1},BidPrice:{2},AskPrice:{3}", new Object[]{symbols.get(id).getDisplayname(), price, bidprice, askprice});
+            switch (side) {
+                case BUY:
+                case COVER:
+                    if (bidprice > 0) {
+                        price = Math.min(bidprice, price);
+
+                    } else {
+                        price = 0.80 * price;
+                        logger.log(Level.INFO, "Calculated Price as bidprice is zero. Symbol {0}, BidPrice:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
+                    }
+                    break;
+                case SHORT:
+                case SELL:
+                    if (askprice > 0) {
+                        price = Math.max(askprice, price);
+
+                    } else {
+                        price = 1.2 * price;
+                        logger.log(Level.INFO, "Calculated Price as askprice is zero. Symbol {0}, BidPrice:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
+                    }
+                    break;
+                default:
+                    break;
+
+            }
+            price = Utilities.roundTo(price, tickSize);
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
+        return price;
+    }
+
+    
     public static double getImpliedVol(BeanSymbol s, double underlying, double price, Date evaluationDate) {
 
         new Settings().setEvaluationDate(new org.jquantlib.time.JDate(evaluationDate));
@@ -183,6 +252,8 @@ public class Utilities {
                     metric = null;
                     break;
             }
+            String strike= Utilities.formatDouble(Utilities.getDouble(s.getOption(), 0), new DecimalFormat("#.##"));
+
             Date startDate = DateUtil.addDays(d, -10);
             Date endDate = d;
             QueryBuilder builder = QueryBuilder.getInstance();
@@ -195,7 +266,7 @@ public class Utilities {
             }
             if (s.getRight() != null && !s.getRight().equals("")) {
                 builder.getMetrics().get(0).addTag("option", s.getRight());
-                builder.getMetrics().get(0).addTag("strike", s.getOption());
+                builder.getMetrics().get(0).addTag("strike", strike);
             }
 
             builder.getMetrics().get(0).setLimit(1);
@@ -1657,30 +1728,33 @@ public class Utilities {
         }
     }
 
-    public static int insertStrike(List<BeanSymbol> symbols, String displayName) {
-        int id = Utilities.getIDFromDisplayName(symbols, displayName);
+    public static int insertStrike(List<BeanSymbol> symbols, int underlyingid, String expiry, String right, String strike) {
+        String exchangeSymbol = symbols.get(underlyingid).getExchangeSymbol();
+        int id = Utilities.getIDFromExchangeSymbol(symbols, exchangeSymbol, "OPT", expiry, right, strike);
         if (id >= 0) {
             return id;
         } else {
-            String[] symbol = displayName.split("_", -1);
-            String exchangeSymbol = symbol[0];
-            String brokerSymbol = symbol[0].replaceAll("[^A-Za-z0-9\\-]", "");
-            String type = symbol[1];
-            String expiry = symbol[2];
-            String right = symbol[3];
-            String strike = symbol[4];
-            BeanSymbol s = new BeanSymbol(brokerSymbol, exchangeSymbol, "OPT", expiry, right, strike);
-            s.setCurrency("INR");
-            s.setExchange("NSE");
-            s.setPrimaryexchange("NSE");
-            s.setStreamingpriority(1);
-            s.setStrategy("");
-            s.setDisplayname(displayName);
-            s.setSerialno(Parameters.symbol.size() + 1);
-            s.setAddedToSymbols(true);
-            symbols.add(s);
-            return s.getSerialno() - 1;
+            int futureid = Utilities.getFutureIDFromBrokerSymbol(symbols, underlyingid, expiry);
+            if (futureid >= 0) {
+                String brokerSymbol = exchangeSymbol.replaceAll("[^A-Za-z0-9\\-]", "");
+                if(brokerSymbol.equals("NSENIFTY")){
+                    brokerSymbol="NIFTY50";
+                }
+                BeanSymbol s = new BeanSymbol(brokerSymbol, exchangeSymbol, "OPT", expiry, right, strike);
+                s.setCurrency("INR");
+                s.setExchange("NSE");
+                s.setPrimaryexchange("NSE");
+                s.setStreamingpriority(1);
+                s.setStrategy("");
+                s.setUnderlyingID(futureid);
+                s.setDisplayname(exchangeSymbol + "_OPT_" + expiry + "_" + right + "_" + strike);
+                s.setSerialno(Parameters.symbol.size() + 1);
+                s.setAddedToSymbols(true);
+                symbols.add(s);
+                return s.getSerialno() - 1;
+            }
         }
+        return -1;
     }
 
     

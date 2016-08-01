@@ -160,6 +160,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private SimpleQuote underlying=new SimpleQuote();
     private double mtmPrice;
     private int dte;
+    private int underlyingID=-1;
+
     
     public void SetOptionProcess(String expiry,String right, String strike){
         if(this.closeVol==0){
@@ -179,7 +181,24 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         Date date=DateUtil.getFormattedDate(expiry, "yyyyMMdd", MainAlgorithm.timeZone);
         EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.JDate(date));
         PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
+        switch(right){
+            case "PUT":
+                  payoff =new PlainVanillaPayoff(Option.Type.Put,Utilities.getDouble(strike, 0) );
+      
+                break;
+            case "CALL":
+                  payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
+      
+                break;
+            default:
+                break;
+                
+        }
+       // PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
         setOptionProcess(new EuropeanOption(payoff,exercise));
+        if(underlyingID>=0){
+            getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());
+        }
         Handle<Quote> S = new Handle<Quote>(getUnderlying());
         org.jquantlib.time.Calendar india=new India();
         Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
@@ -2404,7 +2423,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public EuropeanOption getOptionProcess() {
         synchronized(lockOptionProcess){
         if(optionProcess==null){
-            this.SetOptionProcess(expiry, right, type);
+            this.SetOptionProcess(expiry, right, option);
             return optionProcess;
         }else{
             return optionProcess;                        
@@ -2460,5 +2479,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 return dte;
             }
         }
+    }
+
+    /**
+     * @return the underlyingID
+     */
+    public int getUnderlyingID() {
+        return underlyingID;
+    }
+
+    /**
+     * @param underlyingID the underlyingID to set
+     */
+    public void setUnderlyingID(int underlyingID) {
+        this.underlyingID = underlyingID;
     }
 }
