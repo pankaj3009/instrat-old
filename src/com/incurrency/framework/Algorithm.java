@@ -52,7 +52,8 @@ public class Algorithm {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));        
         String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();
         SimpleDateFormat sdf_yyyymmdd=new SimpleDateFormat("yyyyMMdd");
-        if (holidayFile != null && !holidayFile.equals("")) {
+        timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
+       if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {
                 try{
@@ -75,7 +76,6 @@ public class Algorithm {
         
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());
         useForSimulation=Boolean.parseBoolean(globalProperties.getProperty("simulation","false").toString().trim());
-        timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
         openHour = Integer.valueOf(globalProperties.getProperty("openhour", "9").toString().trim());
         openMinute = Integer.valueOf(globalProperties.getProperty("openminute", "15").toString().trim());
         closeHour = Integer.valueOf(globalProperties.getProperty("closehour", "15").toString().trim());
