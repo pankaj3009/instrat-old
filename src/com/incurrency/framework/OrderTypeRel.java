@@ -21,7 +21,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     OrderEvent e;
     double ticksize = 0.05;
     EnumOrderSide side;
-    double limitPrice;
+    private double limitPrice;
     ExecutionManager oms;
     boolean orderCompleted = false;
     final Object syncObject = new Object();
@@ -139,8 +139,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 e.setOrderStage(EnumOrderStage.AMEND);
                                 e.setAccount(c.getAccountName());
                                 e.setTag("BIDASKCHANGED");
-                                logger.log(Level.INFO, "OrderTypeRel, Symbol:{0}, Side:{1}, CalculatedOptionPrice:{2}, CurrentLimitPriceWithBroker:{3}, NewLimitPrice:{4}",
-                                        new Object[]{Parameters.symbol.get(id).getDisplayname(), side, calculatedPrice, limitPrice, tmpLimitPrice});
+                                logger.log(Level.INFO, "OrderTypeRel, Symbol:{0}, Side:{1}, CalculatedOptionPrice:{2}, CurrentLimitPriceWithBroker:{3}, BidPrice:{4}, NewLimitPrice:{5}",
+                                        new Object[]{Parameters.symbol.get(id).getDisplayname(), side, calculatedPrice, limitPrice, bidPrice, tmpLimitPrice});
                                 oms.orderReceived(e);
                             }
                             break;
@@ -208,8 +208,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 e.setOrderStage(EnumOrderStage.AMEND);
                                 e.setAccount(c.getAccountName());
                                 e.setTag("BIDASKCHANGED");
-                                logger.log(Level.INFO, "OrderTypeRel, Symbol:{0}, Side:{1}, CalculatedOptionPrice:{2}, CurrentLimitPriceWithBroker:{3}, NewLimitPrice:{4}",
-                                        new Object[]{Parameters.symbol.get(id).getDisplayname(), side, calculatedPrice, limitPrice, tmpLimitPrice});
+                                logger.log(Level.INFO, "OrderTypeRel, Symbol:{0}, Side:{1}, CalculatedOptionPrice:{2}, CurrentLimitPriceWithBroker:{3}, AskPrice:{4}, NewLimitPrice:{5}",
+                                        new Object[]{Parameters.symbol.get(id).getDisplayname(), side, calculatedPrice, limitPrice, askPrice,tmpLimitPrice});
                                 oms.orderReceived(e);
                             }
                             break;
