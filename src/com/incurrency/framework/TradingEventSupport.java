@@ -95,7 +95,7 @@ public class TradingEventSupport {
     public void fireOrderStatus(BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
         
         OrderStatusEvent ordStatus = new OrderStatusEvent(new Object(), c, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-        if(orderStatus.get(orderId)==null ||orderStatus.get(orderId)!=status){
+        if(orderStatus.get(orderId)==null ||!orderStatus.get(orderId).equals(status)){
             logger.log(Level.INFO,"302,IBOrderStatus,{0}",new Object[]{ordStatus.getC().getAccountName()+delimiter+ordStatus.getClientId()+delimiter+ordStatus.getOrderID()+delimiter+ordStatus.getStatus()+delimiter+ordStatus.getFilled()+delimiter+ordStatus.getRemaining()+delimiter+ordStatus.getAvgFillPrice()+delimiter+ordStatus.getLastFillPrice()+delimiter+ordStatus.getPermId()+delimiter+ordStatus.getParentId()+delimiter+ordStatus.getWhyHeld()});
             orderStatus.put(orderId, status);
         }

@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -49,7 +50,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     //private transient HashMap<Integer, RequestID> mSnapShotSymbolID = new HashMap(); //this holds symbolID as key
     //private transient HashMap mRealTimeBarsReqID = new HashMap();
     private transient Long connectionTime;
-    private HashMap<Integer, OrderBean> orders = new HashMap<>(); //holds map of orderid and order object
+    private ConcurrentHashMap<Integer, OrderBean> orders = new ConcurrentHashMap<>(); //holds map of orderid and order object
     private HashMap<Index, ArrayList<SymbolOrderMap>> ordersSymbols = new HashMap<>(); //holds map of <strategy,symbol> and a list of all open orders against the index.
     private HashMap<Index, BeanPosition> Positions = new HashMap<>(); //holds map of <symbol, strategy> and system position.
     private HashMap<Integer, BeanOrderInformation> ordersToBeCancelled = new HashMap(); //holds the orderid as integer
@@ -334,7 +335,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the orders
      */
-    public HashMap<Integer, OrderBean> getOrders() {
+    public ConcurrentHashMap<Integer, OrderBean> getOrders() {
         
             return orders;
             }
@@ -342,7 +343,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @param orders the orders to set
      */
-    public void setOrders(HashMap<Integer, OrderBean> orders) {
+    public void setOrders(ConcurrentHashMap<Integer, OrderBean> orders) {
         
         this.orders = orders;
             }
