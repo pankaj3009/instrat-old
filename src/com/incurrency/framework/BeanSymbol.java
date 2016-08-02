@@ -38,6 +38,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
 import org.jquantlib.daycounters.Actual360;
+import org.jquantlib.daycounters.Actual365Fixed;
 import org.jquantlib.exercise.EuropeanExercise;
 import org.jquantlib.instruments.EuropeanOption;
 import org.jquantlib.instruments.Option;
@@ -202,9 +203,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         Handle<Quote> S = new Handle<Quote>(getUnderlying());
         org.jquantlib.time.Calendar india=new India();
-        Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
-        Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual360()));
-        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, this.closeVol, new Actual360()));
+        Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual365Fixed()));
+        Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual365Fixed()));
+        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, this.closeVol, new Actual365Fixed()));
         BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
         AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
         getOptionProcess().setPricingEngine(engine);
@@ -2501,7 +2502,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public long getCdte() {
         if (cdte != 0) {
-            return bdte;
+            return cdte;
         } else {
             try {
                 SimpleDateFormat sdf_yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
