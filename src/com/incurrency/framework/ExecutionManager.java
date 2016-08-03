@@ -27,6 +27,7 @@ import static com.incurrency.framework.EnumPrimaryApplication.VALUE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -2356,64 +2357,72 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             int parentid = ob.getParentSymbolID() - 1;
             int childid = ob.getChildSymbolID() - 1;
             int orderid = ob.getOrderID();
-            int childInternalOrderIDEntry = 0;
-            int parentInternalOrderIDEntry = 0;
+            HashSet<Integer> childInternalOrderIDsEntry = new HashSet<>();
+            HashSet<Integer> parentInternalOrderIDsEntry = new HashSet<>();
             Index ind = new Index(orderReference, parentid);
             String account = c.getAccountName();
             boolean entry = ob.getParentOrderSide() == EnumOrderSide.BUY || ob.getParentOrderSide() == EnumOrderSide.SHORT ? true : false;
             //update trades if order is completely filled. For either combo or regular orders, this will be reflected
-            if (ob.getInternalOrderIDEntry() == -1) {
-                parentInternalOrderIDEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName(),true);
-                childInternalOrderIDEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName(),false);
+            if (!entry) {
+                parentInternalOrderIDsEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName(),true);
+                childInternalOrderIDsEntry = getFirstInternalOpenOrder(parentid, ob.getParentOrderSide(), c.getAccountName(),false);
             } else {
-                parentInternalOrderIDEntry = getEntryParentOrderIDInt(ob, account);
-                childInternalOrderIDEntry = ob.getInternalOrderIDEntry();
+                parentInternalOrderIDsEntry.add(getEntryParentOrderIDInt(ob, account));
+                childInternalOrderIDsEntry.add(ob.getInternalOrderIDEntry());
             }
             
-            String key =s.getStrategy() + ":" + String.valueOf(childInternalOrderIDEntry) + ":" + account;
+            //String key =s.getStrategy() + ":" + String.valueOf(childInternalOrderIDEntry) + ":" + account;
             
             if (p.getChildPosition().isEmpty()) {//single leg order
-                if (entry) {
-                    new Trade(db, childid, parentid, ob.getReason(), ob.getParentOrderSide(), avgFillPrice, filled, parentInternalOrderIDEntry, orderid, parentInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades",ob.getLog());
-                    logger.log(Level.INFO, "207,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID() + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()+delimiter+Trade.getEntrySize(db, parentInternalOrderIDEntry)});
-                } else {
-                    if (Trade.getEntrySize(db, key) > 0) {
-                        int exitSize = Trade.getExitSize(db, key);
-                        double exitPrice = Trade.getExitPrice(db, key);
-                        int newexitSize = exitSize + filled;
-                        double newexitPrice = (exitPrice * exitSize + filled * avgFillPrice) / (newexitSize);
-                        Trade.updateExit(db, parentid, ob.getReason(), ob.getParentOrderSide(), newexitPrice, newexitSize, ob.getParentInternalOrderID(), orderid, ob.getParentInternalOrderID(), parentInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades",ob.getLog());
-                        if (c.getPositions().get(ind).getPosition() == 0) {
-                            Trade.closeTrade(db, key);
-                            exitCompleted=true;
-                        }
-                        int pending=Trade.getEntrySize(db, parentInternalOrderIDEntry)-Trade.getExitSize(db, ob.getParentInternalOrderID());
-                        logger.log(Level.INFO, "207,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()+delimiter+key+delimiter+pending});
+                for (int parentInternalOrderIDEntry : parentInternalOrderIDsEntry) {
+                    String key = s.getStrategy() + ":" + String.valueOf(parentInternalOrderIDEntry) + ":" + account;
+                    if (entry) {
+                        new Trade(db, childid, parentid, ob.getReason(), ob.getParentOrderSide(), avgFillPrice, filled, parentInternalOrderIDEntry, orderid, parentInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades", ob.getLog());
+                        logger.log(Level.INFO, "207,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID() + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID() + delimiter + Trade.getEntrySize(db, parentInternalOrderIDEntry)});
                     } else {
-                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter+parentInternalOrderIDEntry+delimiter + orderid+delimiter+key});
+                        if (Trade.getEntrySize(db, key) > 0 && filled>0) {
+                            int entrySize = Trade.getEntrySize(db, key);
+                            int exitSize = Trade.getExitSize(db, key);
+                            double exitPrice = Trade.getExitPrice(db, key);
+                            int adjTradeSize = exitSize + filled > entrySize ? (entrySize - exitSize) : filled;
+                            int newexitSize = filled + exitSize;
+                            filled = filled - adjTradeSize;
+                            double newexitPrice = (exitPrice * exitSize + adjTradeSize * avgFillPrice) / (newexitSize);
+                            Trade.updateExit(db, parentid, ob.getReason(), ob.getParentOrderSide(), newexitPrice, newexitSize, ob.getParentInternalOrderID(), orderid, ob.getParentInternalOrderID(), parentInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades", ob.getLog());
+                            if (newexitSize==entrySize) {
+                                Trade.closeTrade(db, key);
+                                exitCompleted = true;
+                            }
+                            logger.log(Level.INFO, "207,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID() + delimiter + key + delimiter + adjTradeSize});
+                        } else {
+                            logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + parentInternalOrderIDEntry + delimiter + parentInternalOrderIDEntry + delimiter + orderid + delimiter + key});
+                        }
                     }
                 }
+                return true;
             } else {//combo order
                 ArrayList in = comboFillSize(c, ob.getParentInternalOrderID(), parentid);
                 //update parent
-                if (entry) {
-                    new Trade(db, parentid, parentid, ob.getReason(), ob.getParentOrderSide(), (double) in.get(1), Math.abs((int) in.get(0)), parentInternalOrderIDEntry, 0, parentInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades",ob.getLog());
-                    logger.log(Level.INFO, "311,TradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
-
-                } else {
+                for (int childInternalOrderIDEntry : childInternalOrderIDsEntry) {
+                      String key = s.getStrategy() + ":" + String.valueOf(childInternalOrderIDEntry) + ":" + account;
+                   if (entry) {
+                         new Trade(db, parentid, parentid, ob.getReason(), ob.getParentOrderSide(), (double) in.get(1), Math.abs((int) in.get(0)), childInternalOrderIDEntry, 0, childInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades", ob.getLog());
+                        logger.log(Level.INFO, "311,TradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
+                    }
+                 else {
                     if (Trade.getEntrySize(db, key) > 0) {
                         int exitSize = Trade.getExitSize(db, key);
                         double exitPrice = Trade.getExitPrice(db, key);
                         exitSize = exitSize + Math.abs((int) in.get(0));
                         exitPrice = (exitPrice * exitSize + Math.abs((int) in.get(0)) * (double) in.get(1)) / (exitSize);
-                        Trade.updateExit(db, parentid, ob.getReason(), ob.getParentOrderSide(), exitPrice, exitSize, ob.getInternalOrderID(), 0, ob.getParentInternalOrderID(), parentInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades",ob.getLog());
+                        Trade.updateExit(db, parentid, ob.getReason(), ob.getParentOrderSide(), exitPrice, exitSize, ob.getInternalOrderID(), 0, ob.getParentInternalOrderID(), childInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades",ob.getLog());
                         if (c.getPositions().get(ind).getPosition() == 0) {
                             Trade.closeTrade(db, key);
                             exitCompleted=true;
                         }
                         logger.log(Level.INFO, "311,TradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
                     } else {
-                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter+parentInternalOrderIDEntry+delimiter + orderid+delimiter+key});
+                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry + delimiter+childInternalOrderIDEntry+delimiter + orderid+delimiter+key});
 
                     }
                 }
@@ -2426,14 +2435,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     // this information is in orderbean
                     for (String subkey : getDb().getKeys("opentrades")) {
                         if(subkey.contains("_"+s.getStrategy())){
-                        if (Trade.getParentEntryOrderIDInternal(db, subkey) == parentInternalOrderIDEntry) {
+                        if (Trade.getParentEntryOrderIDInternal(db, subkey) == childInternalOrderIDEntry) {
                             childInternalOrderIDEntry = Trade.getEntryOrderIDInternal(db, subkey);
                         }
                         }
                     }
                 }
                 if (entry) {
-                    new Trade(db, childid, parentid, ob.getReason(), ob.getChildOrderSide(), avgFillPrice, filled, childInternalOrderIDEntry, orderid, parentInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades",ob.getLog());
+                    new Trade(db, childid, parentid, ob.getReason(), ob.getChildOrderSide(), avgFillPrice, filled, childInternalOrderIDEntry, orderid, childInternalOrderIDEntry, timeZone, c.getAccountName(), s.getStrategy(), "opentrades",ob.getLog());
                     logger.log(Level.INFO, "311,TradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
 
                 } else {
@@ -2448,12 +2457,13 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         }
                         logger.log(Level.INFO, "311,TradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getOrderID() + delimiter + ob.getInternalOrderID()});
                     } else {
-                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry +delimiter+parentInternalOrderIDEntry+ delimiter + orderid+delimiter+key});
+                        logger.log(Level.INFO, "103,ExitUpdateError,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "NullTradeObject" + delimiter + childInternalOrderIDEntry +delimiter+childInternalOrderIDEntry+ delimiter + orderid+delimiter+key});
                     }
                 }
             }
              return exitCompleted;
-        } catch (Exception e) {
+        }
+        }catch (Exception e) {
             logger.log(Level.INFO, "101", e);
             return false;
         }
@@ -2638,21 +2648,22 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
     }
 
-    private int getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName,boolean parentOrderID) {
+    private HashSet<Integer> getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName, boolean parentOrderID) {
+        HashSet<Integer> out = new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
         for (String key : getDb().getKeys("opentrades")) {
-            if(key.contains("_"+s.getStrategy())){
-            if (Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
-                if(!parentOrderID){
-                return Trade.getEntryOrderIDInternal(db, key);
-                }else{
-                    return Trade.getParentEntryOrderIDInternal(db, key);
+            if (key.contains("_" + s.getStrategy())) {
+                if (Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
+                    if (!parentOrderID) {
+                        out.add(Trade.getEntryOrderIDInternal(db, key));
+                    } else {
+                        out.add(Trade.getParentEntryOrderIDInternal(db, key));
+                    }
                 }
             }
-            }
         }
-        return 0;
+        return out;
 
     }
 

@@ -5,7 +5,6 @@
 package com.incurrency.framework;
 
 import com.incurrency.RatesClient.Subscribe;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
