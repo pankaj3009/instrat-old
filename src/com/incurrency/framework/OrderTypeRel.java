@@ -138,20 +138,20 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             tmpLimitPrice = bidPrice - ticksize;
                                         }
                                     }
-                                    if (tmpLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                    if (tmpLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && bidPrice>limitPrice) {
                                         recentOrders.add(new Date().getTime());
                                         e.setLimitPrice(tmpLimitPrice);
                                         e.setOrderStage(EnumOrderStage.AMEND);
                                         e.setAccount(c.getAccountName());
                                         e.setTag("BIDASKCHANGED");
-                                        logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}",
+                                        logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}, OrderStatus:{10}",
                                                 new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), ob.getOrderID(),
-                                            side, calculatedPrice, limitPrice, bidPrice, tmpLimitPrice});
+                                            side, calculatedPrice, limitPrice, bidPrice, tmpLimitPrice,ob.getChildStatus()});
                                         oms.orderReceived(e);
                                     }
                                     break;
                                 default:
-                                    if (bidPrice > 0 && bidPrice < limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                    if (bidPrice > 0 && bidPrice > limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED ) {
                                         tmpLimitPrice = bidPrice + ticksize;
                                         recentOrders.add(new Date().getTime());
                                         e.setLimitPrice(tmpLimitPrice);
@@ -210,15 +210,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             tmpLimitPrice = askPrice + ticksize;
                                         }
                                     }
-                                    if (tmpLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                    if (tmpLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && limitPrice>askPrice) {
                                         recentOrders.add(new Date().getTime());
                                         e.setLimitPrice(tmpLimitPrice);
                                         e.setOrderStage(EnumOrderStage.AMEND);
                                         e.setAccount(c.getAccountName());
                                         e.setTag("BIDASKCHANGED");
-                                        logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9}",
+                                        logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9},OrderStatus:{10}",
                                                 new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), externalOrderID,
-                                            side, calculatedPrice, limitPrice, askPrice, tmpLimitPrice});
+                                            side, calculatedPrice, limitPrice, askPrice, tmpLimitPrice,ob.getChildStatus()});
                                         oms.orderReceived(e);
                                     }
                                     break;
