@@ -90,6 +90,7 @@ public class Strategy implements NotificationListener {
     private Boolean useRedis;
     private String redisDatabaseID;
     private int connectionidForMarketData=0;
+    private String headerStrategy;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -104,6 +105,7 @@ public class Strategy implements NotificationListener {
             this.parameterFile = parameterFileName;
             this.tradedType = type;
             this.stratCount = stratCount;
+            this.headerStrategy=headerStrategy;
             for (String account : getAccounts()) {
                 allAccounts = allAccounts == null ? account : allAccounts + ":" + account;
             }
@@ -415,6 +417,80 @@ public class Strategy implements NotificationListener {
                 getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn4, type));
             }
 
+        }
+    }
+    
+    public void updatePositions() {
+        //Initialize open notional orders and positions
+        for(BeanPosition p:position.values()){
+            p.setPosition(0);
+            p.setBrokerage(0);
+            p.setPrice(0);
+        }
+        for (String key : db.getKeys("opentrades")) {
+            String parentsymbolname = Trade.getParentSymbol(db, key);
+            int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
+            int tempPosition = 0;
+            double tempPositionPrice = 0D;
+            if (id >= 0) {
+                if (!Parameters.symbol.get(id).getStrategy().contains(this.getStrategy().toUpperCase())) {
+                    String oldstrategy = Parameters.symbol.get(id).getStrategy();
+                    Parameters.symbol.get(id).setStrategy(oldstrategy + ":" + this.getStrategy().toUpperCase());
+                }
+                if (Trade.getAccountName(db, key).equals("Order") && key.contains("_" + strategy)) {
+                    BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
+                    tempPosition = p.getPosition();
+                    tempPositionPrice = p.getPrice();
+                    int entrySize = Trade.getEntrySize(db, key);
+                    double entryPrice = Trade.getEntryPrice(db, key);
+                    switch (Trade.getEntrySide(db, key)) {
+                        case BUY:
+                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
+                            tempPosition = tempPosition + entrySize;
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            p.setStrategy(strategy);
+                            position.put(id, p);
+                            break;
+                        case SHORT:
+                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice - entrySize * entryPrice) / (-entrySize + tempPosition) : 0D;
+                            tempPosition = tempPosition - entrySize;
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            p.setStrategy(strategy);
+                            position.put(id, p);
+                            break;
+                        default:
+                            break;
+                    }
+                    int exitSize = Trade.getExitSize(db, key);
+                    double exitPrice = Trade.getExitPrice(db, key);
+                    switch (Trade.getExitSide(db, key)) {
+                        case COVER:
+                            tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
+                            tempPosition = tempPosition + exitSize;
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            p.setStrategy(strategy);
+                            position.put(id, p);
+                            break;
+                        case SELL:
+                            tempPositionPrice = -exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice - exitSize * exitPrice) / (-exitSize + tempPosition) : 0D;
+                            tempPosition = tempPosition - exitSize;
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            p.setStrategy(strategy);
+                            position.put(id, p);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
         }
     }
     
