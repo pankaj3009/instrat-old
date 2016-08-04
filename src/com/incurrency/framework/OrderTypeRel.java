@@ -171,10 +171,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     case "OPT":
                                         Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
                                         if (Parameters.symbol.get(id).getOptionProcess() == null) {
-                                            String strike = Parameters.symbol.get(id).getOption();
-                                            String right = Parameters.symbol.get(id).getRight();
-                                            String expiry = Parameters.symbol.get(id).getExpiry();
-                                            Parameters.symbol.get(id).SetOptionProcess(expiry, right, strike);
+                                            Parameters.symbol.get(id).SetOptionProcess();
                                         }
                                         double calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
                                         calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);

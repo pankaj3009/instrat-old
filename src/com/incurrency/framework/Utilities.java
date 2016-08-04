@@ -99,19 +99,21 @@ public class Utilities {
             }
 
             if (price == 0 && optionlastprice > 0) {
-                double underlyingprice = symbols.get(underlyingid).getLastPrice();
-                double underlyingchange = 0;
-                if (underlyingprice != 0) {
-                    underlyingchange = underlyingprice - underlyingpriorclose;//+ve if up
-                }
-                switch (right) {
-                    case "CALL":
-                        price = optionlastprice + 0.5 * underlyingchange;
-                        break;
-                    case "PUT":
-                        price = optionlastprice - 0.5 * underlyingchange;
-                        break;
-                }
+//                double underlyingprice = symbols.get(underlyingid).getLastPrice();
+//                double underlyingchange = 0;
+//                if (underlyingprice != 0) {
+//                    underlyingchange = underlyingprice - underlyingpriorclose;//+ve if up
+//                }
+                price =  symbols.get(id).getOptionProcess().NPV();
+//                        
+//                switch (right) {
+//                    case "CALL":
+//                        price=optionlastprice + 0.5 * underlyingchange;
+//                        break;
+//                    case "PUT":
+//                        price = optionlastprice - 0.5 * underlyingchange;
+//                        break;
+//                }
             }
             double bidprice = symbols.get(id).getBidPrice();
             double askprice = symbols.get(id).getAskPrice();

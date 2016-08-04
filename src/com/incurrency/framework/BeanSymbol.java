@@ -165,7 +165,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private int underlyingID=-1;
 
     
-    public void SetOptionProcess(String expiry,String right, String strike){
+    public void SetOptionProcess(){//expiry,right,strike
         if(this.closeVol==0){
             Object[] optionlastpriceset = Utilities.getSettlePrice(this, new Date());
             int futureid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, this.getSerialno()-1, expiry);
@@ -182,14 +182,14 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         
         Date date=DateUtil.getFormattedDate(expiry, "yyyyMMdd", MainAlgorithm.timeZone);
         EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.JDate(date));
-        PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
+        PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(this.getOption(), 0) );
         switch(right){
             case "PUT":
-                  payoff =new PlainVanillaPayoff(Option.Type.Put,Utilities.getDouble(strike, 0) );
+                  payoff =new PlainVanillaPayoff(Option.Type.Put,Utilities.getDouble(this.getOption(), 0) );
       
                 break;
             case "CALL":
-                  payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
+                  payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(this.getOption(), 0) );
       
                 break;
             default:
@@ -200,6 +200,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         setOptionProcess(new EuropeanOption(payoff,exercise));
         if(underlyingID>=0){
             getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());
+        }else{
+            underlyingID=Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry());
+            getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());       
         }
         Handle<Quote> S = new Handle<Quote>(getUnderlying());
         org.jquantlib.time.Calendar india=new India();
@@ -2425,7 +2428,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public EuropeanOption getOptionProcess() {
         synchronized(lockOptionProcess){
         if(optionProcess==null){
-            this.SetOptionProcess(expiry, right, option);
+            this.SetOptionProcess();
             return optionProcess;
         }else{
             return optionProcess;                        
