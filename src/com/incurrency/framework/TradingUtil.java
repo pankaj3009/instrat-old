@@ -927,6 +927,7 @@ public class TradingUtil {
             FileWriter fileWritter = new FileWriter(file, true);
             BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
             bufferWritter.write(dateString + "," + timeString + "," + content + newline);
+            bufferWritter.flush();
             bufferWritter.close();
         } catch (IOException ex) {
         }
