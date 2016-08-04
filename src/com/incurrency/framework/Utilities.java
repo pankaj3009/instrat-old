@@ -251,6 +251,9 @@ public class Utilities {
                 case "OPT":
                     metric = "india.nse.option.s4.daily.settle";
                     break;
+                case "IND":
+                    metric = "india.nse.index.s4.daily.settle";
+                    break;
                 default:
                     metric = null;
                     break;
