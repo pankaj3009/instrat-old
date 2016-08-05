@@ -26,12 +26,14 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     ExecutionManager oms;
     boolean orderCompleted = false;
     int externalOrderID = -1;
-    private final Object syncObject = new Object();
+    //private final Object syncObject = new Object();
+    private Drop sync;
     private LimitedQueue recentOrders;
     private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
 
     public OrderTypeRel(int id, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
+            sync=new Drop();
             this.c = c;
             this.id = id;
             recentOrders = new LimitedQueue(10);
@@ -65,20 +67,20 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 c.getWrapper().addBidAskListener(this);
             }
             MainAlgorithm.tes.addBidAskListener(this);
-            synchronized (syncObject) {
-                try {
-                    syncObject.wait();
-                    logger.log(Level.INFO, "OrderTypeRel: Closing Manager for "+Parameters.symbol.get(id).getDisplayname());
-                    Subscribe.tes.removeBidAskListener(this);
-                    Subscribe.tes.removeOrderStatusListener(this);
-                    for (BeanConnection c : Parameters.connection) {
-                        c.getWrapper().removeOrderStatusListener(this);
-                        c.getWrapper().removeBidAskListener(this);
-                    }
-                } catch (InterruptedException ex) {
-                    logger.log(Level.SEVERE, null, ex);
+            // synchronized (syncObject) {
+            try {
+                sync.take();
+                logger.log(Level.INFO, "OrderTypeRel: Closing Manager for " + Parameters.symbol.get(id).getDisplayname());
+                Subscribe.tes.removeBidAskListener(this);
+                Subscribe.tes.removeOrderStatusListener(this);
+                for (BeanConnection c : Parameters.connection) {
+                    c.getWrapper().removeOrderStatusListener(this);
+                    c.getWrapper().removeBidAskListener(this);
                 }
+            } catch (Exception ex) {
+                logger.log(Level.SEVERE, null, ex);
             }
+            //}
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
@@ -120,6 +122,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
 
                                         if (bidPrice == 0 || (bidPrice - calculatedPrice) / (calculatedPrice) > 0.05) {
                                             fatfinger = true;
+                                            tmpLimitPrice=calculatedPrice;
                                             if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
                                                 //To prevent frequent orders when we are not near market, we limit updates only if
                                                 //new limitprice is off by 10 ticksize.
@@ -128,7 +131,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                         }
                                         if (!fatfinger) {
-                                            if ((limitPrice <= bidPrice && bidPrice >= calculatedPrice)
+                                            if ((limitPrice <= bidPrice && bidPrice <= calculatedPrice)
                                                     || (bidPrice <= calculatedPrice && calculatedPrice <= limitPrice)) {
                                                 //Change to Best Bid
                                                 tmpLimitPrice = bidPrice + ticksize;
@@ -189,11 +192,11 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
 
                                         if (askPrice == 0 || (calculatedPrice - askPrice) / (calculatedPrice) > 0.05) {
                                             fatfinger = true;
+                                            tmpLimitPrice=calculatedPrice;
                                             if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
                                                 //To prevent frequent orders when we are not near market, we limit updates only if
                                                 //new limitprice is off by 10 ticksize.
                                                 tmpLimitPrice = calculatedPrice + 10 * ticksize;
-
                                             }
                                         }
                                         if (!fatfinger) {
@@ -248,12 +251,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     @Override
     public void orderStatusReceived(OrderStatusEvent event) {
         OrderBean ob = c.getOrders().get(event.getOrderID());
-        if (this.c.equals(event.getC()) && event.getOrderID() == ob.getOrderID()) {
-            //this.limitPrice = ob.getParentLimitPrice();
-            externalOrderID = ob.getOrderID();
-            if (event.getRemaining() == 0) {
-                synchronized (syncObject) {
-                    syncObject.notify();
+        if (ob != null) {
+            if (this.c.equals(event.getC()) && event.getOrderID() == ob.getOrderID() && (ob.getParentSymbolID()-1)==id) {
+                //this.limitPrice = ob.getParentLimitPrice();
+                externalOrderID = ob.getOrderID();
+                if (event.getRemaining() == 0) {
+                    //synchronized (syncObject) {
+                    this.sync.put("FINISHED");
+//                    syncObject.notify();
+                    //}
                 }
             }
         }

@@ -844,7 +844,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             switch (event.getOrderType()) {
             case CUSTOMREL:
                 Thread t = new Thread(new OrderTypeRel(id, c, event, tickSize, this));
-                t.setName("OrderType: REL"+Parameters.symbol.get(id).getDisplayname());
+                t.setName("OrderType: REL "+Parameters.symbol.get(id).getDisplayname());
                 t.start();
                 break;
             default:
@@ -937,7 +937,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         switch (event.getOrderType()) {
             case CUSTOMREL:
                 Thread t = new Thread(new OrderTypeRel(id, c, event, tickSize, this));
-                t.setName("OrderType: REL");
+                t.setName("OrderType: REL "+Parameters.symbol.get(id).getDisplayname());
                 t.start();
                 break;
             default:
