@@ -26,7 +26,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     ExecutionManager oms;
     boolean orderCompleted = false;
     int externalOrderID = -1;
-    final Object syncObject = new Object();
+    private final Object syncObject = new Object();
     private LimitedQueue recentOrders;
     private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
 
@@ -68,7 +68,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             synchronized (syncObject) {
                 try {
                     syncObject.wait();
-                    logger.log(Level.INFO, "OrderTypeRel: Closing Manager");
+                    logger.log(Level.INFO, "OrderTypeRel: Closing Manager for "+Parameters.symbol.get(id).getDisplayname());
                     Subscribe.tes.removeBidAskListener(this);
                     Subscribe.tes.removeOrderStatusListener(this);
                     for (BeanConnection c : Parameters.connection) {
