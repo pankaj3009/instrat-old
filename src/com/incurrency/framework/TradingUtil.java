@@ -27,6 +27,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -1317,7 +1318,7 @@ public class TradingUtil {
             int tradesToday = 0; //Holds the number of trades done today
             for (String key : db.getKeys("opentrades")) {
                 if (key.contains("_"+strategyName)) {
-                    TradingUtil.updateMTM(db, key, timeZone);
+                    //TradingUtil.updateMTM(db, key, timeZone);
                     String entryTime = Trade.getEntryTime(db, key);
                     String exitTime = Trade.getExitTime(db, key);
                     String account = Trade.getAccountName(db, key);
@@ -1674,6 +1675,8 @@ public class TradingUtil {
             }
             Date startDate = d;
             Date endDate = d;
+            String strike= Utilities.formatDouble(Utilities.getDouble(s.getOption(), 0), new DecimalFormat("#.##"));
+
             QueryBuilder builder = QueryBuilder.getInstance();
             builder.setStart(startDate)
                     .setEnd(DateUtil.addSeconds(d, 1))
@@ -1684,7 +1687,7 @@ public class TradingUtil {
             }
             if (!s.getRight().equals("")) {
                 builder.getMetrics().get(0).addTag("option", s.getRight());
-                builder.getMetrics().get(0).addTag("strike", s.getOption());
+                builder.getMetrics().get(0).addTag("strike", strike);
             }
 
             builder.getMetrics().get(0).setLimit(1);
