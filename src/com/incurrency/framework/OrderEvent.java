@@ -36,6 +36,7 @@ public class OrderEvent extends EventObject {
     private String _effectiveFrom;
     private HashMap _stubs;
     private String _log;
+    private int _disclosedsize;
     
     public OrderEvent(Object obj){
         super (obj);
@@ -128,6 +129,7 @@ public class OrderEvent extends EventObject {
         this._orderGroup=(order.get("ordergroup")!=null&&order.get("ordergroup")!="")?order.get("ordergroup").toString():null;
         this._effectiveFrom=(order.get("effectivefrom")!=null&&order.get("effectivefrom")!="")?order.get("effectivefrom").toString():null;
         this._log=(order.get("log")!=null&&order.get("log")!="")?order.get("log").toString():null;
+        this._disclosedsize=Utilities.getInt(order.get("disclosedsize").toString(),0);
     }
 
     static OrderEvent fastClose(BeanSymbol s,EnumOrderSide side,int size,String orderReference){
@@ -468,5 +470,19 @@ public class OrderEvent extends EventObject {
      */
     public void setLog(String log) {
         this._log = log;
+    }
+
+    /**
+     * @return the _disclosedsize
+     */
+    public int getDisclosedsize() {
+        return _disclosedsize;
+    }
+
+    /**
+     * @param disclosedsize the _disclosedsize to set
+     */
+    public void setDisclosedsize(int disclosedsize) {
+        this._disclosedsize = disclosedsize;
     }
 }

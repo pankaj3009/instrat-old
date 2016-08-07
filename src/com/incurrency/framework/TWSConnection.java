@@ -344,11 +344,12 @@ public class TWSConnection extends Thread implements EWrapper {
         String ocaGroup = e.getOrderGroup();
         String effectiveFrom = e.getEffectiveFrom();
         HashMap<Integer, Integer> stubs = e.getStubs();
-        out = createOrder(id, internalOrderID, size, ordSide, notify, orderType, stage, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, stubs);
+        int disclosedsize=e.getDisclosedsize();
+        out = createOrder(id, internalOrderID, size, ordSide, notify, orderType, stage, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, stubs,disclosedsize);
         return out;
     }
 
-    public HashMap<Integer, Order> createOrder(int id, int internalOrderID, int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, EnumOrderStage stage, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<Integer, Integer> stubs) {
+    public HashMap<Integer, Order> createOrder(int id, int internalOrderID, int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, EnumOrderStage stage, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<Integer, Integer> stubs,int disclosedsize) {
         if (recentOrders == null) {
             recentOrders = new LimitedQueue(getC().getOrdersHaltTrading());
         }
@@ -357,7 +358,7 @@ public class TWSConnection extends Thread implements EWrapper {
             return orders;
         }
         if (!Parameters.symbol.get(id).getType().equals("COMBO")) {
-            Order order = createChildOrder(size, ordSide, notify, orderType, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom);
+            Order order = createChildOrder(size, ordSide, notify, orderType, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,disclosedsize);
             orders.put(id, order);
             return orders;
         } else if (Parameters.symbol.get(id).getType().equals("COMBO") && stubs == null) {//regular combo order
@@ -399,7 +400,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     default:
                         break;
                 }
-                Order order = createChildOrder(Math.abs(entry.getValue()) * size, subSide, notify, orderType, limitPrices.get(entry.getKey().getSerialno() - 1), trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom);
+                Order order = createChildOrder(Math.abs(entry.getValue()) * size, subSide, notify, orderType, limitPrices.get(entry.getKey().getSerialno() - 1), trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,disclosedsize);
                 orders.put(entry.getKey().getSerialno() - 1, order);
                 i = i + 1;
             }
@@ -421,7 +422,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     subSide = EnumOrderSide.SELL;
                 }
                 if (childsize != 0) {
-                    Order order = createChildOrder(Math.abs(childsize), subSide, notify, orderType, 0D, 0D, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom);
+                    Order order = createChildOrder(Math.abs(childsize), subSide, notify, orderType, 0D, 0D, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,disclosedsize);
                     orders.put(childid, order);
                 }
             }
@@ -429,13 +430,14 @@ public class TWSConnection extends Thread implements EWrapper {
         return orders;
     }
 
-    private Order createChildOrder(int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom) {
+    private Order createChildOrder(int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, int disclosedsize) {
         Order order = new Order();
         order.m_action = (ordSide == EnumOrderSide.BUY || ordSide == EnumOrderSide.COVER || ordSide == EnumOrderSide.TRAILBUY) ? "BUY" : "SELL";
         order.m_auxPrice = trigger > 0 ? trigger : 0;
         order.m_lmtPrice = limit > 0 ? limit : 0;
         order.m_tif = ordValidity;
         order.m_goodAfterTime = effectiveFrom;
+        order.m_displaySize=disclosedsize;
 
         switch (orderType) {
             case MKT:
