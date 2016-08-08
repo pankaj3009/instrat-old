@@ -128,7 +128,7 @@ public class OrderEvent extends EventObject {
         this._orderGroup=(order.get("ordergroup")!=null&&order.get("ordergroup")!="")?order.get("ordergroup").toString():null;
         this._effectiveFrom=(order.get("effectivefrom")!=null&&order.get("effectivefrom")!="")?order.get("effectivefrom").toString():null;
         this._log=(order.get("log")!=null&&order.get("log")!="")?order.get("log").toString():null;
-        this._disclosedsize=Utilities.getInt(order.get("disclosedsize").toString(),0);
+        this._disclosedsize=order.get("log")!=null?Utilities.getInt(order.get("disclosedsize").toString(),0):0;
     }
 
     static OrderEvent fastClose(BeanSymbol s,EnumOrderSide side,int size,String orderReference){
