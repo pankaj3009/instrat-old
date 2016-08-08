@@ -1318,7 +1318,7 @@ public class TradingUtil {
             int tradesToday = 0; //Holds the number of trades done today
             for (String key : db.getKeys("opentrades")) {
                 if (key.contains("_"+strategyName)) {
-                    //TradingUtil.updateMTM(db, key, timeZone);
+                    TradingUtil.updateMTM(db, key, timeZone);
                     String entryTime = Trade.getEntryTime(db, key);
                     String exitTime = Trade.getExitTime(db, key);
                     String account = Trade.getAccountName(db, key);
