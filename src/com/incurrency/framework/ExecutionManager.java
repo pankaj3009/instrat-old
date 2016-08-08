@@ -803,7 +803,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 logger.log(Level.INFO, "202,EntryOrder,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()+delimiter+this.getOpenPositionCount().get(connectionid)});
                 logger.log(Level.INFO, "206,OpenPosition,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + this.getOpenPositionCount().get(connectionid)});
 
-                ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders);
+                ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders,this);
 
                 //update orderid structures
                 //activeOrders - done
@@ -860,7 +860,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         HashMap<Integer, Order> orders = new HashMap<>();
         orders = c.getWrapper().createOrder(event);
         logger.log(Level.INFO, "303,StubOrder, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()});
-        ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders);
+        ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders,this);
         //orderid structures impacted
         //activeOrders - yes
         //ordersInProgress - yes
@@ -899,7 +899,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             orders = c.getWrapper().createOrder(event);
         }
         logger.log(Level.INFO, "202,ExitOrder, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder() + delimiter + event.getOrderSize()});
-        ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders);
+        ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders,this);
 
         //orderid structures impacted
         //activeOrders - yes
@@ -1006,7 +1006,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
                     if (amendedOrders.size() > 0 && (c.getOrders().get(orderids.get(0)).getParentStatus() == EnumOrderStatus.ACKNOWLEDGED || c.getOrders().get(orderids.get(0)).getParentStatus() == EnumOrderStatus.PARTIALFILLED)) {
                         logger.log(Level.INFO, "303,AmendmentOrder, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()});
-                        c.getWrapper().placeOrder(c, event, amendedOrders);
+                        c.getWrapper().placeOrder(c, event, amendedOrders,this);
                         double parentlimitprice = 0D;
                         for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
                             int cid = entry.getKey().getSerialno() - 1;
@@ -1052,7 +1052,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             }
                             if (amendedOrders.size() > 0) {
                                 logger.log(Level.INFO, "209,AmendmentOrder, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()});
-                                c.getWrapper().placeOrder(c, event, amendedOrders);
+                                c.getWrapper().placeOrder(c, event, amendedOrders,this);
                                 logger.log(Level.INFO,"Amended Limit Price for internalorderid: {0} to :{1}",new Object[]{internalorderid,ord.m_lmtPrice});
                                 c.getOrders().get(ord.m_orderId).setParentLimitPrice(event.getLimitPrice());
                                 //update orders information. Do we need the two lines below as its already set in TWSConnection.placeOrders
@@ -1761,7 +1761,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         //ordersMissed - not needed
         ArrayList<SymbolOrderMap> symbolOrders = new ArrayList<>();
         ArrayList<Integer> linkedOrderIds = new ArrayList<>();
-        orderids = c.getWrapper().placeOrder(c, event, orders);
+        orderids = c.getWrapper().placeOrder(c, event, orders,this);
         for (int orderid : orderids) {
             c.getActiveOrders().put(new Index(orderReference, id), new BeanOrderInformation(id, c, orderid, 0, event));
             symbolOrders.add(new SymbolOrderMap(id, orderid));

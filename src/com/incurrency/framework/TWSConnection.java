@@ -755,6 +755,7 @@ public class TWSConnection extends Thread implements EWrapper {
             ordNew.m_orderRef = ordExisting.getOrderReference();
             ordNew.m_totalQuantity = ordExisting.getChildOrderSize();
             ordNew.m_orderId = ordExisting.getOrderID();
+            ordNew.m_displaySize=ordExisting.getDisplaySize();
             //ordNew.m_goodTillDate = ordExisting.getExpireTime();            
             logger.log(Level.FINE, "307,OrderDetails,{0}", new Object[]{c.getAccountName() + delimiter + ordNew.m_orderRef + delimiter + ordNew.m_action + delimiter + ordNew.m_totalQuantity + delimiter + ordNew.m_orderType + delimiter + ordNew.m_lmtPrice + delimiter + ordNew.m_auxPrice + delimiter + ordNew.m_tif + delimiter + ordNew.m_goodTillDate});
             out.put(ordExisting.getChildSymbolID() - 1, ordNew);
@@ -864,7 +865,7 @@ public class TWSConnection extends Thread implements EWrapper {
         return contract;
     }
 
-    public ArrayList<Integer> placeOrder(BeanConnection c, OrderEvent e, HashMap<Integer, Order> orders) {
+    public ArrayList<Integer> placeOrder(BeanConnection c, OrderEvent e, HashMap<Integer, Order> orders,ExecutionManager oms) {
         ArrayList<Integer> orderids = new ArrayList<>();
         int symbolID = e.getSymbolBean().getSerialno();
         EnumOrderSide side = e.getSide();
@@ -874,12 +875,12 @@ public class TWSConnection extends Thread implements EWrapper {
         int internalOrderIDEntry = e.getInternalorderentry();
         EnumOrderType ordType=e.getOrderType();
         if (!orders.isEmpty()) {
-            orderids = placeOrder(c, symbolID, side, notify, stage, ordType,orders, internalOrderID, internalOrderIDEntry, e.getTag(),e.isScale(),e.getLog());
+            orderids = placeOrder(c, symbolID, side, notify, stage, ordType,orders, internalOrderID, internalOrderIDEntry, e.getTag(),e.isScale(),e.getLog(),oms,e);
         }
         return orderids;
     }
 
-    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, EnumOrderType ordType,HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag, boolean scale, String log) {
+    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, EnumOrderType ordType,HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag, boolean scale, String log, ExecutionManager oms, OrderEvent event) {
         ArrayList<Integer> orderids = new ArrayList<>();
         if (!tradeIntegrityOK(side, stage, orders,true)) {//reset trading flag set during createorder
             return orderids;
@@ -935,6 +936,17 @@ public class TWSConnection extends Thread implements EWrapper {
                     ob.setInternalOrderID(internalOrderID);
                     ob.setInternalOrderIDEntry(internalOrderIDEntry);
                     ArrayList<Contract> contracts = c.getWrapper().createContract(ob.getChildSymbolID() - 1);
+                    
+                    if (order.m_displaySize < order.m_totalQuantity) {
+                        OrderEvent subEvent = event.clone(event);
+                        subEvent.setOrderSize(event.getOrderSize() - event.getDisclosedsize());
+                        order.m_totalQuantity = order.m_displaySize;
+                        ob.setDisplaySize(order.m_displaySize);
+                        ob.setChildOrderSize(order.m_totalQuantity);
+                        int connectionid = Parameters.connection.indexOf(this.getC());
+                        oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, order.m_orderId, subEvent, EnumLinkedAction.PROPOGATE));
+                    }
+        
                     eClientSocket.placeOrder(mOrderID, contracts.get(0), order);
                     if (stage != EnumOrderStage.AMEND) {
                         getRecentOrders().add(new Date().getTime());

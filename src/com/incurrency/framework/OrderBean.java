@@ -44,6 +44,7 @@ public class OrderBean implements Serializable {
     private boolean scale;
     private final Object lockparentlimitprice=new Object();
     private String log;
+    private int displaySize;
    
     
 
@@ -496,6 +497,20 @@ public class OrderBean implements Serializable {
      */
     public void setLog(String log) {
         this.log = log;
+    }
+
+    /**
+     * @return the displaySize
+     */
+    public int getDisplaySize() {
+        return displaySize;
+    }
+
+    /**
+     * @param displaySize the displaySize to set
+     */
+    public void setDisplaySize(int displaySize) {
+        this.displaySize = displaySize;
     }
 
 

@@ -41,38 +41,37 @@ public class OrderEvent extends EventObject {
     public OrderEvent(Object obj){
         super (obj);
     }
-//triggered by csv orders
-    /*
-    public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side, EnumOrderReason reason, EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage stage, int dynamicdur, double slippage, boolean transmit, String validity, boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs){
-        super(obj);
-        this._orderidint=internalorder;
-        this._entryorderidint=internalorderentry;
-        this._symbolBean=s;
-        this._side=side;
-        this._orderType=orderType;
-        this._orderSize=orderSize;
-        this._limitPrice=limitprice;
-        this._firstLimitPrice=limitprice;
-        this._triggerPrice=triggerprice;
-        this._ordReference=ordReference;
-        this._expireTime=expireTime;
-        this._orderStage=stage;
-        this._dynamicOrderDuration=dynamicdur;
-        this._maxSlippage=slippage/100;
-        this._firstLimitPrice=limitprice;
-        this._tag="";
-        this._transmit=transmit;
-        this._validity=validity;
-        this._account="";
-        this._scale=scale;
-        this._reason=reason;
-        this._orderGroup=orderGroup;
-        this._effectiveFrom=effectiveFrom;
-        this._stubs=stubs;
+    
+       public OrderEvent clone(OrderEvent orig) {
+        OrderEvent b = new OrderEvent(new Object());
+    b._orderidint=orig._orderidint;
+    b._entryorderidint=orig._entryorderidint;
+    b._symbolBean=orig._symbolBean;
+    b._side=orig._side;
+    b._orderSize=orig._orderSize;
+    b._limitPrice=orig._limitPrice;
+    b._firstLimitPrice=orig._firstLimitPrice;
+    b._triggerPrice=orig._triggerPrice;
+    b._ordReference=orig._ordReference;
+    b._expireTime=orig._expireTime;
+    b._orderStage=orig._orderStage;
+    b._dynamicOrderDuration=orig._dynamicOrderDuration;
+    b._maxSlippage=orig._maxSlippage;
+    b._tag=orig._tag;
+    b._transmit=orig._transmit;
+    b._validity=orig._validity;
+    b._account=orig._account;
+    b._scale=orig._scale;
+    b._orderType=orig._orderType;
+    b._reason=orig._reason;
+    b._orderGroup=orig._orderGroup;
+    b._effectiveFrom=orig._effectiveFrom;
+    b._stubs=orig._stubs;
+    b._log=orig._log;
+    b._disclosedsize=orig._disclosedsize;
+    return b;
     }
- */
-    //fired by adr orders
-//  public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side, EnumOrderReason reason, EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage stage, int dynamicdur, double slippage, boolean transmit, String validity, boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs){
+
     public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side,EnumOrderReason reason,EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicdur, double slippage, boolean transmit, String validity,boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs,String log){
         //after slippage add boolean trasmit,string validity, at end add String effectiveFrom, HashMap<Integer,Integer>stubs
         super(obj);
