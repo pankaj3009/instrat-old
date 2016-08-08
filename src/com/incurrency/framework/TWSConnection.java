@@ -937,7 +937,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     ob.setInternalOrderIDEntry(internalOrderIDEntry);
                     ArrayList<Contract> contracts = c.getWrapper().createContract(ob.getChildSymbolID() - 1);
                     
-                    if (order.m_displaySize < order.m_totalQuantity) {
+                    if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize>0) {
                         OrderEvent subEvent = event.clone(event);
                         subEvent.setOrderSize(event.getOrderSize() - event.getDisclosedsize());
                         order.m_totalQuantity = order.m_displaySize;
