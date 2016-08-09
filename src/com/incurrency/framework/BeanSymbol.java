@@ -2490,7 +2490,12 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the underlyingID
      */
     public int getUnderlyingID() {
-        return underlyingID;
+        if(underlyingID>=0){
+            return underlyingID;
+        }else{
+            underlyingID=Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry());
+            return underlyingID;
+        }
     }
 
     /**
