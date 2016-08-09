@@ -157,7 +157,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private HashMap<BeanSymbol, Integer> combo = new HashMap<>(); //holds brokerSymbol and corresponding size
     private Fundamental fundamental = new Fundamental();
     private boolean addedToSymbols=false;
-    private EuropeanOption optionProcess;
+    private EuropeanOption optionProcess=null;
     private SimpleQuote underlying=new SimpleQuote();
     private double mtmPrice;
     private int bdte;

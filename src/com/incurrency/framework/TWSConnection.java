@@ -950,7 +950,7 @@ public class TWSConnection extends Thread implements EWrapper {
                                 order.m_lmtPrice=limitprice;
                             }
                         }
-                        oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, order.m_orderId, subEvent, EnumLinkedAction.PROPOGATE));
+                        oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE));
                     }
         
                     eClientSocket.placeOrder(mOrderID, contracts.get(0), order);
