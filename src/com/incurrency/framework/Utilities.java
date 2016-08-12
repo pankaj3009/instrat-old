@@ -1471,7 +1471,7 @@ public class Utilities {
     public static int getIDFromDisplayName(List<BeanSymbol> symbols, String displayName) {
         if (displayName != null) {
             for (BeanSymbol symb : symbols) {
-                if (symb.getDisplayname().equals(displayName)) {
+                if (symb.getDisplayname().equals(displayName) || symb.getDisplayname().replaceAll("[^A-Za-z0-9\\-\\_]","").equals(displayName)) {
                     return symb.getSerialno() - 1;
                 }
             }
