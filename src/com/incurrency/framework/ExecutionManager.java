@@ -113,7 +113,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
             //first update combo positions
             ArrayList<Integer> comboOrderids = new ArrayList<>();
-            for (String key : db.getKeys("opentrades")) {
+            for (String key : db.getKeys("opentrades_"+this.orderReference)) {
                 if(key.contains("_"+s.getStrategy())){
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
@@ -124,7 +124,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 }
             }
             //then update single legs
-            for (String key : db.getKeys("opentrades")) {
+            for (String key : db.getKeys("opentrades_"+this.orderReference)) {
                 if(key.contains("_"+s.getStrategy())){
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);

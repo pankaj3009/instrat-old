@@ -169,7 +169,7 @@ public class Validator {
         //String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
         try {
             ArrayList<String> tradeList = new ArrayList<>();
-            for (String key : s.db.getKeys("opentrades")) {
+            for (String key : s.db.getKeys("opentrades_"+s.getStrategy())) {
                 tradeList.add(key);
             }
             Set<String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account,s.getStrategy());
@@ -522,7 +522,7 @@ public class Validator {
 
     private static Set<String> returnSingleLegTrades(Database<String, String> db,String accountName, String strategy) {
         //Remove orders that are not in symbolist or are combos
-        Set<String> keys = db.getKeys("opentrades");
+        Set<String> keys = db.getKeys("opentrades_"+strategy);
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
@@ -592,7 +592,7 @@ public class Validator {
 
     private static Set<String> returnComboParent(Database<String, String> db, String accountName,String strategy) {
         //Remove orders that are not in symbolist or are combos
-        Set<String> keys = db.getKeys("opentrades");
+        Set<String> keys = db.getKeys("opentrades_"+strategy);
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
@@ -608,7 +608,7 @@ public class Validator {
 
     private static Set<String> returnComboChildren(Database<String,String>db,String accountName,String strategy) {
         //Remove orders that are not in symbolist or are combos
-        Set<String> keys = db.getKeys("opentrades");
+        Set<String> keys = db.getKeys("opentrades_"+strategy);
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();

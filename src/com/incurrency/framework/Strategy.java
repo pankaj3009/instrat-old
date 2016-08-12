@@ -112,9 +112,9 @@ public class Strategy implements NotificationListener {
             
             String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
             if (stratCount == null) {
-                this.strategy = tempStrategyArray[tempStrategyArray.length - 1];
+                this.strategy = tempStrategyArray[tempStrategyArray.length - 1].toLowerCase();
             } else {
-                this.strategy = tempStrategyArray[tempStrategyArray.length - 1] + stratCount;
+                this.strategy = tempStrategyArray[tempStrategyArray.length - 1].toLowerCase() + stratCount;
             }
             useRedis = prop.getProperty("redisurl") != null ? true : false;
             loadParameters(headerStrategy, type, prop);
@@ -164,7 +164,7 @@ public class Strategy implements NotificationListener {
             }
             //}
             //Add symbols if exist in position, but not in Parameters.symbol
-            for(String key:db.getKeys("opentrades")){
+            for(String key:db.getKeys("opentrades_"+strategy)){
                     String parentsymbolname = Trade.getParentSymbol(db, key);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
@@ -195,7 +195,7 @@ public class Strategy implements NotificationListener {
             
             if (validation) {
                 //Initialize open notional orders and positions
-                for (String key : db.getKeys("opentrades")) {
+                for (String key : db.getKeys("opentrades_"+strategy)) {
                     String parentsymbolname = Trade.getParentSymbol(db, key);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     int tempPosition = 0;
@@ -269,7 +269,7 @@ public class Strategy implements NotificationListener {
                     maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
                     maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
                 }
-                for (String key : db.getKeys("opentrades")) {
+                for (String key : db.getKeys("opentrades_"+strategy)) {
                     String intkey = key.split("_")[1].split(":")[1];
                     maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
                     maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
@@ -427,7 +427,7 @@ public class Strategy implements NotificationListener {
             p.setBrokerage(0);
             p.setPrice(0);
         }
-        for (String key : db.getKeys("opentrades")) {
+        for (String key : db.getKeys("opentrades_"+strategy)) {
             String parentsymbolname = Trade.getParentSymbol(db, key);
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
             int tempPosition = 0;
@@ -646,7 +646,7 @@ public class Strategy implements NotificationListener {
         HashSet<Integer>out=new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-        for (String key : db.getKeys("opentrades")) {
+        for (String key : db.getKeys("opentrades_"+strategy)) {
             if (key.contains("_"+this.getStrategy()) && Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
                 out.add(Trade.getEntryOrderIDInternal(db, key));
                 //return Trade.getEntryOrderIDInternal(db, key);

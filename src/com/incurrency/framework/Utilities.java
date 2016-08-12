@@ -447,7 +447,7 @@ public class Utilities {
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
-        for (String key : db.getKeys("opentrades")) {
+        for (String key : db.getKeys("opentrades_"+strategy)) {
             if (key.contains("_" + strategy)) {
                 String childdisplayname = Trade.getEntrySymbol(db, key);
                 String parentdisplayname = Trade.getParentSymbol(db, key);
