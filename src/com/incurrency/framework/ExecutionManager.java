@@ -2385,7 +2385,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             int exitSize = Trade.getExitSize(db, key);
                             double exitPrice = Trade.getExitPrice(db, key);
                             int adjTradeSize = exitSize + filled > entrySize ? (entrySize - exitSize) : filled;
-                            int newexitSize = filled + exitSize;
+                            int newexitSize = adjTradeSize + exitSize;
                             filled = filled - adjTradeSize;
                             double newexitPrice = (exitPrice * exitSize + adjTradeSize * avgFillPrice) / (newexitSize);
                             Trade.updateExit(db, parentid, ob.getReason(), ob.getParentOrderSide(), newexitPrice, newexitSize, ob.getParentInternalOrderID(), orderid, ob.getParentInternalOrderID(), parentInternalOrderIDEntry, timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getLog());
