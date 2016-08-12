@@ -30,6 +30,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     private Drop sync;
     private LimitedQueue recentOrders;
     private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
+    boolean recalculate=false;
 
     public OrderTypeRel(int id, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
@@ -93,7 +94,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
                 //check if there is a case for updating rel price. Only time criteron at present.
                 if (recentOrders.size() == 10 && (new Date().getTime() - (Long) recentOrders.get(0)) < 120000) {// More than 10 orders in last 2 minutes
-                    //Do nothing
+                    recalculate=true;
                 } else {
                     OrderBean ob = c.getOrders().get(externalOrderID);
                     if (ob != null) {
@@ -102,7 +103,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                         switch (side) {
                             case BUY:
                             case COVER:
-                                double bidPrice = Parameters.symbol.get(id).getBidPrice();
+                        if(recalculate){
+                            limitPrice=Utilities.getOptionLimitPriceForRel(Parameters.symbol, id, Parameters.symbol.get(id).getUnderlyingID(), EnumOrderSide.BUY, Parameters.symbol.get(id).getRight(), ticksize);
+                            tmpLimitPrice = limitPrice;
+                            logger.log(Level.INFO,"{0},{1},{2},{3},{4},Recalculated Limit Price at {5}",new Object[]
+                            {oms.getS().getStrategy(),c.getAccountName(),Parameters.symbol.get(id).getDisplayname(),
+                            ob.getParentInternalOrderID(),ob.getOrderID(),limitPrice});
+                            recalculate=false;
+                        }
+                        double bidPrice = Parameters.symbol.get(id).getBidPrice();
                                 switch (Parameters.symbol.get(id).getType()) {
                                     case "OPT":
                                         Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
