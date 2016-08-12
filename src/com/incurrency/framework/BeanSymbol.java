@@ -160,8 +160,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private EuropeanOption optionProcess=null;
     private SimpleQuote underlying=new SimpleQuote();
     private double mtmPrice;
-    private int bdte;
-    private long cdte;
+    private int bdte=-1;
+    private long cdte=-1;
     private int underlyingID=-1;
 
     
@@ -2470,7 +2470,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the dte
      */
     public int getBdte() {
-        if (bdte != 0) {
+        if (bdte >= 0) {
             return bdte;
         } else {
             try {
@@ -2479,7 +2479,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 bdte = Algorithm.ind.businessDaysBetween(new JDate(new Date()), expiryDate);
                 return bdte;
             } catch (Exception e) {
-                bdte = 0;
+                bdte = -1;
                 logger.log(Level.SEVERE, null, e);
                 return bdte;
             }
@@ -2509,7 +2509,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the cdte
      */
     public long getCdte() {
-        if (cdte != 0) {
+        if (cdte >0) {
             return cdte;
         } else {
             try {
@@ -2518,7 +2518,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 cdte = expiryDate.sub(new JDate(new Date()));
                 return cdte;
             } catch (Exception e) {
-                cdte = 0;
+                cdte = -1;
                 logger.log(Level.SEVERE, null, e);
                 return cdte;
             }
