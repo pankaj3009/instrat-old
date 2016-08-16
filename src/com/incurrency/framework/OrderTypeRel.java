@@ -32,11 +32,12 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
     boolean recalculate=false;
 
-    public OrderTypeRel(int id, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
+    public OrderTypeRel(int id, int orderid,BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
             sync=new Drop();
             this.c = c;
             this.id = id;
+            this.externalOrderID=orderid;
             recentOrders = new LimitedQueue(10);
 //We need underlyingid, if we are doing options.
             //As there are only two possibilities for underlying(as of now), we test for both.
@@ -261,9 +262,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     public void orderStatusReceived(OrderStatusEvent event) {
         OrderBean ob = c.getOrders().get(event.getOrderID());
         if (ob != null) {
-            if (this.c.equals(event.getC()) && event.getOrderID() == ob.getOrderID() && (ob.getParentSymbolID()-1)==id) {
-                //this.limitPrice = ob.getParentLimitPrice();
-                externalOrderID = ob.getOrderID();
+            if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && (ob.getParentSymbolID()-1)==id) {
                 if (event.getRemaining() == 0) {
                     //synchronized (syncObject) {
                     this.sync.put("FINISHED");

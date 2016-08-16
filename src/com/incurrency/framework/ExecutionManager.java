@@ -841,15 +841,18 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 synchronized (c.lockOrderMapping) {
                     c.getOrderMapping().put(new Index(orderReference, event.getInternalorder()), orderids);
                 }
-            switch (event.getOrderType()) {
-            case CUSTOMREL:
-                Thread t = new Thread(new OrderTypeRel(id, c, event, tickSize, this));
-                t.setName("OrderType: REL "+Parameters.symbol.get(id).getDisplayname());
-                t.start();
-                break;
-            default:
-                break;
-        }
+                for (int orderid : orderids) {
+                    switch (event.getOrderType()) {
+                        case CUSTOMREL:
+                            Thread t = new Thread(new OrderTypeRel(id,orderid, c, event, tickSize, this));
+                            t.setName("OrderType: REL " + Parameters.symbol.get(id).getDisplayname());
+                            t.start();
+                            break;
+                        default:
+                            break;
+                    }               
+                 }
+
             }
         } else {
             logger.log(Level.INFO, "303,EntryOrderNotSent, {0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getInternalorder()+delimiter+tempOpenPosition+delimiter+getS().getPlmanager().isDayProfitTargetHit()+delimiter+getS().getPlmanager().isDayStopLossHit()});
@@ -934,15 +937,17 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         synchronized (c.lockOrderMapping) {
             c.getOrderMapping().put(new Index(orderReference, event.getInternalorder()), orderids);
         }
-        switch (event.getOrderType()) {
-            case CUSTOMREL:
-                Thread t = new Thread(new OrderTypeRel(id, c, event, tickSize, this));
-                t.setName("OrderType: REL "+Parameters.symbol.get(id).getDisplayname());
-                t.start();
-                break;
-            default:
-                break;
-        }
+                for (int orderid : orderids) {
+                    switch (event.getOrderType()) {
+                        case CUSTOMREL:
+                            Thread t = new Thread(new OrderTypeRel(id, orderid, c, event, tickSize, this));
+                            t.setName("OrderType: REL " + Parameters.symbol.get(id).getDisplayname());
+                            t.start();
+                            break;
+                        default:
+                            break;
+                    }                    
+                }
     }
 
     void processOrderAmend(int id, BeanConnection c, OrderEvent event) {
