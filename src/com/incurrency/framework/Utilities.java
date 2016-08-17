@@ -1470,10 +1470,12 @@ public class Utilities {
      */
     public static int getIDFromDisplayName(List<BeanSymbol> symbols, String displayName) {
         if (displayName != null) {
+            synchronized(symbols){
             for (BeanSymbol symb : symbols) {
                 if (symb.getDisplayname().equals(displayName) || symb.getDisplayname().replaceAll("[^A-Za-z0-9\\-\\_]","").equals(displayName)) {
                     return symb.getSerialno() - 1;
                 }
+            }
             }
         }
         return -1;
