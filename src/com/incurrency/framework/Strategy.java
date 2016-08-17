@@ -182,7 +182,9 @@ public class Strategy implements NotificationListener {
                         s.setStrategy(headerStrategy.toUpperCase());
                         s.setDisplayname(parentsymbolname);
                         s.setSerialno(Parameters.symbol.size()+1);
-                        Parameters.symbol.add(s);
+                        synchronized(Parameters.symbol){
+                            Parameters.symbol.add(s);
+                        }
                         Parameters.connection.get(1).getWrapper().getMktData(s, false);
                     }
             }
