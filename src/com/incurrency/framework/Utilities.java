@@ -1470,8 +1470,7 @@ public class Utilities {
      */
     public static int getIDFromDisplayName(List<BeanSymbol> symbols, String displayName) {
         if (displayName != null) {
-            List<BeanSymbol> sync_symbols = Collections.synchronizedList(symbols);
-            for (BeanSymbol symb : sync_symbols) {
+            for (BeanSymbol symb : symbols) {
                 if (symb.getDisplayname().equals(displayName) || symb.getDisplayname().replaceAll("[^A-Za-z0-9\\-\\_]","").equals(displayName)) {
                     return symb.getSerialno() - 1;
                 }
@@ -1728,7 +1727,9 @@ public class Utilities {
             s.setDisplayname(ul.getExchangeSymbol() + "_" + "OPT" + "_" + expiry + "_" + right + "_" + strikePrice);
             s.setSerialno(Parameters.symbol.size() + 1);
             s.setAddedToSymbols(true);
+            synchronized (symbols){ 
             symbols.add(s);
+            }
             return s.getSerialno() - 1;
         } else {
             return -1; //no strike inserted
@@ -1757,7 +1758,9 @@ public class Utilities {
                 s.setDisplayname(exchangeSymbol + "_OPT_" + expiry + "_" + right + "_" + strike);
                 s.setSerialno(Parameters.symbol.size() + 1);
                 s.setAddedToSymbols(true);
+                synchronized (symbols){ 
                 symbols.add(s);
+                }
                 return s.getSerialno() - 1;
             }
         }
