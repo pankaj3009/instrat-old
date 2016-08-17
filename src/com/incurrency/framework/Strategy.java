@@ -882,10 +882,8 @@ public class Strategy implements NotificationListener {
             //do housekeeping
             //1. ensure it exists in positions for strategy and oms
             if (!this.getStrategySymbols().contains(Integer.valueOf(id))) {
-                synchronized (strategySymbols) {
                 this.getStrategySymbols().add(id);
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
-                }
                 Index ind = new Index(this.getStrategy(), id);
                 if (Parameters.symbol.get(id).getBidPrice() == 0) {
                     Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
