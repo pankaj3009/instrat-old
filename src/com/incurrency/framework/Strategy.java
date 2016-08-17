@@ -887,6 +887,12 @@ public class Strategy implements NotificationListener {
                 Index ind = new Index(this.getStrategy(), id);
                 if (Parameters.symbol.get(id).getBidPrice() == 0) {
                     Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                    Thread.yield();
                 }
                 for (BeanConnection c : Parameters.connection) {
                     c.initializeConnection(this.getStrategy(), id);
