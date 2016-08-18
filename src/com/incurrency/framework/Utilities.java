@@ -65,6 +65,7 @@ import org.jquantlib.termstructures.BlackVolTermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.calendars.India;
 import org.kairosdb.client.HttpClient;
 import org.kairosdb.client.builder.DataPoint;
@@ -200,23 +201,7 @@ public class Utilities {
         return vol;
 
     }
-    /*
-     public static double getOptionCalculatedPrice(Date date,String right, String strike,String underlying, double vol){
-     EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.Date(date));
-     PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
-     EuropeanOption option = new EuropeanOption(payoff,exercise);
-     Handle<Quote> S = new Handle<Quote>(new SimpleQuote(Utilities.getDouble(underlying, 0D)));
-     org.jquantlib.time.Calendar india=new India();
-     Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual360()));
-     Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual360()));
-     Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, vol, new Actual360()));
-     BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
-     AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
-     option.setPricingEngine(engine);
-     return option.NPV();      
-     }
-    
-     */
+   
 
     /**
      *
@@ -420,48 +405,29 @@ public class Utilities {
        
         return out;
     }
-    /*
-     public static double getLastSettlePrice(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
-     String value = "0";
-     try {
-     //HttpClient client = new HttpClient("http://"+Algorithm.cassandraIP+":8085");
-     //HttpClient client = new HttpClient("http://91.121.165.108:8085/api/v1/datapoints/query:8085");
-     HttpClient client = new HttpClient("http://91.121.165.108:8085");
-     BeanSymbol s = symbols.get(id);
-     String expiry = s.getExpiry();
-     String right = s.getRight();
-     String strike = s.getOption();
-     String symbol = s.getDisplayname().split("_", -1)[0];
-     QueryBuilder builder = QueryBuilder.getInstance();
-     builder.setStart(new Date(startTime))
-     .setEnd(new Date(endTime))
-     .addMetric(metric)
-     .addTag("symbol", symbol.replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase());
-     builder.getMetrics().get(0).setOrder(QueryMetric.Order.ASCENDING);
-     if (expiry != null || (expiry != null && !expiry.equals(""))) {
-     builder.getMetrics().get(0).addTag("expiry", expiry);
-     }
-     if (right != null || (right != null && !right.equals(""))) {
-     builder.getMetrics().get(0).addTag("right", right);
-     builder.getMetrics().get(0).addTag("strike", strike);
-     }
-     long time = new Date().getTime();
-     QueryResponse response = client.query(builder);
-     List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
-     for (DataPoint dataPoint : dataPoints) {
-     long lastTime = dataPoint.getTimestamp();
-     value = dataPoint.getValue().toString();
-     }
-     client.shutdown();
-     } catch (Exception e) {
-     logger.log(Level.SEVERE, null, e);
-     }
-     return Utilities.getDouble(value, 0);
-
-     }
-
-     */
-
+    
+     public static boolean rolloverDay(int daysBeforeExpiry,Date startDate,String expiryDate) {
+        boolean rollover = false;
+        try {
+            SimpleDateFormat sdf_yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
+            String currentDay = sdf_yyyyMMdd.format(startDate);
+            Date today = sdf_yyyyMMdd.parse(currentDay);
+            JDate jToday=new JDate(today);
+            Calendar expiry = Calendar.getInstance();
+            expiry.setTime(sdf_yyyyMMdd.parse(expiryDate));
+            JDate jExpiry=new JDate(expiry.getTime());
+            JDate jAdjExpiry=jExpiry.sub(daysBeforeExpiry);
+            //expiry.set(Calendar.DATE, expiry.get(Calendar.DATE) - daysBeforeExpiry);
+            if (jAdjExpiry.le(jToday)) {
+                rollover = true;
+            }
+        } catch (Exception e) {
+            logger.log(Level.INFO, null, e);
+        }
+        return rollover;
+    }
+    
+    
     public static int openPositionCount(Database<String, String> db, List<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
         HashSet<String> temp = new HashSet<>();;
