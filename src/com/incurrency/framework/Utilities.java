@@ -94,6 +94,22 @@ public class Utilities {
                 long settletime = Utilities.getLong(optionlastpriceset[0], 0);
                 optionlastprice = Utilities.getDouble(optionlastpriceset[1], 0);
                 double vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date(settletime));
+                if (vol == 0) {
+                    if (symbols.get(id).getBidPrice() != 0 && symbols.get(id).getAskPrice() != 0 && symbols.get(underlyingid).getLastPrice() != 0) {
+                        optionlastprice = (symbols.get(id).getBidPrice() + symbols.get(id).getAskPrice()) / 2;
+                        underlyingpriorclose = symbols.get(underlyingid).getLastPrice();
+                        vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date());
+                    }
+                }
+                if (vol == 0) {//if vol is still zero
+                    if (side==EnumOrderSide.BUY||side == EnumOrderSide.SELL) {
+                        vol=0.05;
+                    } else if (side==EnumOrderSide.SHORT||side == EnumOrderSide.COVER) {
+                        vol=0.50;
+                    } 
+                    
+                }
+                
                 symbols.get(id).setCloseVol(vol);
 
             }
@@ -173,7 +189,13 @@ public class Utilities {
         Handle<YieldTermStructure> yield = new Handle<YieldTermStructure>(new FlatForward(0, india, 0.015, new Actual365Fixed()));
         Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, 0.20, new Actual365Fixed()));
         BlackScholesMertonProcess process = new BlackScholesMertonProcess(S, yield, rate, sigma);
-        double vol = option.impliedVolatility(price, process);
+        double vol=0;
+        try{
+            vol = option.impliedVolatility(price, process);
+        }catch (Exception e){
+            logger.log(Level.SEVERE,"Could not calculte vol for Symbol:{0}. OptionPrice:{1},Underlying:{2}",new Object[]{
+            s.getDisplayname(),price,underlying});
+        }
         new Settings().setEvaluationDate(new org.jquantlib.time.JDate(new Date()));
         return vol;
 
