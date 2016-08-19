@@ -66,6 +66,8 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.JDate;
+import org.jquantlib.time.Period;
+import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.India;
 import org.kairosdb.client.HttpClient;
 import org.kairosdb.client.builder.DataPoint;
@@ -416,7 +418,7 @@ public class Utilities {
             Calendar expiry = Calendar.getInstance();
             expiry.setTime(sdf_yyyyMMdd.parse(expiryDate));
             JDate jExpiry=new JDate(expiry.getTime());
-            JDate jAdjExpiry=jExpiry.sub(daysBeforeExpiry);
+            JDate jAdjExpiry=Algorithm.ind.advance(jExpiry, -daysBeforeExpiry, TimeUnit.Days);
             //expiry.set(Calendar.DATE, expiry.get(Calendar.DATE) - daysBeforeExpiry);
             if (jAdjExpiry.le(jToday)) {
                 rollover = true;
