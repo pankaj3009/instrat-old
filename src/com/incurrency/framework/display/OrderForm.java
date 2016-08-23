@@ -286,16 +286,26 @@ public class OrderForm extends javax.swing.JFrame {
                 order.put("dynamicorderduration", dynamicOrderDuration);
                 order.put("maxslippage", maxSlippage);
                 order.put("transmit", "true");
-                order.put("reason", EnumOrderReason.REGULAREXIT);
-                if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
-                    s.exit(order);
+                order.put("reason", notify);
+            switch (notify) {
+                case REGULAREXIT:
+                    if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
+                        s.exit(order);
 //                oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT,  dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
-                dispose();
-            } else {
-                oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy());
-                s.exit(order);
-                //oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
-                dispose();
+                        dispose();
+                    } else {
+                        oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy());
+                        s.exit(order);
+                        //oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
+                        dispose();
+                    }
+                    break;
+                case REGULARENTRY:
+                    s.entry(order);
+                    dispose();
+                    break;
+                default:
+                    break;
             }
         }
     }//GEN-LAST:event_cmdPlaceOrderActionPerformed
