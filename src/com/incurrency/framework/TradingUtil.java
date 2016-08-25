@@ -1385,6 +1385,7 @@ public class TradingUtil {
              */
             
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+            String todaylongtime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             String todayyyyyMMdd=DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             //int tradesToday=tradesToday(db,strategyName,timeZone,accountName,today);
             //set brokerage for open trades.
@@ -1410,6 +1411,7 @@ public class TradingUtil {
                             }
                             Trade.setExitPrice(db, key, "opentrades", exitprice);
                             Trade.setExitSize(db, key, "opentrades", Trade.getEntrySize(db, key));
+                            Trade.setExitTime(db, key,"opentrades",todaylongtime);
                             Trade.closeTrade(db, key);
                         }
                     }
