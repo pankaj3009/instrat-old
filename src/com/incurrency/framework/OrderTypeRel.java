@@ -263,7 +263,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         OrderBean ob = c.getOrders().get(event.getOrderID());
         if (ob != null) {
             if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && (ob.getParentSymbolID()-1)==id) {
-                if (event.getRemaining() == 0) {
+                if (event.getRemaining() == 0 ||event.getStatus().equals("Cancelled")) {
                     //synchronized (syncObject) {
                     this.sync.put("FINISHED");
 //                    syncObject.notify();

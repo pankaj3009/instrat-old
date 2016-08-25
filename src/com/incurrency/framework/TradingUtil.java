@@ -1385,6 +1385,7 @@ public class TradingUtil {
              */
             
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+            String todayyyyyMMdd=DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             //int tradesToday=tradesToday(db,strategyName,timeZone,accountName,today);
             //set brokerage for open trades.
             for (String key : db.getKeys("opentrades_"+strategyName)) {
@@ -1395,6 +1396,22 @@ public class TradingUtil {
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setEntryBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(0),0));
                         Trade.setExitBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(1),0));
+                        String expiry=Trade.getParentSymbol(db, key).split("_", -1)[2];
+                        if (expiry != null && !expiry.equals("") && expiry.compareTo(todayyyyyMMdd) <= 0) {
+                            double tdyexitprice = Trade.getMtmToday(db, key);
+                            double ydyexitprice = Trade.getExitPrice(db, key);
+                            int ydayexitsize = Trade.getExitSize(db, key);
+                            double exitprice;
+                            if (ydayexitsize > 0) {
+                                int tdyexitsize = Trade.getEntrySize(db, key) - ydayexitsize;
+                                exitprice = (ydyexitprice * ydayexitsize + tdyexitprice * tdyexitsize) / Trade.getEntrySize(db, key);
+                            } else {
+                                exitprice = Trade.getMtmToday(db, key);
+                            }
+                            Trade.setExitPrice(db, key, "opentrades", exitprice);
+                            Trade.setExitSize(db, key, "opentrades", Trade.getEntrySize(db, key));
+                            Trade.closeTrade(db, key);
+                        }
                     }
                 }
             }
