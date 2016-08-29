@@ -1552,6 +1552,7 @@ public class TradingUtil {
         if (!startfromNBD) {
             pnlDates.add(startDate);
         }
+        //Enhance pnlDates to contain all dates between startDate and endDate
         for (Date d = DateUtil.parseDate("yyyy-MM-dd", startDate); d.compareTo(DateUtil.parseDate("yyyy-MM-dd", endDate)) <= 0; d = DateUtil.addDays(d, 1)) {
             String temp = sdfDate.format(TradingUtil.nextGoodDay(d, 24 * 60, Algorithm.timeZone, 9, 15, 15, 30, Algorithm.holidays, true));
             if (temp.compareTo(endDate) <= 0) {
@@ -1603,7 +1604,11 @@ public class TradingUtil {
                     if(entryDate.compareTo(today)<=0){
                     double entryPrice=0;
                     double exitPrice;
-                    double mtmYesterday = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)),sdfDate.parse(yesterday));
+                    double mtmYesterday=Trade.getMtmYesterday(db, key);
+                    if(mtmYesterday==0 || Trade.getEntryTime(db, key).contains(today) ||pnlDates.size()>1){
+                        //get mtmyesterday only if the entry date was today or else we are running pnl for many days 
+                        mtmYesterday = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)),sdfDate.parse(yesterday));
+                    }
                     if (exitDate.equals("")) {
                         Trade.setMtmYesterday(db, key, "opentrades", mtmYesterday);
                     } else {
@@ -1635,6 +1640,17 @@ public class TradingUtil {
                     if (exitPrice > 0 && entryPrice > 0) {
                         double buypnl = (exitPrice - entryPrice) * entrySize;
                         EnumOrderSide side = Trade.getEntrySide(db, key);
+                        double netpnl= side == EnumOrderSide.BUY ? buypnl : -buypnl;
+                        double brokerage=0;
+                        if(Trade.getEntryTime(db, key).contains(today)){
+                            brokerage=brokerage+Trade.getEntryBrokerage(db, key);
+                        }
+                        if(Trade.getExitTime(db, key).contains(today)){
+                            brokerage=brokerage+Trade.getExitBrokerage(db, key);
+                        }
+                        
+                        netpnl=netpnl-brokerage;
+                        db.setHash("pnl", strategyaccount + ":" + today, "drilldown:"+key, String.valueOf(entrySize)+"_"+String.valueOf(entryPrice)+"_"+String.valueOf(exitPrice)+"_"+Utilities.formatDouble(brokerage, new DecimalFormat("#"))+"_"+Utilities.formatDouble(netpnl, new DecimalFormat("#")));
                         ytdpnl = ytdpnl + (side == EnumOrderSide.BUY ? buypnl : -buypnl);
                         if (entryDate.equals(today)) {
                             ytdpnl = ytdpnl - Trade.getEntryBrokerage(db, key);
