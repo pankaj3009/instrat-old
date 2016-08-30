@@ -1619,11 +1619,12 @@ public class TradingUtil {
                             }
                             if (entryDate.equals(today)) {
                                 entryPrice = Trade.getEntryPrice(db, key);
-                            } else if (entryDate.equals(yesterday)) {
+                            } else if (entryDate.compareTo(yesterday)<=0) {
                                 entryPrice = Trade.getMtmYesterday(db, key);
-                            } else if (entryDate.compareTo(yesterday) < 0) {
-                                entryPrice = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(yesterday));
-                            } else {
+                            } //else if (entryDate.compareTo(yesterday) < 0) {
+                                //entryPrice = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(yesterday));
+                            //} 
+                              else {
                             }
                             int entrySize = Trade.getEntrySize(db, key);
                             if (exitDate.equals("") || exitDate.compareTo(today) > 0) {
