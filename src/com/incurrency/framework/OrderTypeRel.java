@@ -5,6 +5,7 @@
 package com.incurrency.framework;
 
 import com.incurrency.RatesClient.Subscribe;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.logging.Level;
@@ -31,6 +32,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     private LimitedQueue recentOrders;
     private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
     boolean recalculate=false;
+    SimpleDateFormat loggingFormat=new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
+    
 
     public OrderTypeRel(int id, int orderid,BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
@@ -158,6 +161,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             e.setOrderStage(EnumOrderStage.AMEND);
                                             e.setAccount(c.getAccountName());
                                             e.setTag("BIDASKCHANGED");
+                                            String log="Side:"+side+",Calculated Price:"+calculatedPrice+",LimitPrice:"+limitPrice+",BidPrice:"+bidPrice+",New Limit Price:"+tmpLimitPrice+",Current Order Status:"+ob.getChildStatus();
+                                            oms.getDb().setHash("opentrades",oms.orderReference+":"+ob.getInternalOrderIDEntry()+":"+c.getAccountName(),loggingFormat.format(new Date()),log);
+
                                             logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}, OrderStatus:{10}",
                                                     new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), ob.getOrderID(),
                                                 side, calculatedPrice, limitPrice, bidPrice, tmpLimitPrice, ob.getChildStatus()});
@@ -227,6 +233,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             e.setOrderStage(EnumOrderStage.AMEND);
                                             e.setAccount(c.getAccountName());
                                             e.setTag("BIDASKCHANGED");
+                                            String log="Side:"+side+",Calculated Price:"+calculatedPrice+",LimitPrice:"+limitPrice+",AskPrice:"+askPrice+",New Limit Price:"+tmpLimitPrice+",Current Order Status:"+ob.getChildStatus();
+                                            oms.getDb().setHash("opentrades",oms.orderReference+":"+ob.getInternalOrderIDEntry()+":"+c.getAccountName(),loggingFormat.format(new Date()),log);
                                             logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9},OrderStatus:{10}",
                                                     new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), externalOrderID,
                                                 side, calculatedPrice, limitPrice, askPrice, tmpLimitPrice, ob.getChildStatus()});
