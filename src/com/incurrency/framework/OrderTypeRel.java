@@ -116,7 +116,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                             recalculate=false;
                         }
                         double bidPrice = Parameters.symbol.get(id).getBidPrice();
-                                switch (Parameters.symbol.get(id).getType()) {
+                        double askPrice = Parameters.symbol.get(id).getAskPrice();                                switch (Parameters.symbol.get(id).getType()) {
                                     case "OPT":
                                         Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
                                         double calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
@@ -161,7 +161,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             e.setOrderStage(EnumOrderStage.AMEND);
                                             e.setAccount(c.getAccountName());
                                             e.setTag("BIDASKCHANGED");
-                                            String log="Side:"+side+",Calculated Price:"+calculatedPrice+",LimitPrice:"+limitPrice+",BidPrice:"+bidPrice+",New Limit Price:"+tmpLimitPrice+",Current Order Status:"+ob.getChildStatus();
+                                            String log="Side:"+side+",Calculated Price:"+calculatedPrice+",LimitPrice:"+limitPrice+",BidPrice:"+bidPrice+",AskPrice:"+askPrice+",New Limit Price:"+tmpLimitPrice+",Current Order Status:"+ob.getChildStatus();
                                             oms.getDb().setHash("opentrades",oms.orderReference+":"+ob.getInternalOrderIDEntry()+":"+c.getAccountName(),loggingFormat.format(new Date()),log);
 
                                             logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}, OrderStatus:{10}",
@@ -185,7 +185,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 break;
                             case SHORT:
                             case SELL:
-                                double askPrice = Parameters.symbol.get(id).getAskPrice();
+                                bidPrice = Parameters.symbol.get(id).getAskPrice();
+                                askPrice = Parameters.symbol.get(id).getAskPrice();
                                 switch (Parameters.symbol.get(id).getType()) {
                                     case "OPT":
                                         Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
@@ -233,7 +234,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             e.setOrderStage(EnumOrderStage.AMEND);
                                             e.setAccount(c.getAccountName());
                                             e.setTag("BIDASKCHANGED");
-                                            String log="Side:"+side+",Calculated Price:"+calculatedPrice+",LimitPrice:"+limitPrice+",AskPrice:"+askPrice+",New Limit Price:"+tmpLimitPrice+",Current Order Status:"+ob.getChildStatus();
+                                            String log="Side:"+side+",Calculated Price:"+calculatedPrice+",LimitPrice:"+limitPrice+",BidPrice:"+bidPrice+",AskPrice:"+askPrice+",New Limit Price:"+tmpLimitPrice+",Current Order Status:"+ob.getChildStatus();
                                             oms.getDb().setHash("opentrades",oms.orderReference+":"+ob.getInternalOrderIDEntry()+":"+c.getAccountName(),loggingFormat.format(new Date()),log);
                                             logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9},OrderStatus:{10}",
                                                     new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), externalOrderID,
