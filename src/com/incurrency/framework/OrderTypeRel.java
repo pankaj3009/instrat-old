@@ -27,6 +27,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     ExecutionManager oms;
     boolean orderCompleted = false;
     int externalOrderID = -1;
+    int internalOrderIDEntry=-1;
     //private final Object syncObject = new Object();
     private Drop sync;
     private LimitedQueue recentOrders;
@@ -76,6 +77,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             try {
                 sync.take();
                 logger.log(Level.INFO, "OrderTypeRel: Closing Manager for " + Parameters.symbol.get(id).getDisplayname());
+                if(Trade.getAccountName(oms.getDb(),"opentrades_"+oms.orderReference+":"+internalOrderIDEntry+":"+c.getAccountName()).equals("")){
+                    oms.getDb().delKey("opentrades", oms.orderReference+":"+internalOrderIDEntry+":"+c.getAccountName());
+                }
                 Subscribe.tes.removeBidAskListener(this);
                 Subscribe.tes.removeOrderStatusListener(this);
                 for (BeanConnection c : Parameters.connection) {
@@ -102,6 +106,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 } else {
                     OrderBean ob = c.getOrders().get(externalOrderID);
                     if (ob != null) {
+                        internalOrderIDEntry=ob.getInternalOrderIDEntry();
                         limitPrice = ob.getParentLimitPrice();
                         double tmpLimitPrice = limitPrice;
                         switch (side) {

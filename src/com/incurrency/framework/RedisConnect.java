@@ -31,7 +31,11 @@ public class RedisConnect<K, V> implements Database<K, V> {
     @Override
     public Long delKey(String storeName, String key) {
         try (Jedis jedis = pool.getResource()) {
+           if( key.contains("_")){
             return jedis.del(key.toString());
+        }else{
+               return jedis.del(storeName + "_" + key);
+           }
         }
     }
 
