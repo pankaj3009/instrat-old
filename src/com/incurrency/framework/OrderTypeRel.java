@@ -190,7 +190,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 break;
                             case SHORT:
                             case SELL:
-                                bidPrice = Parameters.symbol.get(id).getAskPrice();
+                                bidPrice = Parameters.symbol.get(id).getBidPrice();
                                 askPrice = Parameters.symbol.get(id).getAskPrice();
                                 switch (Parameters.symbol.get(id).getType()) {
                                     case "OPT":
