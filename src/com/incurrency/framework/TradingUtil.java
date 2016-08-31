@@ -1608,7 +1608,7 @@ public class TradingUtil {
                             double entryPrice = 0;
                             double exitPrice;
                             double mtmYesterday = Trade.getMtmYesterday(db, key);
-                            if (mtmYesterday == 0 || Trade.getEntryTime(db, key).contains(today) || pnlDates.size() > 1) {
+                            if (mtmYesterday == 0 ||mtmYesterday == -1|| Trade.getEntryTime(db, key).contains(today) || pnlDates.size() > 1) {
                                 //get mtmyesterday only if the entry date was today or else we are running pnl for many days 
                                 mtmYesterday = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(yesterday));
                             }
@@ -1723,7 +1723,7 @@ public class TradingUtil {
             builder.setStart(startDate)
                     .setEnd(DateUtil.addSeconds(d, 1))
                     .addMetric(metric)
-                    .addTag("symbol", s.getBrokerSymbol().toLowerCase());
+                    .addTag("symbol", s.getBrokerSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase());
             if (!s.getExpiry().equals("")) {
                 builder.getMetrics().get(0).addTag("expiry", s.getExpiry());
             }
