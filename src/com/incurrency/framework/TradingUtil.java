@@ -1268,7 +1268,7 @@ public class TradingUtil {
         double mtmToday = Trade.getMtmToday(db, key);
         String todayDate = Trade.getTodayDate(db, key);
         double mtmYesterday = Trade.getMtmYesterday(db, key);
-        if (Trade.getExitPrice(db, key) == 0D || Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) { //set the MTM
+        if (Trade.getExitPrice(db, key) == 0D || Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)|| Trade.getExitTime(db, key).contains(today)) { //set the MTM
             String parentdisplayname = Trade.getParentSymbol(db, key);
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
             if (id >= 0) {
