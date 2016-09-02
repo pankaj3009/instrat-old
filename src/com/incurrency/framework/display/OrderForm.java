@@ -11,6 +11,7 @@ import com.incurrency.framework.EnumOrderSide;
 import com.incurrency.framework.EnumOrderType;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.ExecutionManager;
+import com.incurrency.framework.OrderBean;
 import com.incurrency.framework.OrderEvent;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.TradingUtil;
@@ -39,6 +40,7 @@ public class OrderForm extends javax.swing.JFrame {
     int internalOrderId=0;
     int internalOrderIdEntry=0;
     EnumOrderReason notify;
+    OrderBean ob;
     
         private static final Logger logger = Logger.getLogger(OrderForm.class.getName());
 
@@ -61,6 +63,7 @@ public class OrderForm extends javax.swing.JFrame {
             internalOrderId=Parameters.connection.get(connection).getOrders().get(ibOrderID).getInternalOrderID();
             internalOrderIdEntry=Parameters.connection.get(connection).getOrders().get(ibOrderID).getInternalOrderIDEntry();
         }
+        ob=Parameters.connection.get(connection).getOrders().get(ibOrderID);
         if(id>=0){
         this.txtLimitPrice.setText(Double.toString(Parameters.symbol.get(id).getLastPrice()));
         if(Parameters.symbol.get(id).getType().equals("COMBO")){
@@ -272,7 +275,7 @@ public class OrderForm extends javax.swing.JFrame {
         if (oms != null) {
 //                internalOrderId=s.getInternalOrderID();
                 HashMap<String,Object> order=new HashMap<>();
-                order.put("orderidint", "-1");
+                order.put("orderidint", ob.getInternalOrderID());
                 order.put("entryorderidint", internalOrderIdEntry);
                 order.put("id", symbolid);
                 order.put("side", side);
@@ -287,6 +290,7 @@ public class OrderForm extends javax.swing.JFrame {
                 order.put("maxslippage", maxSlippage);
                 order.put("transmit", "true");
                 order.put("reason", notify);
+                order.put("scale",ob.isScale());
             switch (notify) {
                 case REGULAREXIT:
                     if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
