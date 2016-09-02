@@ -7,6 +7,9 @@ import java.util.Calendar;
 import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jquantlib.time.BusinessDayConvention;
+import org.jquantlib.time.DateParser;
+import org.jquantlib.time.JDate;
 
 /**
  * Date utility
@@ -29,6 +32,15 @@ public class DateUtil {
         return System.currentTimeMillis();
     }
     
+    public static String getYesterdayDate(String date,String inputFormat,String outputFormat){
+        SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
+        JDate today=DateParser.parse(date, inputFormat);
+        JDate yesterday=today.sub(1);
+        yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
+        String yesterdayString=(sdfOutput.format(yesterday.isoDate()));
+        return yesterdayString;
+        
+    }
     /**
      * Duration is passed in minutes.The function returns the starttime of the next bar
      * @param duration 

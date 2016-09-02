@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jquantlib.time.BusinessDayConvention;
+import org.jquantlib.time.JDate;
 
 /**
  *
@@ -188,7 +191,18 @@ public class Validator {
                 EnumOrderSide entrySide = Trade.getEntrySide(s.getOms().getDb(),key);
                 double entryPrice = Trade.getEntryPrice(s.getOms().getDb(),key);
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(),key);
-                double mtmToday = Trade.getMtmToday(s.getOms().getDb(),key);
+                
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                JDate today = new JDate(TradingUtil.getAlgoDate());
+                String todayString = sdf.format(today.isoDate());
+                JDate yesterday = today.sub(1);
+                yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
+                String yesterdayString = sdf.format(yesterday.isoDate());
+                String parentDisplayName=Trade.getParentSymbol(s.getOms().getDb(), key);
+                double mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, todayString);
+                if (mtmToday == 0) {
+                    mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
+                }
                 if (entrySize - exitSize != 0) {
                     out = out + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,2)), 10) + TradingUtil.padRight(String.valueOf(mtmToday), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                 }
@@ -208,7 +222,17 @@ public class Validator {
                 EnumOrderSide entrySide = Trade.getEntrySide(s.getOms().getDb(),key);
                 double entryPrice = Trade.getEntryPrice(s.getOms().getDb(),key);
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(),key);
-                double mtmToday = Trade.getMtmToday(s.getOms().getDb(),key);
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                JDate today = new JDate(TradingUtil.getAlgoDate());
+                String todayString = sdf.format(today.isoDate());
+                JDate yesterday = today.sub(1);
+                yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
+                String yesterdayString = sdf.format(yesterday.isoDate());
+                String parentDisplayName=Trade.getParentSymbol(s.getOms().getDb(), key);
+                double mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, todayString);
+                if (mtmToday == 0) {
+                    mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
+                }
                 if (entrySize - exitSize != 0) {
                     out = out + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) +  TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryPrice, 2)), 10) + "," + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,0)), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
                 }

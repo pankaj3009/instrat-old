@@ -6,6 +6,7 @@ package com.incurrency.framework;
 
 import com.cedarsoftware.util.io.JsonReader;
 import com.cedarsoftware.util.io.JsonWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
@@ -431,12 +432,20 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
     /**
      * @return the mtmToday
      */
-    public static double getMtmToday(Database db,Object internalOrderID) {
-        double out1=Utilities.getDouble(db.getValue("opentrades",internalOrderID.toString(),"mtmtoday"),0);
-        if(out1!=0){
+    public static double getMtm(Database db, Object internalOrderID, String date) {//date in yyyy-mm-dd format
+        double out1 = Utilities.getDouble(db.getValue("mtm", internalOrderID.toString(), date), 0);
+        if (out1 != 0 ||out1!=-1) {
             return out1;
-        }else{
-            return Utilities.getDouble(db.getValue("closedtrades",internalOrderID.toString(),"mtmtoday"),0);
+        } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            try {
+                Object[] obj = Utilities.getSettlePrice(new BeanSymbol(internalOrderID.toString()), sdf.parse(date));
+                out1 = Utilities.getDouble(obj[1], 0);
+                Trade.setMtmToday(db, internalOrderID, date, out1);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, null, e);
+            }
+            return out1;
         }
 
     }
@@ -444,27 +453,8 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
     /**
      * @param mtmToday the mtmToday to set
      */
-    public static void setMtmToday(Database db,Object internalOrderID,String tradeStatus,double mtmToday) {
-db.setHash(tradeStatus,internalOrderID.toString(), "mtmtoday", String.valueOf(mtmToday));
-    }
-
-    /**
-     * @return the mtmYesterday
-     */
-    public static double getMtmYesterday(Database db,Object internalOrderID) {
-        double out1=Utilities.getDouble(db.getValue("opentrades",internalOrderID.toString(),"mtmyesterday"),0);
-        if(out1!=0){
-            return out1;
-        }else{
-            return Utilities.getDouble(db.getValue("closedtrades",internalOrderID.toString(),"mtmyesterday"),0);
-        }
-    }
-
-    /**
-     * @param mtmYesterday the mtmYesterday to set
-     */
-    public static void setMtmYesterday(Database db,Object internalOrderID,String tradeStatus,double mtmYesterday) {
-     db.setHash(tradeStatus,internalOrderID.toString(), "mtmyesterday", String.valueOf(mtmYesterday));
+    public static void setMtmToday(Database db,Object internalOrderID,String date,double mtmToday) {
+        db.setHash("mtm",internalOrderID.toString(), date, String.valueOf(mtmToday));
     }
 
     /**

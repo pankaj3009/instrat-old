@@ -27,8 +27,12 @@ import static com.incurrency.framework.EnumPrimaryApplication.VALUE;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jquantlib.time.BusinessDayConvention;
+import org.jquantlib.time.JDate;
+import org.jquantlib.time.Period;
 
 /**
  *
@@ -259,8 +263,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     };
 
     private void updateInitPositions(String key, ArrayList<Integer> combos) {
+        SimpleDateFormat sdf= new SimpleDateFormat("yyyy-MM-dd");
         int tempPosition;
         double tempPositionPrice;
+        JDate today=new JDate(TradingUtil.getAlgoDate());
+        String todayString=sdf.format(today.isoDate());
+        JDate yesterday=today.sub(1);
+        yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
+        String yesterdayString=sdf.format(yesterday.isoDate());
         String childdisplayName = Trade.getEntrySymbol(db, key);
         String parentdisplayName = Trade.getParentSymbol(db, key);
         int entryorderidint = Trade.getEntryOrderIDInternal(db, key);
@@ -270,7 +280,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int entrySize = Trade.getEntrySize(db, key);
         double exitPrice = Trade.getExitPrice(db, key);;
         int exitSize = Trade.getExitSize(db, key);
-        double mtmPrice = Trade.getMtmToday(db, key);
+        
+        double mtmPrice = Trade.getMtm(db, parentdisplayName,todayString);
+        if(mtmPrice==0){
+            mtmPrice = Trade.getMtm(db, parentdisplayName,yesterdayString);
+        }
         if (childid >= 0 && parentid >= 0 && (!combos.contains(entryorderidint) || Parameters.symbol.get(parentid).getType().equals("COMBO"))) {//single leg trades or combo trade
             Index ind = new Index(orderReference, parentid);
             int i = -1;

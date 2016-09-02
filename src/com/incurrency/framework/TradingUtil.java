@@ -1263,62 +1263,7 @@ public class TradingUtil {
         }
     }
 
-    public static void updateMTM(Database<String, String> db, String key, String timeZone) {
-        String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
-        double mtmToday = Trade.getMtmToday(db, key);
-        String todayDate = Trade.getTodayDate(db, key);
-        double mtmYesterday = Trade.getMtmYesterday(db, key);
-        if (Trade.getExitPrice(db, key) == 0D || Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)|| Trade.getExitTime(db, key).contains(today)) { //set the MTM
-            String parentdisplayname = Trade.getParentSymbol(db, key);
-            int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
-            if (id >= 0) {
-                if (!today.equals(todayDate) && mtmToday != 0) {
-                    //continuing position. move mtm to yesterday
-                    logger.log(Level.INFO,"Debug UpdateMTM. Setting MTMYesterday for key: {0} to {1}",new Object[]{key,mtmToday});
-                    Trade.setMtmYesterday(db, key, "opentrades", mtmToday);
-                    Trade.setYesterdayDate(db, key, "opentrades", todayDate);
-                }
-                logger.log(Level.INFO,"Debug UpdateMTM. Setting MTMToday for key: {0} to {1}",new Object[]{key,Parameters.symbol.get(id).getLastPrice()});
-                Trade.setMtmToday(db, key, "opentrades", Parameters.symbol.get(id).getLastPrice());
-                Trade.setTodayDate(db, key, "opentrades", today);
-                if (Trade.getMtmToday(db, key) == 0) {
-                    SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd");
-                    double alternativemtm = 0;
-                    try {
-                        alternativemtm = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(today));
-                    } catch (Exception e) {
-                    }
-                    if (alternativemtm == -1) {
-                        logger.log(Level.INFO,"Debug UpdateMTM. AlternativeMTM=-1. Setting MTMToday for key: {0} to {1}",new Object[]{key,mtmToday});
-                        Trade.setMtmToday(db, key, "opentrades", mtmToday);
-
-                    } else {
-                       logger.log(Level.INFO,"Debug UpdateMTM. AlternativeMTM !=-1. Setting MTMToday for key: {0} to {1}",new Object[]{key,alternativemtm});
-                       Trade.setMtmToday(db, key, "opentrades", alternativemtm);
-                    }
-                }
-            }
-            //change month end mtm.
-            if (Trade.getYesterdayDate(db, key).length() > 9 && !Trade.getYesterdayDate(db, key).substring(5, 7).equals(Trade.getTodayDate(db, key).substring(5, 7))) {
-                //month has changed
-                mtmYesterday = Trade.getMtmYesterday(db, key);
-                Trade.setMtmPriorMonth(db, key, "opentrades", mtmYesterday);
-            }
-        } /*else {
-         if (Trade.getMtmToday(db, key) != 0) {
-         //continuing position. move mtm to yesterday
-         Trade.setMtmYesterday(db, key, "opentrades", mtmToday);
-         Trade.setYesterdayDate(db, key, "opentrades", todayDate);
-         }
-         }*/
-        //change month end mtm.
-        if (Trade.getYesterdayDate(db, key).length() > 9 && !Trade.getYesterdayDate(db, key).substring(5, 7).equals(Trade.getTodayDate(db, key).substring(5, 7))) {
-            //month has changed
-            mtmYesterday = Trade.getMtmYesterday(db, key);
-            Trade.setMtmPriorMonth(db, key, "opentrades", mtmYesterday);
-        }
-    }
-
+    
     public static int tradesToday(Database<String, String> db, String strategyName, String timeZone, String accountName, String today) {
         int tradesToday = 0; //Holds the number of trades done today
         for (String key : db.getKeys("opentrades_" + strategyName)) {
@@ -1399,14 +1344,17 @@ public class TradingUtil {
                 if (key.contains("_" + strategyName)) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
-                        TradingUtil.updateMTM(db, key, timeZone);
+                        //TradingUtil.updateMTM(db, key, timeZone);
+                        String parentDisplayName=Trade.getParentSymbol(db, key);
+                         int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentDisplayName);
+                        Trade.setMtmToday(db, parentDisplayName,today,Parameters.symbol.get(id).getLastPrice());
                         int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setEntryBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(0), 0));
                         Trade.setExitBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(1), 0));
                         String expiry = Trade.getParentSymbol(db, key).split("_", -1)[2];
                         if (expiry != null && !expiry.equals("") && expiry.compareTo(todayyyyyMMdd) <= 0) {
-                            double tdyexitprice = Trade.getMtmToday(db, key);
+                            double tdyexitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key),today);
                             double ydyexitprice = Trade.getExitPrice(db, key);
                             int ydayexitsize = Trade.getExitSize(db, key);
                             double exitprice;
@@ -1414,7 +1362,7 @@ public class TradingUtil {
                                 int tdyexitsize = Trade.getEntrySize(db, key) - ydayexitsize;
                                 exitprice = (ydyexitprice * ydayexitsize + tdyexitprice * tdyexitsize) / Trade.getEntrySize(db, key);
                             } else {
-                                exitprice = Trade.getMtmToday(db, key);
+                                exitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key),today);
                             }
                             Trade.setExitPrice(db, key, "opentrades", exitprice);
                             Trade.setExitSize(db, key, "opentrades", Trade.getEntrySize(db, key));
@@ -1430,7 +1378,6 @@ public class TradingUtil {
                 if (key.contains("_" + strategyName) && Trade.getExitBrokerage(db, key) == 0) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
-                        TradingUtil.updateMTM(db, key, timeZone);
                         int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getExitTime(db, key).substring(0, 10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setExitBrokerage(db, key, "closedtrades", Utilities.round(tempBrokerage.get(1), 0));
@@ -1572,17 +1519,13 @@ public class TradingUtil {
         for (String today : pnlDates) {
             //get last trade record date
             logger.log(Level.INFO, "PNLRecords,{0}", new Object[]{strategy + delimiter + account + delimiter + today});
-            String yesterday = getLastPNLRecordDate(db, account, strategy, today, false);
+            String yesterday = DateUtil.getYesterdayDate(today,"yyyy-MM-dd","yyy-MM-dd");
             double ytdpnl = 0;
-            if (!yesterday.equals("")) {
-                ytdpnl = Utilities.getDouble(db.getValue("pnl", strategy + ":" + account + ":" + yesterday, "ytd"), 0);
-            }
-            if (yesterday.equals("")) {
-                yesterday = sdfDate.format(Utilities.previousGoodDay(sdfDate.parse(startDate), -24 * 60, Algorithm.timeZone, 9, 15, 15, 30, Algorithm.holidays, true));
-            }
+            ytdpnl = Utilities.getDouble(db.getValue("pnl", strategy + ":" + account + ":" + yesterday, "ytd"), 0);
             Iterator<Map.Entry<Long, String>> keys = pair.entrySet().iterator();
             while (keys.hasNext()) {
                 String key = keys.next().getValue();
+                String parentSymbol=Trade.getParentSymbol(db, key);
                 String exitDate = Trade.getExitTime(db, key);
                 exitDate = exitDate.equals("") ? "" : exitDate.substring(0, 10);
                 if (exitDate.compareTo(today) <= 0 && !exitDate.equals("")) {//update win loss ratio
@@ -1613,40 +1556,15 @@ public class TradingUtil {
                         if (entryDate.compareTo(today) <= 0) {
                             double entryPrice = 0;
                             double exitPrice;
-                            double mtmYesterday = Trade.getMtmYesterday(db, key);
-                            if (mtmYesterday == 0 ||mtmYesterday == -1|| Trade.getEntryTime(db, key).contains(today) || pnlDates.size() > 1) {
-                                //get mtmyesterday only if the entry date was today or else we are running pnl for many days 
-                                mtmYesterday = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(yesterday));
-                            }
-                            if (exitDate.equals("")) {
-                                logger.log(Level.INFO,"Debug AddPNLRecords. Setting MTMYesterday for key: {0} to {1}",new Object[]{key,mtmYesterday});
-                                Trade.setMtmYesterday(db, key, "opentrades", mtmYesterday);
-                            } else {
-                                logger.log(Level.INFO,"Debug AddPNLRecords. Setting MTMYesterday for key: {0} to {1}",new Object[]{key,mtmYesterday});
-                                Trade.setMtmYesterday(db, key, "closedtrades", mtmYesterday);
-                            }
+                            double mtmYesterday = Trade.getMtm(db, parentSymbol, yesterday);
                             if (entryDate.equals(today)) {
                                 entryPrice = Trade.getEntryPrice(db, key);
                             } else if (entryDate.compareTo(yesterday)<=0) {
-                                entryPrice = Trade.getMtmYesterday(db, key);
-                            } //else if (entryDate.compareTo(yesterday) < 0) {
-                                //entryPrice = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(yesterday));
-                            //} 
-                              else {
-                            }
+                                entryPrice = Trade.getMtm(db, parentSymbol,yesterday);
+                            }                               
                             int entrySize = Trade.getEntrySize(db, key);
                             if (exitDate.equals("") || exitDate.compareTo(today) > 0) {
-                                exitPrice = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(today));
-                                if (exitPrice == -1 && today.equals(bpd)) {
-                                    exitPrice = Trade.getMtmToday(db, key);
-                                }
-                                if (exitDate.equals("")) {
-                                    logger.log(Level.INFO,"Debug AddPNLRecords.OpenTrades Setting MTMToday for key: {0} to {1}",new Object[]{key,exitPrice});
-                                    Trade.setMtmToday(db, key, "opentrades", exitPrice);
-                                } else {
-                                    logger.log(Level.INFO,"Debug AddPNLRecords. ClosedTrades.Setting MTMToday for key: {0} to {1}",new Object[]{key,exitPrice});
-                                    Trade.setMtmToday(db, key, "closedtrades", exitPrice);
-                                }
+                                exitPrice = Trade.getMtm(db, parentSymbol,today);
                             } else {
                                 exitPrice = Trade.getExitPrice(db, key);
                             }
@@ -1706,6 +1624,7 @@ public class TradingUtil {
         updateDrawDownMetrics(db, strategy, account);
     }
 
+    /*
     private static double getSettlePrice(BeanSymbol s, Date d) {
         double settlePrice = -1;
         try {
@@ -1758,7 +1677,7 @@ public class TradingUtil {
         }
         return settlePrice;
     }
-
+*/
     private static String getLastPNLRecordDate(Database<String, String> db, String accountName, String strategyName, String referenceDate, boolean equals) {
         Set<String> dates = db.getKeys("pnl_" + strategyName + ":" + accountName);
         String yesterday = "";
