@@ -295,7 +295,11 @@ public class Strategy implements NotificationListener {
                 }
                 if (MainAlgorithm.isUseForTrading()) {
                     Timer closeProcessing = new Timer("Timer: " + this.strategy + " CloseProcessing");
-                    closeProcessing.schedule(runPrintOrders, com.incurrency.framework.DateUtil.addSeconds(endDate, (this.maxOrderDuration + 1) * 60));
+                    Date reportingTime=DateUtil.addSeconds(endDate, (this.maxOrderDuration + 1) * 60);
+                    if(reportingTime.before(new Date())){
+                        reportingTime=DateUtil.addDays(reportingTime, 1);
+                    }
+                    closeProcessing.schedule(runPrintOrders, reportingTime);
                 }
             }
 
@@ -340,7 +344,11 @@ public class Strategy implements NotificationListener {
         setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
         setDynamicOrderDuration(p.getProperty("DynamicOrderDuration") == null ? 1 : Integer.parseInt(p.getProperty("DynamicOrderDuration")));
         if (MainAlgorithm.isUseForTrading()) {
-            m.setCloseDate(DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 5) * 60)); //2 minutes after the enddate+max order duaration
+            Date shutdownTime=DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 5) * 60);
+            if(shutdownTime.before(new Date())){
+                shutdownTime=DateUtil.addDays(shutdownTime, 1);
+            }
+            MainAlgorithm.setCloseDate(shutdownTime); //2 minutes after the enddate+max order duaration
         }
         if(this.getDynamicOrderDuration()==0){
             this.setAggression(false);
