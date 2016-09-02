@@ -34,7 +34,7 @@ public class DateUtil {
     
     public static String getYesterdayDate(String date,String inputFormat,String outputFormat){
         SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
-        JDate today=DateParser.parse(date, inputFormat);
+        JDate today=DateParser.parseISO(date);
         JDate yesterday=today.sub(1);
         yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
         String yesterdayString=(sdfOutput.format(yesterday.isoDate()));

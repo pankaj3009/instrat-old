@@ -433,8 +433,8 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
      * @return the mtmToday
      */
     public static double getMtm(Database db, Object internalOrderID, String date) {//date in yyyy-mm-dd format
-        double out1 = Utilities.getDouble(db.getValue("mtm", internalOrderID.toString(), date), 0);
-        if (out1 != 0 ||out1!=-1) {
+        double out1 = Utilities.getDouble(db.getValue("mtm", "mtm_"+internalOrderID.toString(), date), 0);
+        if (out1 !=0 && out1!=-1) {
             return out1;
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -454,7 +454,7 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
      * @param mtmToday the mtmToday to set
      */
     public static void setMtmToday(Database db,Object internalOrderID,String date,double mtmToday) {
-        db.setHash("mtm",internalOrderID.toString(), date, String.valueOf(mtmToday));
+        db.setHash("mtm","mtm_"+internalOrderID.toString(), date, String.valueOf(mtmToday));
     }
 
     /**

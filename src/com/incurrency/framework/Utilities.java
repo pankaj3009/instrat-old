@@ -304,10 +304,17 @@ public class Utilities {
             Date startDate = DateUtil.addDays(d, -10);
             Date endDate = d;
             QueryBuilder builder = QueryBuilder.getInstance();
+            String symbol=null;
+            if(s.getExchangeSymbol()!=null){
+                symbol=s.getExchangeSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
+            }else{
+                symbol=s.getDisplayname().split("_",-1)[0];
+                symbol=symbol.replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
+            }
             builder.setStart(startDate)
                     .setEnd(endDate)
                     .addMetric(metric)
-                    .addTag("symbol", s.getExchangeSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase());
+                    .addTag("symbol", symbol);
             if (s.getExpiry() != null && !s.getExpiry().equals("")) {
                 builder.getMetrics().get(0).addTag("expiry", s.getExpiry());
             }
