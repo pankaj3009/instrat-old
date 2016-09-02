@@ -1274,9 +1274,11 @@ public class TradingUtil {
             if (id >= 0) {
                 if (!today.equals(todayDate) && mtmToday != 0) {
                     //continuing position. move mtm to yesterday
+                    logger.log(Level.INFO,"Debug UpdateMTM. Setting MTMYesterday for key: {0} to {1}",new Object[]{key,mtmToday});
                     Trade.setMtmYesterday(db, key, "opentrades", mtmToday);
                     Trade.setYesterdayDate(db, key, "opentrades", todayDate);
                 }
+                logger.log(Level.INFO,"Debug UpdateMTM. Setting MTMToday for key: {0} to {1}",new Object[]{key,Parameters.symbol.get(id).getLastPrice()});
                 Trade.setMtmToday(db, key, "opentrades", Parameters.symbol.get(id).getLastPrice());
                 Trade.setTodayDate(db, key, "opentrades", today);
                 if (Trade.getMtmToday(db, key) == 0) {
@@ -1287,10 +1289,12 @@ public class TradingUtil {
                     } catch (Exception e) {
                     }
                     if (alternativemtm == -1) {
+                        logger.log(Level.INFO,"Debug UpdateMTM. AlternativeMTM=-1. Setting MTMToday for key: {0} to {1}",new Object[]{key,mtmToday});
                         Trade.setMtmToday(db, key, "opentrades", mtmToday);
 
                     } else {
-                        Trade.setMtmToday(db, key, "opentrades", alternativemtm);
+                       logger.log(Level.INFO,"Debug UpdateMTM. AlternativeMTM !=-1. Setting MTMToday for key: {0} to {1}",new Object[]{key,alternativemtm});
+                       Trade.setMtmToday(db, key, "opentrades", alternativemtm);
                     }
                 }
             }
@@ -1319,7 +1323,7 @@ public class TradingUtil {
         int tradesToday = 0; //Holds the number of trades done today
         for (String key : db.getKeys("opentrades_" + strategyName)) {
             if (key.contains("_" + strategyName)) {
-                TradingUtil.updateMTM(db, key, timeZone);
+//                TradingUtil.updateMTM(db, key, timeZone);
                 String entryTime = Trade.getEntryTime(db, key);
                 String exitTime = Trade.getExitTime(db, key);
                 String account = Trade.getAccountName(db, key);
@@ -1395,6 +1399,7 @@ public class TradingUtil {
                 if (key.contains("_" + strategyName)) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
+                        TradingUtil.updateMTM(db, key, timeZone);
                         int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setEntryBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(0), 0));
@@ -1425,6 +1430,7 @@ public class TradingUtil {
                 if (key.contains("_" + strategyName) && Trade.getExitBrokerage(db, key) == 0) {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
+                        TradingUtil.updateMTM(db, key, timeZone);
                         int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getExitTime(db, key).substring(0, 10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setExitBrokerage(db, key, "closedtrades", Utilities.round(tempBrokerage.get(1), 0));
@@ -1613,8 +1619,10 @@ public class TradingUtil {
                                 mtmYesterday = getSettlePrice(new BeanSymbol(Trade.getEntrySymbol(db, key)), sdfDate.parse(yesterday));
                             }
                             if (exitDate.equals("")) {
+                                logger.log(Level.INFO,"Debug AddPNLRecords. Setting MTMYesterday for key: {0} to {1}",new Object[]{key,mtmYesterday});
                                 Trade.setMtmYesterday(db, key, "opentrades", mtmYesterday);
                             } else {
+                                logger.log(Level.INFO,"Debug AddPNLRecords. Setting MTMYesterday for key: {0} to {1}",new Object[]{key,mtmYesterday});
                                 Trade.setMtmYesterday(db, key, "closedtrades", mtmYesterday);
                             }
                             if (entryDate.equals(today)) {
@@ -1633,8 +1641,10 @@ public class TradingUtil {
                                     exitPrice = Trade.getMtmToday(db, key);
                                 }
                                 if (exitDate.equals("")) {
+                                    logger.log(Level.INFO,"Debug AddPNLRecords.OpenTrades Setting MTMToday for key: {0} to {1}",new Object[]{key,exitPrice});
                                     Trade.setMtmToday(db, key, "opentrades", exitPrice);
                                 } else {
+                                    logger.log(Level.INFO,"Debug AddPNLRecords. ClosedTrades.Setting MTMToday for key: {0} to {1}",new Object[]{key,exitPrice});
                                     Trade.setMtmToday(db, key, "closedtrades", exitPrice);
                                 }
                             } else {
