@@ -320,6 +320,7 @@ public class Strategy implements NotificationListener {
         String endDateStr = currDateStr + " " + p.getProperty("EndTime");
         setStartDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr, timeZone));
         setEndDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, timeZone));
+       /*
         if (TradingUtil.getAlgoDate().compareTo(getEndDate()) > 0) {
             //increase enddate by one calendar day
             setEndDate(DateUtil.addDays(getEndDate(), 1));
@@ -333,6 +334,7 @@ public class Strategy implements NotificationListener {
             //reduce startdate by one calendar day
             setStartDate(DateUtil.addDays(getStartDate(), -1));
         }
+        */
         setMaxSlippageEntry(p.getProperty("MaxSlippageEntry") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageEntry")) / 100); // divide by 100 as input was a percentage
         setMaxSlippageExit(p.getProperty("MaxSlippageExit") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageExit")) / 100); // divide by 100 as input was a percentage
         setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
