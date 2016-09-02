@@ -84,55 +84,11 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
-       public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize) {
+    public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize) {
         double price = symbols.get(id).getLastPrice();
         try {
-            double optionlastprice = 0;
-//        Object[] optionlastpriceset = Utilities.getLastSettlePriceOption(Parameters.symbol, id, new Date().getTime() - 10 * 24 * 60 * 60 * 1000, new Date().getTime() - 1000000, "india.nse.option.s4.daily.settle");
-            Object[] optionlastpriceset = Utilities.getSettlePrice(symbols.get(id), new Date());
-            Object[] underlyinglastpriceset = Utilities.getSettlePrice(symbols.get(underlyingid), new Date());
-            double underlyingpriorclose = Utilities.getDouble(underlyinglastpriceset[1], 0);
-
-            if (optionlastpriceset != null && optionlastpriceset.length == 2) {
-                long settletime = Utilities.getLong(optionlastpriceset[0], 0);
-                optionlastprice = Utilities.getDouble(optionlastpriceset[1], 0);
-                double vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date(settletime));
-                if (vol == 0) {
-                    if (symbols.get(id).getBidPrice() != 0 && symbols.get(id).getAskPrice() != 0 && symbols.get(underlyingid).getLastPrice() != 0) {
-                        optionlastprice = (symbols.get(id).getBidPrice() + symbols.get(id).getAskPrice()) / 2;
-                        underlyingpriorclose = symbols.get(underlyingid).getLastPrice();
-                        vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date());
-                    }
-                }
-                if (vol == 0) {//if vol is still zero
-                    if (side==EnumOrderSide.BUY||side == EnumOrderSide.SELL) {
-                        vol=0.05;
-                    } else if (side==EnumOrderSide.SHORT||side == EnumOrderSide.COVER) {
-                        vol=0.50;
-                    } 
-                    
-                }
-                
-                symbols.get(id).setCloseVol(vol);
-
-            }
-
-            if (price == 0 && optionlastprice > 0) {
-//                double underlyingprice = symbols.get(underlyingid).getLastPrice();
-//                double underlyingchange = 0;
-//                if (underlyingprice != 0) {
-//                    underlyingchange = underlyingprice - underlyingpriorclose;//+ve if up
-//                }
-                price =  symbols.get(id).getOptionProcess().NPV();
-//                        
-//                switch (right) {
-//                    case "CALL":
-//                        price=optionlastprice + 0.5 * underlyingchange;
-//                        break;
-//                    case "PUT":
-//                        price = optionlastprice - 0.5 * underlyingchange;
-//                        break;
-//                }
+            if (price == 0) {
+                price=getTheoreticalOptionPrice(symbols,id, underlyingid, side, right,tickSize);
             }
             double bidprice = symbols.get(id).getBidPrice();
             double askprice = symbols.get(id).getAskPrice();
@@ -170,9 +126,85 @@ public class Utilities {
         return price;
     }
 
+    public static double getTheoreticalOptionPrice(List<BeanSymbol> symbols, int id, int underlyingid, EnumOrderSide side, String right, double tickSize) {
+        double price = -1;
+        try {
+            double optionlastprice = 0;
+            Object[] optionlastpriceset = Utilities.getSettlePrice(symbols.get(id), new Date());
+            Object[] underlyinglastpriceset = Utilities.getSettlePrice(symbols.get(underlyingid), new Date());
+            double underlyingpriorclose = Utilities.getDouble(underlyinglastpriceset[1], 0);
+
+            if (optionlastpriceset != null && optionlastpriceset.length == 2) {
+                long settletime = Utilities.getLong(optionlastpriceset[0], 0);
+                optionlastprice = Utilities.getDouble(optionlastpriceset[1], 0);
+                double vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date(settletime));
+                if (vol == 0) {
+                    if (symbols.get(id).getBidPrice() != 0 && symbols.get(id).getAskPrice() != 0 && symbols.get(underlyingid).getLastPrice() != 0) {
+                        optionlastprice = (symbols.get(id).getBidPrice() + symbols.get(id).getAskPrice()) / 2;
+                        underlyingpriorclose = symbols.get(underlyingid).getLastPrice();
+                        vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date());
+                    }
+                }
+                if (vol == 0) {//if vol is still zero
+                    if (side == EnumOrderSide.BUY || side == EnumOrderSide.SELL) {
+                        vol = 0.05;
+                    } else if (side == EnumOrderSide.SHORT || side == EnumOrderSide.COVER) {
+                        vol = 0.50;
+                    }
+                }
+                symbols.get(id).setCloseVol(vol);
+            }
+            price = symbols.get(id).getOptionProcess().NPV();
+            price = Utilities.roundTo(price, tickSize);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
+        return price;
+    }
+    
+    public static double getLimitPriceForOrder(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize,EnumOrderType orderType){
+        double price = symbols.get(id).getLastPrice();
+        String type=symbols.get(id).getType();
+        switch(type){
+            case "OPT":
+                switch(orderType){
+                    case LMT:
+                        price=symbols.get(id).getLastPrice();
+                        if(price==-1 || price==0){
+                            price=getTheoreticalOptionPrice(symbols,id, underlyingid, side, right,tickSize);
+                        }
+                        break;
+                    case MKT:
+                        price=0;
+                    case CUSTOMREL:
+                        price=getOptionLimitPriceForRel(symbols,id, underlyingid, side, right,tickSize);
+                    default:
+                        break;
+                }
+                break;
+            default:
+            switch(orderType){
+                case MKT:
+                    price=0;
+                    break;
+                case CUSTOMREL:
+                    if (side.equals("BUY") || side.equals("COVER")) {
+                        price = Parameters.symbol.get(id).getBidPrice();
+                    } else {
+                        price = Parameters.symbol.get(id).getAskPrice();
+                    }
+                    if (price == 0 || price == -1) {
+                        price = Parameters.symbol.get(id).getLastPrice();
+                    }
+                    break;
+                }
+            break;
+
+        }       
+        return price;
+    }
     
     public static double getImpliedVol(BeanSymbol s, double underlying, double price, Date evaluationDate) {
-
         new Settings().setEvaluationDate(new org.jquantlib.time.JDate(evaluationDate));
         String strike = s.getOption();
         String right = s.getRight();
@@ -1548,7 +1580,7 @@ public class Utilities {
      * @param expiry
      * @return
      */
-    public static ArrayList<Integer> getOrInsertOptionIDForLongSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
+    public static ArrayList<Integer> getOrInsertOptionIDForPaySystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
         int id = -1;
         ArrayList<Integer> out = new ArrayList<>();
         String displayname = symbols.get(symbolid).getDisplayname();
@@ -1615,6 +1647,74 @@ public class Utilities {
         return out;
     }
 
+    public static ArrayList<Integer> getOrInsertOptionIDForReceiveSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
+        int id = -1;
+        ArrayList<Integer> out = new ArrayList<>();
+        String displayname = symbols.get(symbolid).getDisplayname();
+        String underlying = displayname.split("_")[0];
+        double strikeDistance = 0;
+        switch (side) {
+            case BUY:
+                if (!Parameters.symbol.get(symbolid).getType().equals("FUT")) {
+                    symbolid = Utilities.getFutureIDFromBrokerSymbol(symbols, symbolid, expiry);
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
+                } else {
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
+                }
+                id = Utilities.getATMStrike(symbols, symbolid, strikeDistance, expiry, "PUT");
+                if (id == -1) {
+                    id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "PUT");
+                }
+                if (id > 0) {
+                    out.add(id);
+                }
+                break;
+            case SELL:
+                for (BeanPosition p : positions.values()) {
+                    if (p.getPosition() != 0) {
+                        int tradeid = p.getSymbolid();
+                        String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("PUT")) {
+                            id = tradeid;
+                            out.add(id);
+                        }
+                    }
+                }
+                break;
+            case SHORT:
+                if (!Parameters.symbol.get(symbolid).getType().equals("FUT")) {
+                    int futureid = Utilities.getFutureIDFromBrokerSymbol(symbols, symbolid, expiry);
+                    strikeDistance = Parameters.symbol.get(futureid).getStrikeDistance();
+                } else {
+                    strikeDistance = Parameters.symbol.get(symbolid).getStrikeDistance();
+                }
+                id = Utilities.getATMStrike(symbols, symbolid, strikeDistance, expiry, "CALL");
+                if (id == -1) {
+                    id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "CALL");
+                }
+                if (id >= 0) {
+                    out.add(id);
+                }
+                break;
+            case COVER:
+                for (BeanPosition p : positions.values()) {
+                    if (p.getPosition() != 0) {
+                        int tradeid = p.getSymbolid();
+                        String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("CALL")) {
+                            id = tradeid;
+                            out.add(id);
+                        }
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        return out;
+    }
+
+    
       public static ArrayList<Integer> getOrInsertATMOptionIDForShortSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
         int id = -1;
         ArrayList<Integer> out = new ArrayList<>();
@@ -1760,12 +1860,12 @@ public class Utilities {
     }
 
     
-    public static int getNetPositionFromOptions(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id) {
+    public static int getNetPosition(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id, String type) {
         int out = 0;
         ArrayList<Integer> tempSymbols = new ArrayList<>();
         BeanSymbol ref = symbols.get(id);
         for (BeanSymbol s : symbols) {
-            if (s.getBrokerSymbol().equals(ref.getBrokerSymbol())) {
+            if (s.getBrokerSymbol().equals(ref.getBrokerSymbol()) && s.getType().equals(type)) {
                 tempSymbols.add(s.getSerialno() - 1);
             }
         }
