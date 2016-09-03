@@ -32,7 +32,13 @@ public class DateUtil {
         return System.currentTimeMillis();
     }
     
-    public static String getYesterdayDate(String date,String inputFormat,String outputFormat){
+    /**
+     * 
+     * @param date in format "yyyy-MM-dd"
+     * @param outputFormat
+     * @return 
+     */
+    public static String getNextBusinessDay(String date,String outputFormat){
         SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
         JDate today=DateParser.parseISO(date);
         JDate yesterday=today.sub(1);
@@ -41,6 +47,23 @@ public class DateUtil {
         return yesterdayString;
         
     }
+ 
+    /**
+     * 
+     * @param date in format "yyyy-MM-dd"
+     * @param outputFormat
+     * @return 
+     */
+       public static String getPriorBusinessDay(String date,String outputFormat){
+        SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
+        JDate today=DateParser.parseISO(date);
+        JDate yesterday=today.add(1);
+        yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Following);
+        String tomorrowString=(sdfOutput.format(yesterday.isoDate()));
+        return tomorrowString;
+        
+    }
+ 
     /**
      * Duration is passed in minutes.The function returns the starttime of the next bar
      * @param duration 

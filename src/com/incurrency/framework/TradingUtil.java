@@ -1347,7 +1347,7 @@ public class TradingUtil {
                         //TradingUtil.updateMTM(db, key, timeZone);
                         String parentDisplayName=Trade.getParentSymbol(db, key);
                          int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentDisplayName);
-                        Trade.setMtmToday(db, parentDisplayName,today,Parameters.symbol.get(id).getLastPrice());
+                        Trade.setMtm(db, parentDisplayName,today,Parameters.symbol.get(id).getLastPrice());
                         int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setEntryBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(0), 0));
@@ -1519,7 +1519,7 @@ public class TradingUtil {
         for (String today : pnlDates) {
             //get last trade record date
             logger.log(Level.INFO, "PNLRecords,{0}", new Object[]{strategy + delimiter + account + delimiter + today});
-            String yesterday = DateUtil.getYesterdayDate(today,"yyyy-MM-dd","yyy-MM-dd");
+            String yesterday = DateUtil.getPriorBusinessDay(today,"yyy-MM-dd");
             double ytdpnl = 0;
             ytdpnl = Utilities.getDouble(db.getValue("pnl", strategy + ":" + account + ":" + yesterday, "ytd"), 0);
             Iterator<Map.Entry<Long, String>> keys = pair.entrySet().iterator();

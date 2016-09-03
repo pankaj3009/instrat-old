@@ -48,12 +48,12 @@ public class Trade {
         db.setHash(tradeStatus,key,"exitorderidext",input[16]);
         db.setHash(tradeStatus,key,"exitreason",String.valueOf((input[17].equals("")||input[17]==null)?EnumOrderReason.UNDEFINED: EnumOrderReason.valueOf(input[17])));
         db.setHash(tradeStatus,key,"exitbrokerage",String.valueOf((input[18].equals("")||input[18]==null)?0D:Double.parseDouble(input[18])));
-        
-        db.setHash(tradeStatus,key,"mtmtoday",String.valueOf(input[19].equals("")?0D:Double.parseDouble(input[19])));
-        db.setHash(tradeStatus,key,"mtmyesterday",String.valueOf(input[19].equals("")?0D:Double.parseDouble(input[19])));
+//        Trade.setMtm(db, input[1], input[22],Utilities.getDouble(input[19], 0));
+//        db.setHash(tradeStatus,key,"mtmtoday",String.valueOf(input[19].equals("")?0D:Double.parseDouble(input[19])));
+//        db.setHash(tradeStatus,key,"mtmyesterday",String.valueOf(input[19].equals("")?0D:Double.parseDouble(input[19])));
         db.setHash(tradeStatus,key,"mtmpriormonth", String.valueOf(input[21].equals("")?0D:Double.parseDouble(input[21])));
-        db.setHash(tradeStatus,key,"todaydate",  String.valueOf(input[22]));
-        db.setHash(tradeStatus,key,"yesterdaydate",  String.valueOf(input[23]));
+//        db.setHash(tradeStatus,key,"todaydate",  String.valueOf(input[22]));
+//        db.setHash(tradeStatus,key,"yesterdaydate",  String.valueOf(input[23]));
         db.setHash(tradeStatus,key,"accountname",input[24]);
     }
 
@@ -64,13 +64,14 @@ public class Trade {
         db.setHash(tradeStatus, key, "entryside", String.valueOf(side));
         db.setHash(tradeStatus, key, "entryprice", String.valueOf(price));
         db.setHash(tradeStatus, key, "entrysize", String.valueOf(size));
-        db.setHash(tradeStatus, key, "mtmtoday", String.valueOf(price));
+//        db.setHash(tradeStatus, key, "mtmtoday", String.valueOf(price));
         String entryTime;
         if (timeZone.compareTo("") == 0) {
             entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
         } else {
             entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         }
+//        Trade.setMtm(db, Parameters.symbol.get(parentid).getDisplayname(), entryTime.substring(0,10),price);
         db.setHash(tradeStatus, key, "entryreason", reason.toString());
         db.setHash(tradeStatus, key, "entrytime", entryTime);
         db.setHash(tradeStatus, key, "entryorderidint", String.valueOf(entryorderidint));
@@ -97,7 +98,8 @@ public class Trade {
         db.setHash(tradeStatus, key, "exitorderidext", String.valueOf(exitorderidext));
         db.setHash(tradeStatus, key, "parentexitorderidint", String.valueOf(parentexitorderidint));
         db.setHash(tradeStatus, key, "accountname", accountName);
-        db.setHash(tradeStatus, key, "mtmtoday", String.valueOf(price));
+//        Trade.setMtm(db, Parameters.symbol.get(id).getDisplayname(), exitTime.substring(0,10),price);
+        //db.setHash(tradeStatus, key, "mtmtoday", String.valueOf(price));
         db.setHash(tradeStatus, key, "exitreason", String.valueOf(reason));
         Trade.updateExitTradeLog(db, key, tradeStatus, log);
 
@@ -441,7 +443,7 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
             try {
                 Object[] obj = Utilities.getSettlePrice(new BeanSymbol(internalOrderID.toString()), sdf.parse(date));
                 out1 = Utilities.getDouble(obj[1], 0);
-                Trade.setMtmToday(db, internalOrderID, date, out1);
+                Trade.setMtm(db, internalOrderID, date, out1);
             } catch (Exception e) {
                 logger.log(Level.SEVERE, null, e);
             }
@@ -453,7 +455,7 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
     /**
      * @param mtmToday the mtmToday to set
      */
-    public static void setMtmToday(Database db,Object internalOrderID,String date,double mtmToday) {
+    public static void setMtm(Database db,Object internalOrderID,String date,double mtmToday) {
         db.setHash("mtm","mtm_"+internalOrderID.toString(), date, String.valueOf(mtmToday));
     }
 
@@ -479,6 +481,7 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
     /**
      * @return the todayDate
      */
+    /*
     public static String getTodayDate(Database db,Object internalOrderID) {
         Object out1=db.getValue("opentrades",internalOrderID.toString(), "todaydate");
         if(out1!=null){
@@ -488,16 +491,18 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
             return out2==null?"":out2.toString();
         }
     }
-
+*/
     /**
      * @param todayDate the todayDate to set
      */
+    /*
     public static void setTodayDate(Database db,Object internalOrderID,String tradeStatus,String todayDate) {
         db.setHash(tradeStatus,internalOrderID.toString(), "todaydate", todayDate);    }
-
+*/
     /**
      * @return the yesterdayDate
      */
+    /*
     public static String getYesterdayDate(Database db,Object internalOrderID) {
         Object out1=db.getValue("opentrades",internalOrderID.toString(), "yesterdaydate");
         if(out1!=null){
@@ -507,13 +512,14 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
             return out2==null?"":out2.toString();
         }
     }
-
+*/
     /**
      * @param yesterdayDate the yesterdayDate to set
      */
+    /*
     public static void setYesterdayDate(Database db,Object internalOrderID,String tradeStatus,String yesterdayDate) {
         db.setHash(tradeStatus,internalOrderID.toString(), "yesterdaydate", yesterdayDate);    }
-
+*/
     /**
      * @return the exitOrderID
      */
