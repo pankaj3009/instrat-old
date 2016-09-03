@@ -51,7 +51,7 @@ public class Trade {
 //        Trade.setMtm(db, input[1], input[22],Utilities.getDouble(input[19], 0));
 //        db.setHash(tradeStatus,key,"mtmtoday",String.valueOf(input[19].equals("")?0D:Double.parseDouble(input[19])));
 //        db.setHash(tradeStatus,key,"mtmyesterday",String.valueOf(input[19].equals("")?0D:Double.parseDouble(input[19])));
-        db.setHash(tradeStatus,key,"mtmpriormonth", String.valueOf(input[21].equals("")?0D:Double.parseDouble(input[21])));
+//        db.setHash(tradeStatus,key,"mtmpriormonth", String.valueOf(input[21].equals("")?0D:Double.parseDouble(input[21])));
 //        db.setHash(tradeStatus,key,"todaydate",  String.valueOf(input[22]));
 //        db.setHash(tradeStatus,key,"yesterdaydate",  String.valueOf(input[23]));
         db.setHash(tradeStatus,key,"accountname",input[24]);
@@ -462,6 +462,7 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
     /**
      * @return the mtmPriorMonth
      */
+    /*
     public static double getMtmPriorMonth(Database db,Object internalOrderID) {
         double out1=Utilities.getDouble(db.getValue("opentrades",internalOrderID.toString(),"mtmpriormonth"),0);
         if(out1!=0){
@@ -470,14 +471,15 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
             return Utilities.getDouble(db.getValue("closedtrades",internalOrderID.toString(),"mtmpriormonth"),0);
         }
     }
-
+*/
     /**
      * @param mtmPriorMonth the mtmPriorMonth to set
      */
+    /*
     public static void setMtmPriorMonth(Database db,Object internalOrderID,String tradeStatus,double mtmPriorMonth) {
     db.setHash(tradeStatus,internalOrderID.toString(), "mtmpriormonth", String.valueOf(mtmPriorMonth));
     }
-
+*/
     /**
      * @return the todayDate
      */
