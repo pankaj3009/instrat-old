@@ -41,10 +41,10 @@ public class DateUtil {
     public static String getNextBusinessDay(String date,String outputFormat){
         SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
         JDate today=DateParser.parseISO(date);
-        JDate yesterday=today.sub(1);
-        yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
-        String yesterdayString=(sdfOutput.format(yesterday.isoDate()));
-        return yesterdayString;
+        JDate tomorrow=today.add(1);
+        tomorrow=Algorithm.ind.adjust(tomorrow, BusinessDayConvention.Preceding);
+        String tomorrowString=(sdfOutput.format(tomorrow.isoDate()));
+        return tomorrowString;
         
     }
  
@@ -57,10 +57,10 @@ public class DateUtil {
        public static String getPriorBusinessDay(String date,String outputFormat){
         SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
         JDate today=DateParser.parseISO(date);
-        JDate yesterday=today.add(1);
+        JDate yesterday=today.sub(1);
         yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Following);
-        String tomorrowString=(sdfOutput.format(yesterday.isoDate()));
-        return tomorrowString;
+        String yesterdayString=(sdfOutput.format(yesterday.isoDate()));
+        return yesterdayString;
         
     }
  
