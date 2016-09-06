@@ -42,7 +42,7 @@ public class DateUtil {
         SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
         JDate today=DateParser.parseISO(date);
         JDate tomorrow=today.add(1);
-        tomorrow=Algorithm.ind.adjust(tomorrow, BusinessDayConvention.Preceding);
+        tomorrow=Algorithm.ind.adjust(tomorrow, BusinessDayConvention.Following);
         String tomorrowString=(sdfOutput.format(tomorrow.isoDate()));
         return tomorrowString;
         
@@ -58,7 +58,7 @@ public class DateUtil {
         SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
         JDate today=DateParser.parseISO(date);
         JDate yesterday=today.sub(1);
-        yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Following);
+        yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
         String yesterdayString=(sdfOutput.format(yesterday.isoDate()));
         return yesterdayString;
         

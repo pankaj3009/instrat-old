@@ -1347,7 +1347,9 @@ public class TradingUtil {
                         //TradingUtil.updateMTM(db, key, timeZone);
                         String parentDisplayName=Trade.getParentSymbol(db, key);
                          int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentDisplayName);
-                        Trade.setMtm(db, parentDisplayName,today,Parameters.symbol.get(id).getLastPrice());
+                        if(Parameters.symbol.get(id).getLastPrice()!=0 && Parameters.symbol.get(id).getLastPrice()!=-1){
+                             Trade.setMtm(db, parentDisplayName,today,Parameters.symbol.get(id).getLastPrice());
+                        }
                         int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
                         Trade.setEntryBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(0), 0));
