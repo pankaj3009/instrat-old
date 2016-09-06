@@ -87,7 +87,7 @@ public class Utilities {
     public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize) {
         double price = symbols.get(id).getLastPrice();
         try {
-            if (price == 0) {
+            if (price == 0 ||price==-1) {
                 price=getTheoreticalOptionPrice(symbols,id, underlyingid, side, right,tickSize);
             }
             double bidprice = symbols.get(id).getBidPrice();
@@ -162,7 +162,7 @@ public class Utilities {
         return price;
     }
     
-    public static double getLimitPriceForOrder(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize,EnumOrderType orderType){
+    public static double getLimitPriceForOrder(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side,double tickSize,EnumOrderType orderType){
         double price = symbols.get(id).getLastPrice();
         String type=symbols.get(id).getType();
         switch(type){
@@ -171,12 +171,14 @@ public class Utilities {
                     case LMT:
                         price=symbols.get(id).getLastPrice();
                         if(price==-1 || price==0){
+                            String right=symbols.get(id).getRight();
                             price=getTheoreticalOptionPrice(symbols,id, underlyingid, side, right,tickSize);
                         }
                         break;
                     case MKT:
                         price=0;
                     case CUSTOMREL:
+                        String right=symbols.get(id).getRight();
                         price=getOptionLimitPriceForRel(symbols,id, underlyingid, side, right,tickSize);
                     default:
                         break;
