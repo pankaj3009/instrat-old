@@ -280,11 +280,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int entrySize = Trade.getEntrySize(db, key);
         double exitPrice = Trade.getExitPrice(db, key);;
         int exitSize = Trade.getExitSize(db, key);
-        
-        double mtmPrice = Trade.getMtm(db, parentdisplayName,todayString);
-        if(mtmPrice==0){
+        double mtmPrice;
+       // double mtmPrice = Trade.getMtm(db, parentdisplayName,todayString);
+       // if(mtmPrice==0){
             mtmPrice = Trade.getMtm(db, parentdisplayName,yesterdayString);
-        }
+       // }
         if (childid >= 0 && parentid >= 0 && (!combos.contains(entryorderidint) || Parameters.symbol.get(parentid).getType().equals("COMBO"))) {//single leg trades or combo trade
             Index ind = new Index(orderReference, parentid);
             int i = -1;
@@ -304,6 +304,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             p.setPointValue(this.pointValue);
                             p.setStrategy(this.orderReference);
                             c.getPositions().put(ind, p);
+                            if (Trade.getEntryTime(db, key).substring(0, 10).compareTo(todayString) < 0) {
+                                double priorUnrealizedPNLPriorDay = p.getUnrealizedPNLPriorDay();
+                                p.setUnrealizedPNLPriorDay(priorUnrealizedPNLPriorDay + entrySize * (mtmPrice - entryPrice));
+                            }
                             if (entrySize > 0) {
                                 tempOpenPosition = this.openPositionCount.get(i);
                                 this.openPositionCount.add(i, tempOpenPosition + 1);
@@ -318,6 +322,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             p.setPointValue(this.pointValue);
                             p.setStrategy(this.orderReference);
                             c.getPositions().put(ind, p);
+                            if (Trade.getEntryTime(db, key).substring(0, 10).compareTo(todayString) < 0) {
+                                double priorUnrealizedPNLPriorDay = p.getUnrealizedPNLPriorDay();
+                                p.setUnrealizedPNLPriorDay(priorUnrealizedPNLPriorDay + entrySize * (entryPrice-mtmPrice));
+                            }
                             if (entrySize > 0) {
                                 tempOpenPosition = this.openPositionCount.get(i);
                                 this.openPositionCount.add(i, tempOpenPosition + 1);
@@ -336,6 +344,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             p.setPointValue(this.pointValue);
                             p.setStrategy(this.orderReference);                            
                             c.getPositions().put(ind, p);
+                            if (Trade.getExitTime(db, key).substring(0, 10).compareTo(todayString) < 0) {
+                                double priorUnrealizedPNLPriorDay = p.getUnrealizedPNLPriorDay();
+                                p.setUnrealizedPNLPriorDay(priorUnrealizedPNLPriorDay - exitSize * (entryPrice-exitPrice));
+                            }
                             break;
                         case SELL:
                             tempPositionPrice = tempPosition - exitSize != 0 ? (tempPosition * tempPositionPrice - exitSize * exitPrice) / (-exitSize + tempPosition) : 0D;
@@ -345,11 +357,18 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             p.setPointValue(this.pointValue);
                             p.setStrategy(this.orderReference);                            
                             c.getPositions().put(ind, p);
+                            if (Trade.getExitTime(db, key).substring(0, 10).compareTo(todayString) < 0) {
+                                double priorUnrealizedPNLPriorDay = p.getUnrealizedPNLPriorDay();
+                                p.setUnrealizedPNLPriorDay(priorUnrealizedPNLPriorDay - exitSize * (exitPrice-entryPrice));
+                            }
                             break;
                         default:
                             break;
                     }
-                    p.setUnrealizedPNLPriorDay(p.getPosition() * (mtmPrice - p.getPrice()));
+                    if(p.getPosition()==0){
+                        p.setUnrealizedPNLPriorDay(0);
+                    }
+//                    p.setUnrealizedPNLPriorDay(p.getPosition() * (mtmPrice - p.getPrice()));
                     //add childPositions and set it to null
                     for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
                         p.getChildPosition().add(new BeanChildPosition(entry.getKey().getSerialno() - 1, entry.getValue()));
