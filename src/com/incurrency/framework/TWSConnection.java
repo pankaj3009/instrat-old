@@ -2218,6 +2218,11 @@ public class TWSConnection extends Thread implements EWrapper {
                 case 104:
                     
                     break;
+                case 1102: //Reconnected
+                    MainAlgorithm.connectToTWS(c);
+                     setHistoricalDataFarmConnected(true);
+                    logger.log(Level.INFO,"103, Reconnected with account {0}",new Object[]{c.getAccountName()});
+                    break;
                 case 430://We are sorry, but fundamentals data for the security specified is not available.failed to fetch
 
                     String symbol = getRequestDetails().get(id+delimiter+c.getAccountName()) != null ? getRequestDetails().get(id+delimiter+c.getAccountName()).symbol.getDisplayname() : "";
@@ -2242,9 +2247,8 @@ public class TWSConnection extends Thread implements EWrapper {
                     logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     break;
                 case 1101://Connectivity between IB and TWS has been restoreddata lost.*
-                case 1102://Connectivity between IB and TWS has been restoreddata maintained.
                 case 2106://A historical data farm is connected.
-                    setHistoricalDataFarmConnected(true);
+                    
                     logger.log(Level.INFO,"103,HistoricalDataFarmConnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     break;
                 case 502: //could not connect . Check port

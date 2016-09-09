@@ -216,7 +216,8 @@ public class MainAlgorithm extends Algorithm {
         }
     }
     
-    private void connectToTWS(BeanConnection c){
+   public static void connectToTWS(BeanConnection c){
+            c.getWrapper().eClientSocket.eDisconnect();
             c.setWrapper(new TWSConnection(c));
             c.getWrapper().connectToTWS();
         }
@@ -455,7 +456,7 @@ public class MainAlgorithm extends Algorithm {
         public void run() {
             for (BeanConnection c : Parameters.connection) {
                 if (!c.getWrapper().eClientSocket.isConnected()) {
-                    connectToTWS(c);
+                    //MainAlgorithm.connectToTWS(c);
                 }
             }
         }
