@@ -37,6 +37,7 @@ public class OrderEvent extends EventObject {
     private HashMap _stubs;
     private String _log;
     private int _disclosedsize;
+    private HashMap<String,Object> _orderAttributes=new HashMap<>();
     
     public OrderEvent(Object obj){
         super (obj);
@@ -69,6 +70,7 @@ public class OrderEvent extends EventObject {
     b._stubs=orig._stubs;
     b._log=orig._log;
     b._disclosedsize=orig._disclosedsize;
+    b._orderAttributes=orig._orderAttributes;
     return b;
     }
 
@@ -129,6 +131,7 @@ public class OrderEvent extends EventObject {
         this._effectiveFrom=(order.get("effectivefrom")!=null&&order.get("effectivefrom")!="")?order.get("effectivefrom").toString():null;
         this._log=(order.get("log")!=null&&order.get("log")!="")?order.get("log").toString():null;
         this._disclosedsize=order.get("disclosedsize")!=null?Utilities.getInt(order.get("disclosedsize").toString(),0):0;
+        this._orderAttributes=(HashMap<String,Object>)order.get("orderattributes");
     }
 
     static OrderEvent fastClose(BeanSymbol s,EnumOrderSide side,int size,String orderReference){
@@ -483,5 +486,19 @@ public class OrderEvent extends EventObject {
      */
     public void setDisclosedsize(int disclosedsize) {
         this._disclosedsize = disclosedsize;
+    }
+
+    /**
+     * @return the _orderAttributes
+     */
+    public HashMap<String,Object> getOrderAttributes() {
+        return _orderAttributes;
+    }
+
+    /**
+     * @param orderAttributes the _orderAttributes to set
+     */
+    public void setOrderAttributes(HashMap<String,Object> orderAttributes) {
+        this._orderAttributes = orderAttributes;
     }
 }

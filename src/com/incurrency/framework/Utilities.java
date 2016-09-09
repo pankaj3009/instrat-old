@@ -1537,7 +1537,7 @@ public class Utilities {
 
     }
 
-    public static int getReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {
+    public static int getCashReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {
         String symbol = symbols.get(id).getBrokerSymbol();
         String type = referenceType;
         return getIDFromBrokerSymbol(symbols, symbol, type, "", "", "");
@@ -1820,11 +1820,13 @@ public class Utilities {
             String strikePrice = Utilities.formatDouble(price, new DecimalFormat("#.##"));
             BeanSymbol ul = symbols.get(id);
             BeanSymbol s = new BeanSymbol(ul.getBrokerSymbol(), ul.getExchangeSymbol(), "OPT", expiry, right, strikePrice);
-            s.setCurrency("INR");
-            s.setExchange("NSE");
-            s.setPrimaryexchange("NSE");
+            s.setCurrency(ul.getCurrency());
+            s.setExchange(ul.getExchange());
+            s.setPrimaryexchange(ul.getPrimaryexchange());
+            s.setMinsize(ul.getMinsize());
             s.setStreamingpriority(1);
             s.setStrategy("");
+            //s.setMinsize(id);
             s.setDisplayname(ul.getExchangeSymbol() + "_" + "OPT" + "_" + expiry + "_" + right + "_" + strikePrice);
             s.setSerialno(Parameters.symbol.size() + 1);
             s.setAddedToSymbols(true);
@@ -1850,9 +1852,10 @@ public class Utilities {
                     brokerSymbol="NIFTY50";
                 }
                 BeanSymbol s = new BeanSymbol(brokerSymbol, exchangeSymbol, "OPT", expiry, right, strike);
-                s.setCurrency("INR");
-                s.setExchange("NSE");
-                s.setPrimaryexchange("NSE");
+                s.setCurrency(symbols.get(underlyingid).getCurrency());
+                s.setExchange(symbols.get(underlyingid).getExchange());
+                s.setPrimaryexchange(symbols.get(underlyingid).getPrimaryexchange());
+                s.setMinsize(symbols.get(underlyingid).getMinsize());                
                 s.setStreamingpriority(1);
                 s.setStrategy("");
                 s.setUnderlyingID(futureid);

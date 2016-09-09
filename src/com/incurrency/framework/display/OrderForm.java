@@ -275,8 +275,10 @@ public class OrderForm extends javax.swing.JFrame {
         if (oms != null) {
 //                internalOrderId=s.getInternalOrderID();
                 HashMap<String,Object> order=new HashMap<>();
+                if(ob!=null){
                 order.put("orderidint", ob.getInternalOrderID());
-                order.put("entryorderidint", internalOrderIdEntry);
+                }
+
                 order.put("id", symbolid);
                 order.put("side", side);
                 order.put("type", EnumOrderType.valueOf(comboType.getSelectedItem().toString()));
@@ -290,7 +292,10 @@ public class OrderForm extends javax.swing.JFrame {
                 order.put("maxslippage", maxSlippage);
                 order.put("transmit", "true");
                 order.put("reason", notify);
-                order.put("scale",ob.isScale());
+                order.put("orderattributes", s.getOrderAttributes());
+            if (ob!=null) {
+                order.put("scale", ob.isScale());
+            }
             switch (notify) {
                 case REGULAREXIT:
                     if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {

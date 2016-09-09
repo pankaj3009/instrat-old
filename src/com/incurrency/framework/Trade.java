@@ -62,7 +62,12 @@ public class Trade {
         db.setHash(tradeStatus, key, "entrysymbol", Parameters.symbol.get(id).getDisplayname());
         db.setHash(tradeStatus, key, "parentsymbol", Parameters.symbol.get(parentid).getDisplayname());
         db.setHash(tradeStatus, key, "entryside", String.valueOf(side));
-        db.setHash(tradeStatus, key, "entryprice", String.valueOf(price));
+
+       int origSize= Utilities.getInt(db.getValue("opentrades", key,"entrysize"),0);
+       double origPrice= Utilities.getDouble(db.getValue("opentrades", key,"entryprice"),0);
+       price=(origPrice*origSize+size*price)/(origSize+size);
+       size=size+origSize;        
+       db.setHash(tradeStatus, key, "entryprice", String.valueOf(price));
         db.setHash(tradeStatus, key, "entrysize", String.valueOf(size));
 //        db.setHash(tradeStatus, key, "mtmtoday", String.valueOf(price));
         String entryTime;

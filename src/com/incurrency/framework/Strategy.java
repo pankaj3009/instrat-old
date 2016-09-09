@@ -91,6 +91,8 @@ public class Strategy implements NotificationListener {
     private String redisDatabaseID;
     private int connectionidForMarketData=0;
     private String headerStrategy;
+        private EnumOrderType ordType;
+            private HashMap<String,Object> orderAttributes=new HashMap<>();
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -182,9 +184,11 @@ public class Strategy implements NotificationListener {
                         s.setStrategy(headerStrategy.toUpperCase());
                         s.setDisplayname(parentsymbolname);
                         s.setSerialno(Parameters.symbol.size()+1);
+                        s.setAddedToSymbols(true);
                         synchronized(Parameters.symbol){
                             Parameters.symbol.add(s);
                         }
+                        
                         Parameters.connection.get(1).getWrapper().getMktData(s, false);
                     }
             }
@@ -377,6 +381,16 @@ public class Strategy implements NotificationListener {
         }
         setStartingCapital(p.getProperty("StartingCapital") == null ? 0D : Double.parseDouble(p.getProperty("StartingCapital")));
 
+        String ordTypeString = p.getProperty("OrderType", "LMT");
+        int i = 0;
+        for (String s : ordTypeString.split(":")) {
+            if (i == 0) {
+                setOrdType(EnumOrderType.valueOf(ordTypeString.split(":")[i]));
+            }else{
+                getOrderAttributes().put(s.split("=")[0], s.split("=")[1]);
+            }
+            i++;
+        }
         longOnly = p.getProperty("Long") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Long")));
         shortOnly = p.getProperty("Short") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Short")));
         connectionidForMarketData=Utilities.getInt(p.getProperty("ConnectionIDForMarketData","0"),0);
@@ -732,9 +746,13 @@ public class Strategy implements NotificationListener {
                 pd.setStrategy(strategy);
                 getPosition().put(id, pd);
             }
-            int internalorderid = getInternalOrderID();
+            int internalorderid = -1;
+            if(Utilities.getInt(order.get("orderidint"),0)<=0){
+            internalorderid = getInternalOrderID();
             order.put("orderidint", internalorderid);
-            order.put("entryorderidint", internalorderid);
+            }
+             internalorderid=Utilities.getInt(order.get("orderidint"),0);
+             order.put("entryorderidint", internalorderid);
             this.internalOpenOrders.put(id, internalorderid);
             String log=order.get("log")!=null?order.get("log").toString():"";
             double lastprice=Parameters.symbol.get(id).getLastPrice();
@@ -887,11 +905,35 @@ public class Strategy implements NotificationListener {
      * Initializes the strategy for any new symbol that is added during the run.
      * @param id 
      */
-    public void initSymbol(int id){
+    public void initSymbol(int id, boolean optionPricingUsingFutures,String referenceCashType){
         if (id >=0 && Parameters.symbol.get(id).isAddedToSymbols()) {
             //do housekeeping
             //1. ensure it exists in positions for strategy and oms
-            if (!this.getStrategySymbols().contains(Integer.valueOf(id))) {
+                switch (Parameters.symbol.get(id).getType()) {
+                    case "OPT":
+                        if (Parameters.symbol.get(id).getMinsize() == 0) {
+                            int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
+                            String expiry = Parameters.symbol.get(id).getExpiry();
+                            if (optionPricingUsingFutures) {
+                                underlyingid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, underlyingid, expiry);
+                            }
+                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                        }
+                        break;
+                    case "FUT":
+                        if (Parameters.symbol.get(id).getMinsize() == 0) {
+
+                            int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
+                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                        }
+                        break;
+                    default:
+                        if (Parameters.symbol.get(id).getMinsize() == 0) {
+                            Parameters.symbol.get(id).setMinsize(1);
+                        }
+                        break;
+                }
+                if (!this.getStrategySymbols().contains(Integer.valueOf(id))) {
                 this.getStrategySymbols().add(id);
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
                 Index ind = new Index(this.getStrategy(), id);
@@ -1402,5 +1444,33 @@ public class Strategy implements NotificationListener {
      */
     public void setRedisDatabaseID(String redisDatabaseID) {
         this.redisDatabaseID = redisDatabaseID;
+    }
+
+    /**
+     * @return the orderAttributes
+     */
+    public HashMap<String,Object> getOrderAttributes() {
+        return orderAttributes;
+    }
+
+    /**
+     * @param orderAttributes the orderAttributes to set
+     */
+    public void setOrderAttributes(HashMap<String,Object> orderAttributes) {
+        this.orderAttributes = orderAttributes;
+    }
+
+    /**
+     * @return the ordType
+     */
+    public EnumOrderType getOrdType() {
+        return ordType;
+    }
+
+    /**
+     * @param ordType the ordType to set
+     */
+    public void setOrdType(EnumOrderType ordType) {
+        this.ordType = ordType;
     }
 }

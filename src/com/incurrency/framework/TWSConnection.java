@@ -345,11 +345,11 @@ public class TWSConnection extends Thread implements EWrapper {
         String effectiveFrom = e.getEffectiveFrom();
         HashMap<Integer, Integer> stubs = e.getStubs();
         int disclosedsize=e.getDisclosedsize();
-        out = createOrder(id, internalOrderID, size, ordSide, notify, orderType, stage, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, stubs,disclosedsize);
+        out = createOrder(id, internalOrderID, size, ordSide, notify, orderType, stage, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, stubs,e.getOrderAttributes());
         return out;
     }
 
-    public HashMap<Integer, Order> createOrder(int id, int internalOrderID, int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, EnumOrderStage stage, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<Integer, Integer> stubs,int disclosedsize) {
+    public HashMap<Integer, Order> createOrder(int id, int internalOrderID, int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, EnumOrderStage stage, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<Integer, Integer> stubs,HashMap<String,Object>orderAttributes) {
         if (recentOrders == null) {
             recentOrders = new LimitedQueue(getC().getOrdersHaltTrading());
         }
@@ -358,7 +358,7 @@ public class TWSConnection extends Thread implements EWrapper {
             return orders;
         }
         if (!Parameters.symbol.get(id).getType().equals("COMBO")) {
-            Order order = createChildOrder(size, ordSide, notify, orderType, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,disclosedsize);
+            Order order = createChildOrder(size, ordSide, notify, orderType, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,orderAttributes);
             orders.put(id, order);
             return orders;
         } else if (Parameters.symbol.get(id).getType().equals("COMBO") && stubs == null) {//regular combo order
@@ -400,7 +400,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     default:
                         break;
                 }
-                Order order = createChildOrder(Math.abs(entry.getValue()) * size, subSide, notify, orderType, limitPrices.get(entry.getKey().getSerialno() - 1), trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,disclosedsize);
+                Order order = createChildOrder(Math.abs(entry.getValue()) * size, subSide, notify, orderType, limitPrices.get(entry.getKey().getSerialno() - 1), trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,orderAttributes);
                 orders.put(entry.getKey().getSerialno() - 1, order);
                 i = i + 1;
             }
@@ -422,7 +422,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     subSide = EnumOrderSide.SELL;
                 }
                 if (childsize != 0) {
-                    Order order = createChildOrder(Math.abs(childsize), subSide, notify, orderType, 0D, 0D, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,disclosedsize);
+                    Order order = createChildOrder(Math.abs(childsize), subSide, notify, orderType, 0D, 0D, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom,orderAttributes);
                     orders.put(childid, order);
                 }
             }
@@ -430,14 +430,15 @@ public class TWSConnection extends Thread implements EWrapper {
         return orders;
     }
 
-    private Order createChildOrder(int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, int disclosedsize) {
+    private Order createChildOrder(int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<String,Object>orderAttributes) {
         Order order = new Order();
         order.m_action = (ordSide == EnumOrderSide.BUY || ordSide == EnumOrderSide.COVER || ordSide == EnumOrderSide.TRAILBUY) ? "BUY" : "SELL";
         order.m_auxPrice = trigger > 0 ? trigger : 0;
         order.m_lmtPrice = limit > 0 ? limit : 0;
         order.m_tif = ordValidity;
         order.m_goodAfterTime = effectiveFrom;
-        order.m_displaySize=disclosedsize;
+
+        order.m_displaySize=Utilities.getInt(orderAttributes.get("displaysize"), 0);
 
         switch (orderType) {
             case MKT:
@@ -909,6 +910,9 @@ public class TWSConnection extends Thread implements EWrapper {
                 ob.setOcaGroup(order.m_ocaGroup);
                 ob.setOcaExecutionLogic(order.m_ocaType);
                 ob.setOrderType(ordType);
+                int displaySize=Utilities.getInt(event.getOrderAttributes().get("displaysize"),0) *Parameters.symbol.get(parentid).getMinsize();
+                order.m_displaySize=displaySize;
+                ob.setDisplaySize(order.m_displaySize);
                 ob.setScale(scale);
                 ob.setLog(log);
                 boolean singlelegorder=Parameters.symbol.get(parentid).getCombo().isEmpty() & orders.size()==1;
@@ -939,7 +943,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     
                     if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize>0) {
                         OrderEvent subEvent = event.clone(event);
-                        subEvent.setOrderSize(event.getOrderSize() - event.getDisclosedsize());
+                        subEvent.setOrderSize(event.getOrderSize() - order.m_displaySize);
                         order.m_totalQuantity = order.m_displaySize;
                         ob.setDisplaySize(order.m_displaySize);
                         ob.setChildOrderSize(order.m_totalQuantity);
