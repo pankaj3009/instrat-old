@@ -956,7 +956,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         }
                         oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE));
                     }
-        
+                    order.m_displaySize=0; //reset display size to zero as we do not use IB's displaysize feature
                     eClientSocket.placeOrder(mOrderID, contracts.get(0), order);
                     if (stage != EnumOrderStage.AMEND) {
                         getRecentOrders().add(new Date().getTime());
