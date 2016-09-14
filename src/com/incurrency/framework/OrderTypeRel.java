@@ -124,9 +124,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                             case COVER:
                                 if (recalculate) {
                                     if(Parameters.symbol.get(id).getType().equals("OPT")){
-                                    limitPrice = Utilities.getOptionLimitPriceForRel(Parameters.symbol, id, Parameters.symbol.get(id).getUnderlyingID(), EnumOrderSide.BUY, Parameters.symbol.get(id).getRight(), ticksize);
-                                    tmpLimitPrice = limitPrice;
-                                    logger.log(Level.INFO, "{0},{1},{2},{3},{4},Recalculated Limit Price at {5}", new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(),
+                                        tmpLimitPrice=limitPrice;
+                                    //tmpLimitPrice = Utilities.getOptionLimitPriceForRel(Parameters.symbol, id, Parameters.symbol.get(id).getUnderlyingID(), EnumOrderSide.BUY, Parameters.symbol.get(id).getRight(), ticksize);
+                                     logger.log(Level.INFO, "{0},{1},{2},{3},{4},Recalculated Limit Price at {5}", new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(),
                                         ob.getParentInternalOrderID(), ob.getOrderID(), limitPrice});
                                     }
                                     recalculate = false;
@@ -222,8 +222,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                             case SELL:
                                 if (recalculate) {
                                     if(Parameters.symbol.get(id).getType().equals("OPT")){
-                                    limitPrice = Utilities.getOptionLimitPriceForRel(Parameters.symbol, id, Parameters.symbol.get(id).getUnderlyingID(), EnumOrderSide.BUY, Parameters.symbol.get(id).getRight(), ticksize);
-                                    tmpLimitPrice = limitPrice;
+                                    //tmpLimitPrice = Utilities.getOptionLimitPriceForRel(Parameters.symbol, id, Parameters.symbol.get(id).getUnderlyingID(), EnumOrderSide.BUY, Parameters.symbol.get(id).getRight(), ticksize);
+                                        tmpLimitPrice=limitPrice;
                                     logger.log(Level.INFO, "{0},{1},{2},{3},{4},Recalculated Limit Price at {5}", new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(),
                                         ob.getParentInternalOrderID(), ob.getOrderID(), limitPrice});
                                     }
