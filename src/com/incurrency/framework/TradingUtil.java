@@ -1298,7 +1298,7 @@ public class TradingUtil {
                 if (entryTime.contains(today) && account.equals(accountName) && !childdisplayname.contains(":")) { //not a combo
                     tradesToday = tradesToday + 1;
                 }
-                logger.log(Level.INFO, "DEBUG:{0}", new Object[]{key});
+                logger.log(Level.FINE, "DEBUG:{0}", new Object[]{key});
                 if ((!exitTime.equals("") && exitTime.contains(today) && !childdisplayname.contains(":"))) {
                     tradesToday = tradesToday + 1;
                 }

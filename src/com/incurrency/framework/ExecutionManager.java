@@ -28,7 +28,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.JDate;
@@ -57,7 +59,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private ArrayList<String> accounts = new ArrayList<>();
     private ArrayList<ArrayList<Integer>> cancelledOrdersAcknowledgedByIB = new ArrayList<>();
     private ArrayList<ArrayList<LinkedAction>> cancellationRequestsForTracking = new ArrayList<>();
-    private ArrayList<ArrayList<LinkedAction>> fillRequestsForTracking = new ArrayList<>();
+    private List<ArrayList<LinkedAction>> fillRequestsForTracking = Collections.synchronizedList(new ArrayList<ArrayList<LinkedAction>>());
     private Strategy s;
     private ArrayList notificationListeners = new ArrayList();
     //copies of global variables
@@ -1396,7 +1398,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     itemsToRemove.add(f);
                 }
             }
-            ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
+            List<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
             i=0;
             for (LinkedAction f : filledOrders) {
                 if (f.orderID == orderid && i==0&&(ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED))) {//only fire one linked action at one time
@@ -2777,7 +2779,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     /**
      * @return the fillRequestsForTracking
      */
-    public ArrayList<ArrayList<LinkedAction>> getFillRequestsForTracking() {
+    public List<ArrayList<LinkedAction>> getFillRequestsForTracking() {
         return fillRequestsForTracking;
     }
 

@@ -178,6 +178,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, new Date(settletime));
                 this.setCloseVol(vol);
             }
+            logger.log(Level.INFO,"Option vol set for symbol {0} at {1}",new Object[]{this.getDisplayname(),this.getCloseVol()});
         }
         
         Date date=DateUtil.getFormattedDate(expiry, "yyyyMMdd", MainAlgorithm.timeZone);

@@ -558,7 +558,7 @@ public class Strategy implements NotificationListener {
                     equityFile.delete();
                 }
             }
-            logger.log(Level.INFO, "312,Debugging_StartedPrintOrders,{0}", new Object[]{s.getStrategy()});
+            logger.log(Level.FINE, "312,Debugging_StartedPrintOrders,{0}", new Object[]{s.getStrategy()});
             //String orderFileFullName = "logs" + File.separator + prefix + s.getOrderFile();
             String orderFileFullName = s.getOrderFile();
             if (prefix.equals("")) {
@@ -632,7 +632,7 @@ public class Strategy implements NotificationListener {
                         message=message + "PNL Summary"+"\n";
                         
                         message=message+Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
-                        logger.log(Level.INFO, "312,Debugging_SendingEmail,{0}", new Object[]{s.getStrategy()});
+                        logger.log(Level.FINE, "312,Debugging_SendingEmail,{0}", new Object[]{s.getStrategy()});
 
                         Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
                         t.start();
