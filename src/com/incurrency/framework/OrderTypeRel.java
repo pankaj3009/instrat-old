@@ -179,7 +179,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                                 tmpLimitPrice = bidPrice - Math.abs(improveamt);
                                             }
                                         }
-                                        if (tmpLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && bidPrice > limitPrice) {
+                                        if (tmpLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && (bidPrice > limitPrice||fatfinger)) {
                                             double random=Math.random();
                                             if (random> improveprob) {//no improvement, therefore worsen price
                                                 tmpLimitPrice = bidPrice - Math.abs(improveamt);
@@ -189,7 +189,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             e.setOrderStage(EnumOrderStage.AMEND);
                                             e.setAccount(c.getAccountName());
                                             e.setTag("BIDASKCHANGED");
-                                            String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + tmpLimitPrice + ",Current Order Status:" + ob.getChildStatus()+",Random:"+random;
+                                            String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + tmpLimitPrice + ",Current Order Status:" + ob.getChildStatus()+",Random:"+Utilities.round(random, 2)+",fatfinger:"+fatfinger;
                                             oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
 
                                             logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}, OrderStatus:{10}",
@@ -279,7 +279,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                                 tmpLimitPrice = askPrice + Math.abs(improveamt);
                                             }
                                         }
-                                        if (tmpLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && limitPrice > askPrice) {
+                                        if (tmpLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && (limitPrice > askPrice||fatfinger)) {
                                             double random=Math.random();
                                             if (random > improveprob) {
                                                 tmpLimitPrice = askPrice + Math.abs(improveamt);
@@ -289,7 +289,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             e.setOrderStage(EnumOrderStage.AMEND);
                                             e.setAccount(c.getAccountName());
                                             e.setTag("BIDASKCHANGED");
-                                            String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + tmpLimitPrice + ",Current Order Status:" + ob.getChildStatus()+",Random:"+random;
+                                            String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + tmpLimitPrice + ",Current Order Status:" + ob.getChildStatus()+",Random:"+Utilities.round(random,2)+",fatfinger:"+fatfinger;
                                             oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                             logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9},OrderStatus:{10}",
                                                     new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), externalOrderID,
