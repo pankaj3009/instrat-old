@@ -71,6 +71,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     @Override
     public void run() {
         try {
+            logger.log(Level.INFO,"OrderTypeRel: Manager Created for symbol {0}with initial limit price {1}",new Object[]{Parameters.symbol.get(id).getDisplayname(),limitPrice});
             Subscribe.tes.addBidAskListener(this);
             Subscribe.tes.addOrderStatusListener(this);
             for (BeanConnection c : Parameters.connection) {
@@ -106,9 +107,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             boolean fatfinger = false;
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
                 //check if there is a case for updating rel price. Only time criteron at present.
-                if (recentOrders.size() == orderspermin && (new Date().getTime() - (Long) recentOrders.get(0)) < 60000) {// More than 10 orders in last 2 minutes
+                if (recentOrders.size() == orderspermin && (new Date().getTime() - (Long) recentOrders.get(0)) > 60000) {// Timestamp of the first of the "n" orders is more than 60 seconds earlier
                     recalculate = true;
-                } else {
+                } 
                     OrderBean ob = c.getOrders().get(externalOrderID);
                     if (ob != null) {
                         internalOrderIDEntry = ob.getInternalOrderIDEntry();
@@ -118,10 +119,12 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                             case BUY:
                             case COVER:
                                 if (recalculate) {
+                                    if(Parameters.symbol.get(id).getType().equals("OPT")){
                                     limitPrice = Utilities.getOptionLimitPriceForRel(Parameters.symbol, id, Parameters.symbol.get(id).getUnderlyingID(), EnumOrderSide.BUY, Parameters.symbol.get(id).getRight(), ticksize);
                                     tmpLimitPrice = limitPrice;
                                     logger.log(Level.INFO, "{0},{1},{2},{3},{4},Recalculated Limit Price at {5}", new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(),
                                         ob.getParentInternalOrderID(), ob.getOrderID(), limitPrice});
+                                    }
                                     recalculate = false;
                                 }
                                 double bidPrice = Parameters.symbol.get(id).getBidPrice();
@@ -205,6 +208,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 break;
                             case SHORT:
                             case SELL:
+                                if (recalculate) {
+                                    if(Parameters.symbol.get(id).getType().equals("OPT")){
+                                    limitPrice = Utilities.getOptionLimitPriceForRel(Parameters.symbol, id, Parameters.symbol.get(id).getUnderlyingID(), EnumOrderSide.BUY, Parameters.symbol.get(id).getRight(), ticksize);
+                                    tmpLimitPrice = limitPrice;
+                                    logger.log(Level.INFO, "{0},{1},{2},{3},{4},Recalculated Limit Price at {5}", new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(),
+                                        ob.getParentInternalOrderID(), ob.getOrderID(), limitPrice});
+                                    }
+                                    recalculate = false;
+                                }
                                 bidPrice = Parameters.symbol.get(id).getBidPrice();
                                 askPrice = Parameters.symbol.get(id).getAskPrice();
                                 switch (Parameters.symbol.get(id).getType()) {
@@ -288,7 +300,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 break;
                         }
                     }
-                }
+                
 
             }
         } catch (Exception e) {
