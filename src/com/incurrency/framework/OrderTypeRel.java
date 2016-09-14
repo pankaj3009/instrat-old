@@ -37,6 +37,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     double worseamt = 0;
     double improveprob = 1;
     double improveamt = 0;
+    int fatFingerWindow=120; //in seconds
+    long fatFingerStart=Long.MAX_VALUE;
+    
 
     public OrderTypeRel(int id, int orderid, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
@@ -48,6 +51,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             orderspermin = Utilities.getInt(event.getOrderAttributes().get("orderspermin"), 1);
             improveprob = Utilities.getDouble(event.getOrderAttributes().get("improveprob"), 1);
             improveamt = Utilities.getInt(event.getOrderAttributes().get("improveamt"), 0)*this.ticksize;
+            fatFingerWindow = Utilities.getInt(event.getOrderAttributes().get("fatfingerwindow"), 120);
             recentOrders = new LimitedQueue(orderspermin);
 //We need underlyingid, if we are doing options.
             //As there are only two possibilities for underlying(as of now), we test for both.
@@ -148,15 +152,22 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
 
                                         if (bidPrice == 0 || (bidPrice - calculatedPrice) / (calculatedPrice) > 0.05) {
                                             fatfinger = true;
+                                            if(fatFingerStart==Long.MAX_VALUE){
+                                                fatFingerStart=new Date().getTime();
+                                            }
                                             tmpLimitPrice = calculatedPrice;
                                             if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
                                                 //To prevent frequent orders when we are not near market, we limit updates only if
                                                 //new limitprice is off by 10 ticksize.
                                                 tmpLimitPrice = calculatedPrice - 10 * ticksize;
-
+                                                
                                             }
                                         }
-                                        if (!fatfinger) {
+                                        if(!fatfinger){
+                                            fatFingerStart=Long.MAX_VALUE;
+                                        }
+                                        
+                                        if (!fatfinger || ((new Date().getTime()-fatFingerStart)>fatFingerWindow*1000 && bidPrice>0)) {
                                             if ((limitPrice <= bidPrice && bidPrice <= calculatedPrice)
                                                     || (bidPrice <= calculatedPrice && calculatedPrice <= limitPrice)) {
                                                 //Change to Best Bid
@@ -241,6 +252,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
 
                                         if (askPrice == 0 || (calculatedPrice - askPrice) / (calculatedPrice) > 0.05) {
                                             fatfinger = true;
+                                            if (fatFingerStart == Long.MAX_VALUE) {
+                                                fatFingerStart = new Date().getTime();
+                                            }
                                             tmpLimitPrice = calculatedPrice;
                                             if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
                                                 //To prevent frequent orders when we are not near market, we limit updates only if
@@ -248,7 +262,12 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                                 tmpLimitPrice = calculatedPrice + 10 * ticksize;
                                             }
                                         }
+
                                         if (!fatfinger) {
+                                            fatFingerStart = Long.MAX_VALUE;
+                                        }
+                                        
+                                        if (!fatfinger || ((new Date().getTime()-fatFingerStart)>fatFingerWindow*1000 && askPrice>0)) {
                                             if ((calculatedPrice <= askPrice && askPrice <= limitPrice)
                                                     || (limitPrice <= calculatedPrice && calculatedPrice <= askPrice)) {
                                                 //Change to Best Ask
