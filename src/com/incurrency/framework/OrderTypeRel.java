@@ -172,7 +172,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                                     || (bidPrice <= calculatedPrice && calculatedPrice <= limitPrice)) {
                                                 //Change to Best Bid
                                                 tmpLimitPrice = bidPrice + improveamt;
-                                            } else if ((calculatedPrice <= bidPrice && bidPrice <= limitPrice)
+                                            } else if ((calculatedPrice <= bidPrice && (bidPrice <= limitPrice||fatfinger))
                                                     || (limitPrice <= calculatedPrice && calculatedPrice <= bidPrice)
                                                     || (calculatedPrice <= limitPrice && limitPrice <= bidPrice)) {
                                                 //Change to second best ask
@@ -272,7 +272,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                                     || (limitPrice <= calculatedPrice && calculatedPrice <= askPrice)) {
                                                 //Change to Best Ask
                                                 tmpLimitPrice = askPrice - improveamt;
-                                            } else if ((limitPrice <= askPrice && askPrice <= calculatedPrice)
+                                            } else if ((limitPrice <= askPrice && (askPrice <= calculatedPrice||fatfinger))
                                                     || (askPrice <= calculatedPrice && calculatedPrice <= limitPrice)
                                                     || (askPrice <= limitPrice && limitPrice <= calculatedPrice)) {
                                                 //Change to second best ask
