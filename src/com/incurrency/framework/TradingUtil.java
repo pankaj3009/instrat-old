@@ -1997,7 +1997,7 @@ public class TradingUtil {
         int rowcounter = -1;
         for (Double equity : dailyEquity) {
             rowcounter = rowcounter + 1;
-            System.out.println("Equity:" + equity + ",MaxEquity:" + maxEquity);
+            //System.out.println("Equity:" + equity + ",MaxEquity:" + maxEquity);
             if (equity < Math.max(maxEquity, equity)) {
                 numDrawDownDays = numDrawDownDays + 1;
             } else {
@@ -2010,7 +2010,7 @@ public class TradingUtil {
         int maxDrawDownDays = 0;
         double avgDrawDownDays = 0;
         for (Integer i : drawdownDays) {
-            System.out.println("drawdown days:" + i);
+            //System.out.println("drawdown days:" + i);
             maxDrawDownDays = maxDrawDownDays < i ? i : maxDrawDownDays;
             avgDrawDownDays = avgDrawDownDays + i;
         }
