@@ -1874,18 +1874,25 @@ public class Utilities {
     
     public static int getNetPosition(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id, String type) {
         int out = 0;
-        ArrayList<Integer> tempSymbols = new ArrayList<>();
-        BeanSymbol ref = symbols.get(id);
-        for (BeanSymbol s : symbols) {
-            if (s.getBrokerSymbol().equals(ref.getBrokerSymbol()) && s.getType().equals(type) && s.getRight().equals(ref.getRight())) {
-                tempSymbols.add(s.getSerialno() - 1);
+        try {
+            ArrayList<Integer> tempSymbols = new ArrayList<>();
+            
+            BeanSymbol ref = symbols.get(id);
+            for (BeanSymbol s : symbols) {
+                if (s.getBrokerSymbol().equals(ref.getBrokerSymbol()) && s.getType().equals(type)) {
+                    if ((ref.getRight() == null && s.getRight() == null) || (ref.getRight().equals(s.getRight()))) {
+                        tempSymbols.add(s.getSerialno() - 1);
+                    }
+                }
             }
-        }
-
-        for (Integer p : position.keySet()) {
-            if (tempSymbols.contains(p)) {
-                out = out + position.get(p).getPosition();
+            
+            for (Integer p : position.keySet()) {
+                if (tempSymbols.contains(p)) {
+                    out = out + position.get(p).getPosition();
+                }
             }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
         }
         return out;
     }
