@@ -1877,7 +1877,7 @@ public class Utilities {
         ArrayList<Integer> tempSymbols = new ArrayList<>();
         BeanSymbol ref = symbols.get(id);
         for (BeanSymbol s : symbols) {
-            if (s.getBrokerSymbol().equals(ref.getBrokerSymbol()) && s.getType().equals(type)) {
+            if (s.getBrokerSymbol().equals(ref.getBrokerSymbol()) && s.getType().equals(type) && s.getRight().equals(ref.getRight())) {
                 tempSymbols.add(s.getSerialno() - 1);
             }
         }
