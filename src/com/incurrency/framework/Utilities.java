@@ -1616,7 +1616,7 @@ public class Utilities {
                     if (p.getPosition() != 0) {
                         int tradeid = p.getSymbolid();
                         String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
-                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("CALL")) {
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("CALL") && Parameters.symbol.get(tradeid).getExpiry().equals(expiry)) {
                             id = tradeid;
                             out.add(id);
                         }
@@ -1643,7 +1643,7 @@ public class Utilities {
                     if (p.getPosition() != 0) {
                         int tradeid = p.getSymbolid();
                         String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
-                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("PUT")) {
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("PUT") && Parameters.symbol.get(tradeid).getExpiry().equals(expiry)) {
                             id = tradeid;
                             out.add(id);
                         }
@@ -1683,7 +1683,7 @@ public class Utilities {
                     if (p.getPosition() != 0) {
                         int tradeid = p.getSymbolid();
                         String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
-                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("PUT")) {
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("PUT") && Parameters.symbol.get(tradeid).getExpiry().equals(expiry)) {
                             id = tradeid;
                             out.add(id);
                         }
@@ -1710,7 +1710,7 @@ public class Utilities {
                     if (p.getPosition() != 0) {
                         int tradeid = p.getSymbolid();
                         String tradedisplayname = Parameters.symbol.get(tradeid).getDisplayname();
-                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("CALL")) {
+                        if (tradedisplayname.contains(underlying) && tradedisplayname.contains("CALL") && Parameters.symbol.get(tradeid).getExpiry().equals(expiry)) {
                             id = tradeid;
                             out.add(id);
                         }
