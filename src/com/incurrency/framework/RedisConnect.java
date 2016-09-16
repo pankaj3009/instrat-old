@@ -144,7 +144,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
     }
 
     @Override
-    public void lpush(String key, String value) {
+    public synchronized void lpush(String key, String value) {
         try (Jedis jedis = pool.getResource()) {
              jedis.lpush(key, value);
          }
