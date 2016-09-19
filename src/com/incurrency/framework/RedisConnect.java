@@ -116,7 +116,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
     }
 
     @Override
-    public synchronized List<String> blpop(String storeName,String key,int duration) {
+    public  List<String> blpop(String storeName,String key,int duration) {
         try (Jedis jedis = pool.getResource()) {
             return jedis.blpop(duration, storeName+key);
         }
