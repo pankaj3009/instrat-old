@@ -2053,7 +2053,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             switch (ob.getParentOrderSide()) {
                 case BUY:
                 case SHORT:
-                    tradeFill = filled;
+                    tradeFill = fill;
                     break;
                 case SELL:
                 case COVER:
