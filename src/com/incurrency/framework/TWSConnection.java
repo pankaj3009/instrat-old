@@ -948,6 +948,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         ob.setDisplaySize(order.m_displaySize);
                         ob.setChildOrderSize(order.m_totalQuantity);
                         int connectionid = Parameters.connection.indexOf(this.getC());
+                        logger.log(Level.INFO,"OrderSize: {0}, Residual:{1}",new Object[]{order.m_totalQuantity, subEvent.getOrderSize()});
                         if(Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL) ){
                             double limitprice=Utilities.getOptionLimitPriceForRel(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), side, Parameters.symbol.get(parentid).getRight(), oms.tickSize);
                             if(limitprice>0){

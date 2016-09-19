@@ -1398,7 +1398,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     itemsToRemove.add(f);
                 }
             }
-            List<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
+            List<LinkedAction> filledOrders = Collections.synchronizedList(this.getFillRequestsForTracking().get(connectionid));
             i=0;
             for (LinkedAction f : filledOrders) {
                 if (f.orderID == orderid && i==0&&(ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED))) {//only fire one linked action at one time
