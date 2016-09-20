@@ -173,7 +173,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && (bidPrice > limitPrice || fatfinger)) {
                                         double random = Math.random();
-                                        if (random > improveprob) {//no improvement, therefore worsen price
+                                        if (random > improveprob && bidPrice>0) {//no improvement, therefore worsen price
                                             newLimitPrice = bidPrice - Math.abs(improveamt);
                                         }
                                         recentOrders.add(new Date().getTime());
@@ -183,10 +183,11 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         e.setTag("BIDASKCHANGED");
                                         String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",Random:" + Utilities.round(random, 2) + ",fatfinger:" + fatfinger;
                                         oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-
+/*
                                         logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}, OrderStatus:{10}",
                                                 new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), ob.getOrderID(),
                                             side, calculatedPrice, limitPrice, bidPrice, newLimitPrice, ob.getChildStatus()});
+*/
                                         oms.orderReceived(e);
 
                                     }
@@ -267,7 +268,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && (askPrice < limitPrice || fatfinger)) {
                                         double random = Math.random();
-                                        if (random > improveprob) {
+                                        if (random > improveprob && askPrice>0) {
                                             newLimitPrice = askPrice + Math.abs(improveamt);
                                         }
                                         recentOrders.add(new Date().getTime());
@@ -277,9 +278,11 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         e.setTag("BIDASKCHANGED");
                                         String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",Random:" + Utilities.round(random, 2) + ",fatfinger:" + fatfinger;
                                         oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
+                                        /*
                                         logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9},OrderStatus:{10}",
                                                 new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), externalOrderID,
                                             side, calculatedPrice, limitPrice, askPrice, newLimitPrice, ob.getChildStatus()});
+                                        */
                                         oms.orderReceived(e);
                                     }
                                     break;

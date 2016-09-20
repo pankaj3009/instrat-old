@@ -1389,6 +1389,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         synchronized (lockLinkedAction) {
             ArrayList<LinkedAction> cancelledOrders = (ArrayList<LinkedAction>) getCancellationRequestsForTracking().get(connectionid).clone();
             ArrayList<LinkedAction> itemsToRemove = new ArrayList<>();
+            ArrayList<LinkedAction> actionsToFire = new ArrayList<>();
             int i=0;
             for (LinkedAction f : cancelledOrders) {
                 if (f.orderID == orderid && i==0 && (ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDNOFILL)||ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDPARTIALFILL))) { //only fire one linkedaction at one time.
@@ -1397,19 +1398,27 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
                     itemsToRemove.add(f);
                 }
-            }
+            }           
+           
             List<LinkedAction> filledOrders = Collections.synchronizedList(this.getFillRequestsForTracking().get(connectionid));
             i=0;
             for (LinkedAction f : filledOrders) {
                 if (f.orderID == orderid && i==0&&(ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED))) {//only fire one linked action at one time
                     //logger.log(Level.INFO, "{0},{1},Execution Manager,OrderFilled. Linked Order being generated, OrderID Cancelled:{2}, symbol:{3}", new Object[]{c.getAccountName(), orderReference, orderid, Parameters.symbol.get(parentid).getSymbol()});
-                    fireLinkedAction(c, orderid, f.action, f);
+//                    fireLinkedAction(c, orderid, f.action, f);
+                    actionsToFire.add(f);
                     i=i+1;
                     cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
                     //iter.remove();
+                    
                     itemsToRemove.add(f);
                 }
             }
+            
+               for(LinkedAction f:actionsToFire){
+                fireLinkedAction(c, orderid, f.action, f);
+            }
+  
             for (LinkedAction f : itemsToRemove) {
                 logger.log(Level.INFO, "204,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
                 getCancellationRequestsForTracking().get(connectionid).remove(f);
@@ -2053,7 +2062,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             switch (ob.getParentOrderSide()) {
                 case BUY:
                 case SHORT:
-                    tradeFill = fill;
+                    tradeFill = Math.abs(fill);
                     break;
                 case SELL:
                 case COVER:
@@ -2373,7 +2382,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             switch (ob.getParentOrderSide()) {
                 case BUY:
                 case SHORT:
-                    tradeFill = fill;
+                    tradeFill = Math.abs(fill);
                     break;
                 case SELL:
                 case COVER:
