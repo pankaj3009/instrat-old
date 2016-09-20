@@ -2309,11 +2309,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
                 }
             }
-            if (ob.getChildOrderSize() - ob.getChildFillSize() == 0) {
-                ob.setChildStatus(EnumOrderStatus.COMPLETEFILLED);
-                //logger.log(Level.FINE, "DEBUG: Child Symbol: {0},ChildStatus:{1}", new Object[]{Parameters.symbol.get(childid).getSymbol(), ob.getChildStatus()});
-            }
-
+            // Moved check for setting childorderstatus = COMPLETEFILLED to later in the code
+            
             for (Integer linkedOrderId : TradingUtil.getLinkedOrderIds(orderid, c)) {
                 if (c.getOrders().get(linkedOrderId) != null) {
                     c.getOrders().get(linkedOrderId).setParentStatus(EnumOrderStatus.PARTIALFILLED);
@@ -2365,7 +2362,13 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 c.getOrdersMissed().remove(Integer.valueOf(orderid));
                 logger.log(Level.FINE, "307,OrderMissedQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid});
             }
-            if (ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
+            
+            if (ob.getChildOrderSize() - ob.getChildFillSize() == 0) {
+                ob.setChildStatus(EnumOrderStatus.COMPLETEFILLED);
+                logger.log(Level.INFO, "DEBUG: Child Symbol: {0},ChildStatus:{1}", new Object[]{Parameters.symbol.get(childid).getDisplayname(), ob.getChildStatus()});
+            }
+
+            if (ob.getChildOrderSize() - ob.getChildFillSize() == 0) { //instead of checking for COMPLETEFILLED
                 ArrayList<SymbolOrderMap> orderMaps = c.getOrdersSymbols().get(ind);
                 if (orderMaps.size() > 0) {
                     Iterator entries = orderMaps.iterator();

@@ -46,6 +46,7 @@ public class OrderBean implements Serializable {
     private String log;
     private int displaySize;
    
+    private static final Object childstatus_Lock=new Object();
     
 
     
@@ -142,14 +143,18 @@ public class OrderBean implements Serializable {
      * @return the status
      */
     public EnumOrderStatus getChildStatus() {
+        synchronized(childstatus_Lock){
         return childStatus;
+        }
     }
 
     /**
      * @param status the status to set
      */
     public void setChildStatus(EnumOrderStatus childStatus) {
-        this.childStatus = childStatus;
+        synchronized(childstatus_Lock){
+            this.childStatus = childStatus;
+        }
     }
 
     /**
