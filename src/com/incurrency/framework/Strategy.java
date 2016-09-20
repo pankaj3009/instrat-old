@@ -949,7 +949,11 @@ public class Strategy implements NotificationListener {
                 for (BeanConnection c : Parameters.connection) {
                     c.initializeConnection(this.getStrategy(), id);
                 }
-                plmanager.init(id);
+                    if (plmanager != null) {
+                        plmanager.init(id);
+                    } else {
+                        logger.log(Level.SEVERE, "Symbol {} not initialized. Probably the strategy has irreconciled positions", new Object[]{Parameters.symbol.get(id).getDisplayname()});
+                    }
             }
         }
     }
