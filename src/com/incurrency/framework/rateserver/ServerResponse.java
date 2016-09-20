@@ -23,7 +23,7 @@ public class ServerResponse implements Runnable {
     ZMQ.Context context = ZMQ.context(1);
     public static ZMQ.Socket responder;
     private AtomicInteger requestid=new AtomicInteger(0);
-    private static final Logger logger = Logger.getLogger(ServerPubSub.class.getName());
+    private static final Logger logger = Logger.getLogger(ServerResponse.class.getName());
     private ArrayList<HistoricalDataParameters> hdSymbols = new ArrayList<>();
 
     public ServerResponse(int port) {

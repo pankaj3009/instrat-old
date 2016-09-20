@@ -74,7 +74,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     @Override
     public void run() {
         try {
-            logger.log(Level.INFO, "OrderTypeRel: Manager Created for symbol {0}with initial limit price {1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), limitPrice});
+            logger.log(Level.INFO, "OrderTypeRel: Manager Created for symbol {0} with initial limit price {1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), limitPrice});
             Subscribe.tes.addBidAskListener(this);
             Subscribe.tes.addOrderStatusListener(this);
             for (BeanConnection c : Parameters.connection) {

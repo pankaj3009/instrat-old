@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.jquantlib.JQuantLib;
 
 /**
  *
@@ -95,6 +96,7 @@ public class MainAlgorithm extends Algorithm {
         String today=DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         if (useForTrading) {
             if(!holidays.contains(today)){
+            JQuantLib.setLogger(logger);
             connectToTWS();
             getContractInformation();
             subscribeMarketData();

@@ -25,7 +25,7 @@ import org.jblas.ranges.IntervalRange;
  */
 public class MatrixMethods {
 
-    private static final Logger logger = Logger.getLogger(Utilities.class.getName());
+    private static final Logger logger = Logger.getLogger(MatrixMethods.class.getName());
     public static String newline = System.getProperty("line.separator");
 
     /**
