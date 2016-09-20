@@ -1770,8 +1770,8 @@ public class TWSConnection extends Thread implements EWrapper {
     @Override
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
         try{
-        String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
-        logger.log(Level.INFO, "{0},{1},TWSReceive,orderStatus, OrderID:{2},Status:{3}.Filled:{4},Remaining:{5},AvgFillPrice:{6},LastFillPrice:{7}", new Object[]{c.getAccountName(), orderRef, orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
+        //String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
+        logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
         tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
         }catch (Exception e){
             logger.log(Level.SEVERE,null,e);
