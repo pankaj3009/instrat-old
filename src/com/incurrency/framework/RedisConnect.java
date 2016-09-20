@@ -21,7 +21,10 @@ public class RedisConnect<K, V> implements Database<K, V> {
     public JedisPool pool;
     String uri;
     int port;
-
+    
+    private static final Object blpop_lock=new Object();
+    private static final Object lpush_lock=new Object();
+    
     public RedisConnect(String uri, int port, int database) {
         this.uri = uri;
         this.port = port;
@@ -117,8 +120,10 @@ public class RedisConnect<K, V> implements Database<K, V> {
 
     @Override
     public  List<String> blpop(String storeName,String key,int duration) {
+        synchronized(blpop_lock){
         try (Jedis jedis = pool.getResource()) {
             return jedis.blpop(duration, storeName+key);
+        }
         }
     }
 
@@ -144,9 +149,11 @@ public class RedisConnect<K, V> implements Database<K, V> {
     }
 
     @Override
-    public synchronized void lpush(String key, String value) {
-        try (Jedis jedis = pool.getResource()) {
-             jedis.lpush(key, value);
-         }
+    public void lpush(String key, String value) {
+        synchronized (lpush_lock) {
+            try (Jedis jedis = pool.getResource()) {
+                jedis.lpush(key, value);
+            }
+        }
     }
 }
