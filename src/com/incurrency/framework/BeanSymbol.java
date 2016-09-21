@@ -205,7 +205,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             underlyingID=Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry());
             getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());       
         }
-        logger.log(Level.INFO,"Option Underlying: {0}, LastPrice: {0}",new Object[]{this.getDisplayname(),this.getCloseVol()});
         Handle<Quote> S = new Handle<Quote>(getUnderlying());
         org.jquantlib.time.Calendar india=new India();
         Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual365Fixed()));
