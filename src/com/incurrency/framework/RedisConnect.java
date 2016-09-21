@@ -120,11 +120,11 @@ public class RedisConnect<K, V> implements Database<K, V> {
 
     @Override
     public  List<String> blpop(String storeName,String key,int duration) {
-        synchronized(blpop_lock){
+        //synchronized(blpop_lock){
         try (Jedis jedis = pool.getResource()) {
             return jedis.blpop(duration, storeName+key);
         }
-        }
+        //}
     }
 
     @Override
@@ -150,10 +150,10 @@ public class RedisConnect<K, V> implements Database<K, V> {
 
     @Override
     public void lpush(String key, String value) {
-        synchronized (lpush_lock) {
+        //synchronized (lpush_lock) {
             try (Jedis jedis = pool.getResource()) {
                 jedis.lpush(key, value);
             }
         }
-    }
+    //}
 }
