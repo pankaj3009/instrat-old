@@ -79,9 +79,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                     new Object[]{oms.orderReference,c.getAccountName(),Parameters.symbol.get(id).getDisplayname(),c.getOrders().get(externalOrderID).getInternalOrderID(),externalOrderID,e.getLimitPrice()});
             Subscribe.tes.addBidAskListener(this);
             Subscribe.tes.addOrderStatusListener(this);
-            for (BeanConnection c : Parameters.connection) {
-                c.getWrapper().addOrderStatusListener(this);
-                c.getWrapper().addBidAskListener(this);
+            for (BeanConnection c1 : Parameters.connection) {
+                c1.getWrapper().addOrderStatusListener(this);
+                c1.getWrapper().addBidAskListener(this);
             }
             MainAlgorithm.tes.addBidAskListener(this);
             // synchronized (syncObject) {
@@ -94,16 +94,16 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 }
                 Subscribe.tes.removeBidAskListener(this);
                 Subscribe.tes.removeOrderStatusListener(this);
-                for (BeanConnection c : Parameters.connection) {
-                    c.getWrapper().removeOrderStatusListener(this);
-                    c.getWrapper().removeBidAskListener(this);
+                for (BeanConnection c1 : Parameters.connection) {
+                    c1.getWrapper().removeOrderStatusListener(this);
+                    c1.getWrapper().removeBidAskListener(this);
                 }
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
             //}
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, null, e);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, null, ex);
         }
     }
 
@@ -117,8 +117,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 if (i < waitSeconds) {
                     try {
                         Thread.sleep(1000);
-                    } catch (Exception e) {
-                        logger.log(Level.SEVERE, null, e);
+                    } catch (Exception ex) {
+                        logger.log(Level.SEVERE, null, ex);
                     }
                     Thread.yield();
                     i++;
@@ -343,8 +343,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                     }
                 }
             }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, null, e);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, null, ex);
         }
     }
 
