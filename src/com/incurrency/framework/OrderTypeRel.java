@@ -16,6 +16,7 @@ import java.util.logging.Logger;
  */
 public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListener {
 
+    private final String delimiter = "_";
     BeanConnection c;
     int id;
     int underlyingid = -1;
@@ -74,7 +75,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     @Override
     public void run() {
         try {
-            logger.log(Level.INFO, "OrderTypeRel: Manager Created for symbol {0} with initial limit price {1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), limitPrice});
+            logger.log(Level.INFO, "501,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}", 
+                    new Object[]{oms.orderReference,c.getAccountName(),Parameters.symbol.get(id).getDisplayname(),c.getOrders().get(externalOrderID).getInternalOrderID(),externalOrderID,e.getLimitPrice()});
             Subscribe.tes.addBidAskListener(this);
             Subscribe.tes.addOrderStatusListener(this);
             for (BeanConnection c : Parameters.connection) {
@@ -85,7 +87,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             // synchronized (syncObject) {
             try {
                 sync.take();
-                logger.log(Level.INFO, "OrderTypeRel: Closing Manager for " + Parameters.symbol.get(id).getDisplayname());
+            logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}", 
+                    new Object[]{oms.orderReference,c.getAccountName(),Parameters.symbol.get(id).getDisplayname(),c.getOrders().get(externalOrderID).getInternalOrderID(),externalOrderID});
                 if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
                     oms.getDb().delKey("opentrades", oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName());
                 }
@@ -104,6 +107,29 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         }
     }
 
+    public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
+        int underlying = s.getUnderlyingID();
+        if (underlying == -1) {
+            return false;
+        } else {
+            int i = 0;
+            while (s.getUnderlying().value() <= 0) {
+                if (i < waitSeconds) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, null, e);
+                    }
+                    Thread.yield();
+                    i++;
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
     @Override
     public void bidaskChanged(BidAskEvent event) {
         try {
@@ -114,6 +140,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                     recalculate = true;
                 }
                 OrderBean ob = c.getOrders().get(externalOrderID);
+                BeanSymbol s = Parameters.symbol.get(id);
                 if (ob != null) {
                     internalOrderIDEntry = ob.getInternalOrderIDEntry();
                     limitPrice = ob.getParentLimitPrice();
@@ -122,14 +149,19 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                         case BUY:
                         case COVER:
                             recalculate = false;
-                            double bidPrice = Parameters.symbol.get(id).getBidPrice();
-                            double askPrice = Parameters.symbol.get(id).getAskPrice();
-                            switch (Parameters.symbol.get(id).getType()) {
+                            double bidPrice = s.getBidPrice();
+                            double askPrice = s.getAskPrice();
+                            switch (s.getType()) {
                                 case "OPT":
-                                    Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
-                                    double calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
-                                    calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
-
+                                    s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
+                                    double calculatedPrice = 0;
+                                    if (underlyingTradePriceExists(s, 1)) {
+                                        calculatedPrice = s.getOptionProcess().NPV();
+                                        calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                    }
+                                    if (calculatedPrice == 0) {
+                                        return;
+                                    }
                                     /*
                                      * BP - LP - CP : Do Nothing. We are the best bid
                                      * LP - BP - CP : Change to Best Bid
@@ -173,7 +205,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && (bidPrice > limitPrice || fatfinger)) {
                                         double random = Math.random();
-                                        if (random > improveprob && bidPrice>0) {//no improvement, therefore worsen price
+                                        if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
                                             newLimitPrice = bidPrice - Math.abs(improveamt);
                                         }
                                         recentOrders.add(new Date().getTime());
@@ -183,11 +215,11 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         e.setTag("BIDASKCHANGED");
                                         String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",Random:" + Utilities.round(random, 2) + ",fatfinger:" + fatfinger;
                                         oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-/*
-                                        logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}, OrderStatus:{10}",
-                                                new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), ob.getOrderID(),
-                                            side, calculatedPrice, limitPrice, bidPrice, newLimitPrice, ob.getChildStatus()});
-*/
+                                        /*
+                                         logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}, OrderStatus:{10}",
+                                         new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), ob.getOrderID(),
+                                         side, calculatedPrice, limitPrice, bidPrice, newLimitPrice, ob.getChildStatus()});
+                                         */
                                         oms.orderReceived(e);
 
                                     }
@@ -213,17 +245,19 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                         case SHORT:
                         case SELL:
                             recalculate = false;
-                            bidPrice = Parameters.symbol.get(id).getBidPrice();
-                            askPrice = Parameters.symbol.get(id).getAskPrice();
-                            switch (Parameters.symbol.get(id).getType()) {
+                            bidPrice = s.getBidPrice();
+                            askPrice = s.getAskPrice();
+                            switch (s.getType()) {
                                 case "OPT":
-                                    Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
-                                    if (Parameters.symbol.get(id).getOptionProcess() == null) {
-                                        Parameters.symbol.get(id).SetOptionProcess();
+                                    s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
+                                    double calculatedPrice = 0;
+                                    if (underlyingTradePriceExists(s, 1)) {
+                                        calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
+                                        calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
                                     }
-                                    double calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
-                                    calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
-
+                                    if (calculatedPrice == 0) {
+                                        return;
+                                    }
                                     /*
                                      * CP - LP - AP : Do Nothing. We are the best ask
                                      * CP - AP - LP : Change to Best Ask
@@ -268,7 +302,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && (askPrice < limitPrice || fatfinger)) {
                                         double random = Math.random();
-                                        if (random > improveprob && askPrice>0) {
+                                        if (random > improveprob && askPrice > 0) {
                                             newLimitPrice = askPrice + Math.abs(improveamt);
                                         }
                                         recentOrders.add(new Date().getTime());
@@ -279,10 +313,10 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",Random:" + Utilities.round(random, 2) + ",fatfinger:" + fatfinger;
                                         oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                         /*
-                                        logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9},OrderStatus:{10}",
-                                                new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), externalOrderID,
-                                            side, calculatedPrice, limitPrice, askPrice, newLimitPrice, ob.getChildStatus()});
-                                        */
+                                         logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9},OrderStatus:{10}",
+                                         new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), externalOrderID,
+                                         side, calculatedPrice, limitPrice, askPrice, newLimitPrice, ob.getChildStatus()});
+                                         */
                                         oms.orderReceived(e);
                                     }
                                     break;
