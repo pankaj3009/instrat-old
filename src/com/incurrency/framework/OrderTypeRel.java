@@ -53,7 +53,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             improveamt = Utilities.getInt(event.getOrderAttributes().get("improveamt"), 0) * this.ticksize;
             fatFingerWindow = Utilities.getInt(event.getOrderAttributes().get("fatfingerwindow"), 120);
             recentOrders = new LimitedQueue(orderspermin);
-//We need underlyingid, if we are doing options.
+            //We need underlyingid, if we are doing options.
             //As there are only two possibilities for underlying(as of now), we test for both.
             if (Parameters.symbol.get(id).getType().equals("OPT")) {
                 String expiry = Parameters.symbol.get(id).getExpiry();
@@ -75,8 +75,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     @Override
     public void run() {
         try {
-            logger.log(Level.INFO, "501,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}", 
-                    new Object[]{oms.orderReference,c.getAccountName(),Parameters.symbol.get(id).getDisplayname(),c.getOrders().get(externalOrderID).getInternalOrderID(),externalOrderID,e.getLimitPrice()});
+            logger.log(Level.INFO, "501,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}",
+                    new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), externalOrderID, e.getLimitPrice()});
             Subscribe.tes.addBidAskListener(this);
             Subscribe.tes.addOrderStatusListener(this);
             for (BeanConnection c1 : Parameters.connection) {
@@ -87,8 +87,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             // synchronized (syncObject) {
             try {
                 sync.take();
-            logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}", 
-                    new Object[]{oms.orderReference,c.getAccountName(),Parameters.symbol.get(id).getDisplayname(),c.getOrders().get(externalOrderID).getInternalOrderID(),externalOrderID});
+                logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
+                        new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), externalOrderID});
                 if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
                     oms.getDb().delKey("opentrades", oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName());
                 }
@@ -215,11 +215,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         e.setTag("BIDASKCHANGED");
                                         String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",Random:" + Utilities.round(random, 2) + ",fatfinger:" + fatfinger;
                                         oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-                                        /*
-                                         logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, BidPrice:{8}, NewLimitPrice:{9}, OrderStatus:{10}",
-                                         new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), ob.getOrderID(),
-                                         side, calculatedPrice, limitPrice, bidPrice, newLimitPrice, ob.getChildStatus()});
-                                         */
                                         oms.orderReceived(e);
 
                                     }
@@ -312,11 +307,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         e.setTag("BIDASKCHANGED");
                                         String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",Random:" + Utilities.round(random, 2) + ",fatfinger:" + fatfinger;
                                         oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-                                        /*
-                                         logger.log(Level.INFO, "{0},{1},{2},{3},{4}, 201,OrderTypeRel, Side:{5}, CalculatedOptionPrice:{6}, CurrentLimitPriceWithBroker:{7}, AskPrice:{8}, NewLimitPrice:{9},OrderStatus:{10}",
-                                         new Object[]{oms.getS().getStrategy(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), externalOrderID,
-                                         side, calculatedPrice, limitPrice, askPrice, newLimitPrice, ob.getChildStatus()});
-                                         */
                                         oms.orderReceived(e);
                                     }
                                     break;
@@ -354,10 +344,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         if (ob != null) {
             if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && (ob.getParentSymbolID() - 1) == id) {
                 if (event.getRemaining() == 0 || event.getStatus().equals("Cancelled")) {
-                    //synchronized (syncObject) {
                     this.sync.put("FINISHED");
-//                    syncObject.notify();
-                    //}
                 }
             }
         }
