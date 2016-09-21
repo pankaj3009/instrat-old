@@ -418,6 +418,7 @@ public class Strategy implements NotificationListener {
         logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartingCapital" + delimiter + getStartingCapital()});
         logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "LongAllowed" + delimiter + getLongOnly()});
         logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ShortAllowed" + delimiter + getShortOnly()});
+        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderAtributes" + delimiter + getOrderAttributes().toString()});
 
         if (getFutBrokerageFile().compareTo("") != 0) {
             Properties pBrokerage = TradingUtil.loadParameters(getFutBrokerageFile());
