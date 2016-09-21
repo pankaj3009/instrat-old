@@ -1420,12 +1420,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
   
             for (LinkedAction f : itemsToRemove) {
-                logger.log(Level.INFO, "204,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
-                getCancellationRequestsForTracking().get(connectionid).remove(f);
+               // logger.log(Level.INFO, "204,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
+                //getCancellationRequestsForTracking().get(connectionid).remove(f);
             }
             for (LinkedAction f : itemsToRemove) {
-                logger.log(Level.INFO, "204,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
-                getFillRequestsForTracking().get(connectionid).remove(f);
+                //logger.log(Level.INFO, "204,LinkedActionRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + f.action + delimiter + internalorderid + delimiter + f.orderID});
+                //getFillRequestsForTracking().get(connectionid).remove(f);
             }
             lockLinkedAction.notifyAll();
         }
@@ -2366,7 +2366,58 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (ob.getChildOrderSize() - ob.getChildFillSize() == 0) {
                 ob.setChildStatus(EnumOrderStatus.COMPLETEFILLED);
                 logger.log(Level.INFO, "DEBUG: Child Symbol: {0},ChildStatus:{1}", new Object[]{Parameters.symbol.get(childid).getDisplayname(), ob.getChildStatus()});
+                 synchronized (c.lockOrdersToBeCancelled) {
+                if (c.getOrdersToBeCancelled().containsKey(orderid) && c.getOrders().get(orderid).getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
+                    logger.log(Level.FINE, "307,ExitOrderCancellationQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
+                    c.getOrdersToBeCancelled().remove(orderid); //remove filled orders from cancellation queue
+                }
             }
+            boiSet = c.getActiveOrders().get(ind);
+            Iterator iter = boiSet.iterator();
+            while (iter.hasNext()) {
+                BeanOrderInformation boi = (BeanOrderInformation) iter.next();
+                if (boi.getOrderID() == orderid) {
+                    logger.log(Level.FINE, "307,DynamicQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(boi.getSymbolid()).getDisplayname() + delimiter + boi.getOrderID()});
+                    iter.remove();
+                    break;
+                }
+            }
+
+            if (c.getOrdersToBeFastTracked().containsKey(orderid) && c.getOrders().get(orderid).getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
+                c.getOrdersToBeFastTracked().remove(orderid);
+            }
+            if (c.getOrdersInProgress().contains(orderid) && ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
+                c.getOrdersInProgress().remove(Integer.valueOf(orderid));
+                logger.log(Level.FINE, "307,OrderProgressQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
+            }
+            if (c.getOrdersMissed().contains(orderid) && ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
+                c.getOrdersMissed().remove(Integer.valueOf(orderid));
+                logger.log(Level.FINE, "307,OrderMissedQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid});
+            }
+
+            if (ob.getParentOrderSide() == EnumOrderSide.SELL || ob.getParentOrderSide() == EnumOrderSide.COVER) {
+                //if (fill != 0 && ((ob.getChildFillSize()==ob.getChildOrderSize())||(ob.getParentFillSize()==ob.getParentOrderSize()))) { //do not reduce open position count if duplicate message, in which case fill == 0
+                if (fill != 0 && (ob.getParentFillSize()==ob.getParentOrderSize())) { //do not reduce open position count if duplicate message, in which case fill == 0
+                    int connectionid = Parameters.connection.indexOf(c);
+                    int tmpOpenPositionCount = this.getOpenPositionCount().get(connectionid);
+                    int openpositioncount = tmpOpenPositionCount - 1;
+                    this.getOpenPositionCount().set(connectionid, openpositioncount);
+                    logger.log(Level.INFO, "206,OpenPosition,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + openpositioncount});
+                }
+            }
+            //if this was a requested cancellation, fire any event if needed
+            int connectionid = Parameters.connection.indexOf(c);
+            ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
+            for (LinkedAction f : filledOrders) {
+                if (f.e.getSymbolBean().getSerialno()-1== childid && f.orderID==-1) {//only fire one linked action at one time
+                    f.orderID=orderid;
+                    break;//update the first occurrence
+                }
+            }
+            }
+            /*Completed Actions on Complete Fill
+             * Within partial fill function
+             */
 
             if (ob.getChildOrderSize() - ob.getChildFillSize() == 0) { //instead of checking for COMPLETEFILLED
                 ArrayList<SymbolOrderMap> orderMaps = c.getOrdersSymbols().get(ind);
@@ -2791,14 +2842,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     /**
      * @return the fillRequestsForTracking
      */
-    public List<ArrayList<LinkedAction>> getFillRequestsForTracking() {
+    public synchronized List<ArrayList<LinkedAction>> getFillRequestsForTracking() {
         return fillRequestsForTracking;
     }
 
     /**
      * @param fillRequestsForTracking the fillRequestsForTracking to set
      */
-    public void setFillRequestsForTracking(ArrayList<ArrayList<LinkedAction>> fillRequestsForTracking) {
+    public synchronized void setFillRequestsForTracking(ArrayList<ArrayList<LinkedAction>> fillRequestsForTracking) {
         this.fillRequestsForTracking = fillRequestsForTracking;
     }
 

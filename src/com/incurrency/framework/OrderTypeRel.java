@@ -127,8 +127,14 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                             switch (Parameters.symbol.get(id).getType()) {
                                 case "OPT":
                                     Parameters.symbol.get(id).getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
-                                    double calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
+                                   double calculatedPrice=0;
+                                    if(Parameters.symbol.get(id).getUnderlying().value()!=0||Parameters.symbol.get(id).getUnderlying().value()!=-1){
+                                    calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
                                     calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                    }
+                                    if(calculatedPrice<=0){
+                                       return;
+                                    }
 
                                     /*
                                      * BP - LP - CP : Do Nothing. We are the best bid
@@ -221,8 +227,14 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     if (Parameters.symbol.get(id).getOptionProcess() == null) {
                                         Parameters.symbol.get(id).SetOptionProcess();
                                     }
-                                    double calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
+                                    double calculatedPrice=0;
+                                    if(Parameters.symbol.get(id).getUnderlying().value()!=0||Parameters.symbol.get(id).getUnderlying().value()!=-1){
+                                    calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
                                     calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                    }
+                                    if(calculatedPrice<=0){
+                                       return;
+                                    }
 
                                     /*
                                      * CP - LP - AP : Do Nothing. We are the best ask

@@ -78,6 +78,7 @@ public class Strategy implements NotificationListener {
     public String allAccounts;
     private static HashMap<String, String> combosAdded = new HashMap<>();
     private Integer stratCount;
+    private String referenceCashType;
     //Locks
     private final Object lockOMS = new Object();
     private final Object lockPLManager = new Object();
@@ -343,6 +344,7 @@ public class Strategy implements NotificationListener {
             setStartDate(DateUtil.addDays(getStartDate(), -1));
         }
         */
+        setReferenceCashType(p.getProperty("ReferenceCashType", "STK").toString().trim());
         setMaxSlippageEntry(p.getProperty("MaxSlippageEntry") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageEntry")) / 100); // divide by 100 as input was a percentage
         setMaxSlippageExit(p.getProperty("MaxSlippageExit") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageExit")) / 100); // divide by 100 as input was a percentage
         setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
@@ -1477,5 +1479,19 @@ public class Strategy implements NotificationListener {
      */
     public void setOrdType(EnumOrderType ordType) {
         this.ordType = ordType;
+    }
+
+    /**
+     * @return the referenceCashType
+     */
+    public String getReferenceCashType() {
+        return referenceCashType;
+    }
+
+    /**
+     * @param referenceCashType the referenceCashType to set
+     */
+    public void setReferenceCashType(String referenceCashType) {
+        this.referenceCashType = referenceCashType;
     }
 }
