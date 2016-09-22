@@ -2221,8 +2221,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     break;
                 case 1102: //Reconnected
                     MainAlgorithm.connectToTWS(c);
+                    if(eClientSocket.isConnected()){
                      setHistoricalDataFarmConnected(true);
-                    logger.log(Level.INFO,"103, Reconnected with account {0}",new Object[]{c.getAccountName()});
+                     logger.log(Level.INFO,"103, Reconnected with account {0}",new Object[]{c.getAccountName()});
+                   }
                     break;
                 case 430://We are sorry, but fundamentals data for the security specified is not available.failed to fetch
 
@@ -2269,6 +2271,16 @@ public class TWSConnection extends Thread implements EWrapper {
                         t.start();
                         this.severeEmailSent = true;
                     }
+                    MainAlgorithm.connectToTWS(c);
+                    if (eClientSocket.isConnected()) {
+                        setHistoricalDataFarmConnected(true);
+                        logger.log(Level.INFO, "103, Reconnected with account {0}", new Object[]{c.getAccountName()});
+                        if (this.severeEmailSent) {
+                            Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
+                            t.start();
+                            this.severeEmailSent = false;
+                        }
+                    }                    
                     break;
                 case 326://client id is in use
                     if (!this.severeEmailSent) {
