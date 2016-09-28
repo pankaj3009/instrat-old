@@ -84,6 +84,57 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
+        public static void printSymbolsToFile(List<BeanSymbol> symbolList, String fileName,boolean printLastLine) {
+        for (int i = 0; i < symbolList.size(); i++) {
+            symbolList.get(i).setSerialno(i + 1);
+        }
+
+        //now write data to file
+        File outputFile = new File(fileName);
+        if (symbolList.size() > 0) {
+            //write header
+            Utilities.deleteFile(outputFile);
+            String header = "serialno,brokersymbol,exchangesymbol,displayname,type,exchange,primaryexchange,currency,expiry,option,right,minsize,barstarttime,streaming,strikedistance,strategy";
+            Utilities.writeToFile(outputFile, header);
+            String content = "";
+            for (BeanSymbol s1 : symbolList) {
+                content = s1.getSerialno() + "," + s1.getBrokerSymbol() + "," + (s1.getExchangeSymbol() == null ? "" : s1.getExchangeSymbol())
+                        + "," + (s1.getDisplayname() == null ? "" : s1.getDisplayname())
+                        + "," + (s1.getType() == null ? "" : s1.getType())
+                        + "," + (s1.getExchange() == null ? "" : s1.getExchange())
+                        + "," + (s1.getPrimaryexchange() == null ? "" : s1.getPrimaryexchange())
+                        + "," + (s1.getCurrency() == null ? "" : s1.getCurrency())
+                        + "," + (s1.getExpiry() == null ? "" : s1.getExpiry())
+                        + "," + (s1.getOption() == null ? "" : s1.getOption())
+                        + "," + (s1.getRight() == null ? "" : s1.getRight())
+                        + "," + (s1.getMinsize() == 0 ? 1 : s1.getMinsize())
+                        + "," + (s1.getBarsstarttime() == null ? "" : s1.getBarsstarttime())
+                        + "," + (s1.getStreamingpriority() == 0 ? "10" : s1.getStreamingpriority())
+                        + "," + (s1.getStrikeDistance() == 0 ? "0" : s1.getStrikeDistance())
+                        + "," + (s1.getStrategy() == null ? "NONE" : s1.getStrategy());
+                Utilities.writeToFile(outputFile, content);
+            }
+            if (printLastLine) {
+                String lastline = symbolList.size() + 1 + "," + "END" + "," + "END"
+                        + "," + "END"
+                        + "," + "END"
+                        + "," + "END"
+                        + "," + "END"
+                        + "," + "END"
+                        + "," + "END"
+                        + "," + ""
+                        + "," + ""
+                        + "," + 0
+                        + "," + ""
+                        + "," + 100
+                        + "," + 0
+                        + "," + "EXTRA";
+                Utilities.writeToFile(outputFile, lastline);
+            }
+        }
+    }
+
+    
     public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize) {
         double price = symbols.get(id).getLastPrice();
         try {
@@ -2117,23 +2168,26 @@ public class Utilities {
             int year = Utilities.getInt(currentDay.substring(0, 4), 0);
             int month = Utilities.getInt(currentDay.substring(4, 6), 0) - 1;//calendar month starts at 0
             Date expiry = getLastThursday(month, year);
-            expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
+            expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
             Calendar cal_expiry = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
             cal_expiry.setTime(expiry);
-            if (cal_expiry.get(Calendar.DAY_OF_MONTH) > cal_today.get(Calendar.DAY_OF_MONTH)) {
-                out = sdf_yyyMMdd.format(expiry);
-                return out;
+            if (cal_expiry.get(Calendar.DAY_OF_YEAR) >= cal_today.get(Calendar.DAY_OF_YEAR)) {
+                out= sdf_yyyMMdd.format(expiry);
             } else {
-                if (cal_today.get(Calendar.MONTH) == 11) {//we are in decemeber
-                    expiry = getLastThursday(month, year + 1);
+                if (month == 11) {//we are in decemeber
+                    //expiry will be at BOD, so we get the next month, till new month==0
+                    while (month != 0) {
+                        expiry = Utilities.nextGoodDay(expiry, 24 * 60, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
+                        year = Utilities.getInt(sdf_yyyMMdd.format(expiry).substring(0, 4), 0);
+                        month = Utilities.getInt(sdf_yyyMMdd.format(expiry).substring(4, 6), 0) - 1;//calendar month starts at 0
+                    }
+                    expiry = getLastThursday(month, year);
                     expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
-                    out = sdf_yyyMMdd.format(expiry);
-                    return out;
+                    out= sdf_yyyMMdd.format(expiry);
                 } else {
                     expiry = getLastThursday(month + 1, year);
                     expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
-                    out = sdf_yyyMMdd.format(expiry);
-                    return out;
+                    out= sdf_yyyMMdd.format(expiry);
                 }
             }
         } catch (Exception ex) {

@@ -5,6 +5,7 @@ package com.incurrency.framework;
  * and open the template in the editor.
  */
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -47,26 +48,28 @@ public class Algorithm {
     public static String redisURL=null;
     public static Database<String,String>db;
     public static String cassandraIP;
+    public static boolean generateSymbolFile=false;
     
     public Algorithm(HashMap<String, String> args) {
-        globalProperties = Utilities.loadParameters(args.get("propertyfile"));        
-        String holidayFile = globalProperties.getProperty("holidayfile","").toString().trim();
-        SimpleDateFormat sdf_yyyymmdd=new SimpleDateFormat("yyyyMMdd");
+        globalProperties = Utilities.loadParameters(args.get("propertyfile"));
+        String holidayFile = globalProperties.getProperty("holidayfile", "").toString().trim();
+        SimpleDateFormat sdf_yyyymmdd = new SimpleDateFormat("yyyyMMdd");
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
-       if (holidayFile != null && !holidayFile.equals("")) {
+        generateSymbolFile = Boolean.valueOf(globalProperties.getProperty("generatesymbolfile", "true").toString().trim());
+        if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {
-                try{
-                holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
-                for(String h:holidays){
-                    ind.addHoliday(new JDate(DateUtil.getFormattedDate(h, "yyyyMMdd", timeZone)));
+                try {
+                    holidays = Files.readAllLines(Paths.get(holidayFile), StandardCharsets.UTF_8);
+                    for (String h : holidays) {
+                        ind.addHoliday(new JDate(DateUtil.getFormattedDate(h, "yyyyMMdd", timeZone)));
+                    }
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "No Holiday File Found");
                 }
-            }catch (Exception e){
-                logger.log(Level.SEVERE,"No Holiday File Found");
-            }
             }
         }
-        
+
         useRedis=globalProperties.getProperty("redisurl")!=null?true:false;
         cassandraIP=globalProperties.getProperty("cassandraconnection", "127.0.0.1");
         if(useRedis){
@@ -91,6 +94,20 @@ public class Algorithm {
         if (symbolfileneeded) {
             String symbolFileName = globalProperties.getProperty("symbolfile", "symbols.csv").toString().trim();
             File symbolFile = new File(symbolFileName);
+            if (generateSymbolFile) {
+                String className = globalProperties.getProperty("symbolclass", "com.incurrency.framework.SymbolFileTrading").toString().trim();
+                String redisurl = globalProperties.getProperty("symbolclass", "127.0.0.1:6379:2").toString().trim();
+                Class[] param = new Class[2];
+                param[0] = String.class;
+                param[1] = String.class;
+                try {
+                    Constructor constructor = Class.forName(className).getConstructor(param);
+                    constructor.newInstance(redisurl, symbolFileName);
+
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, null, e);
+                }
+            }
             logger.log(Level.FINE, "102, Symbol File, {0}", new Object[]{symbolFileName});
             boolean symbolFileOK = Validator.validateSymbolFile(symbolFileName);
             if (!symbolFileOK) {
