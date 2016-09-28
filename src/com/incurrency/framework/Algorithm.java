@@ -55,7 +55,7 @@ public class Algorithm {
         String holidayFile = globalProperties.getProperty("holidayfile", "").toString().trim();
         SimpleDateFormat sdf_yyyymmdd = new SimpleDateFormat("yyyyMMdd");
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
-        generateSymbolFile = Boolean.valueOf(globalProperties.getProperty("generatesymbolfile", "true").toString().trim());
+        generateSymbolFile = Boolean.valueOf(globalProperties.getProperty("generatesymbolfile", "false").toString().trim());
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {
