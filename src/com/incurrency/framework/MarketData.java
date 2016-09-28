@@ -75,7 +75,8 @@ public class MarketData implements Runnable {
     // Start the thread
     @Override
     public void run() {
-        logger.log(Level.FINE, "307,MarketDataStarted");
+        logger.log(Level.INFO, "500,MarketDataThreadStarted,{0}:{1}:{2}:{3}:{4}",
+                new Object[]{"Unknown",mIB.getAccountName(),"Unknown",-1,-1});
         int rowCount = mCount;
         /*
         if (rowCount <= mIB.getTickersLimit() && "N".compareTo(symb.get(0).getPreopen()) == 0) //if preopen for the first symbol="Y", then all symbols are assumed to be snapshot
@@ -87,6 +88,9 @@ public class MarketData implements Runnable {
 
             getMktData(mStartPosition, mStartPosition + mCount, symb, snapshot);
         }
+        
+                logger.log(Level.INFO, "500,MarketDataThreadEnded,{0}:{1}:{2}:{3}:{4}",
+                new Object[]{"Unknown",mIB.getAccountName(),"Unknown",-1,-1});
     }
 
     /*
@@ -177,8 +181,8 @@ public class MarketData implements Runnable {
             if (new Date().getTime() > pairs.getValue().requestTime + 10000) { //and request is over 10 seconds old
                 int origReqID = pairs.getValue().requestID;
                 String accountName=mIB.getWrapper().getC().getAccountName();
-                if (mIB.getWrapper().getRequestDetails().get(origReqID + delimiter + accountName).requestStatus != EnumRequestStatus.CANCELLED) {
-                    mIB.getWrapper().getRequestDetails().get(origReqID + delimiter + accountName).requestStatus=EnumRequestStatus.CANCELLED;
+                if (mIB.getWrapper().getRequestDetails().get(origReqID).requestStatus != EnumRequestStatus.CANCELLED) {
+                    mIB.getWrapper().getRequestDetails().get(origReqID).requestStatus=EnumRequestStatus.CANCELLED;
                     mIB.getWrapper().eClientSocket.cancelMktData(origReqID);
                 }
                 //logger.log(Level.FINER, "SnapShot cancelled. Symbol:{0},RequestID:{1}", new Object[]{Parameters.symbol.get(pairs.getKey()).getSymbol(), origReqID});
@@ -193,7 +197,7 @@ public class MarketData implements Runnable {
         }
 
         for(int i:reqID){//cleanup the main request details too
-            mIB.getWrapper().getRequestDetails().remove(i+delimiter+mIB.getWrapper().getC().getAccountName());
+            mIB.getWrapper().getRequestDetails().remove(i);
         }
         }
     
