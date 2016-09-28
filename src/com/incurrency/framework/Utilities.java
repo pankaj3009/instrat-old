@@ -1797,7 +1797,7 @@ public class Utilities {
         String strikePrice = Utilities.formatDouble(price, new DecimalFormat("#.##"));
         String underlying = symbols.get(id).getDisplayname().split("_")[0];
         for (BeanSymbol s : Parameters.symbol) {
-            if (s.getDisplayname().contains(underlying) && s.getType().equals("OPT") && s.getRight().equals(right) && s.getOption().equals(strikePrice)) {
+            if (s.getDisplayname().contains(underlying) && s.getType().equals("OPT") && s.getRight().equals(right) && s.getOption().equals(strikePrice) && s.getExpiry().equals(expiry)) {
                 return s.getSerialno() - 1;
             }
         }
