@@ -417,7 +417,7 @@ public class MainAlgorithm extends Algorithm {
                     rtvolume=Boolean.valueOf(globalProperties.getProperty("rtvolume","false"));
                     if (count > 0 && connectionCapacity>0) {
                         Thread t = new Thread(new MarketData(c, allocatedCapacity, Math.min(count, connectionCapacity), Parameters.symbol, c.getTickersLimit(), false,rtvolume));
-                        t.setName("Streaming Market Data");
+                        t.setName("Streaming Market Data -"+c.getAccountName());
                         t.start();
                         allocatedCapacity = allocatedCapacity + Math.min(count, connectionCapacity);
                         count = count - Math.min(count, connectionCapacity);
@@ -438,7 +438,7 @@ public class MainAlgorithm extends Algorithm {
                     if (count > 0) {
                         int snapshotcount = count;;
                         Thread t = new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, snapshotcount, Parameters.symbol, Parameters.connection.get(0).getTickersLimit(), true,false));
-                        t.setName("Continuous Snapshot");
+                        t.setName("Continuous Snapshot - "+Parameters.connection.get(0).getAccountName());
                         t.start();
                     }
                 }
