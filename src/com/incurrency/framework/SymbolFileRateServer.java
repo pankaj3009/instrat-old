@@ -118,16 +118,16 @@ public class SymbolFileRateServer {
             String exchangesymbol = fwdout.get(i).getExchangeSymbol();
             int id = Utilities.getIDFromExchangeSymbol(nifty50, exchangesymbol, "STK", "", "", "");
             if (id >= 0) {
-                id = Utilities.getIDFromExchangeSymbol(fwdout, exchangesymbol, "FUT", expiry, "", "");
+                id = Utilities.getIDFromExchangeSymbol(fwdout, exchangesymbol, "FUT", nextExpiry, "", "");
                 s = fwdout.get(id);
                 BeanSymbol s1 = s.clone(s);
                 s1.setStreamingpriority(2);
                 s1.setStrategy("DATA");
-                s1.setExpiry(expiry);
+                s1.setExpiry(nextExpiry);
                 s1.setType("FUT");
                 out.add(s1);
             } else {
-                id = Utilities.getIDFromExchangeSymbol(fwdout, exchangesymbol, "FUT", expiry, "", "");
+                id = Utilities.getIDFromExchangeSymbol(fwdout, exchangesymbol, "FUT", nextExpiry, "", "");
                 s = fwdout.get(id);
                 BeanSymbol s1 = s.clone(s);
                 s1.setStreamingpriority(3);

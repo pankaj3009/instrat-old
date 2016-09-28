@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.ib.client.TickType;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 /**
  *
  * @author admin
@@ -2213,12 +2214,13 @@ public class TWSConnection extends Thread implements EWrapper {
     @Override
     public void error(int id, int errorCode, String errorMsg) {
         try {
-            logger.log(Level.INFO, "103,IB Message,{0}", new Object[]{getC().getAccountName()+delimiter+id+delimiter+errorCode+delimiter+errorMsg});
-                    
             switch (errorCode) {
-                case 104:
-                    
+                case 321:                    
+                   Request rd=getRequestDetails().get(id+delimiter+c.getAccountName());                    
+                    logger.log(Level.INFO,"402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestTYpe={5},RequestTime={6},ErrorCode={7},ErrorMsg={8}",
+                            new Object[]{"Unknown",rd.accountName,rd.symbol.getDisplayname(),-1,-1,rd.requestType,DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)),errorCode,errorMsg});
                     break;
+                    
                 case 1102: //Reconnected
                     MainAlgorithm.connectToTWS(c);
                     if(eClientSocket.isConnected()){
@@ -2290,6 +2292,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     break;
                 default:
+                  logger.log(Level.INFO, "103,IB Message,{0}", new Object[]{getC().getAccountName()+delimiter+id+delimiter+errorCode+delimiter+errorMsg});
                     break;
 
             }
