@@ -44,7 +44,7 @@ public class SymbolFileHistoricalEquity {
         currentDay = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(MainAlgorithm.timeZone));
         loadAllSymbols();
         nifty50 = loadNifty50Stocks();
-        cnx500 = loadNifty50Stocks();
+        cnx500 = loadCNX500Stocks();
         historicalEquity();
     }
 
@@ -61,6 +61,7 @@ public class SymbolFileHistoricalEquity {
         s.setStrategy("DATA");
         s.setDisplayname("NSENIFTY");
         out.add(s.clone(s));
+        
         out.addAll(cnx500);
         for(int i=0;i<cnx500.size();i++){
            cnx500.get(i).setDisplayname(cnx500.get(i).getExchangeSymbol().replaceAll("[^A-Za-z0-9]", ""));
