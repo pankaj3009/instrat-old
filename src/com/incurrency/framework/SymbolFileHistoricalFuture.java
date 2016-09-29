@@ -28,7 +28,7 @@ import redis.clients.jedis.ScanResult;
  *
  * @author psharma
  */
-public class SymbolFileHistorical {
+public class SymbolFileHistoricalFuture {
 
     private JedisPool jPool;
     private String currentDay;
@@ -36,38 +36,26 @@ public class SymbolFileHistorical {
     private List<BeanSymbol> symbols = new ArrayList<>();
     private List<BeanSymbol> cnx500 = new ArrayList<>();
     private String symbolFileName;
-    private static final Logger logger = Logger.getLogger(SymbolFileHistorical.class.getName());
+    private static final Logger logger = Logger.getLogger(SymbolFileHistoricalFuture.class.getName());
 
-    public SymbolFileHistorical(String redisurl, String symbolFileName) {
+    public SymbolFileHistoricalFuture(String redisurl, String symbolFileName) {
         this.symbolFileName = symbolFileName;
         jPool = RedisConnect(redisurl.split(":")[0], Integer.valueOf(redisurl.split(":")[1]), Integer.valueOf(redisurl.split(":")[2]));
         currentDay = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(MainAlgorithm.timeZone));
         loadAllSymbols();
         nifty50 = loadNifty50Stocks();
         cnx500 = loadNifty50Stocks();
-        historical();
+        historicalFuture();
     }
 
     public static JedisPool RedisConnect(String uri, Integer port, Integer database) {
         return new JedisPool(new JedisPoolConfig(), uri, port, 2000, null, database);
     }
 
-      public void historical() {
+      public void historicalFuture() {
         ArrayList<BeanSymbol> out = new ArrayList<>();
-        BeanSymbol s = new BeanSymbol("NIFTY50", "NSENIFTY", "IND", "", "", "");
-        s.setCurrency("INR");
-        s.setExchange("NSE");
-        s.setStreamingpriority(1);
-        s.setStrategy("DATA");
-        s.setDisplayname("NSENIFTY");
-        out.add(s.clone(s));
-        out.addAll(cnx500);
-        for(int i=0;i<cnx500.size();i++){
-           cnx500.get(i).setDisplayname(cnx500.get(i).getExchangeSymbol().replaceAll("[^A-Za-z0-9]", ""));
-        }
-        
         String expiry = Utilities.getNextExpiry(currentDay);
-        s = new BeanSymbol("NIFTY50", "NSENIFTY", "FUT", expiry, "", "");
+        BeanSymbol s = new BeanSymbol("NIFTY50", "NSENIFTY", "FUT", expiry, "", "");
         s.setCurrency("INR");
         s.setExchange("NSE");
         s.setStreamingpriority(1);
