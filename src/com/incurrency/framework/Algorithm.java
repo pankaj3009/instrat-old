@@ -96,7 +96,7 @@ public class Algorithm {
             File symbolFile = new File(symbolFileName);
             if (generateSymbolFile) {
                 String className = globalProperties.getProperty("symbolclass", "com.incurrency.framework.SymbolFileTrading").toString().trim();
-                String redisurl = globalProperties.getProperty("redisurl", "127.0.0.1:6379:2").toString().trim();
+                String redisurl = globalProperties.getProperty("redisurlforsymbols", "127.0.0.1:6379:2").toString().trim();
                 Class[] param = new Class[2];
                 param[0] = String.class;
                 param[1] = String.class;
