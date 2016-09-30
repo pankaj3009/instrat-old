@@ -1779,7 +1779,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
         try {
             int id=-1;
-             if (getC() != null && getC().getOrders() != null) {
+             if (getC().getOrders().get(orderId) != null) {
                  id = getC().getOrders().get(orderId).getParentSymbolID() - 1;
             }
            
@@ -1919,7 +1919,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public void execDetails(int reqId, Contract contract, Execution execution) {
         try {
             int id = -1;
-            if (getC() != null && getC().getOrders() != null) {
+            if (getC().getOrders().get(execution.m_orderId) != null) {
                 id = getC().getOrders().get(execution.m_orderId).getParentSymbolID() - 1;
             }
             if (id >= 0) {
