@@ -1778,7 +1778,11 @@ public class TWSConnection extends Thread implements EWrapper {
     @Override
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
         try {
-            int id = getC().getOrders().get(orderId).getParentSymbolID() - 1;
+            int id=-1;
+             if (getC() != null && getC().getOrders() != null) {
+                 id = getC().getOrders().get(orderId).getParentSymbolID() - 1;
+            }
+           
             if (id >= 0) {
                 //String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
                 logger.log(Level.INFO, "{402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
@@ -1914,7 +1918,10 @@ public class TWSConnection extends Thread implements EWrapper {
     @Override
     public void execDetails(int reqId, Contract contract, Execution execution) {
         try {
-            int id = getC().getOrders().get(execution.m_orderId).getParentSymbolID() - 1;
+            int id = -1;
+            if (getC() != null && getC().getOrders() != null) {
+                id = getC().getOrders().get(execution.m_orderId).getParentSymbolID() - 1;
+            }
             if (id >= 0) {
                 logger.log(Level.INFO, "{402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
                         new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), execution.m_orderId, getC().getOrders().get(execution.m_orderId).getInternalOrderID(), execution.m_cumQty, execution.m_avgPrice});
