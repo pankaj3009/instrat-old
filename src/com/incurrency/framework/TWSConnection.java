@@ -1923,7 +1923,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 id = getC().getOrders().get(execution.m_orderId).getParentSymbolID() - 1;
             }
             if (id >= 0) {
-                logger.log(Level.INFO, "{402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
+                logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
                         new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), execution.m_orderId, getC().getOrders().get(execution.m_orderId).getInternalOrderID(), execution.m_cumQty, execution.m_avgPrice});
 
                 if (getC().getOrders().get(execution.m_orderId) != null) {
@@ -1934,7 +1934,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                 }
             } else {
-                logger.log(Level.INFO, "{402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
+                logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
                         new Object[]{"Unknown", c.getAccountName(), "Unknown", execution.m_orderId, -1, execution.m_cumQty, execution.m_avgPrice});
 
             }
