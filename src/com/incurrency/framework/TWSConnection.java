@@ -1777,14 +1777,22 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-        try{
-        //String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
-        logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
-        tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-        }catch (Exception e){
-            logger.log(Level.SEVERE,null,e);
+        try {
+            int id = getC().getOrders().get(orderId).getParentSymbolID() - 1;
+            if (id >= 0) {
+                //String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
+                logger.log(Level.INFO, "{402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
+                        new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), orderId, getC().getOrders().get(orderId).getInternalOrderID(), status, filled, remaining});
+                //logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
+                tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
+            } else {
+                logger.log(Level.INFO, "{402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
+                        new Object[]{"Unknown", c.getAccountName(), "Unknown", orderId, -1, status, filled, remaining});
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
         }
-        }
+    }
 
     @Override
     public void openOrder(int orderId, Contract contract, Order order, OrderState orderState) {
@@ -1905,24 +1913,27 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void execDetails(int reqId, Contract contract, Execution execution) {
-        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-        StackTraceElement e = stacktrace[1];//coz 0th will be getStackTrace so 1st
-        String methodName = e.getMethodName();
-        if (getC().getOrders().get(execution.m_orderId) != null) {
-            if (getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty == 0) {
-                tes.fireOrderStatus(getC(), execution.m_orderId, "Filled", execution.m_cumQty, getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+        try {
+            int id = getC().getOrders().get(execution.m_orderId).getParentSymbolID() - 1;
+            if (id >= 0) {
+                logger.log(Level.INFO, "{402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
+                        new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), execution.m_orderId, getC().getOrders().get(execution.m_orderId).getInternalOrderID(), execution.m_cumQty, execution.m_avgPrice});
+
+                if (getC().getOrders().get(execution.m_orderId) != null) {
+                    if (getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty == 0) {
+                        tes.fireOrderStatus(getC(), execution.m_orderId, "Filled", execution.m_cumQty, getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                    } else {
+                        tes.fireOrderStatus(getC(), execution.m_orderId, "Submitted", execution.m_cumQty, getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                    }
+                }
             } else {
-                tes.fireOrderStatus(getC(), execution.m_orderId, "Submitted", execution.m_cumQty, getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                logger.log(Level.INFO, "{402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
+                        new Object[]{"Unknown", c.getAccountName(), "Unknown", execution.m_orderId, -1, execution.m_cumQty, execution.m_avgPrice});
+
             }
-            //public void fireOrderStatus(BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-
-//        tes.fireOrderStatus(c, execution.m_orderId, "SUBMITTED", reqId, reqId, reqId, reqId, reqId, mTotalSymbols, reqId, methodName);
-            //logger.log(Level.FINE, "{0},{1},TWSReceive,executionDetails,orderid:{2}, m_shares:{3}, cumQuantity: {4}, avgFillPrice: {5}, permid: {6}, parentId: {7}, lastfillprice: {8}, clientid: {9}, whyheld:{10}", new Object[]{c.getAccountName(), execution.m_orderId, execution.m_orderId, execution.m_shares, execution.m_cumQty, execution.m_avgPrice, execution.m_permId, execution.m_execId, execution.m_price, execution.m_clientId, "TBD"});
-
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
         }
-        //     tes.fireOrderStatus(c, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-        //      tes.fireOrderStatus(c, reqId, "", , reqId, reqId, reqId, reqId, mTotalSymbols, reqId, methodName);
-        //System.out.println(methodName);
     }
 
     @Override
