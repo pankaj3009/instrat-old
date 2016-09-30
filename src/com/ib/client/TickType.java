@@ -64,7 +64,9 @@ public class TickType {
     public static final int VOLUME_RATE = 56;
     public static final int LAST_RTH_TRADE = 57;
     public static final int REGULATORY_IMBALANCE = 61;
-
+    public static final int TRADEDVALUE = 91;
+    
+    
     public static String getField( int tickType) {
         switch( tickType) {
             case BID_SIZE:                    return "bidSize";
