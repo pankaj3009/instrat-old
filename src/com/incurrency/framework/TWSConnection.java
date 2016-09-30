@@ -89,31 +89,33 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     public boolean connectToTWS() {
-        try{
-        String twsHost = getC().getIp();
-        int twsPort = getC().getPort();
-        int clientID = getC().getClientID();
-        if (!eClientSocket.isConnected()) {
-            eClientSocket.eConnect(twsHost, twsPort, clientID);
-            int waitCount = 0;
-            if (eClientSocket.isConnected()) {
-            String orderid=this.getOrderIDSync().take();
-            getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
-            logger.log(Level.INFO,"103, NextOrderIDReceived,{0}_{1}_{2}_{3}",new Object[]{getC().getIp(),getC().getPort(),getC().getClientID(),orderid});
-                eClientSocket.reqIds(1);
-                System.out.println(">>> Connected to TWSSend with client id: " + clientID);
-                //logger.log(Level.INFO, "{0},{1},TWSReceive,Connected to TWSSend,Server Version: {2}", new Object[]{"", c.getStrategy(), eClientSocket.serverVersion()});
-                eClientSocket.setServerLogLevel(2);
-                return true;
-            } else {
-                System.out.println(">>> Could not connect to TWSSend with client id: " + clientID);
-                return false;
+        try {
+            String twsHost = getC().getIp();
+            int twsPort = getC().getPort();
+            int clientID = getC().getClientID();
+            if (!eClientSocket.isConnected()) {
+                eClientSocket.eConnect(twsHost, twsPort, clientID);
+                int waitCount = 0;
+                if (eClientSocket.isConnected()) {
+                    String orderid = this.getOrderIDSync().take();
+                    getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
+                    logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4}",
+                            new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1});
+                    eClientSocket.reqIds(1);
+//                System.out.println(">>> Connected to TWSSend with client id: " + clientID);
+                    //logger.log(Level.INFO, "{0},{1},TWSReceive,Connected to TWSSend,Server Version: {2}", new Object[]{"", c.getStrategy(), eClientSocket.serverVersion()});
+                    eClientSocket.setServerLogLevel(2);
+                    return true;
+                } else {
+                    logger.log(Level.SEVERE, "402, Could Not Connect,{0}:{1}:{2}:{3}:{4}",
+                            new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1});
+                    return false;
+                }
             }
-        }
-        
-        return false;
-        }catch (Exception e){
-            logger.log(Level.SEVERE,null,e);
+
+            return false;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
             return false;
         }
     }
@@ -970,7 +972,8 @@ public class TWSConnection extends Thread implements EWrapper {
                     if (stage != EnumOrderStage.AMEND) {
                         getRecentOrders().add(new Date().getTime());
                     }
-                    logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter +ob.getInternalOrderID()+delimiter+ mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate});
+                    logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}", 
+                            new Object[]{order.m_orderRef,c.getAccountName(),Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname(),ob.getInternalOrderID(),mOrderID,ob.getParentOrderSide(),order.m_totalQuantity,order.m_orderType,order.m_lmtPrice, order.m_auxPrice});
                     orderids.add(mOrderID);
                 } else {//combo order
                     if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
@@ -1132,22 +1135,24 @@ public class TWSConnection extends Thread implements EWrapper {
     public void cancelOrder(BeanConnection c, int orderID, boolean force) {
         ArrayList<Integer> linkedorderids = TradingUtil.getLinkedOrderIds(orderID, c);
         for (int orderid : linkedorderids) {
-            if(!force){//regular cancellation
-            switch (c.getOrders().get(orderid).getChildStatus()) {
-                case SUBMITTED:
-                case ACKNOWLEDGED:
-                    c.getOrders().get(orderid).setCancelRequested(true);
-                    this.eClientSocket.cancelOrder(orderid);
-                    //handle cancellations that are not successful
-                    logger.log(Level.INFO, "102,CancellationPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + c.getOrders().get(orderID).getOrderReference() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getChildSymbolID() - 1).getDisplayname() + delimiter + orderID+delimiter+force});
-                    break;
-            }
-            }else{
-               c.getOrders().get(orderid).setCancelRequested(true);
-                    this.eClientSocket.cancelOrder(orderid);
-                    //handle cancellations that are not successful
-                    logger.log(Level.INFO, "102,CancellationPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + c.getOrders().get(orderID).getOrderReference() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(c.getOrders().get(orderID).getChildSymbolID() - 1).getDisplayname() + delimiter + orderID+delimiter+force});
- 
+            if (!force) {//regular cancellation
+                switch (c.getOrders().get(orderid).getChildStatus()) {
+                    case SUBMITTED:
+                    case ACKNOWLEDGED:
+                        c.getOrders().get(orderid).setCancelRequested(true);
+                        this.eClientSocket.cancelOrder(orderid);
+                        //handle cancellations that are not successful
+                        logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4},Force={5}",
+                                new Object[]{c.getOrders().get(orderID).getOrderReference(), c.getAccountName(), Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname(), c.getOrders().get(orderID).getInternalOrderID(), orderID, force});
+                        break;
+                }
+            } else {
+                c.getOrders().get(orderid).setCancelRequested(true);
+                this.eClientSocket.cancelOrder(orderid);
+                //handle cancellations that are not successful
+                logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4},Force={5}",
+                        new Object[]{c.getOrders().get(orderID).getOrderReference(), c.getAccountName(), Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname(), c.getOrders().get(orderID).getInternalOrderID(), orderID, force});
+
             }
         }
     }
@@ -1872,7 +1877,8 @@ public class TWSConnection extends Thread implements EWrapper {
                 r.requestStatus = EnumRequestStatus.SERVICED;
             }
             int id = serialno - 1;
-            logger.log(Level.INFO, "103,ContractDetailsReceived,{0}", new Object[]{Parameters.symbol.get(id).getDisplayname() + delimiter + String.valueOf(contractDetails.m_summary.m_conId) + delimiter + contractDetails.m_minTick});
+            logger.log(Level.INFO, "402,ContractDetailsReceived,{0}:{1}:{2}:{3}:{4},ContractID={5}:MinTick:{6}", 
+                    new Object[]{"Unknown",c.getAccountName(),Parameters.symbol.get(id).getDisplayname(),-1,-1, String.valueOf(contractDetails.m_summary.m_conId),contractDetails.m_minTick});
             Parameters.symbol.get(id).setTickSize(contractDetails.m_minTick);
             if (Parameters.symbol.get(id).getType().compareTo("OPT") == 0 && Parameters.symbol.get(id).getOption() == null) {
                 //this request is checking for ATM strike
@@ -2248,9 +2254,10 @@ public class TWSConnection extends Thread implements EWrapper {
                 case 1102: //Reconnected
                     MainAlgorithm.connectToTWS(c);
                     if(eClientSocket.isConnected()){
-                     setHistoricalDataFarmConnected(true);
-                     logger.log(Level.INFO,"103, Reconnected with account {0}",new Object[]{c.getAccountName()});
-                   }
+                        setHistoricalDataFarmConnected(true);
+                        logger.log(Level.INFO, "402,Reconnected with Account,{0}:{1}:{2}:{3}:{4},ErrorCode={5},ErrorMsg={6}",
+                                new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1, errorCode, errorMsg});
+                    }
                     break;
                 case 430://We are sorry, but fundamentals data for the security specified is not available.failed to fetch
 
