@@ -236,7 +236,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 //tv.m_value="XYZ";
                 //l.add(tv);
                 this.eClientSocket.reqMktData(mRequestId, contract, null, isSnap,null);
-                s.setDataConnectionID(Parameters.connection.indexOf(getC()));
+                s.setConnectionidUsedForMarketData(Parameters.connection.indexOf(getC()));
                 logger.log(Level.FINER, "403,MarketDataRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
             } else {
                 System.out.println("101,ErrorOnHandle,{0}" + s.getDisplayname());
@@ -272,7 +272,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     getRequestDetailsWithSymbolKey().putIfAbsent(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     eClientSocket.reqMktData(mRequestId, contract, null, isSnap,null);
-                    s.setDataConnectionID(Parameters.connection.indexOf(getC()));
+                    s.setConnectionidUsedForMarketData(Parameters.connection.indexOf(getC()));
                     logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
                 }
             } else {

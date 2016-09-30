@@ -111,7 +111,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private Boolean status;
     private double prevLastPrice;
     private double atmStrike;
-    private int dataConnectionID;
     private long firstTimeStamp;
     private int connectionidUsedForMarketData;
     private boolean comboSetupFailed = false;
@@ -2092,20 +2091,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setAtmStrike(double atmStrike) {
         this.atmStrike = atmStrike;
-    }
-
-    /**
-     * @return the dataConnectionID
-     */
-    public int getDataConnectionID() {
-        return dataConnectionID;
-    }
-
-    /**
-     * @param dataConnectionID the dataConnectionID to set
-     */
-    public void setDataConnectionID(int dataConnectionID) {
-        this.dataConnectionID = dataConnectionID;
     }
 
     /**

@@ -42,9 +42,9 @@ public class MarketDataForm extends javax.swing.JFrame {
             String dataSource=globalProperties.getProperty("datasource").toString().trim();
             this.lblCurrentAccount.setText(dataSource);
         }else{
-            this.lblCurrentAccount.setText(Parameters.connection.get(s.getDataConnectionID()).getAccountName());
-            this.lblCurrentPort.setText(Integer.toString(Parameters.connection.get(s.getDataConnectionID()).getPort()));
-            this.lblCurrentClientID.setText(Integer.toString(Parameters.connection.get(s.getDataConnectionID()).getClientID()));
+            this.lblCurrentAccount.setText(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getAccountName());
+            this.lblCurrentPort.setText(Integer.toString(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getPort()));
+            this.lblCurrentClientID.setText(Integer.toString(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getClientID()));
         }
         this.lblLatestTime.setText(DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", s.getLastPriceTime()));
         for(BeanConnection c: Parameters.connection){
@@ -272,9 +272,11 @@ public class MarketDataForm extends javax.swing.JFrame {
     private void cmdStartStreamingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdStartStreamingActionPerformed
         //first cancel data request
         BeanSymbol s=Parameters.symbol.get(getRowno());
-        int oldconnection=s.getDataConnectionID();
+        int oldconnection=s.getConnectionidUsedForMarketData();
         int newconnection=this.comboNewAccount.getSelectedIndex();
+        if(oldconnection>=0){
         Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+        }
         Contract con;
         con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
         try{
@@ -292,9 +294,11 @@ public class MarketDataForm extends javax.swing.JFrame {
     private void cmdStartSnapshotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdStartSnapshotActionPerformed
         //first cancel data request
         BeanSymbol s=Parameters.symbol.get(getRowno());
-        int oldconnection=s.getDataConnectionID();
+        int oldconnection=s.getConnectionidUsedForMarketData();
         int newconnection=this.comboNewAccount.getSelectedIndex();
+        if(oldconnection>=0){
         Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+        }
         Contract con;
         con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
         try{
@@ -307,8 +311,10 @@ public class MarketDataForm extends javax.swing.JFrame {
 
     private void cmdStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdStopActionPerformed
         BeanSymbol s=Parameters.symbol.get(getRowno());
-        int oldconnection=s.getDataConnectionID();
+        int oldconnection=s.getConnectionidUsedForMarketData();
+        if(oldconnection>=0){
         Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+        }
     }//GEN-LAST:event_cmdStopActionPerformed
 
     /**
