@@ -84,7 +84,6 @@ public class MarketDataForm extends javax.swing.JFrame {
         setTitle("Request /Cancel Market Data");
         setAlwaysOnTop(true);
         setMinimumSize(new java.awt.Dimension(600, 166));
-        setPreferredSize(null);
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText("New Source:");
@@ -118,6 +117,11 @@ public class MarketDataForm extends javax.swing.JFrame {
         getContentPane().add(cmdStartStreaming, gridBagConstraints);
 
         cmdStop.setText("Stop Market Data");
+        cmdStop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdStopActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 7;
@@ -127,6 +131,11 @@ public class MarketDataForm extends javax.swing.JFrame {
         getContentPane().add(cmdStop, gridBagConstraints);
 
         cmdStartSnapshot.setText("Restart Snapshot Data");
+        cmdStartSnapshot.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdStartSnapshotActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -269,7 +278,7 @@ public class MarketDataForm extends javax.swing.JFrame {
         Contract con;
         con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
         try{
-        Parameters.connection.get(newconnection).getWrapper().getMktData(s, con,false);
+        Parameters.connection.get(newconnection).getWrapper().getMktData(s, con,true);
         }
         catch (Exception e){
             logger.log(Level.SEVERE,null,e);
@@ -279,6 +288,28 @@ public class MarketDataForm extends javax.swing.JFrame {
     private void cmdCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdCloseActionPerformed
         dispose(); //Destroy the JFrame object
     }//GEN-LAST:event_cmdCloseActionPerformed
+
+    private void cmdStartSnapshotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdStartSnapshotActionPerformed
+        //first cancel data request
+        BeanSymbol s=Parameters.symbol.get(getRowno());
+        int oldconnection=s.getDataConnectionID();
+        int newconnection=this.comboNewAccount.getSelectedIndex();
+        Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+        Contract con;
+        con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
+        try{
+        Parameters.connection.get(newconnection).getWrapper().getMktData(s, con,false);
+        }
+        catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
+        }
+    }//GEN-LAST:event_cmdStartSnapshotActionPerformed
+
+    private void cmdStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdStopActionPerformed
+        BeanSymbol s=Parameters.symbol.get(getRowno());
+        int oldconnection=s.getDataConnectionID();
+        Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+    }//GEN-LAST:event_cmdStopActionPerformed
 
     /**
      * @param args the command line arguments
