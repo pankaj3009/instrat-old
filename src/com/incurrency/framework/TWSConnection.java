@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.ib.client.TickType;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.TimeZone;
 /**
  *
@@ -202,7 +203,7 @@ public class TWSConnection extends Thread implements EWrapper {
             con.m_secType = s.getType();
             con.m_exchange = s.getExchange();
             con.m_currency = s.getCurrency();
-            this.eClientSocket.reqMktData(mRequestId, con, null, true);
+            this.eClientSocket.reqMktData(mRequestId, con, null, true,null);
             logger.log(Level.FINER, "403,OneTimeSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
         }
     }
@@ -228,7 +229,11 @@ public class TWSConnection extends Thread implements EWrapper {
                 //getRequestDetails().putIfAbsentIfAbsent(mRequestId, new Request(mRequestId, s, EnumRequestType.STREAMING, EnumRequestStatus.PENDING, new Date().getTime()));
 
                 //c.getmStreamingSymbolRequestID().put(s.getSerialno(), mRequestId);
-                this.eClientSocket.reqMktData(mRequestId, contract, null, isSnap);
+                List<TagValue> l=new ArrayList<>();
+                //TagValue tv=new TagValue();
+                //tv.m_value="XYZ";
+                //l.add(tv);
+                this.eClientSocket.reqMktData(mRequestId, contract, null, isSnap,null);
                 s.setDataConnectionID(Parameters.connection.indexOf(getC()));
                 logger.log(Level.FINER, "403,MarketDataRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
             } else {
@@ -264,7 +269,7 @@ public class TWSConnection extends Thread implements EWrapper {
                             new Object[]{"Unknown",c.getAccountName(),s.getDisplayname(),-1,-1,mRequestId});
                     }
                     getRequestDetailsWithSymbolKey().put(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
-                    eClientSocket.reqMktData(mRequestId, contract, null, isSnap);
+                    eClientSocket.reqMktData(mRequestId, contract, null, isSnap,null);
                     s.setDataConnectionID(Parameters.connection.indexOf(getC()));
                     logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
                 }
@@ -309,7 +314,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     logger.log(Level.FINER,"MarketDataRequestSent_Realtime,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
 
                 }
-                eClientSocket.reqRealTimeBars(mRequestId, con, 5, "TRADES", true); //only returns regular trading hours
+                eClientSocket.reqRealTimeBars(mRequestId, con, 5, "TRADES", true,null); //only returns regular trading hours
                 logger.log(Level.FINER, "403,RealTimeBarsRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
 
             } else {
@@ -1204,7 +1209,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 String currDateStr = DateUtil.getFormattedDate("yyyyMMdd", Parameters.connection.get(0).getConnectionTime());
                 String endDateStr = currDateStr + " " + "23:30:00";
                 //System.out.println(s.getDisplayname()+":"+mRequestId+":"+"DailyBars");
-                eClientSocket.reqHistoricalData(mRequestId, con, endDateStr, duration, "1 day", "TRADES", 1, 2);
+                eClientSocket.reqHistoricalData(mRequestId, con, endDateStr, duration, "1 day", "TRADES", 1, 2,null);
                 logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + "1 day"});
             } else {
                 System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getBrokerSymbol());
@@ -1270,7 +1275,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         break;
                 }
                 //System.out.println(s.getDisplayname()+":"+mRequestId+":"+barSize);
-                eClientSocket.reqHistoricalData(mRequestId, con, endDate, duration, barSize, "TRADES", 1, 2);
+                eClientSocket.reqHistoricalData(mRequestId, con, endDate, duration, barSize, "TRADES", 1, 2,null);
                 logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize+delimiter+endDate});
                 //System.out.println("HistoricalDataRequestSent"+c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize+delimiter+endDate);
 
@@ -2434,5 +2439,45 @@ public class TWSConnection extends Thread implements EWrapper {
      */
     public void setC(BeanConnection c) {
         this.c = c;
+    }
+
+    @Override
+    public void position(String account, Contract contract, int pos, double avgCost) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void positionEnd() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void accountSummary(int reqId, String account, String tag, String value, String currency) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void accountSummaryEnd(int reqId) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void verifyMessageAPI(String apiData) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void verifyCompleted(boolean isSuccessful, String errorText) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void displayGroupList(int reqId, String groups) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void displayGroupUpdated(int reqId, String contractInfo) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
