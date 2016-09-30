@@ -48,7 +48,7 @@ public class TWSConnection extends Thread implements EWrapper {
     private boolean stopTrading = false;
     boolean severeEmailSent = false;
     private ConcurrentHashMap<Integer, Request> requestDetails = new ConcurrentHashMap<>();
-    private HashMap<Integer, Request> requestDetailsWithSymbolKey = new HashMap<>();
+    private ConcurrentHashMap<Integer, Request> requestDetailsWithSymbolKey = new ConcurrentHashMap<>();
     public int outstandingSnapshots = 0;
     private final String delimiter = "_";
     static final Object lock_request =new Object();
@@ -270,7 +270,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     logger.log(Level.FINER,"401,MarketDataRequestSentSnapShot,{0}:{1}:{2}:{3}:{4},RequestID={5}",
                             new Object[]{"Unknown",c.getAccountName(),s.getDisplayname(),-1,-1,mRequestId});
                     }
-                    getRequestDetailsWithSymbolKey().put(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                    getRequestDetailsWithSymbolKey().putIfAbsent(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     eClientSocket.reqMktData(mRequestId, contract, null, isSnap,null);
                     s.setDataConnectionID(Parameters.connection.indexOf(getC()));
                     logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
@@ -1467,11 +1467,11 @@ public class TWSConnection extends Thread implements EWrapper {
             if (MainAlgorithm.rtvolume && snapshot || !MainAlgorithm.rtvolume) {
                 double lastPrice = Parameters.symbol.get(id).getLastPrice();
                 Parameters.symbol.get(id).setPrevLastPrice(lastPrice);
-                Parameters.symbol.get(id).setLastPrice(price);
-                if(Parameters.symbol.get(id).getOpenPrice()==0){
+                if(Parameters.symbol.get(id).getLastPrice()>0 && Parameters.symbol.get(id).getOpenPrice()==0){
                     requestSingleSnapshot(Parameters.symbol.get(id));
-                    
                 }
+                Parameters.symbol.get(id).setLastPrice(price);
+                
                 Rates.rateServer.send(header, com.ib.client.TickType.LAST + "," + new Date().getTime() + "," + price + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.CLOSE + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getClosePrice() + "," + symbol);
                 Rates.rateServer.send(header, com.ib.client.TickType.OPEN + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getOpenPrice() + "," + symbol);
@@ -2413,14 +2413,14 @@ public class TWSConnection extends Thread implements EWrapper {
     /**
      * @return the requestDetailsWithSymbolKey
      */
-    public HashMap<Integer, Request> getRequestDetailsWithSymbolKey() {
+    public ConcurrentHashMap<Integer, Request> getRequestDetailsWithSymbolKey() {
         return requestDetailsWithSymbolKey;
     }
 
     /**
      * @param requestDetailsWithSymbolKey the requestDetailsWithSymbolKey to set
      */
-    public void setRequestDetailsWithSymbolKey(HashMap<Integer, Request> requestDetailsWithSymbolKey) {
+    public void setRequestDetailsWithSymbolKey(ConcurrentHashMap<Integer, Request> requestDetailsWithSymbolKey) {
         this.requestDetailsWithSymbolKey = requestDetailsWithSymbolKey;
     }
 
