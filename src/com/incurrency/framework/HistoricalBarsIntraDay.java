@@ -155,7 +155,7 @@ public class HistoricalBarsIntraDay implements Runnable {
                 }
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
                 sdf.setTimeZone(timeZone);
-                System.out.println("Processing:" + s.getDisplayname());
+                System.out.println("Processing:" + s.getDisplayname()+",Progress:"+s.getSerialno()+"/"+Parameters.symbol.size());
                 ArrayList<BeanConnection> useConnection = new ArrayList<>();
                 int connectionsInUse = 0;
                 for (BeanConnection c : Parameters.connection) {
