@@ -64,9 +64,6 @@ public class SymbolFileHistoricalFuture {
         out.add(s.clone(s));
         ArrayList<BeanSymbol>fno=loadFutures(expiry);
         out.addAll(fno);
-        for (int i = 0; i < out.size(); i++) {
-            out.get(i).setDisplayname(out.get(i).getExchangeSymbol().replaceAll("[^A-Za-z0-9]", ""));
-        }
         Date dtExpiry=DateUtil.parseDate("yyyyMMdd", expiry, MainAlgorithm.timeZone);
         String expiryplus=DateUtil.getFormatedDate("yyyyMMdd", DateUtil.addDays(dtExpiry, 1).getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         String nextExpiry=Utilities.getNextExpiry(expiryplus);
@@ -79,6 +76,10 @@ public class SymbolFileHistoricalFuture {
         out.add(s.clone(s));
         ArrayList<BeanSymbol> fwdout = loadFutures(nextExpiry);
         out.addAll(fwdout);
+          for (int i = 0; i < out.size(); i++) {
+              out.get(i).setDisplayname(out.get(i).getExchangeSymbol().replaceAll("[^A-Za-z0-9]", ""));
+          }
+
         Utilities.printSymbolsToFile(out, symbolFileName, true);
     }
 
