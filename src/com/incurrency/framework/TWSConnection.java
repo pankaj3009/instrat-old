@@ -2284,7 +2284,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     break;
                 case 1101://Connectivity between IB and TWS has been restoreddata lost.*
                 case 2106://A historical data farm is connected.
-                    
+                    setHistoricalDataFarmConnected(true);
                     logger.log(Level.INFO,"103,HistoricalDataFarmConnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     break;
                 case 502: //could not connect . Check port
