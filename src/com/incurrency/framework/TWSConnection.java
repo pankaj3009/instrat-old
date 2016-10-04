@@ -2244,8 +2244,17 @@ public class TWSConnection extends Thread implements EWrapper {
     public void error(int id, int errorCode, String errorMsg) {
         try {
             switch (errorCode) {
+                case 300:
+                    Request rd = getRequestDetails().get(id);
+                    if (rd != null) {
+                        logger.log(Level.INFO, "402,RequestID is not available for processing with IB Servers,{0}:{1}:{2}:{3}:{4},RequestTYpe={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
+                                new Object[]{"Unknown", rd.accountName, rd.symbol.getDisplayname(), -1, -1,
+                            rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
+                    }
+                    break;
+                    
                 case 321:                    
-                   Request rd=getRequestDetails().get(id);                    
+                   rd=getRequestDetails().get(id);                    
                     logger.log(Level.INFO,"402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestTYpe={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
                             new Object[]{"Unknown",rd.accountName,rd.symbol.getDisplayname(),-1,-1,
                                 rd.requestType,DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)),rd.requestID,errorCode,errorMsg});
