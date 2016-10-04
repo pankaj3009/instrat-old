@@ -548,7 +548,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             ArrayList<Integer> openSell = getOpenOrdersForSide(c, id, EnumOrderSide.SELL);
                             ArrayList<Integer> openShort = getOpenOrdersForSide(c, id, EnumOrderSide.SHORT);
                             ArrayList<Integer> openCover = getOpenOrdersForSide(c, id, EnumOrderSide.COVER);
-                            logger.log(Level.INFO, "301,OrderReceived.ExecutionFlow,{0}:{1}:{2}:{3}:{4}, Case={5}:OpenBuy={6}:OpenSell={7}:OpenShort={8}:OpenCover={}",
+                            logger.log(Level.INFO, "301,OrderReceived.ExecutionFlow,{0}:{1}:{2}:{3}:{4},Case={5}:OpenBuy={6}:OpenSell={7}:OpenShort={8}:OpenCover={9}",
                                             new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), event.getInternalorder(), -1, rule,openBuy.size(),openSell.size(),openShort.size(),openCover.size()});
                             switch (rule) {
                                 case "STUB":
