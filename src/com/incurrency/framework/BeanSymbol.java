@@ -187,11 +187,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         switch(right){
             case "PUT":
                   payoff =new PlainVanillaPayoff(Option.Type.Put,Utilities.getDouble(this.getOption(), 0) );
-      
                 break;
             case "CALL":
                   payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(this.getOption(), 0) );
-      
                 break;
             default:
                 break;

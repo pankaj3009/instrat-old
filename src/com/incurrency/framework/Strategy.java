@@ -91,8 +91,9 @@ public class Strategy implements NotificationListener {
     private String redisDatabaseID;
     private int connectionidForMarketData=0;
     private String headerStrategy;
-        private EnumOrderType ordType;
-            private HashMap<String,Object> orderAttributes=new HashMap<>();
+    private EnumOrderType ordType;
+    private HashMap<String, Object> orderAttributes = new HashMap<>();
+    public AtomicBoolean tradingWindow;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -299,11 +300,15 @@ public class Strategy implements NotificationListener {
                 }
                 if (MainAlgorithm.isUseForTrading()) {
                     Timer closeProcessing = new Timer("Timer: " + this.strategy + " CloseProcessing");
+                    Timer openTradingWindow = new Timer("Timer: " + this.strategy + " OpenTradingWindow");
+                    Timer closeTradingWindow = new Timer("Timer: " + this.strategy + " CloseTradingWindow");
                     Date reportingTime=DateUtil.addSeconds(endDate, (this.maxOrderDuration + 1) * 60);
                     if(reportingTime.before(new Date())){
                         reportingTime=DateUtil.addDays(reportingTime, 1);
                     }
                     closeProcessing.schedule(runPrintOrders, reportingTime);
+                    openTradingWindow.schedule(runOpenTradingWindow, this.startDate);
+                    closeTradingWindow.schedule(runCloseTradingWindow, this.endDate);
                 }
             }
 
@@ -520,6 +525,23 @@ public class Strategy implements NotificationListener {
             }
         }
     }
+    
+    TimerTask runOpenTradingWindow=new TimerTask(){
+
+        @Override
+        public void run() {
+            tradingWindow.set(Boolean.TRUE);
+        }        
+    };
+    
+    TimerTask runCloseTradingWindow=new TimerTask(){
+
+        @Override
+        public void run() {
+            tradingWindow.set(Boolean.FALSE);
+        }        
+    };
+    
     
     TimerTask runPrintOrders = new TimerTask() {
         @Override
