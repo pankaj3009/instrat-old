@@ -93,7 +93,7 @@ public class Strategy implements NotificationListener {
     private String headerStrategy;
     private EnumOrderType ordType;
     private HashMap<String, Object> orderAttributes = new HashMap<>();
-    public AtomicBoolean tradingWindow;
+    public AtomicBoolean tradingWindow=new AtomicBoolean();
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
