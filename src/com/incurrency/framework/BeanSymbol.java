@@ -177,7 +177,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, new Date(settletime));
                 this.setCloseVol(vol);
             }
-            logger.log(Level.INFO,"Option vol set for symbol {0} at {1}",new Object[]{this.getDisplayname(),this.getCloseVol()});
+            logger.log(Level.INFO,"500,Option vol set,{0}:{1}:{2}:{3}:{4},Vol={5}",
+                    new Object[]{"Unknown","Unknown",this.getDisplayname(),-1,-1,this.getCloseVol()});
         }
         
         Date date=DateUtil.getFormattedDate(expiry, "yyyyMMdd", MainAlgorithm.timeZone);
@@ -202,7 +203,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());
         }else{
             underlyingID=Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry());
-            getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());       
+            getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());   
+            Thread.yield();
         }
         Handle<Quote> S = new Handle<Quote>(getUnderlying());
         org.jquantlib.time.Calendar india=new India();
