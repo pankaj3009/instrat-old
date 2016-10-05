@@ -531,6 +531,8 @@ public class Strategy implements NotificationListener {
         @Override
         public void run() {
             tradingWindow.set(Boolean.TRUE);
+            logger.log(Level.INFO,"202,TradingWindow set to TRUE,{0}:{1}:{2}:{3}:{4}",
+                    new Object[]{strategy,"Order","Unknown",-1,-1});
         }        
     };
     
@@ -539,6 +541,9 @@ public class Strategy implements NotificationListener {
         @Override
         public void run() {
             tradingWindow.set(Boolean.FALSE);
+             logger.log(Level.INFO,"202,TradingWindow set to FALSE,{0}:{1}:{2}:{3}:{4}",
+                    new Object[]{strategy,"Order","Unknown",-1,-1});
+
         }        
     };
     
