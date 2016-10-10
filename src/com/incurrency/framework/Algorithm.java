@@ -49,12 +49,20 @@ public class Algorithm {
     public static Database<String,String>db;
     public static String cassandraIP;
     public static boolean generateSymbolFile=false;
+    public static String defaultExchange;
+    public static String defaultPrimaryExchange;
+    public static String defaultCurrency;
+    
+    
     
     public Algorithm(HashMap<String, String> args) {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
         String holidayFile = globalProperties.getProperty("holidayfile", "").toString().trim();
         SimpleDateFormat sdf_yyyymmdd = new SimpleDateFormat("yyyyMMdd");
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
+        defaultExchange = globalProperties.getProperty("defaultexchange", "SMART").toString().trim();
+        defaultPrimaryExchange = globalProperties.getProperty("defaultprimaryexchange", "NSE").toString().trim();
+        defaultCurrency = globalProperties.getProperty("defaultcurrency", "INR").toString().trim();
         generateSymbolFile = Boolean.valueOf(globalProperties.getProperty("generatesymbolfile", "false").toString().trim());
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
