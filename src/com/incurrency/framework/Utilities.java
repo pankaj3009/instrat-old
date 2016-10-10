@@ -228,9 +228,11 @@ public class Utilities {
                         break;
                     case MKT:
                         price=0;
+                        break;
                     case CUSTOMREL:
                         String right=symbols.get(id).getRight();
                         price=getOptionLimitPriceForRel(symbols,id, underlyingid, side, right,tickSize);
+                        break;
                     default:
                         break;
                 }
@@ -241,10 +243,17 @@ public class Utilities {
                     price=0;
                     break;
                 case CUSTOMREL:
-                    if (side.equals("BUY") || side.equals("COVER")) {
+                    if (side.equals(EnumOrderSide.BUY) || side.equals(EnumOrderSide.COVER)) {
                         price = Parameters.symbol.get(id).getBidPrice();
+                        if(price==0 || price==-1){
+                            price=0.05;
+                        }
                     } else {
                         price = Parameters.symbol.get(id).getAskPrice();
+                        if(price==0 ||price==-1){
+                            price= Double.MAX_VALUE;
+                        }
+                        
                     }
                     if (price == 0 || price == -1) {
                         price = Parameters.symbol.get(id).getLastPrice();
