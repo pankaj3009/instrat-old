@@ -964,7 +964,14 @@ public class Strategy implements NotificationListener {
                 this.getStrategySymbols().add(id);
                 String localStrategy=Parameters.symbol.get(id).getStrategy();
                 if(!localStrategy.contains(strategy)){
-                    localStrategy=localStrategy+":"+strategy.toUpperCase();
+                    switch(localStrategy){
+                        case "":
+                            localStrategy=headerStrategy.toUpperCase();
+                            break;
+                        default:
+                           localStrategy=localStrategy+":"+headerStrategy.toUpperCase();
+                            break;
+                    }
                     Parameters.symbol.get(id).setStrategy(localStrategy);
                 }                
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
@@ -1000,7 +1007,7 @@ public class Strategy implements NotificationListener {
         s.setSerialno(id+1);
         Parameters.symbol.add(s);
         Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
-        initSymbol(s.getSerialno(),optionPricingUsingFutures,referenceCashType);
+        initSymbol(s.getSerialno()-1,optionPricingUsingFutures,referenceCashType);
     }
         
     @Override
