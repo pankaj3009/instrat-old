@@ -278,9 +278,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.type = type;
         this.exchange = exchange;
         this.currency = currency;
-        this.expiry = expiry;
-        this.option = option;
-        this.right = right;
+        this.expiry = expiry.equals("")?null:expiry;
+        this.option = option.equals("")?null:option;
+        this.right = right.equals("")?null:right;
         this.minsize = minsize;
         this.strategy="";
     }
@@ -296,9 +296,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.brokerSymbol = brokerSymbol;
         this.exchangeSymbol=exchangeSymbol;
         this.type = type;
-        this.expiry = expiry;
-        this.option = option;
-        this.right = right;
+        this.expiry = expiry.equals("")?null:expiry;
+        this.option = option.equals("")?null:option;
+        this.right = right.equals("")?null:right;
        // this.displayName=brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option;
     }
 
