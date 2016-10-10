@@ -950,7 +950,6 @@ public class Strategy implements NotificationListener {
                         break;
                     case "FUT":
                         if (Parameters.symbol.get(id).getMinsize() == 0) {
-
                             int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
                             Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
                         }
@@ -963,6 +962,11 @@ public class Strategy implements NotificationListener {
                 }
                 if (!this.getStrategySymbols().contains(Integer.valueOf(id))) {
                 this.getStrategySymbols().add(id);
+                String localStrategy=Parameters.symbol.get(id).getStrategy();
+                if(!localStrategy.contains(strategy)){
+                    localStrategy=localStrategy+":"+strategy.toUpperCase();
+                    Parameters.symbol.get(id).setStrategy(localStrategy);
+                }                
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
                 Index ind = new Index(this.getStrategy(), id);
                 if (Parameters.symbol.get(id).getBidPrice() == 0) {
@@ -986,6 +990,19 @@ public class Strategy implements NotificationListener {
         }
     }
     
+    
+        public void insertSymbol(List<BeanSymbol> symbols, String displayName,boolean optionPricingUsingFutures,String referenceCashType){
+        BeanSymbol s=new BeanSymbol(displayName);
+        s.setExchange(Algorithm.defaultExchange);
+        s.setPrimaryexchange(Algorithm.defaultPrimaryExchange);
+        s.setCurrency(Algorithm.defaultCurrency);
+        int id=Parameters.symbol.size();
+        s.setSerialno(id+1);
+        Parameters.symbol.add(s);
+        Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
+        initSymbol(s.getSerialno(),optionPricingUsingFutures,referenceCashType);
+    }
+        
     @Override
     public void notificationReceived(NotificationEvent event) {
     }
