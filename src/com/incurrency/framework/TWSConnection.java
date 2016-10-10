@@ -290,7 +290,7 @@ public class TWSConnection extends Thread implements EWrapper {
             con.m_primaryExch = s.getPrimaryexchange();
             con.m_right = s.getRight();
             con.m_secType = s.getType();
-            con.m_strike = s.getOption() == null ? 0 : Double.parseDouble(s.getOption());
+            con.m_strike = s.getOption() == null||s.getOption().equals("") ? 0 : Double.parseDouble(s.getOption());
             getMktData(s,con,isSnap);
            
     }
@@ -820,6 +820,8 @@ public class TWSConnection extends Thread implements EWrapper {
                 }
             contract.m_currency=Parameters.symbol.get(id).getCurrency();
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
+            contract.m_primaryExch = Parameters.symbol.get(id).getPrimaryexchange()==null?null:Parameters.symbol.get(id).getPrimaryexchange();
+            
             contract.m_symbol=Parameters.symbol.get(id).getBrokerSymbol();
             if(Parameters.symbol.get(id).getBrokerSymbol()!=null){
                 contract.m_symbol=Parameters.symbol.get(id).getBrokerSymbol();
@@ -827,8 +829,8 @@ public class TWSConnection extends Thread implements EWrapper {
             if(Parameters.symbol.get(id).getExchangeSymbol()!=null && Parameters.symbol.get(id).getType().equals("STK")){
                 contract.m_localSymbol=Parameters.symbol.get(id).getExchangeSymbol();
             }
-            contract.m_expiry=Parameters.symbol.get(id).getExpiry().equals("")?null:Parameters.symbol.get(id).getExpiry();
-            contract.m_right=Parameters.symbol.get(id).getRight().equals("")?null:Parameters.symbol.get(id).getRight();
+            contract.m_expiry=Parameters.symbol.get(id).getExpiry()==null?null:Parameters.symbol.get(id).getExpiry();
+            contract.m_right=Parameters.symbol.get(id).getRight()==null?null:Parameters.symbol.get(id).getRight();
             contract.m_strike=Utilities.getDouble(Parameters.symbol.get(id).getOption(), 0);
             contract.m_secType=Parameters.symbol.get(id).getType();
             out.add(contract);
@@ -973,7 +975,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         getRecentOrders().add(new Date().getTime());
                     }
                     logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}", 
-                            new Object[]{order.m_orderRef,c.getAccountName(),Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname(),ob.getInternalOrderID(),mOrderID,ob.getParentOrderSide(),order.m_totalQuantity,order.m_orderType,order.m_lmtPrice, order.m_auxPrice});
+                            new Object[]{order.m_orderRef,c.getAccountName(),Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname(),ob.getInternalOrderID(),String.valueOf(mOrderID),ob.getParentOrderSide(),order.m_totalQuantity,order.m_orderType,order.m_lmtPrice, order.m_auxPrice});
                     orderids.add(mOrderID);
                 } else {//combo order
                     if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
@@ -2277,8 +2279,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     break;
                 case 200: //No security definition has been found for the request
                     symbol = getRequestDetails().get(id) != null ? getRequestDetails().get(id).symbol.getBrokerSymbol() : "";
+                    if(getRequestDetails().get(id)!=null){
                     getRequestDetails().get(id).symbol.setStatus(false);
                     TWSConnection.skipsymbol=true;
+                    }
                     if (symbol.compareTo("") != 0) {
                         logger.log(Level.INFO, "103,ContractDetailsNotReceived,{0}", new Object[]{symbol});
                         getRequestDetails().get(id).requestStatus = EnumRequestStatus.CANCELLED;
