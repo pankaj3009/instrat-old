@@ -282,10 +282,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.option = option;
         this.right = right;
         this.minsize = minsize;
+        this.strategy="";
     }
 
     public BeanSymbol(String displayName){
-        this(displayName.split("_",-1)[0],displayName,displayName.split("_",-1)[1],null,null,displayName.split("_",-1)[2],displayName.split("_",-1)[4],displayName.split("_",-1)[3],1);
+        this(displayName.split("_",-1)[0],displayName,displayName.split("_",-1)[1],null,null,displayName.split("_",-1)[2],displayName.split("_",-1)[4],displayName.split("_",-1)[3],0);
     }
     
     public BeanSymbol(String brokerSymbol,String exchangeSymbol, String type, String expiry, String right,String option) {
