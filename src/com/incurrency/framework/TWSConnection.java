@@ -105,8 +105,8 @@ public class TWSConnection extends Thread implements EWrapper {
                     this.severeEmailSent.set(Boolean.TRUE);
                     String orderid = this.getOrderIDSync().take();
                     getC().getIdmanager().initializeOrderId(Utilities.getInt(orderid,this.requestIDManager.getNextOrderId()));
-                    logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4}",
-                            new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1});
+                    logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4},OrderID={5}",
+                            new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1,orderid});
                     eClientSocket.reqIds(1);
                     logger.log(Level.INFO, "403,Connected,{0}:{1}:{2}:{3}:{4}", new Object[]{"Unknown",c.getAccountName(), c.getStrategy(), -1,-1});
                     eClientSocket.setServerLogLevel(2);
