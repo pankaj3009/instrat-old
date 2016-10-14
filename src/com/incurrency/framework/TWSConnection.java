@@ -97,13 +97,13 @@ public class TWSConnection extends Thread implements EWrapper {
                 eClientSocket.eConnect(twsHost, twsPort, clientID);
                 int waitCount = 0;
                 if (eClientSocket.isConnected()) {
+                    this.severeEmailSent=false;
                     String orderid = this.getOrderIDSync().take();
                     getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
                     logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4}",
                             new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1});
                     eClientSocket.reqIds(1);
-//                System.out.println(">>> Connected to TWSSend with client id: " + clientID);
-                    //logger.log(Level.INFO, "{0},{1},TWSReceive,Connected to TWSSend,Server Version: {2}", new Object[]{"", c.getStrategy(), eClientSocket.serverVersion()});
+                    logger.log(Level.INFO, "403,Connected,{0}:{1}:{2}:{3}:{4}", new Object[]{"Unknown",c.getAccountName(), c.getStrategy(), -1,-1});
                     eClientSocket.setServerLogLevel(2);
                     return true;
                 } else {
@@ -211,9 +211,6 @@ public class TWSConnection extends Thread implements EWrapper {
     }
 
     public void getMktData(BeanSymbol s, Contract contract, boolean isSnap) {
-        if (!eClientSocket.isConnected()) {
-            connectToTWS();
-        }
         //for streaming request
         if (!isSnap) { //streaming data request
             if (getC().getReqHandle().getHandle()) {
@@ -304,9 +301,6 @@ public class TWSConnection extends Thread implements EWrapper {
         con.m_primaryExch = s.getPrimaryexchange();
         con.m_right = s.getRight();
         con.m_secType = s.getType();
-        if (!eClientSocket.isConnected()) {
-            connectToTWS();
-        }
         if (getC().getReqHistoricalHandle().getHandle()) {
             if (getC().getReqHandle().getHandle()) {
                 mRequestId = requestIDManager.getNextRequestId();
@@ -1201,9 +1195,6 @@ public class TWSConnection extends Thread implements EWrapper {
         }
         con.m_right = s.getRight();
         con.m_secType = s.getType();
-        if (!eClientSocket.isConnected()) {
-            connectToTWS();
-        }
         if (getC().getReqHistoricalHandle().getHandle()) {
             if (getC().getReqHandle().getHandle()) {
                 mRequestId = requestIDManager.getNextRequestId();
@@ -1256,9 +1247,7 @@ public class TWSConnection extends Thread implements EWrapper {
         if (s.getType().equals("FUT") || s.getType().equals("OPT")) {
             con.m_includeExpired = true;
         }
-        if (!eClientSocket.isConnected()) {
-            connectToTWS();
-        }
+
         if (getC().getReqHistoricalHandle().getHandle()) {
             if (getC().getReqHandle().getHandle()) {
                 mRequestId = requestIDManager.getNextRequestId();
@@ -2291,6 +2280,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     break;
                 case 1100://Connectivity between IB and TWS has been lost.
+                    this.eClientSocket.eDisconnect();
+                    setHistoricalDataFarmConnected(false);
+                    logger.log(Level.INFO,"103,ConnectivityLost,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
+                    break;
                 case 2105://A historical data farm is disconnected
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO,"103,HistoricalDataFarmDisconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
@@ -2301,6 +2294,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     logger.log(Level.INFO,"103,HistoricalDataFarmConnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     break;
                 case 502: //could not connect . Check port
+                    this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO,"103,CouldNotConnect,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     if (!this.severeEmailSent) {
@@ -2310,23 +2304,14 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     break;
                 case 504: //disconnected
+                    this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO,"103,Disconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
                     if (!this.severeEmailSent) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
                         t.start();
                         this.severeEmailSent = true;
-                    }
-                    MainAlgorithm.connectToTWS(c);
-                    if (eClientSocket.isConnected()) {
-                        setHistoricalDataFarmConnected(true);
-                        logger.log(Level.INFO, "103, Reconnected with account {0}", new Object[]{c.getAccountName()});
-                        if (this.severeEmailSent) {
-                            Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
-                            t.start();
-                            this.severeEmailSent = false;
-                        }
-                    }                    
+                    }           
                     break;
                 case 326://client id is in use
                     if (!this.severeEmailSent) {
@@ -2337,10 +2322,10 @@ public class TWSConnection extends Thread implements EWrapper {
                     break;
                 default:
                   logger.log(Level.INFO, "103,IB Message,{0}", new Object[]{getC().getAccountName()+delimiter+id+delimiter+errorCode+delimiter+errorMsg});
-                    break;
+                  tes.fireErrors(id, errorCode, "API.msg2: " + errorMsg, getC());
+                  break;
 
             }
-            tes.fireErrors(id, errorCode, "API.msg2: " + errorMsg, getC());
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }

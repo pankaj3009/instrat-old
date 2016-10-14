@@ -458,7 +458,7 @@ public class MainAlgorithm extends Algorithm {
         public void run() {
             for (BeanConnection c : Parameters.connection) {
                 if (!c.getWrapper().eClientSocket.isConnected()) {
-                    //MainAlgorithm.connectToTWS(c);
+                    MainAlgorithm.connectToTWS(c);
                 }
             }
         }
