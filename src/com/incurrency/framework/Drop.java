@@ -27,7 +27,7 @@ public class Drop {
         // available.
         while (empty) {
             try {
-                wait();
+                this.wait();
             } catch (InterruptedException e) {
                 logger.log(Level.INFO, "101", e);
             }
@@ -36,7 +36,7 @@ public class Drop {
         empty = true;
         // Notify producer that
         // status has changed.
-        notifyAll();
+        this.notifyAll();
         return message;
     }
     
@@ -53,7 +53,7 @@ public class Drop {
         // been retrieved.
         while (!empty) {
             try {                
-                wait();
+                this.wait();
             } catch (InterruptedException e) {
                 logger.log(Level.INFO, "101", e);
             }
@@ -64,6 +64,6 @@ public class Drop {
         this.message = message;
         // Notify consumer that status
         // has changed.
-        notifyAll();
+        this.notifyAll();
     }
 }
