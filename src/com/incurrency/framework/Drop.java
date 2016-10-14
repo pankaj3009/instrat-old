@@ -28,7 +28,6 @@ public class Drop {
         // available.
         synchronized (mon) {
             if (empty) {
-
                 try {
                     mon.wait();
                 } catch (InterruptedException ex) {
@@ -39,7 +38,7 @@ public class Drop {
             empty = true;
             // Notify producer that
             // status has changed.
-            this.notifyAll();
+            mon.notifyAll();
             return message;
         }
     }
