@@ -102,7 +102,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " reconnected. Trading Resumed on this account", "Algorithm SEVERE ALERT"));
                         t.start();
                     }
-                    this.severeEmailSent.set(Boolean.TRUE);
+                    this.severeEmailSent.set(Boolean.FALSE);
                     String orderid = this.getOrderIDSync().take();
                     getC().getIdmanager().initializeOrderId(Utilities.getInt(orderid,this.requestIDManager.getNextOrderId()));
                     logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4},OrderID={5}",
