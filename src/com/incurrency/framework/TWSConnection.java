@@ -97,6 +97,10 @@ public class TWSConnection extends Thread implements EWrapper {
                 eClientSocket.eConnect(twsHost, twsPort, clientID);
                 int waitCount = 0;
                 if (eClientSocket.isConnected()) {
+                    if(this.severeEmailSent.get()){
+                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " reconnected. Trading Resumed on this account", "Algorithm SEVERE ALERT"));
+                        t.start();
+                    }
                     this.severeEmailSent.set(Boolean.TRUE);
                     String orderid = this.getOrderIDSync().take();
                     getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
