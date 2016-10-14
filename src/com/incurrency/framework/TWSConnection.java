@@ -46,7 +46,7 @@ public class TWSConnection extends Thread implements EWrapper {
     private TradingEventSupport tes = new TradingEventSupport();
     private LimitedQueue recentOrders;
     private boolean stopTrading = false;
-    boolean severeEmailSent = false;
+    AtomicBoolean severeEmailSent=new AtomicBoolean(Boolean.FALSE);
     private ConcurrentHashMap<Integer, Request> requestDetails = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Integer, Request> requestDetailsWithSymbolKey = new ConcurrentHashMap<>();
     public int outstandingSnapshots = 0;
@@ -97,7 +97,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 eClientSocket.eConnect(twsHost, twsPort, clientID);
                 int waitCount = 0;
                 if (eClientSocket.isConnected()) {
-                    this.severeEmailSent=false;
+                    this.severeEmailSent.set(Boolean.TRUE);
                     String orderid = this.getOrderIDSync().take();
                     getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
                     logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4}",
@@ -2297,27 +2297,27 @@ public class TWSConnection extends Thread implements EWrapper {
                     this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO,"103,CouldNotConnect,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
-                    if (!this.severeEmailSent) {
+                    if (!this.severeEmailSent.get()) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + "could not connect. Check that TWSSend is accessible and API connections are enabled in TWSSend. ", "Algorithm SEVERE ALERT"));
                         t.start();
-                        this.severeEmailSent = true;
+                        this.severeEmailSent.set(Boolean.TRUE);
                     }
                     break;
                 case 504: //disconnected
                     this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO,"103,Disconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
-                    if (!this.severeEmailSent) {
+                    if (!this.severeEmailSent.get()) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
                         t.start();
-                        this.severeEmailSent = true;
+                        this.severeEmailSent.set(Boolean.TRUE);
                     }           
                     break;
                 case 326://client id is in use
-                    if (!this.severeEmailSent) {
+                    if (!this.severeEmailSent.get()) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " could not connect. Client ID was already in use", "Algorithm SEVERE ALERT"));
                         t.start();
-                        this.severeEmailSent = true;
+                        this.severeEmailSent.set(Boolean.TRUE);
                     }
                     break;
                 default:
