@@ -90,6 +90,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public boolean connectToTWS() {
         try {
+            orderIDSync=new Drop();
             String twsHost = getC().getIp();
             int twsPort = getC().getPort();
             int clientID = getC().getClientID();
