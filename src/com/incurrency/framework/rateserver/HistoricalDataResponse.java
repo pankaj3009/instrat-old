@@ -225,7 +225,8 @@ public class HistoricalDataResponse implements Runnable {
                 builder.setStart(new Date(startTime))
                         .setEnd(new Date(endTime))
                         .addMetric(metric[i])
-                        .addTag("symbol", s.replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase());
+                        .addTag("symbol", s.trim().toLowerCase());
+//                        .addTag("symbol", s.replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase());
                 builder.getMetrics().get(0).setOrder(QueryMetric.Order.ASCENDING);
                 if (expiry != null||(expiry != null && !expiry.equals(""))) {
                     builder.getMetrics().get(0).addTag("expiry", expiry);

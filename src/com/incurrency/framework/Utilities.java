@@ -368,11 +368,12 @@ public class Utilities {
             QueryBuilder builder = QueryBuilder.getInstance();
             String symbol=null;
             if(s.getExchangeSymbol()!=null){
-                symbol=s.getExchangeSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
+//                symbol=s.getExchangeSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
             }else{
                 symbol=s.getDisplayname().split("_",-1)[0];
-                symbol=symbol.replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
+//                symbol=symbol.replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
             }
+            symbol=symbol.toLowerCase();
             builder.setStart(startDate)
                     .setEnd(endDate)
                     .addMetric(metric)
@@ -402,13 +403,50 @@ public class Utilities {
         return obj;
     }
 
+     public static HashMap<Long,String> getPrices(String exchangeSymbol, String expiry,String right,String optionStrike,Date startDate, Date endDate, String metric) {
+        HashMap<Long,String> out = new HashMap<>();
+        try {
+            HttpClient client = new HttpClient("http://" + Algorithm.cassandraIP + ":8085");
+            String strike= Utilities.formatDouble(Utilities.getDouble(optionStrike, 0), new DecimalFormat("#.##"));
+            QueryBuilder builder = QueryBuilder.getInstance();
+            String symbol=null;
+            //symbol=exchangeSymbol.replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
+            symbol=exchangeSymbol.toLowerCase();
+            
+            builder.setStart(startDate)
+                    .setEnd(endDate)
+                    .addMetric(metric)
+                    .addTag("symbol", symbol);
+            if (expiry != null && !expiry.equals("")) {
+                builder.getMetrics().get(0).addTag("expiry", expiry);
+            }
+            if (right!= null && !right.equals("")) {
+                builder.getMetrics().get(0).addTag("option", right);
+                builder.getMetrics().get(0).addTag("strike", strike);
+            }
+            builder.getMetrics().get(0).setOrder(QueryMetric.Order.DESCENDING);
+            long time = new Date().getTime();
+            QueryResponse response = client.query(builder);
+
+            List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
+            for (DataPoint dataPoint : dataPoints) {
+                long lastTime = dataPoint.getTimestamp();
+                out.put(lastTime, dataPoint.getValue().toString());
+            }
+        } catch (Exception e) {
+            logger.log(Level.INFO, null, e);
+        }
+        return out;
+    }
+
     public static Object[] getLastSettlePriceOption(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
         Object[] out = new Object[2];
         HashMap<String, Object> param = new HashMap();
         param.put("TYPE", Boolean.FALSE);
         BeanSymbol s = symbols.get(id);
         String strike = s.getOption();
-        String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
+        //String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
+        String symbol = s.getDisplayname().split("_", -1)[0].trim().toLowerCase();
         String option = s.getRight();
         String expiry = s.getExpiry();
         HistoricalRequestJson request = new HistoricalRequestJson(metric,
@@ -461,7 +499,8 @@ public class Utilities {
         param.put("TYPE", Boolean.FALSE);
         BeanSymbol s = symbols.get(id);
         String strike = s.getOption();
-        String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
+        //String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
+        String symbol = s.getDisplayname().split("_", -1)[0].trim().toLowerCase();
         String option = s.getRight();
         String expiry = s.getExpiry();
         HistoricalRequestJson request = new HistoricalRequestJson(metric,
@@ -1563,7 +1602,8 @@ public class Utilities {
         if (displayName != null) {
             synchronized(symbols){
             for (BeanSymbol symb : symbols) {
-                if (symb.getDisplayname().equals(displayName) || symb.getDisplayname().replaceAll("[^A-Za-z0-9\\-\\_]","").equals(displayName)) {
+                //if (symb.getDisplayname().equals(displayName) || symb.getDisplayname().replaceAll("[^A-Za-z0-9\\-\\_]","").equals(displayName)) {
+                if (symb.getDisplayname().equals(displayName)) {
                     return symb.getSerialno() - 1;
                 }
             }

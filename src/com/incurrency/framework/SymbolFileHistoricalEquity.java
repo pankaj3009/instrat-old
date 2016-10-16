@@ -64,7 +64,8 @@ public class SymbolFileHistoricalEquity {
         
         out.addAll(cnx500);
         for(int i=0;i<cnx500.size();i++){
-           cnx500.get(i).setDisplayname(cnx500.get(i).getExchangeSymbol().replaceAll("[^A-Za-z0-9]", ""));
+          // cnx500.get(i).setDisplayname(cnx500.get(i).getExchangeSymbol().replaceAll("[^A-Za-z0-9]", ""));
+            cnx500.get(i).setDisplayname(cnx500.get(i).getExchangeSymbol().replaceAll(" ", ""));
         }
         
         
