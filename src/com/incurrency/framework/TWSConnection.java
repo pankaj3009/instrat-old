@@ -1787,7 +1787,7 @@ public class TWSConnection extends Thread implements EWrapper {
             if (id >= 0) {
                 //String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
                 logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
-                        new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), orderId, getC().getOrders().get(orderId).getInternalOrderID(), status, filled, remaining});
+                        new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), getC().getOrders().get(orderId).getInternalOrderID(),orderId, status, filled, remaining});
                 //logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
                 tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
             } else {
