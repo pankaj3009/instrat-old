@@ -11,7 +11,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 import com.incurrency.RatesClient.RequestClient;
-import static com.incurrency.framework.TradingUtil.logger;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -456,6 +455,61 @@ public class Utilities {
     }
     
     public static Object[] getOptionStrikesFromKDB(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric){
+        Object[] out=new Object[1];
+        HashMap<String, Object> param = new HashMap();
+        param.put("TYPE", Boolean.FALSE);
+        BeanSymbol s = symbols.get(id);
+        String strike = s.getOption();
+        String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
+        String option = s.getRight();
+        String expiry = s.getExpiry();
+        HistoricalRequestJson request = new HistoricalRequestJson(metric,
+                new String[]{"strike", "symbol", "expiry"},
+                new String[]{strike, symbol, expiry},
+                null,
+                null,
+                null,
+                String.valueOf(startTime),
+                String.valueOf(endTime));
+        //http://stackoverflow.com/questions/7181534/http-post-using-json-in-java
+        String json_string = JsonWriter.objectToJson(request, param);
+        StringEntity requestEntity = new StringEntity(
+                json_string,
+                ContentType.APPLICATION_JSON);
+
+        HttpPost postMethod = new HttpPost("http://91.121.165.108:8085/api/v1/datapoints/query/tags");
+        postMethod.setEntity(requestEntity);
+        CloseableHttpClient httpClient = HttpClients.createDefault();
+        try {
+            HttpResponse rawResponse = httpClient.execute(postMethod);
+            BufferedReader br = new BufferedReader(
+                    new InputStreamReader((rawResponse.getEntity().getContent())));
+
+            String output;
+            System.out.println("Output from Server .... \n");
+            while ((output = br.readLine()) != null) {
+                param.clear();
+                param.put("USE_MAPS", "false");
+                JsonObject obj = (JsonObject) JsonReader.jsonToJava(output, param);
+                JsonObject t = (JsonObject) ((Object[]) obj.get("queries"))[0];
+                JsonObject results = (JsonObject) ((Object[]) t.get("results"))[0];
+                Object[] values = (Object[]) results.get("values");
+                int length = values.length;
+                Object[] outarray = (Object[]) values[length - 1];
+                out = values; //0 is long time, 1 is value
+
+            }
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
+        }
+
+       
+        return out;
+    }
+   
+    
+    public static Object[] getExpiriesFromKDB(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric){
         Object[] out=new Object[1];
         HashMap<String, Object> param = new HashMap();
         param.put("TYPE", Boolean.FALSE);
