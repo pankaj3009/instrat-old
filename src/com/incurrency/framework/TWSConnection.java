@@ -25,6 +25,8 @@ import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 /**
  *
  * @author admin
@@ -74,6 +76,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public RequestIDManager requestIDManager=new RequestIDManager();
     private HashMap<Integer, Request> FundamentalRequestID = new HashMap<>();
     private SimpleDateFormat sdfTime=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SynchronousQueue<String> startingOrderID=new SynchronousQueue<>();
     
     
     public TWSConnection(BeanConnection c) {
@@ -103,7 +106,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         t.start();
                     }
                     this.severeEmailSent.set(Boolean.FALSE);
-                    String orderid = this.getOrderIDSync().take();
+                    String orderid = startingOrderID.take();
                     getC().getIdmanager().initializeOrderId(Utilities.getInt(orderid,this.requestIDManager.getNextOrderId()));
                     logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4},OrderID={5}",
                             new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1,orderid});
@@ -1855,9 +1858,13 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void nextValidId(int orderId) {
-        //System.out.println("orderid:"+orderId);
-      //  c.getIdmanager().initializeOrderId(orderId);
-        this.getOrderIDSync().put(String.valueOf(orderId));
+        try {
+            //System.out.println("orderid:"+orderId);
+          //  c.getIdmanager().initializeOrderId(orderId);
+          startingOrderID.put(String.valueOf(orderId));
+        } catch (InterruptedException ex) {
+            logger.log(Level.SEVERE,null,ex);            
+        }
     }
 
     @Override
@@ -2441,19 +2448,7 @@ public class TWSConnection extends Thread implements EWrapper {
         this.historicalDataFarmConnected = historicalDataFarmConnected;
     }
 
-    /**
-     * @return the orderIDSync
-     */
-    public Drop getOrderIDSync() {
-        return orderIDSync;
-    }
 
-    /**
-     * @param orderIDSync the orderIDSync to set
-     */
-    public void setOrderIDSync(Drop orderIDSync) {
-        this.orderIDSync = orderIDSync;
-    }
 
     /**
      * @return the c
