@@ -42,7 +42,6 @@ public class TWSConnection extends Thread implements EWrapper {
     public static volatile int mTotalATMChecks;
     private ArrayList _fundamentallisteners = new ArrayList();
     private Drop accountIDSync = new Drop();
-    private Drop orderIDSync=new Drop();
     private static final Logger logger = Logger.getLogger(TWSConnection.class.getName());
     private boolean initialsnapShotFilled = false; //set to true by getMktData() once the first 100 snapshot requests are out to IB
     private TradingEventSupport tes = new TradingEventSupport();
@@ -93,7 +92,6 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public boolean connectToTWS() {
         try {
-            orderIDSync=new Drop();
             String twsHost = getC().getIp();
             int twsPort = getC().getPort();
             int clientID = getC().getClientID();
@@ -106,7 +104,8 @@ public class TWSConnection extends Thread implements EWrapper {
                         t.start();
                     }
                     this.severeEmailSent.set(Boolean.FALSE);
-                    String orderid = startingOrderID.take();
+                    String orderid = startingOrderID.poll(2,TimeUnit.SECONDS);
+                  //  String orderid="1";
                     getC().getIdmanager().initializeOrderId(Utilities.getInt(orderid,this.requestIDManager.getNextOrderId()));
                     logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4},OrderID={5}",
                             new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1,orderid});
@@ -1861,8 +1860,8 @@ public class TWSConnection extends Thread implements EWrapper {
         try {
             //System.out.println("orderid:"+orderId);
           //  c.getIdmanager().initializeOrderId(orderId);
-          startingOrderID.put(String.valueOf(orderId));
-        } catch (InterruptedException ex) {
+          startingOrderID.offer(String.valueOf(orderId));
+        } catch (Exception ex) {
             logger.log(Level.SEVERE,null,ex);            
         }
     }
