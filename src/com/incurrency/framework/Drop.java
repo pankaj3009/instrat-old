@@ -20,50 +20,59 @@ public class Drop {
     // false if producer should wait for
     // consumer to retrieve message.
     private boolean empty = true;
+    private final Object mon = new Object();
     private static final Logger logger = Logger.getLogger(Drop.class.getName());
-    
-    public synchronized String take() {
+
+    public String take() {
         // Wait until message is
         // available.
-        while (empty) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                logger.log(Level.INFO, "101", e);
+        synchronized (mon) {
+            if (empty) {
+                try {
+                    mon.wait();
+                } catch (InterruptedException ex) {
+                    logger.log(Level.SEVERE, "101", ex);
+                }
             }
+            // Toggle status.
+            empty = true;
+            // Notify producer that
+            // status has changed.
+            mon.notifyAll();
+            return message;
         }
-        // Toggle status.
-        empty = true;
-        // Notify producer that
-        // status has changed.
-        notifyAll();
-        return message;
     }
-    
-    public synchronized boolean empty(){
-        return empty;
-    } 
-    
-    public synchronized String value(){
-        return message;
+
+    public boolean empty() {
+        synchronized (mon) {
+            return empty;
+        }
     }
-    
-    public synchronized void put(String message) {
+
+    public String value() {
+        synchronized (mon) {
+            return message;
+        }
+    }
+
+    public void put(String message) {
         // Wait until message has
         // been retrieved.
-        while (!empty) {
-            try {                
-                wait();
-            } catch (InterruptedException e) {
-                logger.log(Level.INFO, "101", e);
+        synchronized (mon) {
+            if (!empty) {
+                try {
+                    mon.wait();
+                } catch (InterruptedException e) {
+                    logger.log(Level.INFO, "101", e);
+                }
             }
+            // Toggle status.
+            empty = false;
+            // Store message.
+            this.message = message;
+            // Notify consumer that status
+            // has changed.
+            mon.notifyAll();
         }
-        // Toggle status.
-        empty = false;
-        // Store message.
-        this.message = message;
-        // Notify consumer that status
-        // has changed.
-        notifyAll();
     }
 }

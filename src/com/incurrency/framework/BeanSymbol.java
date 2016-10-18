@@ -320,7 +320,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             this.right = input[10].equals("") || type.equals("COMBO") ? null : input[10].trim().toUpperCase();
             this.happyName = input[3].equals("") ?null: input[3].trim().toUpperCase();
             this.displayName=happyName==null?exchangeSymbol+"_"+type+"_"+(expiry==null?"":expiry)+"_"+(right==null?"":right)+"_"+(option==null?"":option):this.happyName ;
-//            displayName=displayName.replaceAll("[^_A-Za-z0-9]", "").trim().toUpperCase();
             this.minsize = input[11].equals("") ? 1 : Integer.parseInt(input[11]);;
             this.barsstarttime = input[12].equals("") ? null : input[12].trim().toUpperCase();
             this.streamingpriority = input[13].equals("") ? 1 : Integer.parseInt(input[13].trim().toUpperCase());

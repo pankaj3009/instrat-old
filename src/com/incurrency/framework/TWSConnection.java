@@ -25,6 +25,8 @@ import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 /**
  *
  * @author admin
@@ -46,7 +48,7 @@ public class TWSConnection extends Thread implements EWrapper {
     private TradingEventSupport tes = new TradingEventSupport();
     private LimitedQueue recentOrders;
     private boolean stopTrading = false;
-    boolean severeEmailSent = false;
+    AtomicBoolean severeEmailSent=new AtomicBoolean(Boolean.FALSE);
     private ConcurrentHashMap<Integer, Request> requestDetails = new ConcurrentHashMap<>();
     private ConcurrentHashMap<Integer, Request> requestDetailsWithSymbolKey = new ConcurrentHashMap<>();
     public int outstandingSnapshots = 0;
@@ -74,6 +76,7 @@ public class TWSConnection extends Thread implements EWrapper {
     public RequestIDManager requestIDManager=new RequestIDManager();
     private HashMap<Integer, Request> FundamentalRequestID = new HashMap<>();
     private SimpleDateFormat sdfTime=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SynchronousQueue<String> startingOrderID=new SynchronousQueue<>();
     
     
     public TWSConnection(BeanConnection c) {
@@ -90,6 +93,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public boolean connectToTWS() {
         try {
+            orderIDSync=new Drop();
             String twsHost = getC().getIp();
             int twsPort = getC().getPort();
             int clientID = getC().getClientID();
@@ -97,11 +101,15 @@ public class TWSConnection extends Thread implements EWrapper {
                 eClientSocket.eConnect(twsHost, twsPort, clientID);
                 int waitCount = 0;
                 if (eClientSocket.isConnected()) {
-                    this.severeEmailSent=false;
-                    String orderid = this.getOrderIDSync().take();
-                    getC().getIdmanager().initializeOrderId(Integer.valueOf(orderid));
-                    logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4}",
-                            new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1});
+                    if(this.severeEmailSent.get()){
+                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " reconnected. Trading Resumed on this account", "Algorithm SEVERE ALERT"));
+                        t.start();
+                    }
+                    this.severeEmailSent.set(Boolean.FALSE);
+                    String orderid = startingOrderID.take();
+                    getC().getIdmanager().initializeOrderId(Utilities.getInt(orderid,this.requestIDManager.getNextOrderId()));
+                    logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4},OrderID={5}",
+                            new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1,orderid});
                     eClientSocket.reqIds(1);
                     logger.log(Level.INFO, "403,Connected,{0}:{1}:{2}:{3}:{4}", new Object[]{"Unknown",c.getAccountName(), c.getStrategy(), -1,-1});
                     eClientSocket.setServerLogLevel(2);
@@ -1782,7 +1790,7 @@ public class TWSConnection extends Thread implements EWrapper {
             if (id >= 0) {
                 //String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
                 logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
-                        new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), orderId, getC().getOrders().get(orderId).getInternalOrderID(), status, filled, remaining});
+                        new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), getC().getOrders().get(orderId).getInternalOrderID(),orderId, status, filled, remaining});
                 //logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
                 tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
             } else {
@@ -1850,9 +1858,13 @@ public class TWSConnection extends Thread implements EWrapper {
 
     @Override
     public void nextValidId(int orderId) {
-        //System.out.println("orderid:"+orderId);
-      //  c.getIdmanager().initializeOrderId(orderId);
-        this.getOrderIDSync().put(String.valueOf(orderId));
+        try {
+            //System.out.println("orderid:"+orderId);
+          //  c.getIdmanager().initializeOrderId(orderId);
+          startingOrderID.put(String.valueOf(orderId));
+        } catch (InterruptedException ex) {
+            logger.log(Level.SEVERE,null,ex);            
+        }
     }
 
     @Override
@@ -2297,27 +2309,27 @@ public class TWSConnection extends Thread implements EWrapper {
                     this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO,"103,CouldNotConnect,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
-                    if (!this.severeEmailSent) {
+                    if (!this.severeEmailSent.get()) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + "could not connect. Check that TWSSend is accessible and API connections are enabled in TWSSend. ", "Algorithm SEVERE ALERT"));
                         t.start();
-                        this.severeEmailSent = true;
+                        this.severeEmailSent.set(Boolean.TRUE);
                     }
                     break;
                 case 504: //disconnected
                     this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO,"103,Disconnected,{0}",new Object[]{getC().getAccountName()+delimiter+errorCode+delimiter+errorMsg});
-                    if (!this.severeEmailSent) {
+                    if (!this.severeEmailSent.get()) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
                         t.start();
-                        this.severeEmailSent = true;
+                        this.severeEmailSent.set(Boolean.TRUE);
                     }           
                     break;
                 case 326://client id is in use
-                    if (!this.severeEmailSent) {
+                    if (!this.severeEmailSent.get()) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " could not connect. Client ID was already in use", "Algorithm SEVERE ALERT"));
                         t.start();
-                        this.severeEmailSent = true;
+                        this.severeEmailSent.set(Boolean.TRUE);
                     }
                     break;
                 default:
@@ -2436,19 +2448,7 @@ public class TWSConnection extends Thread implements EWrapper {
         this.historicalDataFarmConnected = historicalDataFarmConnected;
     }
 
-    /**
-     * @return the orderIDSync
-     */
-    public Drop getOrderIDSync() {
-        return orderIDSync;
-    }
 
-    /**
-     * @param orderIDSync the orderIDSync to set
-     */
-    public void setOrderIDSync(Drop orderIDSync) {
-        this.orderIDSync = orderIDSync;
-    }
 
     /**
      * @return the c
