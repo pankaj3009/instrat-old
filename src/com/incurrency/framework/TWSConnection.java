@@ -239,6 +239,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 //TagValue tv=new TagValue();
                 //tv.m_value="XYZ";
                 //l.add(tv);
+                 getRequestDetailsWithSymbolKey().putIfAbsent(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                 this.eClientSocket.reqMktData(mRequestId, contract, null, isSnap,null);
                 s.setConnectionidUsedForMarketData(Parameters.connection.indexOf(getC()));
                 logger.log(Level.FINER, "403,MarketDataRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
@@ -252,14 +253,17 @@ public class TWSConnection extends Thread implements EWrapper {
                     if (new Date().getTime() > getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestTime + 10000) { //and request is over 10 seconds seconds old
                         int origReqID = getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestID;
                         this.getRequestDetailsWithSymbolKey().get(s.getSerialno()).requestStatus=EnumRequestStatus.CANCELLED;
-                        getRequestDetails().get(origReqID).requestStatus=EnumRequestStatus.CANCELLED;
-                        getC().getWrapper().eClientSocket.cancelMktData(origReqID);
-                        logger.log(Level.FINEST, "403,SnapshotCancelled, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
-                        //there is no callback to confirm that IB processed the market data cancellation, so we will just remove from queue
-                        getRequestDetailsWithSymbolKey().remove(s.getSerialno());
-                        synchronized(lock_request){
-                        getRequestDetails().remove(origReqID);
+                        if (getRequestDetails().get(origReqID) != null) {
+                            getRequestDetails().get(origReqID).requestStatus = EnumRequestStatus.CANCELLED;
+                            getC().getWrapper().eClientSocket.cancelMktData(origReqID);
+                            logger.log(Level.FINEST, "403,SnapshotCancelled, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
+                            //synchronized (lock_request) {
+                                //getRequestDetails().remove(origReqID);
+                            //}
+                            //there is no callback to confirm that IB processed the market data cancellation, so we will just remove from queue
                         }
+                        getRequestDetailsWithSymbolKey().remove(s.getSerialno());
+                       
                         //we dont reattempt just yet to prevent a loop of attempts when IB is not throwing data for the symbol
                     }else{
                         requestData=false;
@@ -873,6 +877,10 @@ public class TWSConnection extends Thread implements EWrapper {
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
             contract.m_primaryExch = Parameters.symbol.get(id).getPrimaryexchange();
             contract.m_currency = Parameters.symbol.get(id).getCurrency();
+            contract.m_strike=Utilities.getDouble(Parameters.symbol.get(id).getOption(),0);
+            contract.m_right=Parameters.symbol.get(id).getRight();
+            contract.m_secType=Parameters.symbol.get(id).getType();
+            contract.m_expiry=Parameters.symbol.get(id).getExpiry();
         } else {
             logger.log(Level.INFO, "101,ErrorSymbolIDNotFound,{0}", new Object[]{s.getDisplayname()});
         }
