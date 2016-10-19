@@ -991,7 +991,7 @@ public class Strategy implements NotificationListener {
                     if (plmanager != null) {
                         plmanager.init(id);
                     } else {
-                        logger.log(Level.SEVERE, "Symbol {} not initialized. Probably the strategy has irreconciled positions", new Object[]{Parameters.symbol.get(id).getDisplayname()});
+                        logger.log(Level.SEVERE, "Symbol {0} not initialized. Probably the strategy has irreconciled positions", new Object[]{Parameters.symbol.get(id).getDisplayname()});
                     }
             }
         }
