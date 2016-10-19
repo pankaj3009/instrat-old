@@ -368,6 +368,7 @@ public class Utilities {
             String symbol=null;
             if(s.getExchangeSymbol()!=null){
 //                symbol=s.getExchangeSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
+                  symbol=s.getExchangeSymbol();
             }else{
                 symbol=s.getDisplayname().split("_",-1)[0];
 //                symbol=symbol.replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
