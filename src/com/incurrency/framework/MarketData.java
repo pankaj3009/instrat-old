@@ -158,7 +158,7 @@ public class MarketData implements Runnable {
                      */
                     //System.out.println("Market Data Requested:" + symb.get(row).getSymbol());
                 } catch (Exception e) {
-                    System.out.println("### Error while getting market data for symbol " + mMktDataTB.getValueAt(row, 1));
+                  //  System.out.println("### Error while getting market data for symbol " + mMktDataTB.getValueAt(row, 1));
                     logger.log(Level.INFO, "101", e);
                 }
                 if (mStopThread) {
