@@ -108,8 +108,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     }
 
     public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
-        int underlying = s.getUnderlyingID();
-        if (underlying == -1) {
+        int underlyingID = s.getUnderlyingID();
+        if (underlyingID == -1) {
             return false;
         } else {
             int i = 0;
@@ -131,7 +131,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     }
 
     @Override
-    public void bidaskChanged(BidAskEvent event) {
+    public synchronized void  bidaskChanged(BidAskEvent event) {
         try {
             boolean fatfinger = false;
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
@@ -339,7 +339,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     }
 
     @Override
-    public void orderStatusReceived(OrderStatusEvent event) {
+    public synchronized void orderStatusReceived(OrderStatusEvent event) {
         OrderBean ob = c.getOrders().get(event.getOrderID());
         if (ob != null) {
             if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && (ob.getParentSymbolID() - 1) == id) {
