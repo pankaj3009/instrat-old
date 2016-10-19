@@ -162,7 +162,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private int bdte=-1;
     private long cdte=-1;
     private int underlyingID=-1;
-
     
     public void SetOptionProcess(){//expiry,right,strike
         if(this.closeVol==0){
@@ -2398,7 +2397,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the closeVol
      */
     public double getCloseVol() {
-        return closeVol;
+             return closeVol;
     }
 
     /**
