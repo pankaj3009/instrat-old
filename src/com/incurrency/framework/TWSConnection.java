@@ -96,6 +96,8 @@ public class TWSConnection extends Thread implements EWrapper {
             int twsPort = getC().getPort();
             int clientID = getC().getClientID();
             if (!eClientSocket.isConnected()) {
+                Thread.sleep(2000);
+                Thread.yield();
                 eClientSocket.eConnect(twsHost, twsPort, clientID);
                 int waitCount = 0;
                 if (eClientSocket.isConnected()) {
