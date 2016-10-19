@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jquantlib.daycounters.Actual360;
 import org.jquantlib.daycounters.Actual365Fixed;
 import org.jquantlib.exercise.EuropeanExercise;
@@ -143,6 +144,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private final Object lockTradedVolumes = new Object();
     private final Object lockTradedTime = new Object();
     private final Object lockOptionProcess=new Object();
+    private final Object lockCloseVol=new Object();
+    private final Object lockUnderlying=new Object();
     private final Object lockPrevLastPrice = new Object();
     private static final Object lockTimeSeries = new Object();
     private int openHour = Utilities.getInt(Algorithm.globalProperties.getProperty("openhour", "9").toString().trim(),9);
@@ -161,10 +164,10 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private double mtmPrice;
     private int bdte=-1;
     private long cdte=-1;
-    private int underlyingID=-1;
+    private AtomicInteger underlyingID=new AtomicInteger(-1);
     
     public void SetOptionProcess(){//expiry,right,strike
-        if(this.closeVol==0){
+        if(getCloseVol()==0){
             Object[] optionlastpriceset = Utilities.getSettlePrice(this, new Date());
             int futureid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, this.getSerialno()-1, expiry);
             Object[] underlyinglastpriceset = Utilities.getSettlePrice(Parameters.symbol.get(futureid), new Date());
@@ -196,18 +199,18 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
        // PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
         setOptionProcess(new EuropeanOption(payoff,exercise));
-        if(underlyingID>=0){
-            getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());
+        if(underlyingID.get()>=0){
+            getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());
         }else{
-            underlyingID=Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry());
-            getUnderlying().setValue(Parameters.symbol.get(underlyingID).getLastPrice());   
+            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry()));
+            getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());   
             Thread.yield();
         }
         Handle<Quote> S = new Handle<Quote>(getUnderlying());
         org.jquantlib.time.Calendar india=new India();
         Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual365Fixed()));
         Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual365Fixed()));
-        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, this.closeVol, new Actual365Fixed()));
+        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, getCloseVol(), new Actual365Fixed()));
         BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
         AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
         getOptionProcess().setPricingEngine(engine);
@@ -2397,14 +2400,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the closeVol
      */
     public double getCloseVol() {
-             return closeVol;
+        synchronized (lockCloseVol) {
+            return closeVol;
+        }
     }
 
     /**
      * @param closeVol the closeVol to set
      */
     public void setCloseVol(double closeVol) {
-        this.closeVol = closeVol;
+        synchronized(lockCloseVol){
+            this.closeVol = closeVol;
+        }
+
     }
 
     /**
@@ -2434,14 +2442,18 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the underlying
      */
     public SimpleQuote getUnderlying() {
-        return underlying;
+        synchronized(lockUnderlying){
+            return underlying;
+        }
     }
 
     /**
      * @param underlying the underlying to set
      */
     public void setUnderlying(SimpleQuote underlying) {
-        this.underlying = underlying;
+        synchronized(lockUnderlying){
+            this.underlying = underlying;
+        }
     }
 
     /**
@@ -2475,19 +2487,23 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the underlyingID
      */
     public int getUnderlyingID() {
-        if(underlyingID>=0){
-            return underlyingID;
+
+        if(underlyingID.get()>=0){
+            return underlyingID.get();
         }else{
-            underlyingID=Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry());
-            return underlyingID;
+            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry()));
+            return underlyingID.get();
         }
+        
     }
 
     /**
      * @param underlyingID the underlyingID to set
      */
     public void setUnderlyingID(int underlyingID) {
-        this.underlyingID = underlyingID;
+        
+        this.underlyingID.set(underlyingID);
+        
     }
 
     /**
