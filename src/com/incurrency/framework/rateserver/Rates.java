@@ -32,7 +32,7 @@ public class Rates {
 
     private static int publishport;
     private static int responseport;
-    public static com.incurrency.framework.rateserver.ServerPubSub rateServer;
+    public static com.incurrency.framework.rateserver.RedisPublisher rateServer;
     private static final Logger logger = Logger.getLogger(Rates.class.getName());
     Date endDate;
     public static String country;
@@ -49,9 +49,9 @@ public class Rates {
 
     public Rates(String parameterFile) {
         loadParameters(parameterFile);
-        rateServer = new com.incurrency.framework.rateserver.ServerPubSub(publishport);
+        rateServer = new com.incurrency.framework.rateserver.RedisPublisher(publishport);
         Thread t = new Thread(new ServerResponse(responseport));
-        t.setName("ResponseServer");
+        t.setName("Redis Publisher");
         t.start();
         TWSConnection.serverInitialized.set(true);
 
@@ -90,13 +90,13 @@ public class Rates {
         rtEquityMetric = properties.getProperty("rtequitymetric");
         rtOptionMetric = properties.getProperty("rtoptionmetric");
         if (useRTVolume) {
-            ServerPubSub.equityMetric = rtEquityMetric;
-            ServerPubSub.futureMetric = rtFutureMetric;
-            ServerPubSub.optionMetric = rtOptionMetric;
+            ZMQPubSub.equityMetric = rtEquityMetric;
+            ZMQPubSub.futureMetric = rtFutureMetric;
+            ZMQPubSub.optionMetric = rtOptionMetric;
         } else {
-            ServerPubSub.equityMetric = tickEquityMetric;
-            ServerPubSub.futureMetric = tickFutureMetric;
-            ServerPubSub.optionMetric = tickOptionMetric;
+            ZMQPubSub.equityMetric = tickEquityMetric;
+            ZMQPubSub.futureMetric = tickFutureMetric;
+            ZMQPubSub.optionMetric = tickOptionMetric;
         }
         boolean realtime = Boolean.parseBoolean(properties.getProperty("realtime", "false"));
         pushToCassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra", "false"));
@@ -117,9 +117,9 @@ public class Rates {
                 c.getWrapper().saveToCassandra = savetocassandra;
                 if (savetocassandra) {
                     try {
-                        ServerPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);
-                        ServerPubSub.output = new PrintStream(ServerPubSub.cassandraConnection.getOutputStream());
-                        ServerPubSub.saveToCassandra = savetocassandra;
+                        ZMQPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);
+                        ZMQPubSub.output = new PrintStream(ZMQPubSub.cassandraConnection.getOutputStream());
+                        ZMQPubSub.saveToCassandra = savetocassandra;
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, null, e);
                     }

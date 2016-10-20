@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
+import redis.clients.jedis.Jedis;
 /**
  *
  * @author admin
@@ -1431,7 +1432,7 @@ public class TWSConnection extends Thread implements EWrapper {
         }
 
         String type = Parameters.symbol.get(id).getType();
-        String header = topic + ":" + type + ":" + "ALL";
+        String header = topic ;
         String symbol=Parameters.symbol.get(id).getDisplayname();
 
         if (field == com.ib.client.TickType.CLOSE) {
@@ -1586,7 +1587,7 @@ public class TWSConnection extends Thread implements EWrapper {
             r.requestStatus = EnumRequestStatus.SERVICED;
         }
         String type = Parameters.symbol.get(id).getType();
-        String header = Rates.country + ":" + type + ":" + "ALL";
+        String header = topic;
         String symbol=Parameters.symbol.get(id).getDisplayname();
         if (field == com.ib.client.TickType.BID_SIZE || field == com.ib.client.TickType.ASK_SIZE) {
             Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
@@ -1747,7 +1748,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     r.requestStatus = EnumRequestStatus.SERVICED;
                 }
                 String type = Parameters.symbol.get(id).getType();
-                String header = Rates.country + ":" + type + ":" + "ALL";
+                String header = topic;
                 String symbol = Parameters.symbol.get(id).getDisplayname();
                 int lastSize = volume - Parameters.symbol.get(id).getVolume();
                 Rates.rateServer.send(header, TickType.VOLUME + "," + time + "," + volume + "," + symbol);
@@ -1873,36 +1874,23 @@ public class TWSConnection extends Thread implements EWrapper {
             int serialno = getRequestDetails().get(reqId) != null ? (int) getRequestDetails().get(reqId).symbol.getSerialno() : 0;
 
             Request r;
-            synchronized(lock_request){
-                r= getRequestDetails().get(reqId);
+            synchronized (lock_request) {
+                r = getRequestDetails().get(reqId);
             }
             if (r != null) {
                 r.requestStatus = EnumRequestStatus.SERVICED;
             }
             int id = serialno - 1;
-            logger.log(Level.INFO, "402,ContractDetailsReceived,{0}:{1}:{2}:{3}:{4},ContractID={5}:MinTick:{6}", 
-                    new Object[]{"Unknown",c.getAccountName(),Parameters.symbol.get(id).getDisplayname(),-1,-1, String.valueOf(contractDetails.m_summary.m_conId),contractDetails.m_minTick});
+            logger.log(Level.INFO, "402,ContractDetailsReceived,{0}:{1}:{2}:{3}:{4},ContractID={5}:MinTick:{6}",
+                    new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), -1, -1, String.valueOf(contractDetails.m_summary.m_conId), contractDetails.m_minTick});
             Parameters.symbol.get(id).setTickSize(contractDetails.m_minTick);
-            if (Parameters.symbol.get(id).getType().compareTo("OPT") == 0 && Parameters.symbol.get(id).getOption() == null) {
-                //this request is checking for ATM strike
-                //get underlying id
-                int underlyingid = Utilities.getIDFromBrokerSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromBrokerSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromBrokerSymbol(Parameters.symbol,Parameters.symbol.get(id).getBrokerSymbol(), "IND", "", "", "");
-                if (underlyingid >= 0) {
-                    BeanSymbol underlyingSymbol = Parameters.symbol.get(underlyingid);
-                    double oldATM = underlyingSymbol.getAtmStrike();
-                    double closePrice = underlyingSymbol.getClosePrice();
-                    double newATM = oldATM == 0 ? contractDetails.m_summary.m_strike : Math.abs(closePrice - oldATM) < Math.abs(closePrice - contractDetails.m_summary.m_strike) ? oldATM : contractDetails.m_summary.m_strike;
-                    underlyingSymbol.setAtmStrike(newATM);
-                    //logger.log(Level.INFO, "{0},{1},TWSReceive,new ATM: {2}, ClosePrice:{3}, NIFTY id: {4}", new Object[]{c.getAccountName(), "", newATM, closePrice, underlyingid});
-                    //logger.log(Level.INFO, "{0},{1},TWSReceive,Request ID: {2}, Strike:{3}", new Object[]{c.getAccountName(), "", reqId, Parameters.symbol.get(underlyingid).getAtmStrike()});
-                } else {
-                    //logger.log(Level.SEVERE, "Unable to get underlying of option");
-                }
-            } else {
-                Parameters.symbol.get(id).setContractID(contractDetails.m_summary.m_conId);
-                Parameters.symbol.get(id).setStatus(true);
-                TWSConnection.mTotalSymbols = TWSConnection.mTotalSymbols - 1;
+            Parameters.symbol.get(id).setContractID(contractDetails.m_summary.m_conId);
+            try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
+                jedis.set(Parameters.symbol.get(id).getDisplayname(),contractDetails.m_summary.m_conId+":"+contractDetails.m_minTick );
             }
+            Parameters.symbol.get(id).setStatus(true);
+            TWSConnection.mTotalSymbols = TWSConnection.mTotalSymbols - 1;
+
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }

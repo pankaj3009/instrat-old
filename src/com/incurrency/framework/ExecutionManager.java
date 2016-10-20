@@ -5,7 +5,7 @@
 package com.incurrency.framework;
 
 import com.cedarsoftware.util.io.JsonReader;
-import com.incurrency.RatesClient.Subscribe;
+import com.incurrency.RatesClient.ZMQSubscribe;
 import com.ib.client.Order;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -96,8 +96,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             db=Algorithm.db;
         }
             tes.addOrderListener(this); //subscribe to events published by tes owned by the strategy oms
-            if (Subscribe.tes != null) {//subscribe to events published by pubsub 
-                Subscribe.tes.addBidAskListener(this);
+            if (ZMQSubscribe.tes != null) {//subscribe to events published by pubsub 
+                ZMQSubscribe.tes.addBidAskListener(this);
             }
             MainAlgorithm.tes.addBidAskListener(this);
 

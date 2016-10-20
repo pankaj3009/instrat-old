@@ -13,12 +13,12 @@ import org.zeromq.ZMQ;
  *
  * @author pankaj
  */
-public class ServerPubSub {
+public class ZMQPubSub {
 
     Thread t;
     ZMQ.Context context = ZMQ.context(1);
     ZMQ.Socket publisher;
-    private static final Logger logger = Logger.getLogger(ServerPubSub.class.getName());
+    private static final Logger logger = Logger.getLogger(ZMQPubSub.class.getName());
     public TickEventSupport tickEventSupport = new TickEventSupport();
     public static PrintStream output;
     public static Socket cassandraConnection;
@@ -27,7 +27,7 @@ public class ServerPubSub {
     public static String futureMetric;
     public static String optionMetric;
     
-    public ServerPubSub(int port) {
+    public ZMQPubSub(int port) {
         publisher = context.socket(ZMQ.PUB);
         //publisher.setHWM(100);
         //publisher.setSndHWM(100);

@@ -4,7 +4,7 @@
  */
 package com.incurrency.framework;
 
-import com.incurrency.RatesClient.Subscribe;
+import com.incurrency.RatesClient.ZMQSubscribe;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -55,8 +55,8 @@ public class ProfitLossManager implements TradeListener {
             profitsToBeTaken.add(1);
             Parameters.connection.get(j).getWrapper().addTradeListener(this);
         }
-        if (Subscribe.tes != null) {
-            Subscribe.tes.addTradeListener(this);
+        if (ZMQSubscribe.tes != null) {
+            ZMQSubscribe.tes.addTradeListener(this);
         }
         MainAlgorithm.tes.addTradeListener(this);
         for(BeanConnection c:Parameters.connection){

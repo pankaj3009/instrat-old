@@ -4,7 +4,7 @@
  */
 package com.incurrency.RatesClient;
 
-import static com.incurrency.RatesClient.Subscribe.tes;
+import static com.incurrency.RatesClient.ZMQSubscribe.tes;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.TradingUtil;
@@ -35,8 +35,6 @@ public class Task implements Runnable {
             String string = input;
             String[] data = string.split(",");
             if (data.length == 4) {
-                //logger.log(Level.INFO,"String:{0}",new Object[]{string});
-                //logger.log(Level.FINEST,"Take.Time:{0},Type:{1},Value:{2} ",new Object[]{new Date().getTime(),string.split(",")[0],string.split(",")[2]});
                 int type = Integer.parseInt(data[0]);
                 long date = Long.parseLong(data[1]);
                 String value = data[2];

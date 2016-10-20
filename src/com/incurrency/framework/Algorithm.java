@@ -22,6 +22,8 @@ import java.util.logging.Level;
 import javax.swing.JOptionPane;
 import org.jquantlib.time.JDate;
 import org.jquantlib.time.calendars.India;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
 
 /**
  *
@@ -52,6 +54,7 @@ public class Algorithm {
     public static String defaultExchange;
     public static String defaultPrimaryExchange;
     public static String defaultCurrency;
+    public static JedisPool marketdatapool;
     
     
     
@@ -64,7 +67,7 @@ public class Algorithm {
         defaultPrimaryExchange = globalProperties.getProperty("defaultprimaryexchange", "NSE").toString().trim();
         defaultCurrency = globalProperties.getProperty("defaultcurrency", "INR").toString().trim();
         generateSymbolFile = Boolean.valueOf(globalProperties.getProperty("generatesymbolfile", "false").toString().trim());
-        if (holidayFile != null && !holidayFile.equals("")) {
+         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {
                 try {
@@ -80,11 +83,11 @@ public class Algorithm {
 
         useRedis=globalProperties.getProperty("redisurl")!=null?true:false;
         cassandraIP=globalProperties.getProperty("cassandraconnection", "127.0.0.1");
+        redisURL=globalProperties.getProperty("redisurl").toString().trim();
         if(useRedis){
-            redisURL=globalProperties.getProperty("redisurl").toString().trim();
             db=new RedisConnect(redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6379),Utilities.getInt(redisURL.split(":")[2], 0));
         } 
-        
+        marketdatapool = new JedisPool(new JedisPoolConfig(), redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6379), 2000, null, 99);
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());
         useForSimulation=Boolean.parseBoolean(globalProperties.getProperty("simulation","false").toString().trim());
         openHour = Integer.valueOf(globalProperties.getProperty("openhour", "9").toString().trim());

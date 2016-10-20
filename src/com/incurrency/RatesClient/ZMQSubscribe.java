@@ -17,10 +17,10 @@ import static com.incurrency.framework.Algorithm.*;
  *
  * @author pankaj
  */
-public class Subscribe {
+public class ZMQSubscribe {
 
     private ZMQ.Context context = ZMQ.context(1);
-    private static final Logger logger = Logger.getLogger(Subscribe.class.getName());
+    private static final Logger logger = Logger.getLogger(ZMQSubscribe.class.getName());
     private ZMQ.Socket subscriber;
     private ArrayList _listeners = new ArrayList();
     public static TradingEventSupport tes ;
@@ -32,7 +32,7 @@ public class Subscribe {
     private boolean contextOpen=false;
     
     
-    public Subscribe(String path, String topic) {
+    public ZMQSubscribe(String path, String topic) {
         subscriber = context.socket(ZMQ.SUB);
         setContextOpen(true);
         subscriber.connect("tcp://" + path);

@@ -4,7 +4,7 @@
  */
 package com.incurrency.framework;
 
-import com.incurrency.RatesClient.Subscribe;
+import com.incurrency.RatesClient.ZMQSubscribe;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
@@ -77,8 +77,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         try {
             logger.log(Level.INFO, "501,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}",
                     new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), externalOrderID, e.getLimitPrice()});
-            Subscribe.tes.addBidAskListener(this);
-            Subscribe.tes.addOrderStatusListener(this);
+            ZMQSubscribe.tes.addBidAskListener(this);
+            ZMQSubscribe.tes.addOrderStatusListener(this);
             for (BeanConnection c1 : Parameters.connection) {
                 c1.getWrapper().addOrderStatusListener(this);
                 c1.getWrapper().addBidAskListener(this);
@@ -92,8 +92,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
                     oms.getDb().delKey("opentrades", oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName());
                 }
-                Subscribe.tes.removeBidAskListener(this);
-                Subscribe.tes.removeOrderStatusListener(this);
+                ZMQSubscribe.tes.removeBidAskListener(this);
+                ZMQSubscribe.tes.removeOrderStatusListener(this);
                 for (BeanConnection c1 : Parameters.connection) {
                     c1.getWrapper().removeOrderStatusListener(this);
                     c1.getWrapper().removeBidAskListener(this);

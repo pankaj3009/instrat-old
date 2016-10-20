@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework;
 
+import com.incurrency.RatesClient.RedisSubscribe;
 import com.incurrency.RatesClient.RequestClient;
 import com.incurrency.RatesClient.SocketListener;
 import static com.incurrency.framework.Algorithm.globalProperties;
@@ -33,6 +34,7 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import org.jquantlib.JQuantLib;
+import redis.clients.jedis.Jedis;
 
 /**
  *
@@ -226,39 +228,17 @@ public class MainAlgorithm extends Algorithm {
     
 
     private void getContractInformation() throws InterruptedException {
-        ArrayList<RequestClient> arrRequestClient = new ArrayList<>();
         if (TradingUtil.checkLicense() && !duplicateAccounts) {
-            int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
+            //int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
             if (globalProperties.getProperty("datasource") != null &&!"".equals(globalProperties.getProperty("datasource").toString().trim()) ) {
-                for (int i = 0; i < threadCount; i++) {
-                    String dataSource = globalProperties.getProperty("datasource").toString().trim();
-                    String requestPort = globalProperties.getProperty("requestport", "5555").toString().trim();
-                    Thread t = new Thread(requestClient = new RequestClient(dataSource + ":" + requestPort));//5555 is the port where pubsub accepts request
-                    arrRequestClient.add(requestClient);
-                    t.setName("DataRequester:" + i);
-                    t.start();
-                }
-                int j = 0;
                 for (BeanSymbol s : Parameters.symbol) {
-                    j = j < threadCount ? j : 0;
-                    while (!arrRequestClient.get(j).isAvailableForNewRequest()) {
-                        Thread.sleep(100);
-                    }
-                    arrRequestClient.get(j).sendRequest("contractid", s, null, null, null, false);
-                    if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
-                    }
-                    j = j + 1;
+                   try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
+                       String contractid=jedis.get(s.getDisplayname());
+                       s.setContractID(Utilities.getInt(contractid.split(":")[0],0));
+                       s.setTickSize(Utilities.getDouble(contractid.split(":")[1],0.05));
+                   }
+                }
 
-                }
-                boolean complete = false;
-                while (!complete) {
-                    Thread.sleep(1000);
-                    Thread.yield();
-                    complete = true;
-                    for (RequestClient r : arrRequestClient) {
-                        complete = complete && r.isAvailableForNewRequest();
-                    }
-                }
                 //populate contracts with missing contract id - to be deleted
                 for (BeanSymbol s : Parameters.symbol) {
                     if (s.getContractID() > 0 || s.getType().equals("IND")) {
@@ -270,62 +250,15 @@ public class MainAlgorithm extends Algorithm {
                 }
             } else { //no datasource. Get info from IB TWS directly
                 BeanConnection tempC = Parameters.connection.get(0);
-                List<BeanSymbol> optionsRequiringATMStrike = new ArrayList();
-                List<BeanSymbol> underlyingRequiringClosePrice = new ArrayList();
-                //create a seperate list of symbols that need ATM strike
-                for (BeanSymbol s : Parameters.symbol) {
-                    if (s.getType().compareTo("OPT") == 0 && s.getOption() == null) {
-                        optionsRequiringATMStrike.add(s);
-                        int id = Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "IND", "", "", "");
-                        if (id >= 0) {
-                            underlyingRequiringClosePrice.add(Parameters.symbol.get(id));
-                            //tempC.getWrapper().requestSingleSnapshot(Parameters.symbol.get(id));
-                        } else {
-                            logger.log(Level.INFO, "101,NoATMStrike,{0}", new Object[]{s.getBrokerSymbol()});
-                        }
-                    }
-                }
-
-                //Request snapshot data for underlying symbols
-                if (underlyingRequiringClosePrice.size() > 0) {
-                    Thread t = new Thread(new MarketData(Parameters.connection.get(0), underlyingRequiringClosePrice, 0, true, true));
-                    //logger.log(Level.INFO, ",,Creator,Requesting one time snapshot");
-                    t.setName("onetime snapshot");
-                    t.start();
-                    t.join();
-                }
-
-
-                for (BeanSymbol s : optionsRequiringATMStrike) {
-                    tempC.getWrapper().getContractDetails(s, "");
-                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol()+"\n");
-                }
-
-                while (TWSConnection.mTotalATMChecks > 0) {
-                    //System.out.println(TWSConnection.mTotalSymbols);
-                    //do nothing
-                    if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
-                        //Launch.setMessage("Waiting for contract information to be retrieved for ATM estimation");
-                    }
-                }
-
-                //update strikes in Parameters.symbols
-                for (BeanSymbol s : optionsRequiringATMStrike) {
-                    int optionid = s.getSerialno() - 1;
-                    int underlyingid = Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") >= 0 ? Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "STK", "", "", "") : Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), "IND", "", "", "");
-                    Parameters.symbol.get(optionid).setOption(String.valueOf(Parameters.symbol.get(underlyingid).getAtmStrike()));
-                }
 
                 for (BeanSymbol s : Parameters.symbol) {
                     tempC.getWrapper().getContractDetails(s, "");
                     System.out.print("ContractDetails Requested:" + s.getBrokerSymbol()+"\n");
                 }
-
                 while (TWSConnection.mTotalSymbols > 0) {
                     //System.out.println(TWSConnection.mTotalSymbols);
                     //do nothing
                     if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
-                        //Launch.setMessage("Waiting for contract information to be retrieved");
                     }
                 }
 
@@ -349,8 +282,6 @@ public class MainAlgorithm extends Algorithm {
                     Parameters.symbol.add(s);
                 }
             }
-
-
             Iterator<BeanSymbol> symbolitr = Parameters.symbol.iterator();
             Iterator<Boolean> contractReceived = contractIdAvailable.iterator();
             int rowcount = 1;
@@ -374,31 +305,6 @@ public class MainAlgorithm extends Algorithm {
     }
 
     private void subscribeMarketData() {
-        if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use jeromq connector
-            String dataSource = globalProperties.getProperty("datasource").toString().trim();
-            String pubsubPort = globalProperties.getProperty("pubsubport", "5556").toString().trim();
-            String topic = globalProperties.getProperty("topic", "INR").toString().trim();
-            Thread t = new Thread(socketListener = new SocketListener(dataSource, pubsubPort, topic));//5556 is where pubsub posts streaming data
-            t.setName("SocketListener");
-            t.start();
-            //update symbols with calculated connectionid to be used for real time bars
-            Collections.sort(Parameters.symbol, new BeanSymbolCompare());
-            /*
-            for (BeanConnection c : Parameters.connection) {
-                int startingConnectionCount = symbolcount;
-                connectionid = connectionid + 1;
-                for (int i = symbolcount; i < startingConnectionCount + c.getTickersLimit() && i < Parameters.symbol.size(); i++) {
-                    Parameters.symbol.get(i).setConnectionidUsedForMarketData(connectionid);
-                    symbolcount = i;
-                }
-            }
-            if (symbolcount < Parameters.symbol.size() - 1) {
-                for (int i = symbolcount; i < Parameters.symbol.size(); i++) {
-                    Parameters.symbol.get(i).setConnectionidUsedForMarketData(-1);
-                }
-            }
-        */
-        }
         //Request Market Data
         Collections.sort(Parameters.symbol, new BeanSymbolCompare()); //sorts symbols in order of preference streaming priority. low priority is higher
         int serialno = 1;
@@ -407,44 +313,57 @@ public class MainAlgorithm extends Algorithm {
             serialno = serialno + 1;
             s.setConnectionidUsedForMarketData(-1);
         }
-        if (TradingUtil.checkLicense() && !duplicateAccounts) {
-            if (globalProperties.getProperty("datasource") == null||"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use IB for market data
-                int count = Parameters.symbol.size();
-                int allocatedCapacity = 0;
-                for (BeanConnection c : Parameters.connection) {
-                    //if ("Data".equals(c.getPurpose())) {
-                    int connectionCapacity = c.getTickersLimit();
-                    rtvolume=Boolean.valueOf(globalProperties.getProperty("rtvolume","false"));
-                    if (count > 0 && connectionCapacity>0) {
-                        Thread t = new Thread(new MarketData(c, allocatedCapacity, Math.min(count, connectionCapacity), Parameters.symbol, c.getTickersLimit(), false,rtvolume));
-                        t.setName("Streaming Market Data -"+c.getAccountName());
-                        t.start();
-                        allocatedCapacity = allocatedCapacity + Math.min(count, connectionCapacity);
-                        count = count - Math.min(count, connectionCapacity);
-                    }
-                }
+        if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use jeromq connector
+            String dataSource = globalProperties.getProperty("datasource").toString().trim();
+            String pubsubPort = globalProperties.getProperty("pubsubport", "5556").toString().trim();
+            String topic = globalProperties.getProperty("topic", "INR").toString().trim();
+            Thread t = new Thread(socketListener = new SocketListener(dataSource, pubsubPort, topic));//5556 is where pubsub posts streaming data
+            t.setName("SocketListener");
+            t.start();
+            new RedisSubscribe(globalProperties.getProperty("topic", "INR").toString().trim());
 
-                boolean getsnapshotfromallconnections = Boolean.parseBoolean(globalProperties.getProperty("getsnapshotfromallconnections", "false"));
-                //If there are symbols left, request snapshot. Distribute across tradingAccounts
-                if (getsnapshotfromallconnections) {
+        } else {
+            if (TradingUtil.checkLicense() && !duplicateAccounts) {
+                if (globalProperties.getProperty("datasource") == null || "".equals(globalProperties.getProperty("datasource").toString().trim())) { //use IB for market data
+                    int count = Parameters.symbol.size();
+                    int allocatedCapacity = 0;
                     for (BeanConnection c : Parameters.connection) {
-                        int snapshotcount = count / Parameters.connection.size();
-                        Thread t = new Thread(new MarketData(c, allocatedCapacity, snapshotcount, Parameters.symbol, c.getTickersLimit(), true,false));
-                        t.setName("Continuous Snapshot");
-                        t.start();
+                        //if ("Data".equals(c.getPurpose())) {
+                        int connectionCapacity = c.getTickersLimit();
+                        rtvolume = Boolean.valueOf(globalProperties.getProperty("rtvolume", "false"));
+                        if (count > 0 && connectionCapacity > 0) {
+                            Thread t = new Thread(new MarketData(c, allocatedCapacity, Math.min(count, connectionCapacity), Parameters.symbol, c.getTickersLimit(), false, rtvolume));
+                            t.setName("Streaming Market Data -" + c.getAccountName());
+                            t.start();
+                            allocatedCapacity = allocatedCapacity + Math.min(count, connectionCapacity);
+                            count = count - Math.min(count, connectionCapacity);
+                        }
                     }
-                } //Alternatively, we use 1st connection for snapshot. Make sure it has the number of symbols permitted as zero
-                else {
-                    if (count > 0) {
-                        int snapshotcount = count;;
-                        Thread t = new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, snapshotcount, Parameters.symbol, Parameters.connection.get(0).getTickersLimit(), true,false));
-                        t.setName("Continuous Snapshot - "+Parameters.connection.get(0).getAccountName());
-                        t.start();
+
+                    boolean getsnapshotfromallconnections = Boolean.parseBoolean(globalProperties.getProperty("getsnapshotfromallconnections", "false"));
+                    //If there are symbols left, request snapshot. Distribute across tradingAccounts
+                    if (getsnapshotfromallconnections) {
+                        for (BeanConnection c : Parameters.connection) {
+                            int snapshotcount = count / Parameters.connection.size();
+                            Thread t = new Thread(new MarketData(c, allocatedCapacity, snapshotcount, Parameters.symbol, c.getTickersLimit(), true, false));
+                            t.setName("Continuous Snapshot");
+                            t.start();
+                        }
+                    } //Alternatively, we use 1st connection for snapshot. Make sure it has the number of symbols permitted as zero
+                    else {
+                        if (count > 0) {
+                            int snapshotcount = count;;
+                            Thread t = new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, snapshotcount, Parameters.symbol, Parameters.connection.get(0).getTickersLimit(), true, false));
+                            t.setName("Continuous Snapshot - " + Parameters.connection.get(0).getAccountName());
+                            t.start();
+                        }
                     }
                 }
             }
         }
+
     }
+    
     TimerTask closeAlgorithms = new TimerTask() {
         @Override
         public void run() {

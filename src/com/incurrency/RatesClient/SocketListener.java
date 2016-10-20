@@ -12,14 +12,14 @@ import java.util.logging.Logger;
  */
 public class SocketListener implements Runnable {
     
-    private Subscribe subs;
+    private ZMQSubscribe subs;
     private String topic;
     private final static Logger logger = Logger.getLogger(SocketListener.class.getName());
 
 
 
     public SocketListener(String ip, String port, String topic) {
-        subs = new Subscribe(ip + ":" + port,topic.toUpperCase());
+        subs = new ZMQSubscribe(ip + ":" + port,topic.toUpperCase());
         this.topic = topic;
     }
 
@@ -33,14 +33,14 @@ public class SocketListener implements Runnable {
     /**
      * @return the subs
      */
-    public  Subscribe getSubs() {
+    public  ZMQSubscribe getSubs() {
         return subs;
     }
 
     /**
      * @param subs the subs to set
      */
-    public void setSubs(Subscribe subs) {
+    public void setSubs(ZMQSubscribe subs) {
         this.subs = subs;
     }
 }
