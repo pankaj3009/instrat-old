@@ -405,6 +405,7 @@ public class MainAlgorithm extends Algorithm {
         for (BeanSymbol s : Parameters.symbol) {
             s.setSerialno(serialno);
             serialno = serialno + 1;
+            s.setConnectionidUsedForMarketData(-1);
         }
         if (TradingUtil.checkLicense() && !duplicateAccounts) {
             if (globalProperties.getProperty("datasource") == null||"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use IB for market data
