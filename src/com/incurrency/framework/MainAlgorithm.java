@@ -383,8 +383,6 @@ public class MainAlgorithm extends Algorithm {
             t.start();
             //update symbols with calculated connectionid to be used for real time bars
             Collections.sort(Parameters.symbol, new BeanSymbolCompare());
-            int symbolcount = 0;
-            int connectionid = -1;
             /*
             for (BeanConnection c : Parameters.connection) {
                 int startingConnectionCount = symbolcount;

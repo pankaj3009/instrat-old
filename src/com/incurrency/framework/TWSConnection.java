@@ -155,7 +155,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     mRequestId = requestIDManager.getNextRequestId();
                     //c.getmReqID().put(mRequestId, s.getSerialno());
                     synchronized(lock_request){
-                    getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.CONTRACTDETAILS,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                    requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.CONTRACTDETAILS,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     }
                     eClientSocket.reqContractDetails(mRequestId, con);
                 } else {
@@ -183,7 +183,7 @@ public class TWSConnection extends Thread implements EWrapper {
             mRequestId = requestIDManager.getNextRequestId();
             //c.getmReqID().put(mRequestId, s.getSerialno());
             synchronized(lock_request){
-                getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.CONTRACTDETAILS,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.CONTRACTDETAILS,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
             }
             eClientSocket.reqContractDetails(mRequestId, con);
 
@@ -205,7 +205,7 @@ public class TWSConnection extends Thread implements EWrapper {
         if (proceed && getC().getReqHandle().getHandle()) {
             mRequestId = requestIDManager.getNextRequestId();
             synchronized(lock_request){
-                getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                 logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()+delimiter+mRequestId+delimiter+this.getC().getAccountName()});
             }
 
@@ -229,13 +229,13 @@ public class TWSConnection extends Thread implements EWrapper {
                 s.setReqID(mRequestId);
                 //make snapshot/ streaming data request
                 synchronized(lock_request){
-                    getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.STREAMING,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                    requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.STREAMING,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     logger.log(Level.FINER,"401,MarketDataRequestSentStreaming,{0}:{1}:{2}:{3}:{4},RequestID={5}",
                             new Object[]{"Unknown",c.getAccountName(),s.getDisplayname(),-1,-1,mRequestId});
                     
                 }
                 //c.getmReqID().put(mRequestId, s.getSerialno());
-                //getRequestDetails().putIfAbsentIfAbsent(mRequestId, new Request(mRequestId, s, EnumRequestType.STREAMING, EnumRequestStatus.PENDING, new Date().getTime()));
+                //requestDetails.putIfAbsentIfAbsent(mRequestId, new Request(mRequestId, s, EnumRequestType.STREAMING, EnumRequestStatus.PENDING, new Date().getTime()));
 
                 //c.getmStreamingSymbolRequestID().put(s.getSerialno(), mRequestId);
                 List<TagValue> l=new ArrayList<>();
@@ -277,7 +277,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     // Store the request ID for each symbol for later use while updating the symbol table
                     s.setReqID(mRequestId);
                     synchronized(lock_request){
-                        getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                        requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     logger.log(Level.FINER,"401,MarketDataRequestSentSnapShot,{0}:{1}:{2}:{3}:{4},RequestID={5}",
                             new Object[]{"Unknown",c.getAccountName(),s.getDisplayname(),-1,-1,mRequestId});
                     }
@@ -312,7 +312,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 mRequestId = requestIDManager.getNextRequestId();
 
                 synchronized(lock_request){
-                    getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.REALTIMEBAR,EnumBarSize.FIVESECOND, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                    requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.REALTIMEBAR,EnumBarSize.FIVESECOND, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     logger.log(Level.FINER,"MarketDataRequestSent_Realtime,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
 
                 }
@@ -1178,7 +1178,7 @@ public class TWSConnection extends Thread implements EWrapper {
             mRequestId = requestIDManager.getNextRequestId();
             logger.log(Level.FINE,"Waiting for lock for Historical Data for symbol:{0}, Account: {1}, RequestID:{2}",new Object[]{s.getDisplayname()+"_"+reportType,c.getAccountName(),mRequestId});
             synchronized(lock_request){
-                getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.valueOf(reportType.toUpperCase()), EnumBarSize.UNDEFINED,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.valueOf(reportType.toUpperCase()), EnumBarSize.UNDEFINED,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
             }
             s.getFundamental().setSnapshotRequestID(mRequestId);
             logger.log(Level.FINE,"Requested Historical Data for symbol:{0}, Account: {1}, RequestID:{2}",new Object[]{s.getDisplayname()+"_"+reportType,c.getAccountName(),mRequestId});    
@@ -1209,7 +1209,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 mRequestId = requestIDManager.getNextRequestId();
                 //c.getmReqID().put(mRequestId, s.getSerialno());
                 synchronized(lock_request){
-                    getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.DAILY, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                    requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.DAILY, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     logger.log(Level.FINER,"HistoricalDataRequestSent_Historical,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()});
 
                 }
@@ -1263,17 +1263,17 @@ public class TWSConnection extends Thread implements EWrapper {
                 switch (barSize) {
                     case "1 day":
                         synchronized(lock_request){
-                            getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL, EnumBarSize.DAILY,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                            requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL, EnumBarSize.DAILY,EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                         }
                         break;
                     case "1 min":
                         synchronized(lock_request){
-                            getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.ONEMINUTE, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                            requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.ONEMINUTE, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                         }
                         break;
                     case "1 secs":
                         synchronized(lock_request){
-                            getRequestDetails().putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.ONESECOND, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
+                            requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.HISTORICAL,EnumBarSize.ONESECOND, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                         }
                         break;
                     default:
@@ -2259,7 +2259,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     
                 case 321:                    
                    rd=getRequestDetails().get(id);                    
-                    logger.log(Level.INFO,"402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestTYpe={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
+                    logger.log(Level.INFO,"402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestType={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
                             new Object[]{"Unknown",rd.accountName,rd.symbol.getDisplayname(),-1,-1,
                                 rd.requestType,DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)),rd.requestID,errorCode,errorMsg});
                     break;
