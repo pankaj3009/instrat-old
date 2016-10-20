@@ -198,7 +198,7 @@ public class TWSConnection extends Thread implements EWrapper {
         for (Map.Entry<Integer, Request> entry : getRequestDetails().entrySet()) {
             if (s.getSerialno() == entry.getValue().symbol.getSerialno() && entry.getValue().requestType.equals(EnumRequestType.SNAPSHOT)) {
                 proceed = false;
-                logger.log(Level.FINER, "101,ErrorSnapshotRequestExists", new Object[]{s.getDisplayname()+delimiter+entry.getKey()});
+                //logger.log(Level.FINER, "101,ErrorSnapshotRequestExists", new Object[]{s.getDisplayname()+delimiter+entry.getKey()});
             }
         }
         }
@@ -206,21 +206,18 @@ public class TWSConnection extends Thread implements EWrapper {
             mRequestId = requestIDManager.getNextRequestId();
             synchronized(lock_request){
                 requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
-                logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{mRequestId+delimiter+s.getDisplayname()+delimiter+mRequestId+delimiter+this.getC().getAccountName()});
+                logger.log(Level.FINER,"MarketDataRequestSent_Snapshot,{0}",new Object[]{s.getSerialno()+delimiter+s.getDisplayname()+delimiter+mRequestId+delimiter+this.getC().getAccountName()});
             }
 
             //c.getmSnapShotReqID().put(mRequestId, s.getSerialno());
-            Contract con = new Contract();
-            con.m_symbol = s.getBrokerSymbol();
-            con.m_secType = s.getType();
-            con.m_exchange = s.getExchange();
-            con.m_currency = s.getCurrency();
+            Contract con;
+            con=createContract(s);
             this.eClientSocket.reqMktData(mRequestId, con, null, true,null);
             logger.log(Level.FINER, "403,OneTimeSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
         }
     }
 
-    public void getMktData(BeanSymbol s, Contract contract, boolean isSnap) {
+    public synchronized void getMktData(BeanSymbol s, Contract contract, boolean isSnap) {
         //for streaming request
         if (!isSnap) { //streaming data request
             if (getC().getReqHandle().getHandle()) {
