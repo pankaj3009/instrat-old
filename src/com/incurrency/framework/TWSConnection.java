@@ -284,7 +284,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     getRequestDetailsWithSymbolKey().putIfAbsent(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     eClientSocket.reqMktData(mRequestId, contract, null, isSnap,null);
                     s.setConnectionidUsedForMarketData(-1);
-                    logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+                    logger.log(Level.FINER, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
                 }
             } else {
                 System.out.println("### Error getting handle while requesting snapshot data for contract " + contract.m_conId + " Name: " + s.getBrokerSymbol());
