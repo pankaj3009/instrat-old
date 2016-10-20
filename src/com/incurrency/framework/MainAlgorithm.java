@@ -385,6 +385,7 @@ public class MainAlgorithm extends Algorithm {
             Collections.sort(Parameters.symbol, new BeanSymbolCompare());
             int symbolcount = 0;
             int connectionid = -1;
+            /*
             for (BeanConnection c : Parameters.connection) {
                 int startingConnectionCount = symbolcount;
                 connectionid = connectionid + 1;
@@ -398,7 +399,7 @@ public class MainAlgorithm extends Algorithm {
                     Parameters.symbol.get(i).setConnectionidUsedForMarketData(-1);
                 }
             }
-
+        */
         }
         //Request Market Data
         Collections.sort(Parameters.symbol, new BeanSymbolCompare()); //sorts symbols in order of preference streaming priority. low priority is higher

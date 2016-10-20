@@ -6,7 +6,6 @@ package com.incurrency.framework;
 
 import com.incurrency.framework.fundamental.FundamentalDataListener;
 import com.ib.client.*;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,13 +14,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import com.incurrency.framework.rateserver.Cassandra;
 import com.incurrency.framework.rateserver.Rates;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicBoolean;
 import com.ib.client.TickType;
-import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
@@ -90,20 +87,24 @@ public class TWSConnection extends Thread implements EWrapper {
         }
     }
 
-    public boolean connectToTWS() {
+    public synchronized boolean connectToTWS() {
         try {
             String twsHost = getC().getIp();
             int twsPort = getC().getPort();
             int clientID = getC().getClientID();
             if (!eClientSocket.isConnected()) {
-                Thread.sleep(2000);
-                Thread.yield();
                 eClientSocket.eConnect(twsHost, twsPort, clientID);
-                int waitCount = 0;
                 if (eClientSocket.isConnected()) {
                     if(this.severeEmailSent.get()){
-                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " reconnected. Trading Resumed on this account", "Algorithm SEVERE ALERT"));
+                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " reconnected. Trading Resumed on this account", "Algorithm Information ALERT"));
                         t.start();
+                        //Resubscribe streaming connections
+                        int connectionid=Parameters.connection.indexOf(this.getC());
+                        for(BeanSymbol s:Parameters.symbol){
+                            if(s.getConnectionidUsedForMarketData()==connectionid){
+                                this.getMktData(s, false);
+                            }
+                        }
                     }
                     this.severeEmailSent.set(Boolean.FALSE);
                     String orderid = startingOrderID.poll(2,TimeUnit.SECONDS);
@@ -282,7 +283,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     getRequestDetailsWithSymbolKey().putIfAbsent(s.getSerialno(), new Request(EnumSource.IB,mRequestId, s, EnumRequestType.SNAPSHOT,EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(),c.getAccountName()));
                     eClientSocket.reqMktData(mRequestId, contract, null, isSnap,null);
-                    s.setConnectionidUsedForMarketData(Parameters.connection.indexOf(getC()));
+                    s.setConnectionidUsedForMarketData(-1);
                     logger.log(Level.FINEST, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
                 }
             } else {
@@ -291,18 +292,10 @@ public class TWSConnection extends Thread implements EWrapper {
         }
     }
 
-    public void getMktData(BeanSymbol s, boolean isSnap){
-        Contract con = new Contract();
-             con.m_symbol = s.getBrokerSymbol();
-            con.m_currency = s.getCurrency();
-            con.m_exchange = s.getExchange();
-            con.m_expiry = s.getExpiry();
-            con.m_primaryExch = s.getPrimaryexchange();
-            con.m_right = s.getRight();
-            con.m_secType = s.getType();
-            con.m_strike = s.getOption() == null||s.getOption().equals("") ? 0 : Double.parseDouble(s.getOption());
-            getMktData(s,con,isSnap);
-           
+    public void getMktData(BeanSymbol s, boolean isSnap) {
+        Contract con;
+        con=createContract(s);
+        getMktData(s, con, isSnap);
     }
     
     public void getRealTimeBars(BeanSymbol s) {
@@ -864,25 +857,24 @@ public class TWSConnection extends Thread implements EWrapper {
 
     public Contract createContract(BeanSymbol s) {
         Contract contract = new Contract();
-        int id = Utilities.getIDFromBrokerSymbol(Parameters.symbol,s.getBrokerSymbol(), s.getType(), s.getExpiry() == null ? "" : s.getExpiry(), s.getRight() == null ? "" : s.getRight(), s.getOption() == null ? "" : s.getOption());
+        int id = Utilities.getIDFromBrokerSymbol(Parameters.symbol, s.getBrokerSymbol(), s.getType(), s.getExpiry() == null ? "" : s.getExpiry(), s.getRight() == null ? "" : s.getRight(), s.getOption() == null ? "" : s.getOption());
         if (id >= 0) {
-                            if(s.getContractID()>0){
-                contract.m_conId =s.getContractID();                    
-                }
-
+            if (s.getContractID() > 0) {
+                contract.m_conId = s.getContractID();
+            }
             contract.m_conId = Parameters.symbol.get(id).getContractID();
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
             contract.m_symbol = Parameters.symbol.get(id).getBrokerSymbol();
-            if(s.getExchangeSymbol()!=null && Parameters.symbol.get(id).getType().equals("STK")){
-                contract.m_localSymbol=s.getExchangeSymbol();
+            if (s.getExchangeSymbol() != null && Parameters.symbol.get(id).getType().equals("STK")) {
+                contract.m_localSymbol = s.getExchangeSymbol();
             }
             contract.m_exchange = Parameters.symbol.get(id).getExchange();
             contract.m_primaryExch = Parameters.symbol.get(id).getPrimaryexchange();
             contract.m_currency = Parameters.symbol.get(id).getCurrency();
-            contract.m_strike=Utilities.getDouble(Parameters.symbol.get(id).getOption(),0);
-            contract.m_right=Parameters.symbol.get(id).getRight();
-            contract.m_secType=Parameters.symbol.get(id).getType();
-            contract.m_expiry=Parameters.symbol.get(id).getExpiry();
+            contract.m_strike = Utilities.getDouble(Parameters.symbol.get(id).getOption(), 0);
+            contract.m_right = Parameters.symbol.get(id).getRight();
+            contract.m_secType = Parameters.symbol.get(id).getType();
+            contract.m_expiry = Parameters.symbol.get(id).getExpiry();
         } else {
             logger.log(Level.INFO, "101,ErrorSymbolIDNotFound,{0}", new Object[]{s.getDisplayname()});
         }
@@ -2335,6 +2327,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }           
                     break;
                 case 326://client id is in use
+                    this.eClientSocket.eDisconnect();
                     if (!this.severeEmailSent.get()) {
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " could not connect. Client ID was already in use", "Algorithm SEVERE ALERT"));
                         t.start();

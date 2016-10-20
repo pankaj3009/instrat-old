@@ -38,10 +38,10 @@ public class MarketDataForm extends javax.swing.JFrame {
             symbol=symbol+"_"+s.getRight()+"_"+s.getOption();
         }
         this.lblSymbol.setText(symbol);
-        if(globalProperties.getProperty("datasource")!=null){
+        if(globalProperties.getProperty("datasource")!=null ){
             String dataSource=globalProperties.getProperty("datasource").toString().trim();
             this.lblCurrentAccount.setText(dataSource);
-        }else{
+        }else if(s.getConnectionidUsedForMarketData()>=0){
             this.lblCurrentAccount.setText(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getAccountName());
             this.lblCurrentPort.setText(Integer.toString(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getPort()));
             this.lblCurrentClientID.setText(Integer.toString(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getClientID()));
@@ -276,6 +276,7 @@ public class MarketDataForm extends javax.swing.JFrame {
         int newconnection=this.comboNewAccount.getSelectedIndex();
         if(oldconnection>=0){
         Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+        s.setConnectionidUsedForMarketData(newconnection);
         }
         Contract con;
         con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
