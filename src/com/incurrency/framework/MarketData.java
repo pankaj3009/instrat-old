@@ -103,31 +103,19 @@ public class MarketData implements Runnable {
         do {
             for (int row = startRow; row < endRow; row++) {
                 int col = 0;
-                /*  if (symb.get(row).getContractID() == 0) {
-                 System.out.println("Zilch");
-                 continue;
-                 }// ignore null contids
-                 */
-                //int id = symb.get(row).getContractID();
                 try {
                     Contract contract = new Contract();
-                    /* For some reason contract id is not working. To be investigated. Interim solution below
-                     contract.m_conId = id;
-                     contract.m_exchange = symb.get(row).getExchange();
-                     contract.m_primaryExch=symb.get(row).getPrimaryexchange();
-                     contract.m_secType=symb.get(row).getType();
-                     */
-                    contract.m_strike = symb.get(row).getOption() == null ? 0 : Double.parseDouble(symb.get(row).getOption());
-                    contract.m_right = symb.get(row).getRight();
-                    contract.m_expiry = symb.get(row).getExpiry();
-                    contract.m_symbol = symb.get(row).getBrokerSymbol();
-                    contract.m_exchange = symb.get(row).getExchange();
-                    if(symb.get(row).getExchangeSymbol()!=null && symb.get(row).getType().equals("STK")){
-                        contract.m_localSymbol=symb.get(row).getExchangeSymbol();
+                    contract.m_strike = s.get(row).getOption() == null ? 0 : Double.parseDouble(s.get(row).getOption());
+                    contract.m_right = s.get(row).getRight();
+                    contract.m_expiry = s.get(row).getExpiry();
+                    contract.m_symbol = s.get(row).getBrokerSymbol();
+                    contract.m_exchange = s.get(row).getExchange();
+                    if(s.get(row).getExchangeSymbol()!=null && s.get(row).getType().equals("STK")){
+                        contract.m_localSymbol=s.get(row).getExchangeSymbol();
                     }
-                    contract.m_primaryExch = symb.get(row).getPrimaryexchange();
-                    contract.m_secType = symb.get(row).getType();
-                    contract.m_currency = symb.get(row).getCurrency();
+                    contract.m_primaryExch = s.get(row).getPrimaryexchange();
+                    contract.m_secType = s.get(row).getType();
+                    contract.m_currency = s.get(row).getCurrency();
                     int i = 0;
                     while (isSnap && mIB.getWrapper().outstandingSnapshots>= 80 - this.rtrequets && i < 20 && !contract.m_secType.equals("COMBO")) {
                         Thread.sleep(100);
@@ -138,13 +126,13 @@ public class MarketData implements Runnable {
                         }
                     }
                     if(!contract.m_secType.equals("COMBO")){
-                              mIB.getWrapper().getMktData(symb.get(row), contract, isSnap);              
+                              mIB.getWrapper().getMktData(s.get(row), contract, isSnap);              
                     }
 
                     if (isSnap) {
-                        symb.get(row).setConnectionidUsedForMarketData(-1);
+                        s.get(row).setConnectionidUsedForMarketData(-1);
                     } else {
-                        symb.get(row).setConnectionidUsedForMarketData(connectionid);
+                        s.get(row).setConnectionidUsedForMarketData(connectionid);
                     }
                     //---Working Logic with a lock object ---
                     /*
