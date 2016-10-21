@@ -162,15 +162,15 @@ public class MarketData implements Runnable {
     }
 
     public void pruneOutstandingSnapshots() {
-        Iterator it = mIB.getWrapper().getRequestDetailsWithSymbolKey().entrySet().iterator();
+        Iterator it = mIB.getWrapper().requestDetailsWithSymbolKey.entrySet().iterator();
         ArrayList<Integer> reqID = new ArrayList();
         while (it.hasNext()) {
             Map.Entry<Integer, Request> pairs = (Map.Entry) it.next();
             if (new Date().getTime() > pairs.getValue().requestTime + 10000) { //and request is over 10 seconds old
                 int origReqID = pairs.getValue().requestID;
                 String accountName=mIB.getWrapper().getC().getAccountName();
-                if (mIB.getWrapper().getRequestDetails().get(origReqID).requestStatus != EnumRequestStatus.CANCELLED) {
-                    mIB.getWrapper().getRequestDetails().get(origReqID).requestStatus=EnumRequestStatus.CANCELLED;
+                if (mIB.getWrapper().requestDetails.get(origReqID).requestStatus != EnumRequestStatus.CANCELLED) {
+                    mIB.getWrapper().requestDetails.get(origReqID).requestStatus=EnumRequestStatus.CANCELLED;
                     mIB.getWrapper().eClientSocket.cancelMktData(origReqID);
                 }
                 //logger.log(Level.FINER, "SnapShot cancelled. Symbol:{0},RequestID:{1}", new Object[]{Parameters.symbol.get(pairs.getKey()).getSymbol(), origReqID});
@@ -185,7 +185,7 @@ public class MarketData implements Runnable {
         }
 
         for(int i:reqID){//cleanup the main request details too
-            mIB.getWrapper().getRequestDetails().remove(i);
+            mIB.getWrapper().requestDetails.remove(i);
         }
         }
     
