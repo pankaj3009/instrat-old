@@ -36,6 +36,21 @@ public class Cassandra {
         this.output = output;
 
     }
+    
+        public Cassandra(String value, long time, String metric, String displayName, PrintStream output) {
+        this.value = value;
+        this.time = time;
+        this.metric = metric;
+        String[] symbolA = displayName.split("_", -1);
+        if (symbolA.length == 5) {
+            this.symbol = symbolA[0];
+            this.expiry = symbolA[2];
+            this.right = symbolA[3];
+            this.strike = symbolA[4];
+            this.strike = Utilities.roundToDecimal(strike);
+        }
+        this.output = output;
+    }
 /*
     @Override
     public void run() {
