@@ -44,6 +44,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -2147,10 +2148,9 @@ public class TradingUtil {
      */
     static ArrayList<Integer> getLinkedOrderIds(int orderid, BeanConnection c) {
         ArrayList<Integer> out = new ArrayList<>();
-        HashMap<Index, ArrayList<Integer>> orderMapping;
-        synchronized (c.lockOrderMapping) {
+        ConcurrentHashMap<Index, ArrayList<Integer>> orderMapping;
             orderMapping = c.getOrderMapping();
-        }
+        
         for (Map.Entry<Index, ArrayList<Integer>> arr : orderMapping.entrySet()) {
             if (arr.getValue().contains(Integer.valueOf(orderid))) {
                 for (int i : arr.getValue()) {
