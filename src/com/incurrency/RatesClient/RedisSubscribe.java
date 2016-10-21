@@ -43,7 +43,7 @@ public class RedisSubscribe extends JedisPubSub {
     @Override
     public void onMessage(String channel, String message) {
         super.onMessage(channel, message); //To change body of generated methods, choose Tools | Templates.
-        System.out.println(message);
+       // System.out.println(message);
         if (message != null) {
             try {
                 //queue.put(string);

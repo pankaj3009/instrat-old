@@ -87,7 +87,7 @@ public class Algorithm {
         if(useRedis){
             db=new RedisConnect(redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6379),Utilities.getInt(redisURL.split(":")[2], 0));
         } 
-        marketdatapool = new JedisPool(new JedisPoolConfig(), redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6379), 2000, null, 99);
+        marketdatapool = new JedisPool(new JedisPoolConfig(), redisURL.split(":")[0],Utilities.getInt(redisURL.split(":")[1], 6379), 2000, null, 9);
         useForTrading=Boolean.parseBoolean(globalProperties.getProperty("trading","false").toString().trim());
         useForSimulation=Boolean.parseBoolean(globalProperties.getProperty("simulation","false").toString().trim());
         openHour = Integer.valueOf(globalProperties.getProperty("openhour", "9").toString().trim());
@@ -109,7 +109,7 @@ public class Algorithm {
                 String className = globalProperties.getProperty("symbolclass", "com.incurrency.framework.SymbolFileTrading").toString().trim();
                 String redisurl = globalProperties.getProperty("redisurlforsymbols", "127.0.0.1:6379:2").toString().trim();
                 Class[] param = new Class[2];
-                param[0] = String.class;
+                param[0] = String.class;                
                 param[1] = String.class;
                 try {
                     Constructor constructor = Class.forName(className).getConstructor(param);
