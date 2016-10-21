@@ -70,7 +70,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     private int ordersHaltTrading=10;
     private String ownerEmail;
     private  HashMultimap <Index, BeanOrderInformation> activeOrders = HashMultimap.create(); //holds the symbol id and corresponding order information
-    private HashMap<Index,ArrayList<Integer>> orderMapping=new HashMap<>(); //internal order id mapped to arraylist of IB orders
+    private ConcurrentHashMap<Index,ArrayList<Integer>> orderMapping=new ConcurrentHashMap<>(); //internal order id mapped to arraylist of IB orders
     
     final Object lockPNLStrategy=new Object();
     final Object lockActiveOrders=new Object();  
@@ -655,16 +655,10 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the orderMapping
      */
-    public HashMap<Index,ArrayList<Integer>> getOrderMapping() {
+    public ConcurrentHashMap<Index,ArrayList<Integer>> getOrderMapping() {
         return orderMapping;
     }
 
-    /**
-     * @param orderMapping the orderMapping to set
-     */
-    public void setOrderMapping(HashMap<Index,ArrayList<Integer>> orderMapping) {
-        this.orderMapping = orderMapping;
-    }
 
     /**
      * @return the mtmByStrategy
