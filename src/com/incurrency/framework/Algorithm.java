@@ -55,6 +55,7 @@ public class Algorithm {
     public static String defaultPrimaryExchange;
     public static String defaultCurrency;
     public static JedisPool marketdatapool;
+    public static String topic;
     
     
     
@@ -63,6 +64,7 @@ public class Algorithm {
         String holidayFile = globalProperties.getProperty("holidayfile", "").toString().trim();
         SimpleDateFormat sdf_yyyymmdd = new SimpleDateFormat("yyyyMMdd");
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
+        topic=globalProperties.getProperty("topic", "INR");
         defaultExchange = globalProperties.getProperty("defaultexchange", "SMART").toString().trim();
         defaultPrimaryExchange = globalProperties.getProperty("defaultprimaryexchange", "NSE").toString().trim();
         defaultCurrency = globalProperties.getProperty("defaultcurrency", "INR").toString().trim();
