@@ -10,6 +10,9 @@ import com.cedarsoftware.util.io.JsonWriter;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.incurrency.RatesClient.RequestClient;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
@@ -37,6 +41,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.TimeZone;
 import java.util.TreeSet;
@@ -50,7 +55,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.jquantlib.Settings;
-import org.jquantlib.daycounters.Actual360;
 import org.jquantlib.daycounters.Actual365Fixed;
 import org.jquantlib.exercise.EuropeanExercise;
 import org.jquantlib.instruments.EuropeanOption;
@@ -65,7 +69,6 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.JDate;
-import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.India;
 import org.kairosdb.client.HttpClient;
@@ -73,6 +76,7 @@ import org.kairosdb.client.builder.DataPoint;
 import org.kairosdb.client.builder.QueryBuilder;
 import org.kairosdb.client.builder.QueryMetric;
 import org.kairosdb.client.response.QueryResponse;
+import redis.clients.jedis.Jedis;
 
 /**
  *
@@ -151,7 +155,7 @@ public class Utilities {
 
                     } else {
                         price = 0.80 * price;
-                        logger.log(Level.INFO, "Calculated Price as bidprice is zero. Symbol {0}, BidPrice:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
+                        logger.log(Level.INFO, "Calculated Price as bidprice is zero. Symbol {0}, price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
                     }
                     break;
                 case SHORT:
@@ -403,6 +407,20 @@ public class Utilities {
         return obj;
     }
 
+    public static double getSettlePrice(BeanSymbol s) {
+        try(Jedis jedis=Algorithm.marketdatapool.getResource()){
+            String[] valuePair=new String[1];
+            jedis.zrange(s.getDisplayname()+":daily:settle", -1, -1).toArray(valuePair);
+            if(valuePair[0]!=null){
+                Type type = new TypeToken<ArrayList<Pair>>(){}.getType();
+                Gson gson = new GsonBuilder().create();
+                ArrayList<Pair> myMap = gson.fromJson(valuePair[0], type);
+                return Utilities.getDouble(myMap.get(0).getValue(),0);
+            }         
+        }
+           return 0;
+    }
+    
      public static HashMap<Long,String> getPrices(String exchangeSymbol, String expiry,String right,String optionStrike,Date startDate, Date endDate, String metric) {
         HashMap<Long,String> out = new HashMap<>();
         try {
