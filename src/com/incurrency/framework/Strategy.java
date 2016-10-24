@@ -192,7 +192,7 @@ public class Strategy implements NotificationListener {
                             Parameters.symbol.add(s);
                         }
                         
-                        Parameters.connection.get(1).getWrapper().getMktData(s, false);
+                        Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(s, false);
                     }
             }
             for (BeanSymbol s : Parameters.symbol) {
