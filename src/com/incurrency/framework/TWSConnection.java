@@ -1366,6 +1366,10 @@ public class TWSConnection extends Thread implements EWrapper {
                         } else if (field == TickType.OPEN) {
                             Parameters.symbol.get(id).setOpenPrice(price);
                         }
+                        if (Parameters.symbol.get(id).isAddedToSymbols()) {
+                            Rates.rateServer.send(topic, field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());
+
+                        }
                     }
                 }
 
@@ -1518,6 +1522,10 @@ public class TWSConnection extends Thread implements EWrapper {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
                                 }
                             }
+                        }
+                        if (Parameters.symbol.get(id).isAddedToSymbols()) {
+                            Rates.rateServer.send(topic, field + "," + new Date().getTime() + "," + size + "," + Parameters.symbol.get(id).getDisplayname());
+
                         }
                     }
                 }
