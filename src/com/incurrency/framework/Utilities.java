@@ -189,7 +189,7 @@ public class Utilities {
             double underlyingpriorclose = Utilities.getSettlePrice(symbols.get(underlyingid));
             
             if (optionlastprice >0) {
-                String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd");
+                String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd",1);
                 Date settleDate=DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", Algorithm.timeZone);
                 double vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, settleDate);
                 if (vol == 0) {

@@ -1522,7 +1522,7 @@ public class TradingUtil {
         for (String today : pnlDates) {
             //get last trade record date
             logger.log(Level.INFO, "PNLRecords,{0}", new Object[]{strategy + delimiter + account + delimiter + today});
-            String yesterday = DateUtil.getPriorBusinessDay(today,"yyy-MM-dd");
+            String yesterday = DateUtil.getPriorBusinessDay(today,"yyy-MM-dd",1);
             double ytdpnl = 0;
             ytdpnl = Utilities.getDouble(db.getValue("pnl", strategy + ":" + account + ":" + yesterday, "ytd"), 0);
             Iterator<Map.Entry<Long, String>> keys = pair.entrySet().iterator();

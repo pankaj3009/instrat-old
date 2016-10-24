@@ -54,14 +54,17 @@ public class DateUtil {
      * @param outputFormat
      * @return 
      */
-       public static String getPriorBusinessDay(String date,String outputFormat){
-        SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
-        JDate today=DateParser.parseISO(date);
-        JDate yesterday=today.sub(1);
-        yesterday=Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
-        String yesterdayString=(sdfOutput.format(yesterday.isoDate()));
-        return yesterdayString;
-        
+    public static String getPriorBusinessDay(String date, String outputFormat, int ref) {
+        String reference = date;
+        for (int i = 0; i < ref; i++) {
+            SimpleDateFormat sdfOutput = new SimpleDateFormat(outputFormat);
+            JDate today = DateParser.parseISO(reference);
+            JDate yesterday = today.sub(1);
+            yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
+            String yesterdayString = (sdfOutput.format(yesterday.isoDate()));
+            reference = yesterdayString;
+        }
+        return reference;
     }
  
     /**

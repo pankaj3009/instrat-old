@@ -174,7 +174,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             double underlyingpriorclose = Utilities.getSettlePrice(Parameters.symbol.get(futureid));
 
             if (optionlastprice != 0) {
-                String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd");
+                String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd",1);
                 Date settleDate=DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", timeZone);
                 double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, settleDate);
                 this.setCloseVol(vol);
