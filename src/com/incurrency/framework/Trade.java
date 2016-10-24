@@ -446,8 +446,14 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entrybrokerage", String.valu
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             try {
-                Object[] obj = Utilities.getSettlePrice(new BeanSymbol(internalOrderID.toString()), sdf.parse(date));
-                out1 = Utilities.getDouble(obj[1], 0);
+                ArrayList<Pair> pairs = Utilities.getPrices(new BeanSymbol(internalOrderID.toString()),":daily:settle", sdf.parse(date),sdf.parse(date));
+                if(pairs.size()>0){
+                    for(Pair p:pairs){
+                        if(p.getTime()==DateUtil.getFormattedDate(date, "yyyy-MM-dd",Algorithm.timeZone).getTime()){
+                            out1=Utilities.getDouble(p.getValue(),0);
+                        }
+                    }
+                } 
                 Trade.setMtm(db, internalOrderID, date, out1);
             } catch (Exception e) {
                 logger.log(Level.SEVERE, null, e);

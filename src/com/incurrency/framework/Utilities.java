@@ -43,6 +43,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -140,6 +141,7 @@ public class Utilities {
     
     public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize) {
         double price = symbols.get(id).getLastPrice();
+        price=0D;
         try {
             if (price == 0 ||price==-1) {
                 price=getTheoreticalOptionPrice(symbols,id, underlyingid, side, right,tickSize);
@@ -183,15 +185,13 @@ public class Utilities {
     public static double getTheoreticalOptionPrice(List<BeanSymbol> symbols, int id, int underlyingid, EnumOrderSide side, String right, double tickSize) {
         double price = -1;
         try {
-            double optionlastprice = 0;
-            Object[] optionlastpriceset = Utilities.getSettlePrice(symbols.get(id), new Date());
-            Object[] underlyinglastpriceset = Utilities.getSettlePrice(symbols.get(underlyingid), new Date());
-            double underlyingpriorclose = Utilities.getDouble(underlyinglastpriceset[1], 0);
-
-            if (optionlastpriceset != null && optionlastpriceset.length == 2) {
-                long settletime = Utilities.getLong(optionlastpriceset[0], 0);
-                optionlastprice = Utilities.getDouble(optionlastpriceset[1], 0);
-                double vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date(settletime));
+            double optionlastprice = Utilities.getSettlePrice(symbols.get(id));
+            double underlyingpriorclose = Utilities.getSettlePrice(symbols.get(underlyingid));
+            
+            if (optionlastprice >0) {
+                String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd");
+                Date settleDate=DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", Algorithm.timeZone);
+                double vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, settleDate);
                 if (vol == 0) {
                     if (symbols.get(id).getBidPrice() != 0 && symbols.get(id).getAskPrice() != 0 && symbols.get(underlyingid).getLastPrice() != 0) {
                         optionlastprice = (symbols.get(id).getBidPrice() + symbols.get(id).getAskPrice()) / 2;
@@ -342,6 +342,7 @@ public class Utilities {
         }
     }
 
+    /*
     public static Object[] getSettlePrice(BeanSymbol s, Date d) {
         Object[] obj = new Object[2];
         try {
@@ -406,21 +407,46 @@ public class Utilities {
         }
         return obj;
     }
-
-    public static double getSettlePrice(BeanSymbol s) {
+*/
+    public static ArrayList<Pair> getPrices(BeanSymbol s,String appendString,Date startDate,Date endDate) {
+        ArrayList<Pair> pairs=new ArrayList<>();
         try(Jedis jedis=Algorithm.marketdatapool.getResource()){
-            String[] valuePair=new String[1];
-            jedis.zrange(s.getDisplayname()+":daily:settle", -1, -1).toArray(valuePair);
-            if(valuePair[0]!=null){
-                Type type = new TypeToken<ArrayList<Pair>>(){}.getType();
+            Set<String> data=jedis.zrangeByScore(s.getDisplayname()+appendString, startDate.getTime(), endDate.getTime());
+            if(data!=null){
+                Type type = new TypeToken<List<Object>>(){}.getType();
                 Gson gson = new GsonBuilder().create();
-                ArrayList<Pair> myMap = gson.fromJson(valuePair[0], type);
-                return Utilities.getDouble(myMap.get(0).getValue(),0);
+                String test1=gson.toJson(data);
+               List<Object> myMap = gson.fromJson(test1, type);
+               for(Object o:myMap){
+                  Pair p= gson.fromJson(o.toString(), new TypeToken<Pair>(){}.getType());
+                  pairs.add(p);
+               }
+            }         
+        }
+        return pairs;
+    }
+    
+    public static double getSettlePrice(BeanSymbol s) {
+        ArrayList<Pair> pairs=new ArrayList<>();
+        try(Jedis jedis=Algorithm.marketdatapool.getResource()){
+            Set<String> data=jedis.zrange(s.getDisplayname()+":daily:settle", -1, -1);
+            if(data!=null){
+                Type type = new TypeToken<List<Object>>(){}.getType();
+                Gson gson = new GsonBuilder().create();
+                String test1=gson.toJson(data);
+               List<Object> myMap = gson.fromJson(test1, type);
+               for(Object o:myMap){
+                  Pair p= gson.fromJson(o.toString(), new TypeToken<Pair>(){}.getType());
+                  pairs.add(p);
+               }
+               int length=pairs.size();
+                return Utilities.getDouble(pairs.get(length-1).getValue(),0);
             }         
         }
            return 0;
     }
     
+    /*
      public static HashMap<Long,String> getPrices(String exchangeSymbol, String expiry,String right,String optionStrike,Date startDate, Date endDate, String metric) {
         HashMap<Long,String> out = new HashMap<>();
         try {
@@ -457,6 +483,8 @@ public class Utilities {
         return out;
     }
 
+     */
+    /*
     public static Object[] getLastSettlePriceOption(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
         Object[] out = new Object[2];
         HashMap<String, Object> param = new HashMap();
@@ -510,7 +538,7 @@ public class Utilities {
 
         return out;
     }
-    
+    */
     public static Object[] getOptionStrikesFromKDB(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric){
         Object[] out=new Object[1];
         HashMap<String, Object> param = new HashMap();
@@ -1983,10 +2011,7 @@ public class Utilities {
             price = Parameters.symbol.get(id).getClosePrice();
         }
         if (price == 0) {
-            Object[] pricedetails = Utilities.getSettlePrice(Parameters.symbol.get(id), new Date());
-            if (pricedetails.length == 2) {
-                price = Utilities.getDouble(pricedetails[1], 0);
-            }
+            price = Utilities.getSettlePrice(Parameters.symbol.get(id));
         }
         if (price > 0) {
             price = Utilities.roundTo(price, increment);

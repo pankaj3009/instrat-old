@@ -37,8 +37,8 @@ public class Pair {
     /**
      * @param time the time to set
      */
-    public void setTime(long time) {
-        this.time = time;
+    public void setTime(String time) {
+        this.time = Long.valueOf(time);
     }
 
     /**
