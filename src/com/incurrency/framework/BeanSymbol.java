@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jquantlib.daycounters.Actual360;
 import org.jquantlib.daycounters.Actual365Fixed;
@@ -158,7 +159,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private LimitedQueue<Long> tradedDateTime;
     private HashMap<BeanSymbol, Integer> combo = new HashMap<>(); //holds brokerSymbol and corresponding size
     private Fundamental fundamental = new Fundamental();
-    private boolean addedToSymbols=false;
+    private AtomicBoolean addedToSymbols=new AtomicBoolean();
     private EuropeanOption optionProcess=null;
     private SimpleQuote underlying=new SimpleQuote();
     private double mtmPrice;
@@ -168,15 +169,14 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     
     public void SetOptionProcess(){//expiry,right,strike
         if(getCloseVol()==0){
-            Object[] optionlastpriceset = Utilities.getSettlePrice(this, new Date());
+            double optionlastprice = Utilities.getSettlePrice(this);
             int futureid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, this.getSerialno()-1, expiry);
-            Object[] underlyinglastpriceset = Utilities.getSettlePrice(Parameters.symbol.get(futureid), new Date());
-               double underlyingpriorclose = Utilities.getDouble(underlyinglastpriceset[1], 0);
+            double underlyingpriorclose = Utilities.getSettlePrice(Parameters.symbol.get(futureid));
 
-            if (optionlastpriceset != null && optionlastpriceset.length == 2) {
-                long settletime = Utilities.getLong(optionlastpriceset[0], 0);
-                double optionlastprice = Utilities.getDouble(optionlastpriceset[1], 0);
-                double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, new Date(settletime));
+            if (optionlastprice != 0) {
+                String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd");
+                Date settleDate=DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", timeZone);
+                double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, settleDate);
                 this.setCloseVol(vol);
             }
             logger.log(Level.INFO,"500,Option vol set,{0}:{1}:{2}:{3}:{4},Vol={5}",
@@ -2386,14 +2386,14 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the extraInsert
      */
     public boolean isAddedToSymbols() {
-        return addedToSymbols;
+        return addedToSymbols.get();
     }
 
     /**
      * @param extraInsert the extraInsert to set
      */
     public void setAddedToSymbols(boolean addedToSymbols) {
-        this.addedToSymbols = addedToSymbols;
+        this.addedToSymbols.set(addedToSymbols);
     }
 
     /**
