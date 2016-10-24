@@ -17,6 +17,7 @@ public class Parameters {
 
     static public List<BeanConnection> connection = Collections.synchronizedList(new ArrayList<BeanConnection>());
     static public ArrayList<BeanSymbol> symbol = new ArrayList<>();
+    //static public List<BeanSymbol> symbol = Collections.synchronizedList(new ArrayList<BeanSymbol>());
     private static ArrayList _listeners = new ArrayList();
 //control variables
 //--for realtime bars
