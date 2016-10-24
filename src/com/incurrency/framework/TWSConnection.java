@@ -60,7 +60,8 @@ public class TWSConnection extends Thread implements EWrapper {
     public Socket cassandraConnection;
     public PrintStream output;
     //public boolean useRTVolume = false;
-    public String topic;
+    public String topic=Algorithm.topic;
+    Jedis jedis = Algorithm.marketdatapool.getResource();
     public boolean saveToCassandra;
     public boolean realtime = false;
     public String tickEquityMetric;
@@ -1367,7 +1368,7 @@ public class TWSConnection extends Thread implements EWrapper {
                             Parameters.symbol.get(id).setOpenPrice(price);
                         }
                         if (Parameters.symbol.get(id).isAddedToSymbols()) {
-                            Rates.rateServer.send(topic, field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());
+                            jedis.publish(topic,field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());
 
                         }
                     }
@@ -1524,7 +1525,7 @@ public class TWSConnection extends Thread implements EWrapper {
                             }
                         }
                         if (Parameters.symbol.get(id).isAddedToSymbols()) {
-                            Rates.rateServer.send(topic, field + "," + new Date().getTime() + "," + size + "," + Parameters.symbol.get(id).getDisplayname());
+                            jedis.publish(topic, field + "," + new Date().getTime() + "," + size + "," + Parameters.symbol.get(id).getDisplayname());
 
                         }
                     }
