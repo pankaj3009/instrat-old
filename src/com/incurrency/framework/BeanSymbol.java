@@ -1501,22 +1501,50 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         synchronized (lockLastPrice) {
             double oldValue = this.lastPrice;
             this.lastPrice = lastPrice;
+            
+            if(this.getHighPrice()==0){
+                String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+                ArrayList<Pair>pairs=Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+                    if(pairs.size()>0){
+                        double out=0;
+                        for(Pair p:pairs){
+                            double value=Utilities.getDouble(p.getValue(), 0);
+                            out=Math.max(out, value);
+                        }
+                        out=Math.max(out, lastPrice);
+                    this.setHighPrice(out,false);
+                }
+            }
+            
+            if(this.getLowPrice()==0){
+                String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+                ArrayList<Pair>pairs=Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+                    if(pairs.size()>0){
+                        double out=Double.MAX_VALUE;
+                        for(Pair p:pairs){
+                            double value=Utilities.getDouble(p.getValue(), Double.MAX_VALUE);
+                            out=Math.min(out, value);
+                        }
+                        out=Math.min(out, lastPrice);
+                    this.setLowPrice(out,false);
+                }
+            }
+            
             if (lastPrice > this.getHighPrice()) {
                 this.setHighPrice(lastPrice,false);
             } else if (lastPrice < this.getLowPrice() || getLowPrice() == 0) {
                 this.setLowPrice(lastPrice,false);
             }
-            //For index, identify the open price
-            
-            if(this.getType().equals("IND")&&this.getOpenPrice()==0){
-                this.setOpenPrice(lastPrice);
-            }
-            
-            if (Algorithm.useForSimulation) {
-                if (this.getOpenPrice() == 0) {
-                    this.setOpenPrice(lastPrice);
+           
+            if(this.getOpenPrice()==0){
+                String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+                ArrayList<Pair>pairs=Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+                if(pairs.size()>0){
+                    double out=Utilities.getDouble(pairs.get(0).getValue(),0);
+                    setOpenPrice(out);
                 }
             }
+            
             
             if (propertySupport != null) {
                 propertySupport.firePropertyChange(PROP_LASTPRICE, oldValue, lastPrice);
