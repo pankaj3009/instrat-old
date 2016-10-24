@@ -94,6 +94,8 @@ public class Strategy implements NotificationListener {
     private EnumOrderType ordType;
     private HashMap<String, Object> orderAttributes = new HashMap<>();
     public AtomicBoolean tradingWindow=new AtomicBoolean();
+    private double fallbackBidVol=0.10;
+    private double fallbackAskVol=0.50;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -160,8 +162,8 @@ public class Strategy implements NotificationListener {
                 if (!stratVal) {
                 stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy(),Boolean.FALSE);
                 if(!stratVal){
-                    logger.log(Level.INFO, "100,IntegrityCheckFailed,{0}", new Object[]{getStrategy() + delimiter + account});                    
-                }
+                                logger.log(Level.INFO,"200,IntegerityCheckFailed,{0}:{1}:{2}:{3}:{4}",
+                    new Object[]{strategy,"Order","Unknown",-1,-1});                    }
                 }
                 validation = validation && stratVal;
             }
@@ -282,12 +284,14 @@ public class Strategy implements NotificationListener {
                     maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
                 }
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
-                logger.log(Level.INFO, "100, OpeningInternalOrderID,{0}", new Object[]{getStrategy() + delimiter + Algorithm.orderidint.get()});
+                logger.log(Level.INFO, "200, OpeningInternalOrderID,{0}:{1}:{2}:{3}:{4}", 
+                        new Object[]{getStrategy(),"Order","Unknown",Algorithm.orderidint.get(),-1});
 
                 //print positions on initialization
                 for (int id : getStrategySymbols()) {
                     if (position.get(id).getPosition() != 0) {
-                        logger.log(Level.INFO, "401,InitialOrderPosition,{0}", new Object[]{"Order" + delimiter + this.getStrategy() + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
+                        logger.log(Level.INFO, "200,InitialOrderPosition,{0}:{1}:{2}:{3}:{4},OpeningPosition={5},OpeningPositionPrice={6}", 
+                                new Object[]{this.getStrategy(),"Order",Parameters.symbol.get(id).getDisplayname(),-1,-1,position.get(id).getPosition(),position.get(id).getPrice()});
                     }
                 }
 
@@ -333,25 +337,12 @@ public class Strategy implements NotificationListener {
         String endDateStr = currDateStr + " " + p.getProperty("EndTime");
         setStartDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr, timeZone));
         setEndDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, timeZone));
-       /*
-        if (TradingUtil.getAlgoDate().compareTo(getEndDate()) > 0) {
-            //increase enddate by one calendar day
-            setEndDate(DateUtil.addDays(getEndDate(), 1));
-        }
-        if (TradingUtil.getAlgoDate().compareTo(getStartDate()) > 0) {
-            //increase enddate by one calendar day
-            setStartDate(DateUtil.addDays(getStartDate(), 1));
-        }
-
-        if (getStartDate().compareTo(getEndDate()) > 0) {
-            //reduce startdate by one calendar day
-            setStartDate(DateUtil.addDays(getStartDate(), -1));
-        }
-        */
         setMaxSlippageEntry(p.getProperty("MaxSlippageEntry") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageEntry")) / 100); // divide by 100 as input was a percentage
         setMaxSlippageExit(p.getProperty("MaxSlippageExit") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageExit")) / 100); // divide by 100 as input was a percentage
         setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
         setDynamicOrderDuration(p.getProperty("DynamicOrderDuration") == null ? 1 : Integer.parseInt(p.getProperty("DynamicOrderDuration")));
+       fallbackBidVol=Utilities.getDouble(p.getProperty("FallbackBidVol","0.10"),0.10);
+       fallbackAskVol=Utilities.getDouble(p.getProperty("FallbackAskVol","0.50"),0.50);
         if (MainAlgorithm.isUseForTrading()) {
             Date shutdownTime=DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 5) * 60);
             if(shutdownTime.before(new Date())){
@@ -399,31 +390,31 @@ public class Strategy implements NotificationListener {
         longOnly = p.getProperty("Long") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Long")));
         shortOnly = p.getProperty("Short") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Short")));
         connectionidForMarketData=Utilities.getInt(p.getProperty("ConnectionIDForMarketData","0"),0);
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Accounts" + delimiter + allAccounts});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartDate" + delimiter + getStartDate()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EndDate" + delimiter + getEndDate()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PrintTime" + delimiter + com.incurrency.framework.DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 1) * 60)});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Shutdown" + delimiter + DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 2) * 60)});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TickSize" + delimiter + getTickSize()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ContractSize" + delimiter + getNumberOfContracts()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Exposure" + delimiter + getExposure()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ClawProfit" + delimiter + getClawProfitTarget()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayProfit" + delimiter + getDayProfitTarget()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayStopLoss" + delimiter + getDayStopLoss()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PointValue" + delimiter + getPointValue()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EntrySlippage" + delimiter + getMaxSlippageEntry()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ExitSlippage" + delimiter + getMaxSlippageExit()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderDuration" + delimiter + getMaxOrderDuration()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DynamicDuration" + delimiter + getDynamicOrderDuration()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "MaxOpenPositions" + delimiter + getMaxOpenPositions()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "BrokerageFile" + delimiter + getFutBrokerageFile()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TradeFile" + delimiter + getTradeFile()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderFile" + delimiter + getOrderFile()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TimeZone" + delimiter + getTimeZone()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartingCapital" + delimiter + getStartingCapital()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "LongAllowed" + delimiter + getLongOnly()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ShortAllowed" + delimiter + getShortOnly()});
-        logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderAtributes" + delimiter + getOrderAttributes().toString()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Accounts" + delimiter + allAccounts});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartDate" + delimiter + getStartDate()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EndDate" + delimiter + getEndDate()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PrintTime" + delimiter + com.incurrency.framework.DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 1) * 60)});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Shutdown" + delimiter + DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 2) * 60)});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TickSize" + delimiter + getTickSize()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ContractSize" + delimiter + getNumberOfContracts()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Exposure" + delimiter + getExposure()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ClawProfit" + delimiter + getClawProfitTarget()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayProfit" + delimiter + getDayProfitTarget()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayStopLoss" + delimiter + getDayStopLoss()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PointValue" + delimiter + getPointValue()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EntrySlippage" + delimiter + getMaxSlippageEntry()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ExitSlippage" + delimiter + getMaxSlippageExit()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderDuration" + delimiter + getMaxOrderDuration()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DynamicDuration" + delimiter + getDynamicOrderDuration()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "MaxOpenPositions" + delimiter + getMaxOpenPositions()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "BrokerageFile" + delimiter + getFutBrokerageFile()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TradeFile" + delimiter + getTradeFile()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderFile" + delimiter + getOrderFile()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TimeZone" + delimiter + getTimeZone()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartingCapital" + delimiter + getStartingCapital()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "LongAllowed" + delimiter + getLongOnly()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ShortAllowed" + delimiter + getShortOnly()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderAtributes" + delimiter + getOrderAttributes().toString()});
 
         if (getFutBrokerageFile().compareTo("") != 0) {
             Properties pBrokerage = TradingUtil.loadParameters(getFutBrokerageFile());
@@ -531,8 +522,8 @@ public class Strategy implements NotificationListener {
         @Override
         public void run() {
             tradingWindow.set(Boolean.TRUE);
-            logger.log(Level.INFO,"202,TradingWindow set to TRUE,{0}:{1}:{2}:{3}:{4}",
-                    new Object[]{strategy,"Order","Unknown",-1,-1});
+            logger.log(Level.INFO,"200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
+                    new Object[]{strategy,"Order","Unknown",-1,-1,tradingWindow.get()});
         }        
     };
     
@@ -541,8 +532,8 @@ public class Strategy implements NotificationListener {
         @Override
         public void run() {
             tradingWindow.set(Boolean.FALSE);
-             logger.log(Level.INFO,"202,TradingWindow set to FALSE,{0}:{1}:{2}:{3}:{4}",
-                    new Object[]{strategy,"Order","Unknown",-1,-1});
+            logger.log(Level.INFO,"200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
+                    new Object[]{strategy,"Order","Unknown",-1,-1,tradingWindow.get()});
 
         }        
     };
@@ -586,8 +577,6 @@ public class Strategy implements NotificationListener {
                     equityFile.delete();
                 }
             }
-            logger.log(Level.FINE, "312,Debugging_StartedPrintOrders,{0}", new Object[]{s.getStrategy()});
-            //String orderFileFullName = "logs" + File.separator + prefix + s.getOrderFile();
             String orderFileFullName = s.getOrderFile();
             if (prefix.equals("")) {
                 profitGrid = TradingUtil.applyBrokerage(db, s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName,s.getStrategy());
@@ -660,8 +649,6 @@ public class Strategy implements NotificationListener {
                         message=message + "PNL Summary"+"\n";
                         
                         message=message+Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
-                        logger.log(Level.FINE, "312,Debugging_SendingEmail,{0}", new Object[]{s.getStrategy()});
-
                         Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
                         t.start();
                         try {
@@ -709,41 +696,6 @@ public class Strategy implements NotificationListener {
         return out;
     }
 
-    //used by adr
-    public synchronized void entry(int id, EnumOrderSide side, int size, EnumOrderType orderType, double limitPrice, double triggerPrice, EnumOrderReason reason, EnumOrderStage stage, int duration, int dynamicDuration, double slippage, String orderGroup, String validity, String effectiveTime, boolean scalein, boolean transmit) {
-        if (id >= 0) {
-            size = size == 0 && getNumberOfContracts() == 0 ? (int) (getExposure() / limitPrice) : getNumberOfContracts() * Parameters.symbol.get(id).getMinsize();
-            if (side == EnumOrderSide.BUY) {
-                BeanPosition pd = getPosition().get(id);
-                double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-                int symbolPosition = pd.getPosition() + size;
-                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * size + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                pd.setPosition(symbolPosition);
-                pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                pd.setPrice(positionPrice);
-                pd.setStrategy(strategy);
-                getPosition().put(id, pd);
-            } else {
-                BeanPosition pd = getPosition().get(id);
-                double expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-                int symbolPosition = pd.getPosition() - size;
-                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * size + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                pd.setPosition(symbolPosition);
-                pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                pd.setPrice(positionPrice);
-                pd.setStrategy(strategy);
-                getPosition().put(id, pd);
-            }
-            int internalorderid = getInternalOrderID();
-            this.internalOpenOrders.put(id, internalorderid);
-            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, Parameters.symbol.get(id).getLastPrice(), size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades","TOBECOMPLETED");
-            logger.log(Level.INFO, "401,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
-            if (MainAlgorithm.isUseForTrading()) {
-                oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null,"TOBECOMPLETED");
-            }
-        }
-    }
-
     public int entry(HashMap<String, Object> order) {
         int id = Integer.valueOf(order.get("id").toString());
         int size = Utilities.getInt(order.get("size"), 0);
@@ -751,7 +703,7 @@ public class Strategy implements NotificationListener {
         double limitPrice = Utilities.getDouble(order.get("limitprice").toString(), 0);
         EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
         if (id >= 0) {
-            size = size == 0 && getNumberOfContracts() == 0 ? (int) (getExposure() / limitPrice) : size==0?getNumberOfContracts() * Parameters.symbol.get(id).getMinsize():size;
+            size = size == 0 && getNumberOfContracts() == 0 ? (int) (getExposure() / limitPrice) : size == 0 ? getNumberOfContracts() * Parameters.symbol.get(id).getMinsize() : size;
             order.put("size", size);
             if (side == EnumOrderSide.BUY) {
                 BeanPosition pd = getPosition().get(id);
@@ -775,18 +727,18 @@ public class Strategy implements NotificationListener {
                 getPosition().put(id, pd);
             }
             int internalorderid = -1;
-            if(Utilities.getInt(order.get("orderidint"),0)<=0){
-            internalorderid = getInternalOrderID();
-            order.put("orderidint", internalorderid);
+            if (Utilities.getInt(order.get("orderidint"), 0) <= 0) {
+                internalorderid = getInternalOrderID();
+                order.put("orderidint", internalorderid);
             }
-             internalorderid=Utilities.getInt(order.get("orderidint"),0);
-             order.put("entryorderidint", internalorderid);
+            internalorderid = Utilities.getInt(order.get("orderidint"), 0);
+            order.put("entryorderidint", internalorderid);
             this.internalOpenOrders.put(id, internalorderid);
-            String log=order.get("log")!=null?order.get("log").toString():"";
-            double lastprice=Parameters.symbol.get(id).getLastPrice();
-            lastprice=lastprice==0?Utilities.getDouble(order.get("limitprice"),0):lastprice;
-            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, lastprice, size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades",log);
-            logger.log(Level.INFO, "401,EntryOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + position.get(id).getPrice()});
+            String log = order.get("log") != null ? order.get("log").toString() : "";
+            double lastprice = Parameters.symbol.get(id).getLastPrice();
+            lastprice = lastprice == 0 ? Utilities.getDouble(order.get("limitprice"), 0) : lastprice;
+            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, lastprice, size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+            logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), internalorderid, -1, position.get(id).getPosition(), position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(order);
                 //oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
@@ -794,68 +746,6 @@ public class Strategy implements NotificationListener {
             return internalorderid;
         } else {
             return -1;
-        }
-    }
-
-    public synchronized void exit(int id, EnumOrderSide side, int size, EnumOrderType orderType, double limitPrice, double triggerPrice, EnumOrderReason reason, EnumOrderStage stage, int duration, int dynamicDuration, double slippage, String orderGroup, String validity, String effectiveTime, boolean scaleout, boolean transmit) {
-        if (id >= 0) {
-            int internalorderid = getInternalOrderID();
-            logger.log(Level.INFO, "401,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice()});
-            int tradeSize = scaleout == false ? Math.abs(getPosition().get(id).getPosition()) : size;
-            double expectedFillPrice = 0;
-                    if (side == EnumOrderSide.COVER) {
-                        BeanPosition pd = getPosition().get(id);
-                        expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-                        int symbolPosition = pd.getPosition() + tradeSize;
-                        double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                        pd.setPosition(symbolPosition);
-                        pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                        pd.setPrice(positionPrice);
-                        pd.setStrategy(strategy);
-                        getPosition().put(id, pd);
-                    } else  if (side == EnumOrderSide.SELL){
-                        BeanPosition pd = getPosition().get(id);
-                        expectedFillPrice = limitPrice != 0 ? limitPrice : Parameters.symbol.get(id).getLastPrice();
-                        int symbolPosition = pd.getPosition() - tradeSize;
-                        double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                        pd.setPosition(symbolPosition);
-                        pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                        pd.setPrice(positionPrice);
-                        pd.setStrategy(strategy);
-                        getPosition().put(id, pd);
-                    }
-
-            //int tempinternalOrderID = internalOpenOrders.get(id);
-            HashSet<Integer> tempinternalOrderIDs = getFirstInternalOpenOrder(id, side, "Order");
-            for (int tempinternalOrderID : tempinternalOrderIDs) {
-                if (tradeSize > 0) { //only update trades if tradeSize>0
-                    String key = this.getStrategy() + ":" + tempinternalOrderID + ":" + "Order";
-                    boolean entryTrade = Trade.getEntrySize(db, key) > 0 ? true : false;
-                    if (entryTrade) {
-                        int entrySize = Trade.getEntrySize(db, key);
-                        int exitSize = Trade.getExitSize(db, key);
-                        double exitPrice = Trade.getExitPrice(db, key);
-                        int adjTradeSize = exitSize + tradeSize > entrySize ? (entrySize - exitSize) : tradeSize;
-                        int newexitSize = adjTradeSize + exitSize;
-                        tradeSize = tradeSize - adjTradeSize;
-                        double newexitPrice = (exitPrice * exitSize + adjTradeSize * expectedFillPrice) / (newexitSize);
-                        if (getPosition().get(id).getPosition() == 0) {
-                            Trade.updateExit(db, id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "closedtrades", "TOBECOMPLETED");
-                        } else {
-                            Trade.updateExit(db, id, EnumOrderReason.REGULAREXIT, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades", "TOBECOMPLETED");
-                        }
-                        logger.log(Level.INFO, "401,{0},{1},{2},{3},{4}, Strategy_exit", 
-                                new Object[]{this.getStrategy(),"Order",Parameters.symbol.get(id).getDisplayname(),
-                                     internalorderid,-1});
-                        if (MainAlgorithm.isUseForTrading()) {
-                            oms.tes.fireOrderEvent(internalorderid, tempinternalOrderID, Parameters.symbol.get(id), side, reason, orderType, tradeSize, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scaleout, orderGroup, effectiveTime, null, "TOBECOMPLETED");
-                        }
-                    } else {
-                        logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side + tempinternalOrderID});
-                    }
-                }
-            }
- 
         }
     }
 
@@ -901,7 +791,6 @@ public class Strategy implements NotificationListener {
                     if (entryTradeExists) {
                         int internalorderid = getInternalOrderID();
                         order.put("orderidint", internalorderid);
-                        logger.log(Level.INFO, "401,ExitOrder,{0},", new Object[]{getStrategy() + delimiter + internalorderid + delimiter + position.get(id).getPosition() + delimiter + Parameters.symbol.get(id).getLastPrice() + delimiter + key});
                         int entrySize = Trade.getEntrySize(db, key);
                         int exitSize = Trade.getExitSize(db, key);
                         double exitPrice = Trade.getExitPrice(db, key);
@@ -915,11 +804,12 @@ public class Strategy implements NotificationListener {
                         if (newexitSize == entrySize) {
                             Trade.closeTrade(db, key);
                         }
-                        logger.log(Level.INFO, "401,{0},{1},{2},{3},{4}, Strategy_exit",
-                                new Object[]{this.getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(),
-                            internalorderid, -1});
+                         logger.log(Level.INFO, "201,ExitOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", 
+                                 new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), internalorderid, -1, position.get(id).getPosition(), position.get(id).getPrice()});
+          
                     } else {
-                        logger.log(Level.INFO, "101,ExitInternalIDNotFound,{0}", new Object[]{id + delimiter + side + tempinternalOrderID});
+                        logger.log(Level.INFO, "201,ExitInternalIDNotFound,{0}:{1}:{2}:{3}:{4},Key={5}", 
+                                new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), tempinternalOrderID, -1,key});
                     }
                 }
             }
@@ -1043,8 +933,9 @@ public class Strategy implements NotificationListener {
      * @param longOnly the longOnly to set
      */
     public synchronized void setLongOnly(Boolean l) {
-        logger.log(Level.INFO, "LongOnly Set to {0}", new Object[]{l});
-        this.longOnly = new AtomicBoolean(l);
+            logger.log(Level.INFO,"200,LongOnlySet,{0}:{1}:{2}:{3}:{4},LongOnlyValue={5}",
+                    new Object[]{strategy,"Order","Unknown",-1,-1,l});    
+            this.longOnly = new AtomicBoolean(l);
     }
 
     /**
@@ -1058,7 +949,8 @@ public class Strategy implements NotificationListener {
      * @param shortOnly the shortOnly to set
      */
     public synchronized void setShortOnly(Boolean s) {
-        logger.log(Level.INFO, "shortOnly Set to {0}", new Object[]{s});
+            logger.log(Level.INFO,"200,ShortOnlySet,{0}:{1}:{2}:{3}:{4},ShortOnlyValue={5}",
+                    new Object[]{strategy,"Order","Unknown",-1,-1,s});    
         this.shortOnly = new AtomicBoolean(s);
     }
 
@@ -1469,7 +1361,8 @@ public class Strategy implements NotificationListener {
      */
     public void setStopOrders(boolean stopOrders) {
         synchronized (lockPL) {
-            logger.log(Level.INFO, "StopOrders Set to {0}", new Object[]{stopOrders});
+            logger.log(Level.INFO,"200,StopOrdersSet,{0}:{1}:{2}:{3}:{4},StopOrders={5}",
+                    new Object[]{strategy,"Order","Unknown",-1,-1,stopOrders});    
             this.stopOrders = stopOrders;
         }
     }
