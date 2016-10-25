@@ -1058,7 +1058,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     HashMap<Integer, Order> amendedOrders = new HashMap<>();
                     for (Map.Entry<Integer, Order> entry : ordersHashMap.entrySet()) {
                         Order ord = entry.getValue();
-                        if (Math.abs(ord.m_auxPrice - event.getTriggerPrice()) > tickSize || Math.abs(ord.m_lmtPrice - event.getLimitPrice()) > tickSize) {
+                            if (Math.abs(ord.m_auxPrice - event.getTriggerPrice()) > tickSize || 
+                                Utilities.round(Math.abs(ord.m_lmtPrice - event.getLimitPrice()),2) >= tickSize) {
                             ord.m_auxPrice = event.getTriggerPrice() > 0 ? event.getTriggerPrice() : 0;
                             ord.m_lmtPrice = event.getLimitPrice() > 0 ? event.getLimitPrice() : 0;
                             if (event.getLimitPrice() > 0 & event.getTriggerPrice() == 0) {
