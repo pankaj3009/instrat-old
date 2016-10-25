@@ -153,8 +153,11 @@ public class Utilities {
                 case BUY:
                 case COVER:
                     if (bidprice > 0) {
+                        if(price>0){
                         price = Math.min(bidprice, price);
-
+                        }else{
+                            price=bidprice;
+                        }
                     } else {
                         price = 0.80 * price;
                         logger.log(Level.INFO, "Calculated Price as bidprice is zero. Symbol {0}, price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
@@ -208,14 +211,47 @@ public class Utilities {
                 }
                 symbols.get(id).setCloseVol(vol);
             }
-            price = symbols.get(id).getOptionProcess().NPV();
-            price = Utilities.roundTo(price, tickSize);
+           if(underlyingTradePriceExists(symbols.get(id),1)){                
+                        price = Parameters.symbol.get(id).getOptionProcess().NPV();
+                        price = Utilities.roundTo(price, tickSize);
+            }
+
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
         return price;
     }
-    
+       public static boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
+        int underlyingID = s.getUnderlyingID();
+        if (underlyingID == -1) {
+            return false;
+        } else {
+            int i = 0;
+            while (s.getUnderlying().value() <= 0 ||s.getUnderlying().value()==Double.MAX_VALUE) {
+                if (i < waitSeconds) {
+                    try {
+                        //see if price in redis
+                        String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+                        ArrayList<Pair>pairs=Utilities.getPrices(Parameters.symbol.get(underlyingID), ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", Algorithm.timeZone), new Date());
+                        if(pairs.size()>0){
+                            int length=pairs.size();
+                            double value=Utilities.getDouble(pairs.get(length-1).getValue(),0);
+                            Parameters.symbol.get(underlyingID).setLastPrice(value);
+                            //s.getUnderlying().setValue(value);
+                           return true;
+                        }     
+                    } catch (Exception ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                    i++;
+                } else {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
+
     public static double getLimitPriceForOrder(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side,double tickSize,EnumOrderType orderType){
         double price = symbols.get(id).getLastPrice();
         String type=symbols.get(id).getType();
