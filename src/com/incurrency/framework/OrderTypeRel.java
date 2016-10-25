@@ -42,6 +42,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     double improveamt = 0;
     int fatFingerWindow = 120; //in seconds
     long fatFingerStart = Long.MAX_VALUE;
+    private boolean retracement=false;
 
     public OrderTypeRel(int id, int orderid, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
@@ -178,7 +179,7 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                     if (calculatedPrice == 0) { //underlying does not have a price. No recalculation.
                                         return;
                                     }
-                                    /*
+                                    /* Low Price--------High Price
                                      * BP - LP - CP : Do Nothing. We are the best bid
                                      * LP - BP - CP : Change to Best Bid
                                      * BP - CP - LP : Change to Best Bid
@@ -208,8 +209,8 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                     }
 
                                     if (!fatfinger) {
-                                        if ((limitPrice < (bidPrice-improveamt) && bidPrice <= calculatedPrice)
-                                                || (bidPrice <= calculatedPrice && calculatedPrice <= limitPrice)) {
+                                        if (((!retracement && limitPrice < (bidPrice)||(retracement && limitPrice<(bidPrice-improveamt))) && bidPrice <= calculatedPrice)
+                                                || (bidPrice <= calculatedPrice && calculatedPrice <= limitPrice && bidPrice!=limitPrice)) {
                                             //Change to Best Bid
                                             newLimitPrice = bidPrice + improveamt;
                                         } else if ((calculatedPrice <= bidPrice && bidPrice <= limitPrice)
@@ -221,6 +222,9 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                         double random = Math.random();
                                         if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
                                             newLimitPrice = bidPrice - Math.abs(improveamt);
+                                            retracement=true;
+                                        }else{
+                                            retracement=false;
                                         }
                                     }
 
@@ -301,8 +305,8 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                     }
 
                                     if (!fatfinger) {
-                                        if ((calculatedPrice <= askPrice && (askPrice+improveamt) < limitPrice)
-                                                || (limitPrice <= calculatedPrice && calculatedPrice <= askPrice)) {
+                                        if ((calculatedPrice <= askPrice && ((retracement && (askPrice+improveamt) < limitPrice)||(!retracement && askPrice<limitPrice)))
+                                                || (limitPrice <= calculatedPrice && calculatedPrice <= askPrice && askPrice!=limitPrice)) {
                                             //Change to Best Ask
                                             newLimitPrice = askPrice - improveamt;
                                         } else if ((limitPrice <= askPrice && askPrice <= calculatedPrice)
