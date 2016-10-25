@@ -6,7 +6,9 @@ package com.incurrency.framework;
 
 import com.incurrency.RatesClient.ZMQSubscribe;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,7 +34,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     private Drop sync;
     private LimitedQueue recentOrders;
     private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
-    boolean recalculate = false;
+    boolean recalculate = true;
     SimpleDateFormat loggingFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
     int orderspermin = 1;
     double worseamt = 0;
@@ -106,8 +108,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             logger.log(Level.SEVERE, null, ex);
         }
     }
-
-    public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
+    
+public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
         int underlyingID = s.getUnderlyingID();
         if (underlyingID == -1) {
             return false;
@@ -116,6 +118,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             while (s.getUnderlying().value() <= 0) {
                 if (i < waitSeconds) {
                     try {
+                        //see if price in redis
+                        String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+               
+                        ArrayList<Pair>pairs=Utilities.getPrices(Parameters.symbol.get(underlyingID), ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", Algorithm.timeZone), new Date());
+                        if(pairs.size()>0){
+                            int length=pairs.size();
+                            double value=Utilities.getDouble(pairs.get(length-1).getValue(),0);
+                            Parameters.symbol.get(underlyingID).setLastPrice(value);
+                        }
                         Thread.sleep(1000);
                     } catch (Exception ex) {
                         logger.log(Level.SEVERE, null, ex);
@@ -130,13 +141,17 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         }
     }
 
+  
     @Override
     public synchronized void  bidaskChanged(BidAskEvent event) {
         try {
             boolean fatfinger = false;
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
                 //check if there is a case for updating rel price. Only time criteron at present.
-                if (recentOrders.size() == orderspermin && (new Date().getTime() - (Long) recentOrders.get(0)) > 60000) {// Timestamp of the first of the "n" orders is more than 60 seconds earlier
+                if (recentOrders.size() == orderspermin
+                        && (new Date().getTime() - (Long) recentOrders.get(0)) < 60000) {// Timestamp of the first of the "n" orders is more than 60 seconds earlier
+                    recalculate = false;
+                } else {
                     recalculate = true;
                 }
                 if(recalculate){
@@ -193,7 +208,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
 
                                     if (!fatfinger) {
-                                        if ((limitPrice <= bidPrice && bidPrice <= calculatedPrice)
+                                        if ((limitPrice < bidPrice && bidPrice <= calculatedPrice)
                                                 || (bidPrice <= calculatedPrice && calculatedPrice <= limitPrice)) {
                                             //Change to Best Bid
                                             newLimitPrice = bidPrice + improveamt;
@@ -286,7 +301,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
 
                                     if (!fatfinger) {
-                                        if ((calculatedPrice <= askPrice && askPrice <= limitPrice)
+                                        if ((calculatedPrice <= askPrice && askPrice < limitPrice)
                                                 || (limitPrice <= calculatedPrice && calculatedPrice <= askPrice)) {
                                             //Change to Best Ask
                                             newLimitPrice = askPrice - improveamt;
