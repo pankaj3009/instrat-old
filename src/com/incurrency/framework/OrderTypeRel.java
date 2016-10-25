@@ -139,6 +139,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 if (recentOrders.size() == orderspermin && (new Date().getTime() - (Long) recentOrders.get(0)) > 60000) {// Timestamp of the first of the "n" orders is more than 60 seconds earlier
                     recalculate = true;
                 }
+                if(recalculate){
                 OrderBean ob = c.getOrders().get(externalOrderID);
                 BeanSymbol s = Parameters.symbol.get(id);
                 if (ob != null) {
@@ -159,7 +160,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         calculatedPrice = s.getOptionProcess().NPV();
                                         calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
                                     }
-                                    if (calculatedPrice == 0) {
+                                    if (calculatedPrice == 0) { //underlying does not have a price. No recalculation.
                                         return;
                                     }
                                     /*
@@ -202,18 +203,19 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             //Change to second best ask
                                             newLimitPrice = bidPrice - Math.abs(improveamt);
                                         }
-                                    }
-                                    if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && (bidPrice > limitPrice || fatfinger)) {
                                         double random = Math.random();
                                         if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
                                             newLimitPrice = bidPrice - Math.abs(improveamt);
                                         }
+                                    }
+
+                                      if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
                                         recentOrders.add(new Date().getTime());
                                         e.setLimitPrice(newLimitPrice);
                                         e.setOrderStage(EnumOrderStage.AMEND);
                                         e.setAccount(c.getAccountName());
                                         e.setTag("BIDASKCHANGED");
-                                        String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",Random:" + Utilities.round(random, 2) + ",fatfinger:" + fatfinger;
+                                        String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",fatfinger:" + fatfinger;
                                         oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                         oms.orderReceived(e);
 
@@ -294,18 +296,18 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             //Change to second best ask
                                             newLimitPrice = askPrice + Math.abs(improveamt);
                                         }
-                                    }
-                                    if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED && (askPrice < limitPrice || fatfinger)) {
                                         double random = Math.random();
                                         if (random > improveprob && askPrice > 0) {
                                             newLimitPrice = askPrice + Math.abs(improveamt);
                                         }
+                                    }
+                                    if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
                                         recentOrders.add(new Date().getTime());
                                         e.setLimitPrice(newLimitPrice);
                                         e.setOrderStage(EnumOrderStage.AMEND);
                                         e.setAccount(c.getAccountName());
                                         e.setTag("BIDASKCHANGED");
-                                        String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",Random:" + Utilities.round(random, 2) + ",fatfinger:" + fatfinger;
+                                        String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() +",fatfinger:" + fatfinger;
                                         oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                         oms.orderReceived(e);
                                     }
@@ -331,6 +333,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                         default:
                             break;
                     }
+                }
                 }
             }
         } catch (Exception ex) {
