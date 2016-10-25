@@ -208,7 +208,7 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                     }
 
                                     if (!fatfinger) {
-                                        if ((limitPrice < bidPrice && bidPrice <= calculatedPrice)
+                                        if ((limitPrice < (bidPrice-improveamt) && bidPrice <= calculatedPrice)
                                                 || (bidPrice <= calculatedPrice && calculatedPrice <= limitPrice)) {
                                             //Change to Best Bid
                                             newLimitPrice = bidPrice + improveamt;
@@ -301,7 +301,7 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                     }
 
                                     if (!fatfinger) {
-                                        if ((calculatedPrice <= askPrice && askPrice < limitPrice)
+                                        if ((calculatedPrice <= askPrice && (askPrice+improveamt) < limitPrice)
                                                 || (limitPrice <= calculatedPrice && calculatedPrice <= askPrice)) {
                                             //Change to Best Ask
                                             newLimitPrice = askPrice - improveamt;
