@@ -43,6 +43,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     int fatFingerWindow = 120; //in seconds
     long fatFingerStart = Long.MAX_VALUE;
     private boolean retracement=false;
+    double plp=0; //prior limit price
 
     public OrderTypeRel(int id, int orderid, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
@@ -180,9 +181,9 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                         return;
                                     }
                                     /* Low Price--------High Price
-                                     * BP - LP - CP : Do Nothing. We are the best bid
-                                     * LP - BP - CP : Change to Best Bid
-                                     * BP - CP - LP : Change to Best Bid
+                                     * (1) BP - LP - CP : Do Nothing. We are the best bid
+                                     * (2) LP - BP - CP : Change to Best Bid
+                                     * (3) BP - CP - LP : Change to Best Bid  
                                      * CP - BP - LP : Second Best Bid
                                      * LP - CP - BP : Second Best Bid
                                      * CP - LP - BP : Second Best Bid
@@ -209,18 +210,21 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                     }
 
                                     if (!fatfinger) {
-                                        if (((!retracement && limitPrice < (bidPrice)||(retracement && limitPrice<(bidPrice-improveamt))) && bidPrice <= calculatedPrice)
-                                                || (bidPrice <= calculatedPrice && calculatedPrice <= limitPrice && bidPrice!=limitPrice)) {
+                                        if ((limitPrice<bidPrice && bidPrice <= calculatedPrice && bidPrice!=plp)
+                                                || (bidPrice < calculatedPrice && calculatedPrice <= limitPrice)) {
                                             //Change to Best Bid
+                                            plp=limitPrice;
                                             newLimitPrice = bidPrice + improveamt;
                                         } else if ((calculatedPrice <= bidPrice && bidPrice <= limitPrice)
                                                 || (limitPrice <= calculatedPrice && calculatedPrice <= bidPrice)
                                                 || (calculatedPrice <= limitPrice && limitPrice <= bidPrice)) {
                                             //Change to second best ask
+                                            plp=limitPrice;
                                             newLimitPrice = bidPrice - Math.abs(improveamt);
                                         }
                                         double random = Math.random();
                                         if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
+                                            plp=limitPrice;
                                             newLimitPrice = bidPrice - Math.abs(improveamt);
                                             retracement=true;
                                         }else{
@@ -305,18 +309,21 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                                     }
 
                                     if (!fatfinger) {
-                                        if ((calculatedPrice <= askPrice && ((retracement && (askPrice+improveamt) < limitPrice)||(!retracement && askPrice<limitPrice)))
-                                                || (limitPrice <= calculatedPrice && calculatedPrice <= askPrice && askPrice!=limitPrice)) {
+                                        if ((calculatedPrice <= askPrice && askPrice< limitPrice && askPrice!=plp)
+                                                || (limitPrice <= calculatedPrice && calculatedPrice < askPrice)) {
                                             //Change to Best Ask
+                                            plp=limitPrice;
                                             newLimitPrice = askPrice - improveamt;
                                         } else if ((limitPrice <= askPrice && askPrice <= calculatedPrice)
                                                 || (askPrice <= calculatedPrice && calculatedPrice <= limitPrice)
                                                 || (askPrice <= limitPrice && limitPrice <= calculatedPrice)) {
                                             //Change to second best ask
+                                            plp=limitPrice;
                                             newLimitPrice = askPrice + Math.abs(improveamt);
                                         }
                                         double random = Math.random();
                                         if (random > improveprob && askPrice > 0) {
+                                            plp=limitPrice;
                                             newLimitPrice = askPrice + Math.abs(improveamt);
                                         }
                                     }
