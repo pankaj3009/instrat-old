@@ -42,8 +42,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     double improveamt = 0;
     int fatFingerWindow = 120; //in seconds
     long fatFingerStart = Long.MAX_VALUE;
-    private boolean retracement=false;
-    double plp=0; //prior limit price
+    private boolean retracement = false;
+    double plp = 0; //prior limit price
+    int stickyperiod;
 
     public OrderTypeRel(int id, int orderid, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
@@ -56,6 +57,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             improveprob = Utilities.getDouble(event.getOrderAttributes().get("improveprob"), 1);
             improveamt = Utilities.getInt(event.getOrderAttributes().get("improveamt"), 0) * this.ticksize;
             fatFingerWindow = Utilities.getInt(event.getOrderAttributes().get("fatfingerwindow"), 120);
+            stickyperiod = Utilities.getInt(event.getOrderAttributes().get("stickperiod"), 60);
             recentOrders = new LimitedQueue(orderspermin);
             //We need underlyingid, if we are doing options.
             //As there are only two possibilities for underlying(as of now), we test for both.
@@ -110,8 +112,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             logger.log(Level.SEVERE, null, ex);
         }
     }
-    
-public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
+
+    public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
         int underlyingID = s.getUnderlyingID();
         if (underlyingID == -1) {
             return false;
@@ -121,12 +123,12 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                 if (i < waitSeconds) {
                     try {
                         //see if price in redis
-                        String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-               
-                        ArrayList<Pair>pairs=Utilities.getPrices(Parameters.symbol.get(underlyingID), ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", Algorithm.timeZone), new Date());
-                        if(pairs.size()>0){
-                            int length=pairs.size();
-                            double value=Utilities.getDouble(pairs.get(length-1).getValue(),0);
+                        String today = DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+
+                        ArrayList<Pair> pairs = Utilities.getPrices(Parameters.symbol.get(underlyingID), ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", Algorithm.timeZone), new Date());
+                        if (pairs.size() > 0) {
+                            int length = pairs.size();
+                            double value = Utilities.getDouble(pairs.get(length - 1).getValue(), 0);
                             Parameters.symbol.get(underlyingID).setLastPrice(value);
                         }
                         Thread.sleep(1000);
@@ -143,9 +145,8 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
         }
     }
 
-  
     @Override
-    public synchronized void  bidaskChanged(BidAskEvent event) {
+    public synchronized void bidaskChanged(BidAskEvent event) {
         try {
             boolean fatfinger = false;
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
@@ -156,210 +157,217 @@ public boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
                 } else {
                     recalculate = true;
                 }
-                if(recalculate){
-                OrderBean ob = c.getOrders().get(externalOrderID);
-                BeanSymbol s = Parameters.symbol.get(id);
-                if (ob != null) {
-                    internalOrderIDEntry = ob.getInternalOrderIDEntry();
-                    limitPrice = ob.getParentLimitPrice();
-                    double newLimitPrice = limitPrice;
-                    switch (side) {
-                        case BUY:
-                        case COVER:
-                            recalculate = false;
-                            double bidPrice = s.getBidPrice();
-                            double askPrice = s.getAskPrice();
-                            switch (s.getType()) {
-                                case "OPT":
-                                    s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
-                                    double calculatedPrice = 0;
-                                    if (underlyingTradePriceExists(s, 1)) {
-                                        calculatedPrice = s.getOptionProcess().NPV();
-                                        calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
-                                    }
-                                    if (calculatedPrice == 0) { //underlying does not have a price. No recalculation.
-                                        return;
-                                    }
-                                    /* Low Price--------High Price
-                                     * (1) BP - LP - CP : Do Nothing. We are the best bid
-                                     * (2) LP - BP - CP : Change to Best Bid
-                                     * (3) BP - CP - LP : Change to Best Bid  
-                                     * CP - BP - LP : Second Best Bid
-                                     * LP - CP - BP : Second Best Bid
-                                     * CP - LP - BP : Second Best Bid
-                                     * Fat Finger protection
-                                     * BP-CP / CP > +5% stay at CP.
-                                     */
+                if (recalculate) {
+                    OrderBean ob = c.getOrders().get(externalOrderID);
+                    BeanSymbol s = Parameters.symbol.get(id);
+                    if (ob != null) {
+                        internalOrderIDEntry = ob.getInternalOrderIDEntry();
+                        limitPrice = ob.getParentLimitPrice();
+                        double newLimitPrice = limitPrice;
+                        switch (side) {
+                            case BUY:
+                            case COVER:
+                                recalculate = false;
+                                double bidPrice = s.getBidPrice();
+                                double askPrice = s.getAskPrice();
+                                switch (s.getType()) {
+                                    case "OPT":
+                                        s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
+                                        double calculatedPrice = 0;
+                                        if (underlyingTradePriceExists(s, 1)) {
+                                            calculatedPrice = s.getOptionProcess().NPV();
+                                            calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                        }
+                                        if (calculatedPrice == 0) { //underlying does not have a price. No recalculation.
+                                            return;
+                                        }
+                                        /* Low Price--------High Price
+                                         * (1) BP - LP - CP : Do Nothing. We are the best bid
+                                         * (2) LP - BP - CP : Change to Best Bid
+                                         * (3) BP - CP - LP : Change to Best Bid  
+                                         * CP - BP - LP : Second Best Bid
+                                         * LP - CP - BP : Second Best Bid
+                                         * CP - LP - BP : Second Best Bid
+                                         * Fat Finger protection
+                                         * BP-CP / CP > +5% stay at CP.
+                                         */
 
-                                    if (bidPrice == 0 || (bidPrice - calculatedPrice) / (calculatedPrice) > 0.05) {
-                                        fatfinger = true;
-                                        if (fatFingerStart == Long.MAX_VALUE) {
-                                            fatFingerStart = new Date().getTime();
+                                        if (bidPrice == 0 || (bidPrice - calculatedPrice) / (calculatedPrice) > 0.05) {
+                                            fatfinger = true;
+                                            if (fatFingerStart == Long.MAX_VALUE) {
+                                                fatFingerStart = new Date().getTime();
+                                            }
+                                            newLimitPrice = calculatedPrice;
+                                            if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000 && bidPrice > 0) {
+                                                newLimitPrice = bidPrice - improveamt; //second best bid
+                                            } else if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
+                                                //To prevent frequent orders when we are not near market, we limit updates only if
+                                                //new limitprice is off by 10 ticksize.
+                                                newLimitPrice = calculatedPrice - 10 * ticksize;
+                                            }
                                         }
-                                        newLimitPrice = calculatedPrice;
-                                        if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000 && bidPrice > 0) {
-                                            newLimitPrice = bidPrice - improveamt; //second best bid
-                                        } else if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
-                                            //To prevent frequent orders when we are not near market, we limit updates only if
-                                            //new limitprice is off by 10 ticksize.
-                                            newLimitPrice = calculatedPrice - 10 * ticksize;
+                                        if (!fatfinger) {
+                                            fatFingerStart = Long.MAX_VALUE;
                                         }
-                                    }
-                                    if (!fatfinger) {
-                                        fatFingerStart = Long.MAX_VALUE;
-                                    }
 
-                                    if (!fatfinger) {
-                                        if ((limitPrice<bidPrice && bidPrice <= calculatedPrice && bidPrice!=plp)
-                                                || (bidPrice < calculatedPrice && calculatedPrice <= limitPrice)) {
-                                            //Change to Best Bid
-                                            plp=limitPrice;
-                                            newLimitPrice = bidPrice + improveamt;
-                                        } else if ((calculatedPrice <= bidPrice && bidPrice <= limitPrice)
-                                                || (limitPrice <= calculatedPrice && calculatedPrice <= bidPrice)
-                                                || (calculatedPrice <= limitPrice && limitPrice <= bidPrice)) {
-                                            //Change to second best ask
-                                            plp=limitPrice;
-                                            newLimitPrice = bidPrice - Math.abs(improveamt);
+                                        if (!fatfinger) {
+                                            if ((limitPrice < bidPrice && bidPrice <= calculatedPrice && bidPrice != plp)
+                                                    || (bidPrice < calculatedPrice && calculatedPrice <= limitPrice)) {
+                                                //Change to Best Bid
+                                                plp = limitPrice;
+                                                newLimitPrice = bidPrice + improveamt;
+                                            } else if ((calculatedPrice <= bidPrice && bidPrice <= limitPrice)
+                                                    || (limitPrice <= calculatedPrice && calculatedPrice <= bidPrice)
+                                                    || (calculatedPrice <= limitPrice && limitPrice <= bidPrice)) {
+                                                //Change to second best ask
+                                                plp = limitPrice;
+                                                newLimitPrice = bidPrice - Math.abs(improveamt);
+                                            }
+                                            double random = Math.random();
+                                            if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
+                                                if ((new Date().getTime() - (Long) recentOrders.getLast()) < stickyperiod * 1000) {
+                                                    plp = limitPrice;
+                                                    newLimitPrice = bidPrice - Math.abs(improveamt);
+                                                    retracement = true;
+                                                }
+                                            } else {
+                                                retracement = false;
+                                            }
                                         }
-                                        double random = Math.random();
-                                        if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
-                                            plp=limitPrice;
-                                            newLimitPrice = bidPrice - Math.abs(improveamt);
-                                            retracement=true;
-                                        }else{
-                                            retracement=false;
-                                        }
-                                    }
 
-                                      if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
-                                        recentOrders.add(new Date().getTime());
-                                        e.setLimitPrice(newLimitPrice);
-                                        e.setOrderStage(EnumOrderStage.AMEND);
-                                        e.setAccount(c.getAccountName());
-                                        e.setTag("BIDASKCHANGED");
-                                        String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",fatfinger:" + fatfinger;
-                                        oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-                                        oms.orderReceived(e);
+                                        if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                            recentOrders.add(new Date().getTime());
+                                            e.setLimitPrice(newLimitPrice);
+                                            e.setOrderStage(EnumOrderStage.AMEND);
+                                            e.setAccount(c.getAccountName());
+                                            e.setTag("BIDASKCHANGED");
+                                            String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",fatfinger:" + fatfinger;
+                                            oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
+                                            oms.orderReceived(e);
 
-                                    }
-                                    break;
-                                default:
-                                    if (bidPrice > 0 && bidPrice > limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
-                                        double random = Math.random();
-                                        if (random < improveprob) {
-                                            newLimitPrice = bidPrice + improveamt;
-                                        } else {
-                                            newLimitPrice = bidPrice - Math.abs(improveamt);
                                         }
-                                        recentOrders.add(new Date().getTime());
-                                        e.setLimitPrice(newLimitPrice);
-                                        e.setOrderStage(EnumOrderStage.AMEND);
-                                        e.setAccount(c.getAccountName());
-                                        e.setTag("BIDASKCHANGED");
-                                        oms.orderReceived(e);
-                                    }
-                                    break;
-                            }
-                            break;
-                        case SHORT:
-                        case SELL:
-                            recalculate = false;
-                            bidPrice = s.getBidPrice();
-                            askPrice = s.getAskPrice();
-                            switch (s.getType()) {
-                                case "OPT":
-                                    s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
-                                    double calculatedPrice = 0;
-                                    if (underlyingTradePriceExists(s, 1)) {
-                                        calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
-                                        calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
-                                    }
-                                    if (calculatedPrice == 0) {
-                                        return;
-                                    }
-                                    /*
-                                     * CP - LP - AP : Do Nothing. We are the best ask
-                                     * CP - AP - LP : Change to Best Ask
-                                     * LP - CP - AP : Change to Best Ask
-                                     * LP - AP - CP : Second Best Ask
-                                     * AP - CP - LP : Second Best Ask
-                                     * AP - LP - CP : Second Best Ask
-                                     * Fat Finger protection
-                                     * CP - AP / CP > +5% stay at CP.
-                                     */
+                                        break;
+                                    default:
+                                        if (bidPrice > 0 && bidPrice > limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                            double random = Math.random();
+                                            if (random < improveprob) {
+                                                newLimitPrice = bidPrice + improveamt;
+                                            } else {
+                                                newLimitPrice = bidPrice - Math.abs(improveamt);
+                                            }
+                                            recentOrders.add(new Date().getTime());
+                                            e.setLimitPrice(newLimitPrice);
+                                            e.setOrderStage(EnumOrderStage.AMEND);
+                                            e.setAccount(c.getAccountName());
+                                            e.setTag("BIDASKCHANGED");
+                                            oms.orderReceived(e);
+                                        }
+                                        break;
+                                }
+                                break;
+                            case SHORT:
+                            case SELL:
+                                recalculate = false;
+                                bidPrice = s.getBidPrice();
+                                askPrice = s.getAskPrice();
+                                switch (s.getType()) {
+                                    case "OPT":
+                                        s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
+                                        double calculatedPrice = 0;
+                                        if (underlyingTradePriceExists(s, 1)) {
+                                            calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
+                                            calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                        }
+                                        if (calculatedPrice == 0) {
+                                            return;
+                                        }
+                                        /*
+                                         * CP - LP - AP : Do Nothing. We are the best ask
+                                         * CP - AP - LP : Change to Best Ask
+                                         * LP - CP - AP : Change to Best Ask
+                                         * LP - AP - CP : Second Best Ask
+                                         * AP - CP - LP : Second Best Ask
+                                         * AP - LP - CP : Second Best Ask
+                                         * Fat Finger protection
+                                         * CP - AP / CP > +5% stay at CP.
+                                         */
 
-                                    if (askPrice == 0 || (calculatedPrice - askPrice) / (calculatedPrice) > 0.05) {
-                                        fatfinger = true;
-                                        if (fatFingerStart == Long.MAX_VALUE) {
-                                            fatFingerStart = new Date().getTime();
+                                        if (askPrice == 0 || (calculatedPrice - askPrice) / (calculatedPrice) > 0.05) {
+                                            fatfinger = true;
+                                            if (fatFingerStart == Long.MAX_VALUE) {
+                                                fatFingerStart = new Date().getTime();
+                                            }
+                                            newLimitPrice = calculatedPrice;
+                                            if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000 && bidPrice > 0) {
+                                                newLimitPrice = askPrice + improveamt; //second best offer
+                                            } else if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
+                                                //To prevent frequent orders when we are not near market, we limit updates only if
+                                                //new limitprice is off by 10 ticksize.
+                                                newLimitPrice = calculatedPrice + 10 * ticksize;
+                                            }
                                         }
-                                        newLimitPrice = calculatedPrice;
-                                        if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000 && bidPrice > 0) {
-                                            newLimitPrice = askPrice + improveamt; //second best offer
-                                        } else if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
-                                            //To prevent frequent orders when we are not near market, we limit updates only if
-                                            //new limitprice is off by 10 ticksize.
-                                            newLimitPrice = calculatedPrice + 10 * ticksize;
-                                        }
-                                    }
 
-                                    if (!fatfinger) {
-                                        fatFingerStart = Long.MAX_VALUE;
-                                    }
+                                        if (!fatfinger) {
+                                            fatFingerStart = Long.MAX_VALUE;
+                                        }
 
-                                    if (!fatfinger) {
-                                        if ((calculatedPrice <= askPrice && askPrice< limitPrice && askPrice!=plp)
-                                                || (limitPrice <= calculatedPrice && calculatedPrice < askPrice)) {
-                                            //Change to Best Ask
-                                            plp=limitPrice;
-                                            newLimitPrice = askPrice - improveamt;
-                                        } else if ((limitPrice <= askPrice && askPrice <= calculatedPrice)
-                                                || (askPrice <= calculatedPrice && calculatedPrice <= limitPrice)
-                                                || (askPrice <= limitPrice && limitPrice <= calculatedPrice)) {
-                                            //Change to second best ask
-                                            plp=limitPrice;
-                                            newLimitPrice = askPrice + Math.abs(improveamt);
+                                        if (!fatfinger) {
+                                            if ((calculatedPrice <= askPrice && askPrice < limitPrice && askPrice != plp)
+                                                    || (limitPrice <= calculatedPrice && calculatedPrice < askPrice)) {
+                                                //Change to Best Ask
+                                                plp = limitPrice;
+                                                newLimitPrice = askPrice - improveamt;
+                                            } else if ((limitPrice <= askPrice && askPrice <= calculatedPrice)
+                                                    || (askPrice <= calculatedPrice && calculatedPrice <= limitPrice)
+                                                    || (askPrice <= limitPrice && limitPrice <= calculatedPrice)) {
+                                                //Change to second best ask
+                                                plp = limitPrice;
+                                                newLimitPrice = askPrice + Math.abs(improveamt);
+                                            }
+                                            double random = Math.random();
+                                            if (random > improveprob && askPrice > 0) {
+                                                if ((new Date().getTime() - (Long) recentOrders.getLast()) < stickyperiod * 1000) {
+                                                    plp = limitPrice;
+                                                    newLimitPrice = askPrice + Math.abs(improveamt);
+                                                   retracement = true;
+                                                }else{
+                                                    retracement=false;
+                                                }
+                                            }
                                         }
-                                        double random = Math.random();
-                                        if (random > improveprob && askPrice > 0) {
-                                            plp=limitPrice;
-                                            newLimitPrice = askPrice + Math.abs(improveamt);
+                                        if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                            recentOrders.add(new Date().getTime());
+                                            e.setLimitPrice(newLimitPrice);
+                                            e.setOrderStage(EnumOrderStage.AMEND);
+                                            e.setAccount(c.getAccountName());
+                                            e.setTag("BIDASKCHANGED");
+                                            String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",fatfinger:" + fatfinger;
+                                            oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
+                                            oms.orderReceived(e);
                                         }
-                                    }
-                                    if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
-                                        recentOrders.add(new Date().getTime());
-                                        e.setLimitPrice(newLimitPrice);
-                                        e.setOrderStage(EnumOrderStage.AMEND);
-                                        e.setAccount(c.getAccountName());
-                                        e.setTag("BIDASKCHANGED");
-                                        String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() +",fatfinger:" + fatfinger;
-                                        oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-                                        oms.orderReceived(e);
-                                    }
-                                    break;
-                                default:
-                                    if (askPrice > 0 && askPrice < limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
-                                        double random = Math.random();
-                                        if (random < improveprob) {
-                                            newLimitPrice = askPrice - improveamt;
-                                        } else {
-                                            newLimitPrice = askPrice + Math.abs(improveamt);
+                                        break;
+                                    default:
+                                        if (askPrice > 0 && askPrice < limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                            double random = Math.random();
+                                            if (random < improveprob) {
+                                                newLimitPrice = askPrice - improveamt;
+                                            } else {
+                                                newLimitPrice = askPrice + Math.abs(improveamt);
+                                            }
+                                            recentOrders.add(new Date().getTime());
+                                            e.setLimitPrice(newLimitPrice);
+                                            e.setOrderStage(EnumOrderStage.AMEND);
+                                            e.setAccount(c.getAccountName());
+                                            e.setTag("BIDASKCHANGED");
+                                            oms.orderReceived(e);
                                         }
-                                        recentOrders.add(new Date().getTime());
-                                        e.setLimitPrice(newLimitPrice);
-                                        e.setOrderStage(EnumOrderStage.AMEND);
-                                        e.setAccount(c.getAccountName());
-                                        e.setTag("BIDASKCHANGED");
-                                        oms.orderReceived(e);
-                                    }
-                                    break;
-                            }
-                            break;
-                        default:
-                            break;
+                                        break;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
                     }
-                }
                 }
             }
         } catch (Exception ex) {
