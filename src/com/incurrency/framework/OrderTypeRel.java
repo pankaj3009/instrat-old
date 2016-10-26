@@ -225,7 +225,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                             double random = Math.random();
                                             if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
-                                                if ((new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                                if (recentOrders.size()>0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                                     plp = limitPrice;
                                                     newLimitPrice = bidPrice - Math.abs(improveamt);
                                                     retracement = true;
@@ -326,7 +326,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                             double random = Math.random();
                                             if (random > improveprob && askPrice > 0) {
-                                                if ((new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                                if (recentOrders.size()>0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                                     plp = limitPrice;
                                                     newLimitPrice = askPrice + Math.abs(improveamt);
                                                    retracement = true;
