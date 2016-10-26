@@ -152,7 +152,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
                 //check if there is a case for updating rel price. Only time criteron at present.
                 if (recentOrders.size() == orderspermin
-                        && (new Date().getTime() - (Long) recentOrders.get(0)) < 60000) {// Timestamp of the first of the "n" orders is more than 60 seconds earlier
+                        && (new Date().getTime() - (Long) recentOrders.get(0)) < 60000) {// Timestamp of the first of the "n" orders is *less* than 60 seconds prior. Stop!!
                     recalculate = false;
                 } else {
                     recalculate = true;
@@ -225,7 +225,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                             double random = Math.random();
                                             if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
-                                                if ((new Date().getTime() - (Long) recentOrders.getLast()) < stickyperiod * 1000) {
+                                                if ((new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                                     plp = limitPrice;
                                                     newLimitPrice = bidPrice - Math.abs(improveamt);
                                                     retracement = true;
@@ -326,7 +326,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                             double random = Math.random();
                                             if (random > improveprob && askPrice > 0) {
-                                                if ((new Date().getTime() - (Long) recentOrders.getLast()) < stickyperiod * 1000) {
+                                                if ((new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                                     plp = limitPrice;
                                                     newLimitPrice = askPrice + Math.abs(improveamt);
                                                    retracement = true;
