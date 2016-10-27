@@ -118,6 +118,10 @@ public class Trade {
             db.rename("opentrades","closedtrades", "opentrades_"+oldkey, "closedtrades_"+oldkey);            
         }
     }  
+    
+    public static void deleteOpenTrade(Database db, String key){
+        db.delKey("opentrades",key);
+    }
 
     public static String getEntryTradeLog(Database db, Object internalOrderID){
          Object out1=db.getValue("opentrades", internalOrderID.toString(), "entrytradelog");
