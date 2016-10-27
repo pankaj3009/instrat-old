@@ -532,10 +532,25 @@ public class Strategy implements NotificationListener {
         @Override
         public void run() {
             tradingWindow.set(Boolean.FALSE);
-            logger.log(Level.INFO,"200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
-                    new Object[]{strategy,"Order","Unknown",-1,-1,tradingWindow.get()});
+            //cancel all open orders and delete entry records from orders and trades
 
-        }        
+            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
+                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
+            for (BeanPosition p : getPosition().values()) {
+                if (p.getPosition() != 0) {
+                    int id = p.getSymbolid();
+                    for (String account : accounts) {
+                        if (MainAlgorithm.isUseForTrading()) {
+                            for (BeanConnection c : Parameters.connection) {
+                                if (c.getAccountName().equals(account)) {
+                                    oms.cancelOpenOrders(c, id, strategy);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     };
     
     
