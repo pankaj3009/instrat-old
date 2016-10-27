@@ -225,7 +225,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                             double random = Math.random();
                                             if (random > improveprob && bidPrice > 0) {//no improvement, therefore worsen price
-                                                if (recentOrders.size()>0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                                if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                                     plp = limitPrice;
                                                     newLimitPrice = bidPrice - Math.abs(improveamt);
                                                     retracement = true;
@@ -253,7 +253,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             if (random < improveprob) {
                                                 newLimitPrice = bidPrice + improveamt;
                                             } else {
-                                                newLimitPrice = bidPrice - Math.abs(improveamt);
+                                                if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                                    newLimitPrice = bidPrice - Math.abs(improveamt);
+                                                }
                                             }
                                             recentOrders.add(new Date().getTime());
                                             e.setLimitPrice(newLimitPrice);
@@ -326,12 +328,12 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                             double random = Math.random();
                                             if (random > improveprob && askPrice > 0) {
-                                                if (recentOrders.size()>0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                                if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                                     plp = limitPrice;
                                                     newLimitPrice = askPrice + Math.abs(improveamt);
-                                                   retracement = true;
-                                                }else{
-                                                    retracement=false;
+                                                    retracement = true;
+                                                } else {
+                                                    retracement = false;
                                                 }
                                             }
                                         }
@@ -352,7 +354,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             if (random < improveprob) {
                                                 newLimitPrice = askPrice - improveamt;
                                             } else {
-                                                newLimitPrice = askPrice + Math.abs(improveamt);
+                                                if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                                    newLimitPrice = askPrice + Math.abs(improveamt);
+                                                }
                                             }
                                             recentOrders.add(new Date().getTime());
                                             e.setLimitPrice(newLimitPrice);
