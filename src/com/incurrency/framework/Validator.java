@@ -181,9 +181,10 @@ public class Validator {
             for (String key : singleLegTrades) {
                 if (!headerWritten) {
                     out = out + "List of OpenPositions" + newline;
-                    out = out + TradingUtil.padRight("Time", 25) + TradingUtil.padRight("Symbol", 40) + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + TradingUtil.padRight("Brok", 10) + TradingUtil.padRight("MTM", 10) + TradingUtil.padRight("Position", 10) + newline;
+                    out = out +  TradingUtil.padRight("ID", 10)+TradingUtil.padRight("Time", 25) + TradingUtil.padRight("Symbol", 40) + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + TradingUtil.padRight("Brok", 10) + TradingUtil.padRight("MTM", 10) + TradingUtil.padRight("Position", 10) + newline;
                     headerWritten = true;
                 }
+                int id=Trade.getEntryOrderIDInternal(s.getOms().getDb(), key);
                 int entrySize = Trade.getEntrySize(s.getOms().getDb(),key);
                 int exitSize = Trade.getExitSize(s.getOms().getDb(),key);
                 String entryTime = Trade.getEntryTime(s.getOms().getDb(),key);
@@ -204,7 +205,7 @@ public class Validator {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
                 }
                 if (entrySize - exitSize != 0) {
-                    out = out + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,2)), 10) + TradingUtil.padRight(String.valueOf(mtmToday), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
+                    out = out +TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,2)), 10) + TradingUtil.padRight(String.valueOf(mtmToday), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                 }
             }
             for (String key : comboTrades) {
@@ -212,9 +213,10 @@ public class Validator {
                     out = out + "List of OpenPositions" + newline;
                     int entrySize = Trade.getEntrySize(s.getOms().getDb(),key);
                     int exitSize = Trade.getExitSize(s.getOms().getDb(),key);
-                    out = out + TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10) + "," + TradingUtil.padRight("Position", 10) + "," + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
+                    out = out + TradingUtil.padRight("ID", 10)+","+TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10) + "," + TradingUtil.padRight("Position", 10) + "," + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                     headerWritten = true;
                 }
+                int id=Trade.getParentEntryOrderIDInternal(s.getOms().getDb(), key);
                 int entrySize = Trade.getEntrySize(s.getOms().getDb(),key);
                 int exitSize = Trade.getExitSize(s.getOms().getDb(),key);
                 String entryTime = Trade.getEntryTime(s.getOms().getDb(),key);
@@ -234,7 +236,7 @@ public class Validator {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
                 }
                 if (entrySize - exitSize != 0) {
-                    out = out + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) +  TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryPrice, 2)), 10) + "," + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,0)), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
+                    out = out + TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) +  TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryPrice, 2)), 10) + "," + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,0)), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
                 }
             }
         } catch (Exception e) {
