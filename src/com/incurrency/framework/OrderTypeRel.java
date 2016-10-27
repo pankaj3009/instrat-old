@@ -174,9 +174,20 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     case "OPT":
                                         s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
                                         double calculatedPrice = 0;
-                                        if (underlyingTradePriceExists(s, 1)) {
+                                        if (underlyingTradePriceExists(s, 1) && s.getCdte() > 0) {
                                             calculatedPrice = s.getOptionProcess().NPV();
                                             calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                        } else if (s.getCdte() == 0) {
+                                            Double strike = Utilities.getDouble(s.getOption(), 0);
+                                            if (s.getRight().equals("CALL")) {
+                                                calculatedPrice = s.getUnderlying().value() - strike;
+                                            } else {
+                                                calculatedPrice = strike - s.getUnderlying().value();
+                                            }
+                                            calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                            if (calculatedPrice <= 0 || strike == 0 || s.getUnderlying().value() == 0) {
+                                                calculatedPrice = 0;
+                                            }
                                         }
                                         if (calculatedPrice == 0) { //underlying does not have a price. No recalculation.
                                             return;
@@ -276,9 +287,20 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     case "OPT":
                                         s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
                                         double calculatedPrice = 0;
-                                        if (underlyingTradePriceExists(s, 1)) {
+                                        if (underlyingTradePriceExists(s, 1) && s.getCdte() > 0) {
                                             calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
                                             calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                        } else if (s.getCdte() == 0) {
+                                            Double strike = Utilities.getDouble(s.getOption(), 0);
+                                            if (s.getRight().equals("CALL")) {
+                                                calculatedPrice = s.getUnderlying().value() - strike;
+                                            } else {
+                                                calculatedPrice = strike - s.getUnderlying().value();
+                                            }
+                                            calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                            if (calculatedPrice <= 0 || strike == 0 || s.getUnderlying().value() == 0) {
+                                                calculatedPrice = 0;
+                                            }
                                         }
                                         if (calculatedPrice == 0) {
                                             return;
