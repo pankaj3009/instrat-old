@@ -1877,9 +1877,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         int parentInternalOrderIDEntry = c.getOrders().get(orderMap.externalOrderId).getParentInternalOrderID();
                         String tradeKey = getS().getStrategy() + ":" + String.valueOf(parentInternalOrderIDEntry) + ":" + c.getAccountName();
                         if (Trade.getEntrySize(db, tradeKey) == 0) {
-                            Trade.deleteOpentTrade(db, tradeKey);
+                            Trade.deleteOpenTrade(db, tradeKey);
                             String orderKey = getS().getStrategy() + ":" + String.valueOf(parentInternalOrderIDEntry) + ":" + "Order";
-                            Trade.deleteOpentTrade(this.getS().db, orderKey);
+                            Trade.deleteOpenTrade(this.getS().db, orderKey);
                         }
                     }
 
