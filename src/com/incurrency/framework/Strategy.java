@@ -4,8 +4,7 @@
  */
 package com.incurrency.framework;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -139,24 +138,10 @@ public class Strategy implements NotificationListener {
                     redisDatabaseID=redisURL.split(":")[2];
                     db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379),Utilities.getInt(redisURL.split(":")[2], 1));
                 } else {
-                    String filename = "logs" + File.separator + getOrderFile();
-                    db=new <String,String>DataStore();
-                    if (new File(filename).exists()) {
-                        InputStream initialStream = new FileInputStream(new File(filename));
-                        JsonReader jr = new JsonReader(initialStream);
-                        db = (Database) jr.readObject();
-                        jr.close();
-                    }
+                    logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
                 }
                 if(Algorithm.db==null){//using extended hashmap for executions. Initialize hashmap
-                    String filename = "logs" + File.separator + getTradeFile();
-                    Algorithm.db=new <String,String>DataStore();
-                    if (new File(filename).exists()) {
-                        InputStream initialStream = new FileInputStream(new File(filename));
-                        JsonReader jr = new JsonReader(initialStream);
-                        db = (Database) jr.readObject();
-                        jr.close();
-                    }        
+                     logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");       
                 }
                 stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy(),Boolean.TRUE);
                 if (!stratVal) {
@@ -567,7 +552,6 @@ public class Strategy implements NotificationListener {
         double[] profitGrid = new double[5];
         DecimalFormat df = new DecimalFormat("#.##");
         Map args = new HashMap<>();
-        args.put(JsonWriter.PRETTY_PRINT, Boolean.TRUE);
         try {
             File dir = new File("logs");
             File file;
@@ -611,12 +595,7 @@ public class Strategy implements NotificationListener {
                 
             }
             if (!useRedis) {
-                File f = new File("logs" + File.separator + prefix + orderFileFullName);
-                if (f.exists() && !f.isDirectory()) { //delete old file
-                    f.delete();
-                }
-                String out = JsonWriter.objectToJson(db, args);
-                Utilities.writeToFile("logs", prefix + orderFileFullName, out);
+            logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
             }
             //Now write trade file 
 //            String tradeFileFullName = "logs" + File.separator + prefix + s.getTradeFile();
@@ -675,13 +654,7 @@ public class Strategy implements NotificationListener {
                 }
             }
             if (!useRedis) {
-                File f = new File("logs" + File.separator + prefix + tradeFileFullName);
-                if (f.exists() && !f.isDirectory()) { //delete old file
-                    f.delete();
-                }
-
-                String out = JsonWriter.objectToJson(oms.getDb(), args);
-                Utilities.writeToFile("logs", prefix + tradeFileFullName, out);
+            logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
             }
                 for (BeanConnection c : Parameters.connection) {
                     if (s.accounts.contains(c.getAccountName())) {

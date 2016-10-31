@@ -50,9 +50,6 @@ public class Rates {
     public Rates(String parameterFile) {
         loadParameters(parameterFile);
         rateServer = new com.incurrency.framework.rateserver.RedisPublisher(publishport);
-        Thread t = new Thread(new ServerResponse(responseport));
-        t.setName("Redis Publisher");
-        t.start();
         TWSConnection.serverInitialized.set(true);
 
     }
@@ -90,13 +87,13 @@ public class Rates {
         rtEquityMetric = properties.getProperty("rtequitymetric");
         rtOptionMetric = properties.getProperty("rtoptionmetric");
         if (useRTVolume) {
-            ZMQPubSub.equityMetric = rtEquityMetric;
-            ZMQPubSub.futureMetric = rtFutureMetric;
-            ZMQPubSub.optionMetric = rtOptionMetric;
+           // ZMQPubSub.equityMetric = rtEquityMetric;
+           // ZMQPubSub.futureMetric = rtFutureMetric;
+           // ZMQPubSub.optionMetric = rtOptionMetric;
         } else {
-            ZMQPubSub.equityMetric = tickEquityMetric;
-            ZMQPubSub.futureMetric = tickFutureMetric;
-            ZMQPubSub.optionMetric = tickOptionMetric;
+           // ZMQPubSub.equityMetric = tickEquityMetric;
+           // ZMQPubSub.futureMetric = tickFutureMetric;
+           // ZMQPubSub.optionMetric = tickOptionMetric;
         }
         boolean realtime = Boolean.parseBoolean(properties.getProperty("realtime", "false"));
         pushToCassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra", "false"));
@@ -117,9 +114,9 @@ public class Rates {
                 c.getWrapper().saveToCassandra = savetocassandra;
                 if (savetocassandra) {
                     try {
-                        ZMQPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);
-                        ZMQPubSub.output = new PrintStream(ZMQPubSub.cassandraConnection.getOutputStream());
-                        ZMQPubSub.saveToCassandra = savetocassandra;
+                      //  ZMQPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);
+                      //  ZMQPubSub.output = new PrintStream(ZMQPubSub.cassandraConnection.getOutputStream());
+                      //  ZMQPubSub.saveToCassandra = savetocassandra;
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, null, e);
                     }

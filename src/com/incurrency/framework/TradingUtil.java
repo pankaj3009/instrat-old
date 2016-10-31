@@ -51,11 +51,7 @@ import java.util.regex.Pattern;
 import javax.mail.internet.InternetAddress;
 import javax.swing.JOptionPane;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.kairosdb.client.HttpClient;
-import org.kairosdb.client.builder.DataPoint;
-import org.kairosdb.client.builder.QueryBuilder;
-import org.kairosdb.client.builder.QueryMetric;
-import org.kairosdb.client.response.QueryResponse;
+
 
 /**
  *

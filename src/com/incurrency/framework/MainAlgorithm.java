@@ -5,8 +5,6 @@
 package com.incurrency.framework;
 
 import com.incurrency.RatesClient.RedisSubscribe;
-import com.incurrency.RatesClient.RequestClient;
-import com.incurrency.RatesClient.SocketListener;
 import static com.incurrency.framework.Algorithm.globalProperties;
 import static com.incurrency.framework.Algorithm.instratInfo;
 import com.verhas.licensor.License;
@@ -58,9 +56,7 @@ public class MainAlgorithm extends Algorithm {
     private String realTimeBars;
     private static boolean collectTicks;
     private boolean tradingAlgoInitialized = false;
-    public static SocketListener socketListener;
     public static ArrayList<Boolean> contractIdAvailable = new ArrayList();
-    private RequestClient requestClient;
     public static boolean contractDetailsCompleted = false;
     private boolean duplicateAccounts = false;
     public static ArrayList<Strategy> strategyInstances = new ArrayList<>();
@@ -110,7 +106,7 @@ public class MainAlgorithm extends Algorithm {
             }
             } else if (useForSimulation) {
             //Used for subscribing to cassandra historical data
-            runSimulation();
+
         }else if(Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
             //used to get historical data
             if (!holidays.contains(today)) {
@@ -314,14 +310,7 @@ public class MainAlgorithm extends Algorithm {
             s.setConnectionidUsedForMarketData(-1);
         }
         if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use jeromq connector
-            String dataSource = globalProperties.getProperty("datasource").toString().trim();
-            String pubsubPort = globalProperties.getProperty("pubsubport", "5556").toString().trim();
-            String topic = globalProperties.getProperty("topic", "INR").toString().trim();
-            Thread t = new Thread(socketListener = new SocketListener(dataSource, pubsubPort, topic));//5556 is where pubsub posts streaming data
-            t.setName("SocketListener");
-            t.start();
             new RedisSubscribe(globalProperties.getProperty("topic", "INR").toString().trim());
-
         } else {
             if (TradingUtil.checkLicense() && !duplicateAccounts) {
                 if (globalProperties.getProperty("datasource") == null || "".equals(globalProperties.getProperty("datasource").toString().trim())) { //use IB for market data
@@ -383,76 +372,7 @@ public class MainAlgorithm extends Algorithm {
         }
     };
     
-    private void runSimulation() throws InterruptedException {
-        if (Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())) {
-            connectToTWS();
-        }
-        String dataSource = globalProperties.getProperty("datasource").toString().trim();
-            String pubsubPort = globalProperties.getProperty("pubsubport", "5556").toString().trim();
-            String topic = globalProperties.getProperty("topic", "INR").toString().trim();
-            Thread t = new Thread(socketListener = new SocketListener(dataSource, pubsubPort, topic));//5556 is where pubsub posts streaming data
-            t.setName("SocketListener");
-            t.start();
-            
-        ArrayList<RequestClient> arrRequestClient = new ArrayList<>();
-        int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
-        if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) {
-            for (int i = 0; i < threadCount; i++) {
-                dataSource = globalProperties.getProperty("datasource").toString().trim();
-                String requestPort = globalProperties.getProperty("requestport", "5555").toString().trim();
-                Thread t1 = new Thread(requestClient = new RequestClient(dataSource + ":" + requestPort));//5555 is the port where pubsub accepts request
-                arrRequestClient.add(requestClient);
-                t1.setName("DataRequester:" + i);
-                t1.start();
-            }
-            simulationBarSize="";
-            simulationStartDate=globalProperties.getProperty("simulationstartdate").toString().trim();
-            simulationEndDate=globalProperties.getProperty("simulationenddate").toString().trim();
-            simulationCloseReferenceDate=globalProperties.getProperty("simulationpriorclosedate").toString().trim();
-            topic=globalProperties.getProperty("topic").toString().trim();
-            //Request Historical Data
-            int j = 0;
-            for (BeanSymbol s : Parameters.symbol) {
-                j = j < threadCount ? j : 0;
-                while (!arrRequestClient.get(j).isAvailableForNewRequest()) {
-                    Thread.sleep(100);
-                }
-                String metric="";
-                switch(s.getType()){
-                    case "STK":
-                        metric=globalProperties.getProperty("simstk").toString().trim();
-                        break;
-                    case "FUT":
-                        metric=globalProperties.getProperty("simfut").toString().trim();
-                        break;
-                    case "OPT":
-                        metric=globalProperties.getProperty("simopt").toString().trim();
-                        break;
-                    case "IND":
-                        metric=globalProperties.getProperty("simind").toString().trim();
-                        break;
-                    default:
-                        break;                        
-                }
-                requestClient.sendRequest("historicaldata", s, new String[]{simulationBarSize,simulationStartDate, simulationEndDate, simulationCloseReferenceDate,topic}, metric, null, false);
-                logger.log(Level.INFO, "100,HistoricalRequestSent,{0}", new Object[]{s.getDisplayname()});
-                j = j + 1;
-            }
-            boolean complete = false;
-            while (!complete) {
-                Thread.sleep(1000);
-                Thread.yield();
-                complete = true;
-                for (RequestClient r : arrRequestClient) {
-                    complete = complete && r.isAvailableForNewRequest();
-                }
-            }
-            BeanSymbol finished=new BeanSymbol();
-            finished.setDisplayname("finished");
-             requestClient.sendRequest("historicaldata", finished, new String[]{},null,null,false);
-        }
-    }
-
+ 
     /*
     private void runSimulation() throws ParseException, InterruptedException {
         String backtestVariationFile = globalProperties.getProperty("backtestvariationfile");

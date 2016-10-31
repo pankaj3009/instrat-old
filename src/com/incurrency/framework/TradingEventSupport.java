@@ -6,8 +6,6 @@ package com.incurrency.framework;
 
 
 
-import com.incurrency.bars.BarEvent;
-import com.incurrency.bars.BarListener;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -83,13 +81,6 @@ public class TradingEventSupport {
         historicalListeners.remove(l);
     }
 
-     public void addBarListener(BarListener l) {
-        barListeners.add(l);
-    }
-
-    public void removeBarListener(BarListener l) {
-        barListeners.remove(l);
-    }
     
 //**************EVENT HANDLERS
     public void fireOrderStatus(BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
@@ -122,14 +113,7 @@ public class TradingEventSupport {
         }
     }
     
-    public void fireBars(int id,long time,EnumBarSize barSize){
-        BarEvent event=new BarEvent(new Object(),id,time,barSize);
-        Iterator itrListeners=barListeners.iterator();
-        while(itrListeners.hasNext()){
-            ((BarListener) itrListeners.next()).barReceived(event);
-        }
-    }
-    
+   
     public  void fireBidAskChange(int id) {
         BidAskEvent bidask = new BidAskEvent(new Object(), id);
         Iterator itrListeners = bidaskListeners.iterator();

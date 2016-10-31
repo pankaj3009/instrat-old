@@ -92,7 +92,7 @@ public class SymbolFileHistoricalFuture {
             cursor = cursor.equals("") ? "0" : cursor;
             try (Jedis jedis = jPool.getResource()) {
                 ScanResult s = jedis.scan(cursor);
-                cursor = s.getStringCursor();
+                cursor = s.getCursor();
                 for (Object key : s.getResult()) {
                     if (key.toString().contains("ibsymbols")) {
                         if (shortlistedkey.equals("")) {
@@ -137,7 +137,7 @@ public class SymbolFileHistoricalFuture {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
                     ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("nifty50")) {
                             if (shortlistedkey.equals("")) {
@@ -181,7 +181,7 @@ public class SymbolFileHistoricalFuture {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
                     ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("strikedistance")) {
                             if (shortlistedkey.equals("")) {
@@ -227,7 +227,7 @@ public class SymbolFileHistoricalFuture {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
                     ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("contractsize")) {
                             if (shortlistedkey.equals("")) {
@@ -280,7 +280,7 @@ public class SymbolFileHistoricalFuture {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
                     ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("strikedistance")) {
                             if (shortlistedkey.equals("")) {
@@ -330,7 +330,7 @@ public class SymbolFileHistoricalFuture {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
                     ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("cnx500")) {
                             if (shortlistedkey.equals("")) {
@@ -371,7 +371,7 @@ public class SymbolFileHistoricalFuture {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
                     ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("strikedistance")) {
                             if (shortlistedkey.equals("")) {

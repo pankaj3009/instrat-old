@@ -4,7 +4,6 @@
  */
 package com.incurrency.framework;
 
-import com.cedarsoftware.util.io.JsonReader;
 import static com.incurrency.framework.Algorithm.globalProperties;
 import java.io.File;
 import java.io.FileInputStream;
@@ -243,60 +242,6 @@ public class Validator {
             logger.log(Level.INFO, "101,e");
         }
         return out;
-    }
-
-    /**
-     * Updates the symbols in the symbolfile of inStrat with any symbols that
-     * exist in open positions but are not present in symbolfile.
-     *
-     * @param positions a newline seperated list of
-     */
-    public synchronized static void updateComboSymbols(String prefix, String orderFile, Strategy s, String parentStrategy) {
-        FileWriter fileWriter = null;
-        try {
-            String out = "";
-            String orderFileFullName = "logs" + File.separator + prefix + orderFile;
-            ArrayList<String> comboTrades = new ArrayList<>();
-            ArrayList<BeanSymbol> symbolList = new ArrayList<>();
-            DataStore<String, String> orderList = new DataStore<>();
-            InputStream initialStream = new FileInputStream(new File(orderFileFullName));
-            JsonReader jr = new JsonReader(initialStream);
-            orderList = (DataStore<String, String>) jr.readObject();
-            jr.close();
-            boolean symbolfileneeded = Boolean.parseBoolean(globalProperties.getProperty("symbolfileneeded", "false"));
-            if (symbolfileneeded) {
-                String symbolFileName = globalProperties.getProperty("symbolfile", "symbols.csv").toString().trim();
-                new BeanSymbol().completeReader(symbolFileName, symbolList);
-                for (String key : orderList.getKeys("opentrades")) {
-                    if (isCombo(s.getOms().getDb(),key)) {//only combo trades should contain :
-                        comboTrades.add(key);
-                    }
-                }
-                fileWriter = new FileWriter(symbolFileName, true);
-                for (String key : comboTrades) {
-                    String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(),key);
-                    String parentdisplayname = Trade.getParentSymbol(s.getOms().getDb(),key);
-                    int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-                    if (childid == -1) {
-                        //add combo symbol to symbols file
-                        fileWriter.write(newline + Parameters.symbol.size() + "," + parentdisplayname + "," + childdisplayname + ",COMBO" + ",,,,,,,1,,1," + parentStrategy);
-                        Parameters.symbol.add(new BeanSymbol(parentdisplayname, childdisplayname, "CSV"));
-                    }
-                }
-                fileWriter.close();
-            }
-        } catch (IOException ex) {
-            logger.log(Level.INFO, "101", ex);
-        } finally {
-            try {
-                if (fileWriter != null) {
-                    fileWriter.close();
-                }
-            } catch (IOException ex) {
-                logger.log(Level.INFO, "101", ex);
-            }
-        }
-
     }
 
     public synchronized static boolean validateSymbolFile(String symbolFileName) {

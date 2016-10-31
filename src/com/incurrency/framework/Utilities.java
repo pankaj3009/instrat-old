@@ -4,16 +4,12 @@
  */
 package com.incurrency.framework;
 
-import com.cedarsoftware.util.io.JsonObject;
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.incurrency.RatesClient.RequestClient;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -49,12 +45,6 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.jquantlib.Settings;
 import org.jquantlib.daycounters.Actual365Fixed;
 import org.jquantlib.exercise.EuropeanExercise;
@@ -72,11 +62,6 @@ import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.India;
-import org.kairosdb.client.HttpClient;
-import org.kairosdb.client.builder.DataPoint;
-import org.kairosdb.client.builder.QueryBuilder;
-import org.kairosdb.client.builder.QueryMetric;
-import org.kairosdb.client.response.QueryResponse;
 import redis.clients.jedis.Jedis;
 
 /**
@@ -350,34 +335,7 @@ public class Utilities {
      * of specified output text file
      * @return
      */
-    public static BeanSymbol requestHistoricalData(BeanSymbol s, String[] timeSeries, String metric, String datetimeFormat, String startTime, String endTime, EnumBarSize barSize, boolean appendAtEnd) {
-        try {
-            SimpleDateFormat sdfExtendedTimeFormat = new SimpleDateFormat(datetimeFormat);
-            Date startDate = sdfExtendedTimeFormat.parse(startTime);
-            Date endDate = sdfExtendedTimeFormat.parse(endTime);
-            String path = Algorithm.globalProperties.getProperty("historicaldataserver").toString().toLowerCase();
-            RequestClient rc = new RequestClient(path);
-            String concatMetrics = null;
-            for (String m : timeSeries) {
-                if (concatMetrics == null) {
-                    concatMetrics = metric + "." + m;
-                } else {
-                    concatMetrics = concatMetrics + "," + metric + "." + m;
-                }
-            }
-            rc.sendRequest("backfill", s, new String[]{barSize.toString(), String.valueOf(startDate.getTime()), String.valueOf(endDate.getTime())}, concatMetrics, timeSeries, appendAtEnd);
-            rc.run();
-            rc.start.put("start");
-            String finished = rc.end.take();
-
-
-        } catch (Exception e) {
-            logger.log(Level.INFO, null, e);
-        } finally {
-            return s;
-        }
-    }
-
+   
     /*
     public static Object[] getSettlePrice(BeanSymbol s, Date d) {
         Object[] obj = new Object[2];
@@ -574,117 +532,8 @@ public class Utilities {
 
         return out;
     }
-    */
-    public static Object[] getOptionStrikesFromKDB(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric){
-        Object[] out=new Object[1];
-        HashMap<String, Object> param = new HashMap();
-        param.put("TYPE", Boolean.FALSE);
-        BeanSymbol s = symbols.get(id);
-        String strike = s.getOption();
-        //String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
-        String symbol = s.getDisplayname().split("_", -1)[0].trim().toLowerCase();
-        String option = s.getRight();
-        String expiry = s.getExpiry();
-        HistoricalRequestJson request = new HistoricalRequestJson(metric,
-                new String[]{"strike", "symbol", "expiry"},
-                new String[]{strike, symbol, expiry},
-                null,
-                null,
-                null,
-                String.valueOf(startTime),
-                String.valueOf(endTime));
-        //http://stackoverflow.com/questions/7181534/http-post-using-json-in-java
-        String json_string = JsonWriter.objectToJson(request, param);
-        StringEntity requestEntity = new StringEntity(
-                json_string,
-                ContentType.APPLICATION_JSON);
-
-        HttpPost postMethod = new HttpPost("http://91.121.165.108:8085/api/v1/datapoints/query/tags");
-        postMethod.setEntity(requestEntity);
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        try {
-            HttpResponse rawResponse = httpClient.execute(postMethod);
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader((rawResponse.getEntity().getContent())));
-
-            String output;
-            System.out.println("Output from Server .... \n");
-            while ((output = br.readLine()) != null) {
-                param.clear();
-                param.put("USE_MAPS", "false");
-                JsonObject obj = (JsonObject) JsonReader.jsonToJava(output, param);
-                JsonObject t = (JsonObject) ((Object[]) obj.get("queries"))[0];
-                JsonObject results = (JsonObject) ((Object[]) t.get("results"))[0];
-                Object[] values = (Object[]) results.get("values");
-                int length = values.length;
-                Object[] outarray = (Object[]) values[length - 1];
-                out = values; //0 is long time, 1 is value
-
-            }
-
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, null, e);
-        }
-
-       
-        return out;
-    }
-   
-    
-    public static Object[] getExpiriesFromKDB(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric){
-        Object[] out=new Object[1];
-        HashMap<String, Object> param = new HashMap();
-        param.put("TYPE", Boolean.FALSE);
-        BeanSymbol s = symbols.get(id);
-        String strike = s.getOption();
-        String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
-        String option = s.getRight();
-        String expiry = s.getExpiry();
-        HistoricalRequestJson request = new HistoricalRequestJson(metric,
-                new String[]{"strike", "symbol", "expiry"},
-                new String[]{strike, symbol, expiry},
-                null,
-                null,
-                null,
-                String.valueOf(startTime),
-                String.valueOf(endTime));
-        //http://stackoverflow.com/questions/7181534/http-post-using-json-in-java
-        String json_string = JsonWriter.objectToJson(request, param);
-        StringEntity requestEntity = new StringEntity(
-                json_string,
-                ContentType.APPLICATION_JSON);
-
-        HttpPost postMethod = new HttpPost("http://91.121.165.108:8085/api/v1/datapoints/query/tags");
-        postMethod.setEntity(requestEntity);
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        try {
-            HttpResponse rawResponse = httpClient.execute(postMethod);
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader((rawResponse.getEntity().getContent())));
-
-            String output;
-            System.out.println("Output from Server .... \n");
-            while ((output = br.readLine()) != null) {
-                param.clear();
-                param.put("USE_MAPS", "false");
-                JsonObject obj = (JsonObject) JsonReader.jsonToJava(output, param);
-                JsonObject t = (JsonObject) ((Object[]) obj.get("queries"))[0];
-                JsonObject results = (JsonObject) ((Object[]) t.get("results"))[0];
-                Object[] values = (Object[]) results.get("values");
-                int length = values.length;
-                Object[] outarray = (Object[]) values[length - 1];
-                out = values; //0 is long time, 1 is value
-
-            }
-
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, null, e);
-        }
-
-       
-        return out;
-    }
-    
+    */    
+      
      public static boolean rolloverDay(int daysBeforeExpiry,Date startDate,String expiryDate) {
         boolean rollover = false;
         try {
@@ -2258,7 +2107,7 @@ public class Utilities {
     public static void writeJson(String fileName, Object o) {
         Class clazz = o.getClass();
         clazz.cast(o);
-        String out = JsonWriter.objectToJson(clazz.cast(o));
+        String out=new GsonBuilder().create().toJson(clazz.cast(o));
         Utilities.writeToFile(new File(fileName), out);
 
     }

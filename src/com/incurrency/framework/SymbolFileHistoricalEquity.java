@@ -22,7 +22,6 @@ import java.util.logging.Logger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.ScanResult;
 
 /**
  *
@@ -80,8 +79,8 @@ public class SymbolFileHistoricalEquity {
         while (!cursor.equals("0")) {
             cursor = cursor.equals("") ? "0" : cursor;
             try (Jedis jedis = jPool.getResource()) {
-                ScanResult s = jedis.scan(cursor);
-                cursor = s.getStringCursor();
+                redis.clients.jedis.ScanResult s = jedis.scan(cursor);
+                cursor = s.getCursor();
                 for (Object key : s.getResult()) {
                     if (key.toString().contains("ibsymbols")) {
                         if (shortlistedkey.equals("")) {
@@ -125,8 +124,8 @@ public class SymbolFileHistoricalEquity {
             while (!cursor.equals("0")) {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    redis.clients.jedis.ScanResult s = jedis.scan(cursor);
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("nifty50")) {
                             if (shortlistedkey.equals("")) {
@@ -169,8 +168,8 @@ public class SymbolFileHistoricalEquity {
             while (!cursor.equals("0")) {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    redis.clients.jedis.ScanResult s = jedis.scan(cursor);
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("strikedistance")) {
                             if (shortlistedkey.equals("")) {
@@ -215,8 +214,8 @@ public class SymbolFileHistoricalEquity {
             while (!cursor.equals("0")) {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    redis.clients.jedis.ScanResult s = jedis.scan(cursor);
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("contractsize")) {
                             if (shortlistedkey.equals("")) {
@@ -268,8 +267,8 @@ public class SymbolFileHistoricalEquity {
             while (!cursor.equals("0")) {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    redis.clients.jedis.ScanResult s = jedis.scan(cursor);
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("strikedistance")) {
                             if (shortlistedkey.equals("")) {
@@ -318,8 +317,8 @@ public class SymbolFileHistoricalEquity {
             while (!cursor.equals("0")) {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    redis.clients.jedis.ScanResult s = jedis.scan(cursor);
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("cnx500")) {
                             if (shortlistedkey.equals("")) {
@@ -359,8 +358,8 @@ public class SymbolFileHistoricalEquity {
             while (!cursor.equals("0")) {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getStringCursor();
+                    redis.clients.jedis.ScanResult s = jedis.scan(cursor);
+                    cursor = s.getCursor();
                     for (Object key : s.getResult()) {
                         if (key.toString().contains("strikedistance")) {
                             if (shortlistedkey.equals("")) {

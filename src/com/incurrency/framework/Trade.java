@@ -4,10 +4,13 @@
  */
 package com.incurrency.framework;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -664,25 +667,30 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entryorderidext", String.val
         }
     }
      
-     public static void setStop(Database db,Object internalOrderID,String tradeStatus, ArrayList<Stop> stop){
-         synchronized(syncTrade){
-         db.setHash(tradeStatus,internalOrderID.toString(), "stop", JsonWriter.objectToJson(stop));
-     }
-     }
-      public static ArrayList<Stop> getStop(Database db,Object internalOrderID){
-         synchronized(syncTrade){
-         Object o=db.getValue("opentrades",internalOrderID.toString(), "stop");
-         ArrayList<Stop>stop=null;
-         if(o==null){
-             return null;
-         }else{
-             try{
-             stop=(ArrayList<Stop>)JsonReader.jsonToJava((String)o);
-             }catch (Exception e){
-                 logger.log(Level.SEVERE,(String)o+"_"+internalOrderID);
-             }
-             return stop;
-         }
-         }
-     }
+    public static void setStop(Database db, Object internalOrderID, String tradeStatus, ArrayList<Stop> stop) {
+        synchronized (syncTrade) {
+            Gson gson = new GsonBuilder().create();
+            db.setHash(tradeStatus, internalOrderID.toString(), "stop", gson.toJson(stop));
+        }
+    }
+    public static ArrayList<Stop> getStop(Database db, Object internalOrderID) {
+        synchronized (syncTrade) {
+            Object o = db.getValue("opentrades", internalOrderID.toString(), "stop");
+            ArrayList<Stop> stop = null;
+            if (o == null) {
+                return null;
+            } else {
+                try {
+                    Type type = new TypeToken<List<Stop>>() {
+                    }.getType();
+                    Gson gson = new GsonBuilder().create();
+                    stop = gson.fromJson((String) o, type);
+                    //stop = (ArrayList<Stop>) JsonReader.jsonToJava((String) o);
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, (String) o + "_" + internalOrderID);
+                }
+                return stop;
+            }
+        }
+    }
 }

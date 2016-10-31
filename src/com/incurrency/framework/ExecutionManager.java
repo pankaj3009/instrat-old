@@ -4,8 +4,7 @@
  */
 package com.incurrency.framework;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.incurrency.RatesClient.ZMQSubscribe;
+import com.incurrency.RatesClient.RedisSubscribe;
 import com.ib.client.Order;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -81,23 +80,13 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         this.accounts = accounts;
         //load db
         if (!Algorithm.useRedis) {
-            String filename = "logs" + File.separator + executionFile;
-            if (new File(filename).exists()) {
-                try {
-                    InputStream initialStream = new FileInputStream(new File(filename));
-                    JsonReader jr = new JsonReader(initialStream);
-                    db = (Database) jr.readObject();
-                    jr.close();
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, null, e);
-                }
-            }
+            logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
         } else {
             db = Algorithm.db;
         }
         tes.addOrderListener(this); //subscribe to events published by tes owned by the strategy oms
-        if (ZMQSubscribe.tes != null) {//subscribe to events published by pubsub 
-            ZMQSubscribe.tes.addBidAskListener(this);
+        if (RedisSubscribe.tes != null) {//subscribe to events published by pubsub 
+            RedisSubscribe.tes.addBidAskListener(this);
         }
         MainAlgorithm.tes.addBidAskListener(this);
 

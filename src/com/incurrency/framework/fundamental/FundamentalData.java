@@ -4,7 +4,6 @@
  */
 package com.incurrency.framework.fundamental;
 
-import com.incurrency.RatesClient.RequestClient;
 import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.EnumRequestType;
 import com.incurrency.framework.Parameters;

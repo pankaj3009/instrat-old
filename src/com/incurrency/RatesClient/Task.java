@@ -4,7 +4,7 @@
  */
 package com.incurrency.RatesClient;
 
-import static com.incurrency.RatesClient.ZMQSubscribe.tes;
+import static com.incurrency.RatesClient.RedisSubscribe.tes;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.TradingUtil;
