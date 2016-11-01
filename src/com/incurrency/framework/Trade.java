@@ -7,6 +7,9 @@ package com.incurrency.framework;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -683,8 +686,10 @@ db.setHash(tradeStatus,internalOrderID.toString(), "entryorderidext", String.val
                 try {
                     Type type = new TypeToken<List<Stop>>() {
                     }.getType();
+    //                JsonParser jsonParser=new JsonParser();
+    //                JsonArray ja=jsonParser.parse((o.toString()));
                     Gson gson = new GsonBuilder().create();
-                    stop = gson.fromJson((String) o, type);
+                    stop = gson.fromJson((String)o, type);
                     //stop = (ArrayList<Stop>) JsonReader.jsonToJava((String) o);
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, (String) o + "_" + internalOrderID);

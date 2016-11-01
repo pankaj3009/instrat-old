@@ -82,7 +82,7 @@ public class Utilities {
         try {
             URL u = new URL(url);
             c = (HttpURLConnection) u.openConnection();
-            c.setRequestMethod("PUT");
+            c.setRequestMethod("POST");
             c.setRequestProperty("Content-Type", "application/json");
             c.setRequestProperty("Accept", "application/json");
             //c.setRequestProperty("Content-length", "0");
@@ -177,8 +177,9 @@ public class Utilities {
 
     
     public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize) {
-        double price = symbols.get(id).getLastPrice();
-        price=0D;
+         double price=0D;
+         price = symbols.get(id).getLastPrice();
+
         try {
             if (price == 0 ||price==-1) {
                 price=getTheoreticalOptionPrice(symbols,id, underlyingid, side, right,tickSize);
@@ -476,7 +477,7 @@ public class Utilities {
         ArrayList<Pair> pairs=new ArrayList<>();
         try(Jedis jedis=Algorithm.marketdatapool.getResource()){
             Set<String> data=jedis.zrange(s.getDisplayname()+":daily:settle", -1, -1);
-            if(data!=null){
+            if(data!=null && data.size()>0){
                 Type type = new TypeToken<List<Object>>(){}.getType();
                 Gson gson = new GsonBuilder().create();
                 String test1=gson.toJson(data);
@@ -1393,12 +1394,10 @@ public class Utilities {
 
     public static long getLong(Object input, long defvalue) {
         try {
-            if (isLong(input.toString())) {
+            
                 return Long.parseLong(input.toString().trim());
-            } else {
-                return defvalue;
-            }
-        } catch (Exception e) {
+            } 
+         catch (Exception e) {
             return defvalue;
         }
     }
