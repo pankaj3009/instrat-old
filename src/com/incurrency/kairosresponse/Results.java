@@ -28,14 +28,14 @@ public class Results
 	private Map<String, List<String>> tags;
 
 	@SerializedName("values")
-	private List<List<DataPoint>> dataPoints;
+	private List<List<Object>> dataPoints;
 
 	@SerializedName("group_by")
 	private List<GroupResult> groupResults;
 
 	public Results(String name,
 	               Map<String, List<String>> tags,
-	               List<List<DataPoint>>dataPoints,
+	               List<List<Object>>dataPoints,
 	               List<GroupResult> groupResults)
 	{
 		this.name = name;
@@ -49,7 +49,7 @@ public class Results
 		return name;
 	}
 
-	public List<List<DataPoint>> getDataPoints()
+	public List<List<Object>> getDataPoints()
 	{
 		return dataPoints;
 	}
@@ -67,7 +67,7 @@ public class Results
     /**
      * @param dataPoints the dataPoints to set
      */
-    public void setDataPoints(List<List<DataPoint>> dataPoints) {
+    public void setDataPoints(List<List<Object>> dataPoints) {
         this.dataPoints = dataPoints;
     }
 }
