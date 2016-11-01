@@ -20,9 +20,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.DecimalFormat;
@@ -73,6 +76,55 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
+    
+    public static String getJsonUsingPut(String url, int timeout, String body) {
+        HttpURLConnection c = null;
+        try {
+            URL u = new URL(url);
+            c = (HttpURLConnection) u.openConnection();
+            c.setRequestMethod("PUT");
+            c.setRequestProperty("Content-Type", "application/json");
+            c.setRequestProperty("Accept", "application/json");
+            //c.setRequestProperty("Content-length", "0");
+            c.setDoOutput(true);
+            c.setUseCaches(false);
+            c.setAllowUserInteraction(false);
+            c.setConnectTimeout(timeout);
+            c.setReadTimeout(timeout);
+            //c.connect();
+                    OutputStreamWriter osw = new OutputStreamWriter(c.getOutputStream());
+        osw.write(body);
+        osw.flush();
+        osw.close();
+        int status = c.getResponseCode();
+
+            switch (status) {
+                case 200:
+                case 201:
+                    BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream()));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        sb.append(line + "\n");
+                    }
+                    br.close();
+                    return sb.toString();
+            }
+
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, null, ex);
+        } finally {
+            if (c != null) {
+                try {
+                    c.disconnect();
+                } catch (Exception ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return null;
+    }
+   
         public static void printSymbolsToFile(List<BeanSymbol> symbolList, String fileName,boolean printLastLine) {
         for (int i = 0; i < symbolList.size(); i++) {
             symbolList.get(i).setSerialno(i + 1);
