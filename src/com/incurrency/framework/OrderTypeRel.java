@@ -97,8 +97,10 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             MainAlgorithm.tes.addBidAskListener(this);
             // synchronized (syncObject) {
             try {
-            while(sync.poll(200, TimeUnit.MILLISECONDS)!=null){
-                logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
+            while(sync.poll(200, TimeUnit.MILLISECONDS)==null){
+            Thread.yield();
+            }
+            logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), externalOrderID});
                 if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
                     oms.getDb().delKey("opentrades", oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName());
@@ -108,8 +110,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 for (BeanConnection c1 : Parameters.connection) {
                     c1.getWrapper().removeOrderStatusListener(this);
                     c1.getWrapper().removeBidAskListener(this);
-                }
-            }
+                }           
+     
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
