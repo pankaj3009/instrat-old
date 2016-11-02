@@ -9,6 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +34,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     int externalOrderID = -1;
     int internalOrderIDEntry = -1;
     //private final Object syncObject = new Object();
-    private Drop sync;
+//    private Drop sync;
     private LimitedQueue recentOrders;
     private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
     boolean recalculate = true;
@@ -45,10 +48,12 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     private boolean retracement = false;
     double plp = 0; //prior limit price
     int stickyperiod;
-
+    private SynchronousQueue<String> sync = new SynchronousQueue<>();
+    AtomicBoolean completed=new AtomicBoolean();
+        
     public OrderTypeRel(int id, int orderid, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
         try {
-            sync = new Drop();
+            completed.set(Boolean.FALSE);
             this.c = c;
             this.id = id;
             this.externalOrderID = orderid;
@@ -92,7 +97,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             MainAlgorithm.tes.addBidAskListener(this);
             // synchronized (syncObject) {
             try {
-                sync.take();
+            while(sync.poll(200, TimeUnit.MILLISECONDS)!=null){
                 logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), externalOrderID});
                 if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
@@ -104,6 +109,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                     c1.getWrapper().removeOrderStatusListener(this);
                     c1.getWrapper().removeBidAskListener(this);
                 }
+            }
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, null, ex);
             }
@@ -404,12 +410,17 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     @Override
     public synchronized void orderStatusReceived(OrderStatusEvent event) {
         OrderBean ob = c.getOrders().get(event.getOrderID());
+        try{
         if (ob != null) {
             if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && (ob.getParentSymbolID() - 1) == id) {
-                if (event.getRemaining() == 0 || event.getStatus().equals("Cancelled")) {
-                    this.sync.put("FINISHED");
+                if (!completed.get() && (event.getRemaining() == 0 || event.getStatus().equals("Cancelled"))) {
+                    completed.set(Boolean.TRUE);
+                    sync.offer("FINISHED", 1, TimeUnit.SECONDS);
                 }
             }
+        }
+        }catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
         }
     }
 }
