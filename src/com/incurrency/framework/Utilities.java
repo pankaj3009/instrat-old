@@ -228,11 +228,11 @@ public class Utilities {
         try {
             double optionlastprice = Utilities.getSettlePrice(symbols.get(id));
             double underlyingpriorclose = Utilities.getSettlePrice(symbols.get(underlyingid));
-            
+            double vol=0;
             if (optionlastprice >0) {
                 String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd",1);
                 Date settleDate=DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", Algorithm.timeZone);
-                double vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, settleDate);
+                vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, settleDate);
                 if (vol == 0) {
                     if (symbols.get(id).getBidPrice() != 0 && symbols.get(id).getAskPrice() != 0 && symbols.get(underlyingid).getLastPrice() != 0) {
                         optionlastprice = (symbols.get(id).getBidPrice() + symbols.get(id).getAskPrice()) / 2;
@@ -240,6 +240,7 @@ public class Utilities {
                         vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date());
                     }
                 }
+            }
                 if (vol == 0) {//if vol is still zero
                     if (side == EnumOrderSide.BUY || side == EnumOrderSide.SELL) {
                         vol = 0.05;
@@ -248,7 +249,7 @@ public class Utilities {
                     }
                 }
                 symbols.get(id).setCloseVol(vol);
-            }
+            
            if(underlyingTradePriceExists(symbols.get(id),1)){                
                         price = Parameters.symbol.get(id).getOptionProcess().NPV();
                         price = Utilities.roundTo(price, tickSize);
@@ -259,6 +260,7 @@ public class Utilities {
         }
         return price;
     }
+    
        public static boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
         int underlyingID = s.getUnderlyingID();
         if (underlyingID == -1) {
