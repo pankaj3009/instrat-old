@@ -326,6 +326,7 @@ public class EReader extends Thread {
                 String accountName = null ;
                 if( version >= 2) {
                     accountName = readStr();
+                    this.setName("EReader:"+accountName);
                 }
                 eWrapper().updateAccountValue(key, val, cur, accountName);
                 break;
@@ -369,6 +370,7 @@ public class EReader extends Thread {
                 String accountName = null ;
                 if( version >= 4) {
                     accountName = readStr();
+                    this.setName("EReader:"+accountName);
                 }
 
                 if(version == 6 && m_parent.serverVersion() == 39) {
