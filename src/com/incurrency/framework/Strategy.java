@@ -29,6 +29,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
+import org.jquantlib.time.JDate;
 
 /**
  *
@@ -322,6 +323,16 @@ public class Strategy implements NotificationListener {
         String endDateStr = currDateStr + " " + p.getProperty("EndTime");
         setStartDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr, timeZone));
         setEndDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, timeZone));
+        if(new Date().after(endDate)){
+            String endDateStrTemp=DateUtil.getFormatedDate("yyyy-MM-dd", getEndDate().getTime(), TimeZone.getTimeZone(timeZone));
+            endDateStrTemp=DateUtil.getNextBusinessDay(endDateStrTemp,"yyyy-MM-dd");
+            endDateStr=endDateStrTemp+endDateStr.substring(8);
+            setEndDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", endDateStr, timeZone));
+            String startDateStrTemp=DateUtil.getFormatedDate("yyyy-MM-dd", getStartDate().getTime(), TimeZone.getTimeZone(timeZone));
+            startDateStrTemp=DateUtil.getNextBusinessDay(startDateStrTemp,"yyyy-MM-dd");
+            startDateStr=startDateStrTemp+startDateStr.substring(8);
+            setStartDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", startDateStr, timeZone));
+        }
         setMaxSlippageEntry(p.getProperty("MaxSlippageEntry") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageEntry")) / 100); // divide by 100 as input was a percentage
         setMaxSlippageExit(p.getProperty("MaxSlippageExit") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageExit")) / 100); // divide by 100 as input was a percentage
         setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
