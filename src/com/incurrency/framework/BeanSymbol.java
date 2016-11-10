@@ -37,6 +37,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jquantlib.daycounters.Actual360;
@@ -1501,56 +1502,115 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         synchronized (lockLastPrice) {
             double oldValue = this.lastPrice;
             this.lastPrice = lastPrice;
-            
-            if(this.getHighPrice()==0){
-                String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-                ArrayList<Pair>pairs=Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
-                    if(pairs.size()>0){
-                        double out=0;
-                        for(Pair p:pairs){
-                            double value=Utilities.getDouble(p.getValue(), 0);
-                            out=Math.max(out, value);
+
+            if (this.getHighPrice() == 0) {
+                String today = DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+                today = today + " " + Algorithm.openHour + ":" + Algorithm.openMinute + ":" + "00";
+                long ltoday = DateUtil.getFormattedDate(today, "yyyy-MM-dd HH:mm:ss", timeZone).getTime();
+                if (new Date().getTime() > ltoday) {
+                    ArrayList<Pair> pairs = Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+                    if (pairs.size() > 0) {
+                        ArrayList<Integer> itemsToRemove = new ArrayList<>();
+                        int i = -1;
+                        for (Pair p : pairs) {
+                            i++;
+                            if (p.getTime() < ltoday) {
+                                itemsToRemove.add(i);
+                            }
                         }
-                        out=Math.max(out, lastPrice);
-                    this.setHighPrice(out,false);
-                }
-            }
-            
-            if(this.getLowPrice()==0){
-                String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-                ArrayList<Pair>pairs=Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
-                    if(pairs.size()>0){
-                        double out=Double.MAX_VALUE;
-                        for(Pair p:pairs){
-                            double value=Utilities.getDouble(p.getValue(), Double.MAX_VALUE);
-                            out=Math.min(out, value);
+                        if (itemsToRemove.size() > 1) {
+                            itemsToRemove.remove(itemsToRemove.size() - 1);
                         }
-                        out=Math.min(out, lastPrice);
-                    this.setLowPrice(out,false);
+                        Collections.sort(itemsToRemove, Collections.reverseOrder());
+                        for (int r : itemsToRemove) {
+                            pairs.remove(r);
+                        }
+                        double out = 0;
+                        for (Pair p : pairs) {
+                            double value = Utilities.getDouble(p.getValue(), 0);
+                            out = Math.max(out, value);
+                        }
+                        out = Math.max(out, lastPrice);
+                        this.setHighPrice(out, false);
+                    }
                 }
             }
-            
-            if (lastPrice > this.getHighPrice()) {
-                this.setHighPrice(lastPrice,false);
-            } else if (lastPrice < this.getLowPrice() || getLowPrice() == 0) {
-                this.setLowPrice(lastPrice,false);
-            }
-           
-            if(this.getOpenPrice()==0){
-                String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-                ArrayList<Pair>pairs=Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
-                if(pairs.size()>0){
-                    double out=Utilities.getDouble(pairs.get(0).getValue(),0);
-                    setOpenPrice(out);
+
+            if (this.getLowPrice() == 0) {
+                String today = DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+                today = today + " " + Algorithm.openHour + ":" + Algorithm.openMinute + ":" + "00";
+                long ltoday = DateUtil.getFormattedDate(today, "yyyy-MM-dd HH:mm:ss", timeZone).getTime();
+                if (new Date().getTime() > ltoday) {
+                    ArrayList<Pair> pairs = Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+                    if (pairs.size() > 0) {
+                        ArrayList<Integer> itemsToRemove = new ArrayList<>();
+                        int i = -1;
+                        for (Pair p : pairs) {
+                            i++;
+                            if (p.getTime() < ltoday) {
+                                itemsToRemove.add(i);
+                            }
+                        }
+                        if (itemsToRemove.size() > 1) {
+                            itemsToRemove.remove(itemsToRemove.size() - 1);
+                        }
+                        Collections.sort(itemsToRemove, Collections.reverseOrder());
+                        for (int r : itemsToRemove) {
+                            pairs.remove(r);
+                        }
+                        double out = Double.MAX_VALUE;
+                        for (Pair p : pairs) {
+                            double value = Utilities.getDouble(p.getValue(), Double.MAX_VALUE);
+                            out = Math.min(out, value);
+                        }
+                        out = Math.min(out, lastPrice);
+                        this.setLowPrice(out, false);
+                    }
                 }
             }
-            
-            
+
+            if (this.getHighPrice() > 0 && this.getLowPrice() > 0) {
+                if (lastPrice > this.getHighPrice()) {
+                    this.setHighPrice(lastPrice, false);
+                } else if (lastPrice < this.getLowPrice()) {
+                    this.setLowPrice(lastPrice, false);
+                }
+            }
+
+            if (this.getOpenPrice() == 0) {
+                String today = DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+                today = today + " " + Algorithm.openHour + ":" + Algorithm.openMinute + ":" + "00";
+                long ltoday = DateUtil.getFormattedDate(today, "yyyy-MM-dd HH:mm:ss", timeZone).getTime();
+                if (new Date().getTime() > ltoday) {
+                    ArrayList<Pair> pairs = Utilities.getPrices(this, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+                    if (pairs.size() > 0) {
+                        ArrayList<Integer> itemsToRemove = new ArrayList<>();
+                        int i = -1;
+                        for (Pair p : pairs) {
+                            i++;
+                            if (p.getTime() < ltoday) {
+                                itemsToRemove.add(i);
+                            }
+                        }
+                        if (itemsToRemove.size() > 1) {
+                            itemsToRemove.remove(itemsToRemove.size() - 1);
+                        }
+                        Collections.sort(itemsToRemove, Collections.reverseOrder());
+                        for (int r : itemsToRemove) {
+                            pairs.remove(r);
+                        }
+                        double out = Utilities.getDouble(pairs.get(0).getValue(), 0);
+                        setOpenPrice(out);
+                    }
+                }
+            }
+
+
             if (propertySupport != null) {
                 propertySupport.firePropertyChange(PROP_LASTPRICE, oldValue, lastPrice);
             }
-            if (this.getTradedValue()==0){
-                this.setTradedValue(lastPrice*this.getVolume());
+            if (this.getTradedValue() == 0) {
+                this.setTradedValue(lastPrice * this.getVolume());
             }
         }
     }
