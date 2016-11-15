@@ -1599,7 +1599,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                         for (int r : itemsToRemove) {
                             pairs.remove(r);
                         }
-                        double out = Utilities.getDouble(pairs.get(0).getValue(), 0);
+                        double out = Utilities.getDouble(pairs.size()>0?pairs.get(0).getValue():0, 0);
                         setOpenPrice(out);
                     }
                 }
