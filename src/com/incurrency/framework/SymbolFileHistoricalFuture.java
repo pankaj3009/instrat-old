@@ -189,7 +189,7 @@ public class SymbolFileHistoricalFuture {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay).substring(0, 6))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -235,7 +235,7 @@ public class SymbolFileHistoricalFuture {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(expiry.substring(0, 6))) {
+                                if (newdate > date && newdate <= Integer.valueOf(expiry)) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -288,7 +288,7 @@ public class SymbolFileHistoricalFuture {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay).substring(0, 6))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -379,7 +379,7 @@ public class SymbolFileHistoricalFuture {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay).substring(0, 6))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
