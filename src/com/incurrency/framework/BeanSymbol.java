@@ -275,7 +275,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
-        this.brokerSymbol = symbol;
+        if(symbol.equals("NSENIFTY")){
+        this.brokerSymbol = "NIFTY50";            
+        }else{
+            this.brokerSymbol=symbol;
+        }
         this.happyName = displayName;
         this.displayName=displayName;
         this.type = type;
