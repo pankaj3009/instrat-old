@@ -54,7 +54,7 @@ public class SymbolFileRateServer {
         //NSENIFTY and Index is priority 1
         //FNO stocks in NIFTY are priority 2
         //Residual F&O Stocks are priority 3
-        String expiry = Utilities.getNextExpiry(currentDay);
+        String expiry = Utilities.getLastThursday(currentDay,"yyyyMMdd",0);
         BeanSymbol s = new BeanSymbol("NIFTY50", "NSENIFTY", "IND", "", "", "");
         s.setCurrency("INR");
         s.setExchange("NSE");
@@ -71,7 +71,7 @@ public class SymbolFileRateServer {
         out.add(s);
         Date dtExpiry=DateUtil.parseDate("yyyyMMdd", expiry, MainAlgorithm.timeZone);
         String expiryplus=DateUtil.getFormatedDate("yyyyMMdd", DateUtil.addDays(dtExpiry, 1).getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-        String nextExpiry=Utilities.getNextExpiry(expiryplus);
+        String nextExpiry=Utilities.getLastThursday(expiryplus,"yyyyMMdd",0);
         
         s = new BeanSymbol("NIFTY50", "NSENIFTY", "FUT", nextExpiry, "", "");
         s.setCurrency("INR");
@@ -200,7 +200,7 @@ public class SymbolFileRateServer {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -244,7 +244,7 @@ public class SymbolFileRateServer {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -317,7 +317,7 @@ public class SymbolFileRateServer {
                             s1.setSerialno(out.size() + 1);
                             interimout.add(s1);
                         } else {
-                            logger.log(Level.SEVERE, "Exchange Symbol {} not found in IB database", new Object[]{exchangeSymbol});
+                            logger.log(Level.SEVERE, "Exchange Symbol {0} not found in IB database", new Object[]{exchangeSymbol});
                         }
                     }
                 }
@@ -343,7 +343,7 @@ public class SymbolFileRateServer {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -393,7 +393,7 @@ public class SymbolFileRateServer {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -434,7 +434,7 @@ public class SymbolFileRateServer {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }

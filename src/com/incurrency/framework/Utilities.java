@@ -62,6 +62,8 @@ import org.jquantlib.termstructures.BlackVolTermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
+import org.jquantlib.time.BusinessDayConvention;
+import org.jquantlib.time.DateParser;
 import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.India;
@@ -2293,6 +2295,37 @@ public class Utilities {
         cal.set(GregorianCalendar.DAY_OF_WEEK, Calendar.THURSDAY);
         cal.set(GregorianCalendar.DAY_OF_WEEK_IN_MONTH, -1);
         return cal.getTime();
+    }
+    
+    public static String getLastThursday(String dateString, String format,int lookForward){
+        //datestring is in yyyyMMdd
+        JDate date=formatStringToJdate(dateString, format);
+        Calendar cal=Calendar.getInstance();
+        cal.setTime(date.longDate());
+        cal.add(Calendar.MONTH, lookForward);
+        JDate lastWorkDay=JDate.endOfMonth(new JDate(cal.getTime()));
+        cal.setTime(lastWorkDay.longDate());
+        int adjust=cal.get(Calendar.DAY_OF_WEEK)-5;
+        JDate lastThursday;
+        if(adjust>0){
+            lastThursday=lastWorkDay.sub(adjust);
+        }else if (adjust==0){
+            lastThursday=lastWorkDay;
+        }else{
+            lastThursday=lastWorkDay.sub(7+adjust);
+        }
+        lastThursday=Algorithm.ind.adjust(lastThursday, BusinessDayConvention.Preceding);
+        Date javaThursday=lastThursday.isoDate();
+        if(javaThursday.before(date.longDate())){
+            return(getLastThursday(dateString,format,1));
+        }
+        return DateUtil.getFormatedDate("yyyyMMdd", javaThursday.getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+        
+    }
+    
+    public static JDate formatStringToJdate(String dateString, String format){
+        Date input=DateUtil.getFormattedDate(dateString, format, Algorithm.timeZone);
+        return new JDate(input);
     }
     
        public static <K,V> boolean  equalMaps(Map<K, V> m1, Map<K, V> m2) {

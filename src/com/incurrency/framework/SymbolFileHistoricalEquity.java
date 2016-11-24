@@ -133,7 +133,7 @@ public class SymbolFileHistoricalEquity {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -177,7 +177,7 @@ public class SymbolFileHistoricalEquity {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -250,7 +250,7 @@ public class SymbolFileHistoricalEquity {
                             s1.setSerialno(out.size() + 1);
                             interimout.add(s1);
                         } else {
-                            logger.log(Level.SEVERE, "Exchange Symbol {} not found in IB database", new Object[]{exchangeSymbol});
+                            logger.log(Level.SEVERE, "Exchange Symbol {0} not found in IB database", new Object[]{exchangeSymbol});
                         }
                     }
                 }
@@ -276,7 +276,7 @@ public class SymbolFileHistoricalEquity {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -326,7 +326,7 @@ public class SymbolFileHistoricalEquity {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -367,7 +367,7 @@ public class SymbolFileHistoricalEquity {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }

@@ -55,7 +55,7 @@ public class SymbolFileTrading {
     public void swing() {
         try {
             ArrayList<BeanSymbol> out = new ArrayList<>();
-            String expiry = Utilities.getNextExpiry(currentDay);
+            String expiry = Utilities.getLastThursday(currentDay,"yyyyMMdd",0);
             BeanSymbol s = new BeanSymbol("NIFTY50", "NSENIFTY", "IND", "", "", "");
             s.setCurrency("INR");
             s.setExchange("NSE");
@@ -73,7 +73,7 @@ public class SymbolFileTrading {
             Date dtExpiry=new SimpleDateFormat("yyyyMMdd").parse(expiry);
             String expiryplus=DateUtil.getFormatedDate("yyyyMMdd", DateUtil.addDays(dtExpiry, 1).getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
            
-            s = new BeanSymbol("NIFTY50", "NSENIFTY", "FUT", Utilities.getNextExpiry(expiryplus), "", "");
+            s = new BeanSymbol("NIFTY50", "NSENIFTY", "FUT", Utilities.getLastThursday(expiryplus,"yyyyMMdd",0), "", "");
             s.setCurrency("INR");
             s.setExchange("NSE");
             s.setStreamingpriority(1);
@@ -101,12 +101,12 @@ public class SymbolFileTrading {
                     out2.add(s1);
                 }
             }
-            ArrayList<BeanSymbol> fwdout = loadFutures(Utilities.getNextExpiry(expiryplus));            
+            ArrayList<BeanSymbol> fwdout = loadFutures(Utilities.getLastThursday(expiryplus,"yyyyMMdd",0));            
             for (int i = 0; i < fno.size(); i++) {
                 String exchangesymbol = fno.get(i).getExchangeSymbol();
                 int id = Utilities.getIDFromExchangeSymbol(nifty50, exchangesymbol, "STK", "", "", "");
                 if (id >= 0) {
-                    id = Utilities.getIDFromExchangeSymbol(fwdout, exchangesymbol, "FUT", Utilities.getNextExpiry(expiryplus), "", "");
+                    id = Utilities.getIDFromExchangeSymbol(fwdout, exchangesymbol, "FUT", Utilities.getLastThursday(expiryplus,"yyyyMMdd",0), "", "");
                     s = fwdout.get(id);
                     BeanSymbol s1 = s.clone(s);
                     s1.setStreamingpriority(2);
@@ -181,7 +181,7 @@ public class SymbolFileTrading {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -225,7 +225,7 @@ public class SymbolFileTrading {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -298,7 +298,7 @@ public class SymbolFileTrading {
                             s1.setSerialno(out.size() + 1);
                             interimout.add(s1);
                         } else {
-                            logger.log(Level.SEVERE, "Exchange Symbol {} not found in IB database", new Object[]{exchangeSymbol});
+                            logger.log(Level.SEVERE, "Exchange Symbol {0} not found in IB database", new Object[]{exchangeSymbol});
                         }
                     }
                 }
@@ -324,7 +324,7 @@ public class SymbolFileTrading {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -374,7 +374,7 @@ public class SymbolFileTrading {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
@@ -415,7 +415,7 @@ public class SymbolFileTrading {
                             } else {
                                 int date = Integer.valueOf(shortlistedkey.split(":")[1]);
                                 int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getNextExpiry(currentDay))) {
+                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
                                     shortlistedkey = key.toString();//replace with latest nifty setup
                                 }
                             }
