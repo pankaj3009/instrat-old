@@ -68,6 +68,8 @@ import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.India;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.ScanResult;
 
 /**
  *
@@ -2339,4 +2341,34 @@ public class Utilities {
         }
         return true;
     }
+   
+       public static String getShorlistedKey(JedisPool jPool,String containingString,String onOrBefore){
+           String cursor = "";
+        String shortlistedkey = "";
+        int thresholdDate=Integer.valueOf(onOrBefore);
+         //int today=Integer.valueOf(DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)));
+         int date=0;
+        while (!cursor.equals("0")) {
+            cursor = cursor.equals("") ? "0" : cursor;
+            try (Jedis jedis = jPool.getResource()) {
+                ScanResult s = jedis.scan(cursor);
+                cursor = s.getCursor();
+                for (Object key : s.getResult()) {
+                    if (key.toString().contains(containingString)) {
+                        if (shortlistedkey.equals("")&& Integer.valueOf(key.toString().split(":")[1])<thresholdDate) {
+                            shortlistedkey = key.toString();
+                            date = Integer.valueOf(shortlistedkey.split(":")[1]);
+                        } else {
+                            int newdate = Integer.valueOf(key.toString().split(":")[1]);
+                            if (newdate>date && newdate <= thresholdDate) {
+                                shortlistedkey = key.toString();//replace with latest nifty setup
+                                date = Integer.valueOf(shortlistedkey.split(":")[1]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return shortlistedkey;
+       }
 }

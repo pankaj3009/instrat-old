@@ -86,29 +86,9 @@ public class SymbolFileHistoricalFuture {
 
 
     public void loadAllSymbols() {
-        String cursor = "";
-        String shortlistedkey = "";
-        while (!cursor.equals("0")) {
-            cursor = cursor.equals("") ? "0" : cursor;
-            try (Jedis jedis = jPool.getResource()) {
-                ScanResult s = jedis.scan(cursor);
-                cursor = s.getCursor();
-                for (Object key : s.getResult()) {
-                    if (key.toString().contains("ibsymbols")) {
-                        if (shortlistedkey.equals("")) {
-                            shortlistedkey = key.toString();
-                        } else {
-                            int date = Integer.valueOf(shortlistedkey.split(":")[1]);
-                            int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                            if (newdate > date) {
-                                shortlistedkey = key.toString();//replace with latest nifty setup
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        Map<String, String> ibsymbols = new HashMap<>();
+        String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+            String shortlistedkey=Utilities.getShorlistedKey(jPool, "ibsymbols", today);
+            Map<String, String> ibsymbols = new HashMap<>();
         try (Jedis jedis = jPool.getResource()) {
             ibsymbols = jedis.hgetAll(shortlistedkey);
             for (Map.Entry<String, String> entry : ibsymbols.entrySet()) {
@@ -131,28 +111,8 @@ public class SymbolFileHistoricalFuture {
     public ArrayList<BeanSymbol> loadNifty50Stocks() {
         ArrayList<BeanSymbol> out = new ArrayList<>();
         try {
-            String cursor = "";
-            String shortlistedkey = "";
-            while (!cursor.equals("0")) {
-                cursor = cursor.equals("") ? "0" : cursor;
-                try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getCursor();
-                    for (Object key : s.getResult()) {
-                        if (key.toString().contains("nifty50")) {
-                            if (shortlistedkey.equals("")) {
-                                shortlistedkey = key.toString();
-                            } else {
-                                int date = Integer.valueOf(shortlistedkey.split(":")[1]);
-                                int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
-                                    shortlistedkey = key.toString();//replace with latest nifty setup
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+            String shortlistedkey=Utilities.getShorlistedKey(jPool, "nifty50", today);
             Set<String> niftySymbols = new HashSet<>();
             try (Jedis jedis = jPool.getResource()) {
                 niftySymbols = jedis.smembers(shortlistedkey);
@@ -175,29 +135,9 @@ public class SymbolFileHistoricalFuture {
             }
 
             //Capture Strike levels
-            cursor = "";
-            shortlistedkey = "";
-            while (!cursor.equals("0")) {
-                cursor = cursor.equals("") ? "0" : cursor;
-                try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getCursor();
-                    for (Object key : s.getResult()) {
-                        if (key.toString().contains("strikedistance")) {
-                            if (shortlistedkey.equals("")) {
-                                shortlistedkey = key.toString();
-                            } else {
-                                int date = Integer.valueOf(shortlistedkey.split(":")[1]);
-                                int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
-                                    shortlistedkey = key.toString();//replace with latest nifty setup
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            Map<String, String> strikeLevels = new HashMap<>();
+            String expiry=Utilities.getLastThursday(currentDay, "yyyyMMdd",0);;
+           shortlistedkey=Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
+           Map<String, String> strikeLevels = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 strikeLevels = jedis.hgetAll(shortlistedkey);
                 for (Map.Entry<String, String> entry : strikeLevels.entrySet()) {
@@ -221,28 +161,7 @@ public class SymbolFileHistoricalFuture {
         ArrayList<BeanSymbol> out = new ArrayList<>();
         ArrayList<BeanSymbol> interimout = new ArrayList<>();
         try {
-            String cursor = "";
-            String shortlistedkey = "";
-            while (!cursor.equals("0")) {
-                cursor = cursor.equals("") ? "0" : cursor;
-                try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getCursor();
-                    for (Object key : s.getResult()) {
-                        if (key.toString().contains("contractsize")) {
-                            if (shortlistedkey.equals("")) {
-                                shortlistedkey = key.toString();
-                            } else {
-                                int date = Integer.valueOf(shortlistedkey.split(":")[1]);
-                                int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(expiry)) {
-                                    shortlistedkey = key.toString();//replace with latest nifty setup
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            String shortlistedkey=Utilities.getShorlistedKey(jPool, "contractsize", expiry);
             Map<String, String> contractSizes = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 contractSizes = jedis.hgetAll(shortlistedkey);
@@ -274,29 +193,8 @@ public class SymbolFileHistoricalFuture {
             }
 
             //Capture Strike levels
-            cursor = "";
-            shortlistedkey = "";
-            while (!cursor.equals("0")) {
-                cursor = cursor.equals("") ? "0" : cursor;
-                try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getCursor();
-                    for (Object key : s.getResult()) {
-                        if (key.toString().contains("strikedistance")) {
-                            if (shortlistedkey.equals("")) {
-                                shortlistedkey = key.toString();
-                            } else {
-                                int date = Integer.valueOf(shortlistedkey.split(":")[1]);
-                                int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
-                                    shortlistedkey = key.toString();//replace with latest nifty setup
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            Map<String, String> strikeLevels = new HashMap<>();
+            shortlistedkey=Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
+                        Map<String, String> strikeLevels = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 strikeLevels = jedis.hgetAll(shortlistedkey);
                 for (Map.Entry<String, String> entry : strikeLevels.entrySet()) {
@@ -324,28 +222,8 @@ public class SymbolFileHistoricalFuture {
     public ArrayList<BeanSymbol> loadCNX500Stocks() {
         ArrayList<BeanSymbol> out = new ArrayList<>();
         try {
-            String cursor = "";
-            String shortlistedkey = "";
-            while (!cursor.equals("0")) {
-                cursor = cursor.equals("") ? "0" : cursor;
-                try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getCursor();
-                    for (Object key : s.getResult()) {
-                        if (key.toString().contains("cnx500")) {
-                            if (shortlistedkey.equals("")) {
-                                shortlistedkey = key.toString();
-                            } else {
-                                int date = Integer.valueOf(shortlistedkey.split(":")[1]);
-                                int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
-                                    shortlistedkey = key.toString();//replace with latest nifty setup
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+            String shortlistedkey=Utilities.getShorlistedKey(jPool, "cnx500", today);
             Set<String> niftySymbols = new HashSet<>();
             try (Jedis jedis = jPool.getResource()) {
                 niftySymbols = jedis.smembers(shortlistedkey);
@@ -365,29 +243,8 @@ public class SymbolFileHistoricalFuture {
             }
 
             //Capture Strike levels
-            cursor = "";
-            shortlistedkey = "";
-            while (!cursor.equals("0")) {
-                cursor = cursor.equals("") ? "0" : cursor;
-                try (Jedis jedis = jPool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getCursor();
-                    for (Object key : s.getResult()) {
-                        if (key.toString().contains("strikedistance")) {
-                            if (shortlistedkey.equals("")) {
-                                shortlistedkey = key.toString();
-                            } else {
-                                int date = Integer.valueOf(shortlistedkey.split(":")[1]);
-                                int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                                if (newdate > date && newdate <= Integer.valueOf(Utilities.getLastThursday(currentDay,"yyyyMMdd",0))) {
-                                    shortlistedkey = key.toString();//replace with latest nifty setup
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            Map<String, String> strikeLevels = new HashMap<>();
+            String expiry=Utilities.getLastThursday(currentDay, "yyyyMMdd",0);;
+           shortlistedkey=Utilities.getShorlistedKey(jPool, "strikedistance", expiry);            Map<String, String> strikeLevels = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 strikeLevels = jedis.hgetAll(shortlistedkey);
                 for (Map.Entry<String, String> entry : strikeLevels.entrySet()) {
