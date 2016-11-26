@@ -54,14 +54,7 @@ public class SymbolFileFundamentals {
       public void historicalEquity() {
         ArrayList<BeanSymbol> out = new ArrayList<>();
        
-        out.addAll(symbols);
-        for(int i=0;i<symbols.size();i++){
-          // cnx500.get(i).setDisplayname(cnx500.get(i).getExchangeSymbol().replaceAll("[^A-Za-z0-9]", ""));
-            symbols.get(i).setDisplayname(symbols.get(i).getExchangeSymbol().replaceAll(" ", ""));
-        }
-        
-        
-        
+        out.addAll(symbols);       
         Utilities.printSymbolsToFile(out, symbolFileName, true);
     }
 
