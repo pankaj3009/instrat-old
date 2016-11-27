@@ -22,23 +22,23 @@ public class Mail implements Runnable {
     private static final Logger logger = Logger.getLogger(Mail.class.getName());
 
 private String text;
-private String recepient;
+private String[] recepient;
 private String subject="Algorithm Alert";
 
 public Mail(String to, String text){
     this.text=text;
-    this.recepient=to;
+    this.recepient=to.split(":");
 }
 
 public Mail(String to, String text,String subject){
     this.text=text;
-    this.recepient=to;
+    this.recepient=to.split(":");
     this.subject=subject;
     
 }
 
 public void run() {
- 
+                for(String r:recepient){
 		final String username = "reporting@incurrency.com";
 		final String password = "spark123";
                 
@@ -59,7 +59,7 @@ public void run() {
 			Message message = new MimeMessage(session);
 			message.setFrom(new InternetAddress("reporting@gmail.com"));
 			message.setRecipients(Message.RecipientType.TO,
-				InternetAddress.parse(recepient));
+				InternetAddress.parse(r));
                         message.addRecipient(Message.RecipientType.BCC, new InternetAddress("gg06588@gmail.com"));
 			message.setSubject(subject);
 			message.setText(text);
@@ -69,6 +69,7 @@ public void run() {
 		} catch (Exception e) {
                     logger.log(Level.SEVERE,"101",e);
 		}
+                }
 	}
 }
 
