@@ -46,7 +46,7 @@ public class Task implements Runnable {
                 if (id >= 0) {
                     switch (type) {
                         case com.ib.client.TickType.BID_SIZE: //bidsize
-                                Parameters.symbol.get(id).setBidSize((int) Double.parseDouble(value));
+                                Parameters.symbol.get(id).setBidSize(Utilities.getInt(value, 0));
                                 if (MainAlgorithm.getCollectTicks()) {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + value);
                                 }
@@ -66,7 +66,7 @@ public class Task implements Runnable {
                                 }
                                 break;
                             case com.ib.client.TickType.ASK_SIZE: //ask size
-                                Parameters.symbol.get(id).setAskSize((int) Double.parseDouble(value));
+                                Parameters.symbol.get(id).setAskSize(Utilities.getInt(value,0));
                                 if (MainAlgorithm.getCollectTicks()) {
                                     TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + value);
                                 }
