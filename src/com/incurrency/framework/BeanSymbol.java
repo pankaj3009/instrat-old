@@ -95,8 +95,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private double closeVol;
     private int lastSize;
     private double tradedValue;
-    private double bidSize;
-    private double askSize;
+    private int bidSize;
+    private int askSize;
     private double closePrice;
     private double yesterdayLastPrice;
     private int volume;
@@ -1794,28 +1794,28 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @return the bidSize
      */
-    public double getBidSize() {
+    public int getBidSize() {
         return bidSize;
     }
 
     /**
      * @param bidSize the bidSize to set
      */
-    public void setBidSize(double bidSize) {
+    public void setBidSize(int bidSize) {
         this.bidSize = bidSize;
     }
 
     /**
      * @return the askSize
      */
-    public double getAskSize() {
+    public int getAskSize() {
         return askSize;
     }
 
     /**
      * @param askSize the askSize to set
      */
-    public void setAskSize(double askSize) {
+    public void setAskSize(int askSize) {
         this.askSize = askSize;
     }
 
