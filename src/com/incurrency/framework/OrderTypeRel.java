@@ -247,7 +247,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                                 newLimitPrice = bidPrice - Math.abs(improveamt);
                                             }
                                             double random = Math.random();
-                                            if (random > improveprob && bidPrice > 0 && bidSize>orderSize) {//no improvement, therefore worsen price
+                                            if (random > improveprob && bidPrice > 0 && bidSize<=orderSize) {//no improvement, therefore worsen price
                                                 if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                                     plp = limitPrice;
                                                     newLimitPrice = bidPrice - Math.abs(improveamt);
@@ -364,7 +364,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                                 newLimitPrice = askPrice + Math.abs(improveamt);
                                             }
                                             double random = Math.random();
-                                            if (random > improveprob && askPrice > 0 && askSize>orderSize) {
+                                            if (random > improveprob && askPrice > 0 && askSize<=orderSize) {
                                                 if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                                     plp = limitPrice;
                                                     newLimitPrice = askPrice + Math.abs(improveamt);
