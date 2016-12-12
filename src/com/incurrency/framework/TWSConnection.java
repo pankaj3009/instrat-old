@@ -2240,7 +2240,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     break;
                 case 1100://Connectivity between IB and TWS has been lost.
-                    this.eClientSocket.eDisconnect();
+                    //this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO, "103,ConnectivityLost,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
                     break;
