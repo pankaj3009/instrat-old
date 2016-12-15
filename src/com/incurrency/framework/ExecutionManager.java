@@ -2056,7 +2056,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (c.getOrdersToBeFastTracked().containsKey(orderid) && c.getOrders().get(orderid).getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
                 c.getOrdersToBeFastTracked().remove(orderid);
             }
-            if (c.getOrdersInProgress().contains(orderid) && ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
+            //if (c.getOrdersInProgress().contains(orderid) && ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
+            if (c.getOrdersInProgress().contains(orderid)) {
                 c.getOrdersInProgress().remove(Integer.valueOf(orderid));
                 logger.log(Level.FINE, "307,OrderProgressQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
             }
