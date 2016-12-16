@@ -1831,6 +1831,7 @@ public class TWSConnection extends Thread implements EWrapper {
             //System.out.println("orderid:"+orderId);
             //  c.getIdmanager().initializeOrderId(orderId);
             startingOrderID.offer(String.valueOf(orderId));
+            Thread.yield();
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
         }
@@ -2264,7 +2265,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     }
                     break;
                 case 504: //disconnected
-                    this.eClientSocket.eDisconnect();
+                    //this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
                     logger.log(Level.INFO, "103,Disconnected,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
                     if (!this.severeEmailSent.get()) {
