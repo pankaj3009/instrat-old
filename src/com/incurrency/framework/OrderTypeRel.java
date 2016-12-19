@@ -40,7 +40,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     boolean recalculate = true;
     SimpleDateFormat loggingFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
     int orderspermin = 1;
-    double worseamt = 0;
     double improveprob = 1;
     double improveamt = 0;
     int fatFingerWindow = 120; //in seconds
@@ -223,38 +222,37 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             newLimitPrice = calculatedPrice;
                                             if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000 && bidPrice > 0) {
                                                 newLimitPrice = bidPrice - improveamt; //second best bid
-                                            } else if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
+                                            } else if (Math.abs(limitPrice - calculatedPrice) < 10 * ticksize) {
                                                 //To prevent frequent orders when we are not near market, we limit updates only if
                                                 //new limitprice is off by 10 ticksize.
                                                 newLimitPrice = calculatedPrice - 10 * ticksize;
                                             }
                                         }
                                         if (!fatfinger) {
+                                            fatfinger=false;
                                             fatFingerStart = Long.MAX_VALUE;
                                         }
 
                                         if (!fatfinger) {
-                                            if ((limitPrice < bidPrice && bidPrice <= calculatedPrice && bidPrice != plp)
-                                                    || (bidPrice < calculatedPrice && calculatedPrice <= limitPrice)) {
+                                            if (bidPrice <= limitPrice && limitPrice <= calculatedPrice) {
+                                                //do nothing, we are the best bid
+                                                if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                                    newLimitPrice = limitPrice - Math.abs(improveamt);
+                                                }
+                                            } else if (calculatedPrice >= bidPrice && bidPrice != plp) {
                                                 //Change to Best Bid
                                                 plp = limitPrice;
                                                 newLimitPrice = bidPrice + improveamt;
-                                            } else if ((calculatedPrice <= bidPrice && bidPrice <= limitPrice)
-                                                    || (limitPrice <= calculatedPrice && calculatedPrice <= bidPrice)
-                                                    || (calculatedPrice <= limitPrice && limitPrice <= bidPrice)) {
+
+                                            } else {
                                                 //Change to second best ask
                                                 plp = limitPrice;
                                                 newLimitPrice = bidPrice - Math.abs(improveamt);
                                             }
                                             double random = Math.random();
-                                            if (random > improveprob && bidPrice > 0 && bidSize<=orderSize) {//no improvement, therefore worsen price
-                                                if ((recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000)||recentOrders.size()==0) {
+                                            if (random > improveprob) {//no improvement, therefore worsen price
                                                     plp = limitPrice;
                                                     newLimitPrice = bidPrice - Math.abs(improveamt);
-                                                    retracement = true;
-                                                }
-                                            } else {
-                                                retracement = false;
                                             }
                                         }
 
@@ -339,7 +337,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             newLimitPrice = calculatedPrice;
                                             if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000 && bidPrice > 0) {
                                                 newLimitPrice = askPrice + improveamt; //second best offer
-                                            } else if (Math.abs(limitPrice - (calculatedPrice - 10 * ticksize)) < 10 * ticksize) {
+                                            } else if (Math.abs(limitPrice - calculatedPrice) < 10 * ticksize) {
                                                 //To prevent frequent orders when we are not near market, we limit updates only if
                                                 //new limitprice is off by 10 ticksize.
                                                 newLimitPrice = calculatedPrice + 10 * ticksize;
@@ -347,31 +345,29 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         }
 
                                         if (!fatfinger) {
+                                            fatfinger=false;
                                             fatFingerStart = Long.MAX_VALUE;
                                         }
 
                                         if (!fatfinger) {
-                                            if ((calculatedPrice <= askPrice && askPrice < limitPrice && askPrice != plp)
-                                                    || (limitPrice <= calculatedPrice && calculatedPrice < askPrice)) {
+                                             if (calculatedPrice <= limitPrice && limitPrice <= askPrice) {
+                                                //do nothing, we are the best ask
+                                                if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                                    newLimitPrice = limitPrice + Math.abs(improveamt);
+                                                }
+                                            } else if (calculatedPrice <=askPrice && askPrice != plp) {
                                                 //Change to Best Ask
                                                 plp = limitPrice;
                                                 newLimitPrice = askPrice - improveamt;
-                                            } else if ((limitPrice <= askPrice && askPrice <= calculatedPrice)
-                                                    || (askPrice <= calculatedPrice && calculatedPrice <= limitPrice)
-                                                    || (askPrice <= limitPrice && limitPrice <= calculatedPrice)) {
+                                            } else {
                                                 //Change to second best ask
                                                 plp = limitPrice;
                                                 newLimitPrice = askPrice + Math.abs(improveamt);
                                             }
                                             double random = Math.random();
-                                            if (random > improveprob && askPrice > 0 && askSize<=orderSize) {
-                                                if ((recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000)||recentOrders.size()==0) {
-                                                    plp = limitPrice;
-                                                    newLimitPrice = askPrice + Math.abs(improveamt);
-                                                    retracement = true;
-                                                } else {
-                                                    retracement = false;
-                                                }
+                                            if (random > improveprob) {
+                                                plp = limitPrice;
+                                                newLimitPrice = askPrice + Math.abs(improveamt);                                                   
                                             }
                                         }
                                         if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
