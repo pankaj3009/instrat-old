@@ -242,17 +242,17 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             } else if (calculatedPrice >= bidPrice && bidPrice != plp) {
                                                 //Change to Best Bid
                                                 plp = limitPrice;
-                                                newLimitPrice = bidPrice + improveamt;
+                                                newLimitPrice = limitPrice + improveamt; //improve in increments
 
                                             } else {
-                                                //Change to second best ask
+                                                //Change to second best bid
                                                 plp = limitPrice;
-                                                newLimitPrice = bidPrice - Math.abs(improveamt);
+                                                newLimitPrice = Math.min(bidPrice-Math.abs(improveamt),limitPrice+Math.abs(improveamt));
                                             }
                                             double random = Math.random();
                                             if (random > improveprob) {//no improvement, therefore worsen price
                                                     plp = limitPrice;
-                                                    newLimitPrice = bidPrice - Math.abs(improveamt);
+                                                 newLimitPrice = Math.min(bidPrice-Math.abs(improveamt),limitPrice+Math.abs(improveamt));
                                             }
                                         }
 
@@ -358,16 +358,16 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             } else if (calculatedPrice <=askPrice && askPrice != plp) {
                                                 //Change to Best Ask
                                                 plp = limitPrice;
-                                                newLimitPrice = askPrice - improveamt;
+                                                newLimitPrice = limitPrice - improveamt;
                                             } else {
                                                 //Change to second best ask
                                                 plp = limitPrice;
-                                                newLimitPrice = askPrice + Math.abs(improveamt);
+                                                newLimitPrice = Math.max(askPrice+Math.abs(improveamt),limitPrice-Math.abs(improveamt));
                                             }
                                             double random = Math.random();
                                             if (random > improveprob) {
                                                 plp = limitPrice;
-                                                newLimitPrice = askPrice + Math.abs(improveamt);                                                   
+                                                newLimitPrice = Math.max(askPrice+Math.abs(improveamt),limitPrice-Math.abs(improveamt));                                                   
                                             }
                                         }
                                         if (newLimitPrice != limitPrice && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
