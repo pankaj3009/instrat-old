@@ -263,6 +263,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             e.setAccount(c.getAccountName());
                                             e.setTag("BIDASKCHANGED");
                                             String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",LimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",fatfinger:" + fatfinger;
+                                            logger.log(Level.INFO,"500, OrderTypeRel,{0}",new Object[]{log});
                                             oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                             oms.orderReceived(e);
 
@@ -377,7 +378,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             e.setAccount(c.getAccountName());
                                             e.setTag("BIDASKCHANGED");
                                             String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + limitPrice + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",fatfinger:" + fatfinger;
-                                            logger.log(Level.INFO,log);
+                                            logger.log(Level.INFO,"500, OrderTypeRel,{0}",new Object[]{log});
                                             oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                             oms.orderReceived(e);
                                         }
