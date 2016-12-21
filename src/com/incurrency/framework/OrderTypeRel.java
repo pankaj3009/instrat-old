@@ -219,7 +219,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             if (fatFingerStart == Long.MAX_VALUE) {
                                                 fatFingerStart = new Date().getTime();
                                             }
-                                            newLimitPrice = calculatedPrice;
+                                            newLimitPrice = limitPrice;
                                             if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000 && bidPrice > 0) {
                                                 newLimitPrice = bidPrice - improveamt; //second best bid
                                             } else if (Math.abs(limitPrice - calculatedPrice) < 10 * ticksize) {
@@ -335,7 +335,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             if (fatFingerStart == Long.MAX_VALUE) {
                                                 fatFingerStart = new Date().getTime();
                                             }
-                                            newLimitPrice = calculatedPrice;
+                                            newLimitPrice = limitPrice;
                                             if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000 && bidPrice > 0) {
                                                 newLimitPrice = askPrice + improveamt; //second best offer
                                             } else if (Math.abs(limitPrice - calculatedPrice) < 10 * ticksize) {
