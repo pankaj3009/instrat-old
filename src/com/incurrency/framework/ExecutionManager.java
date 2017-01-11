@@ -141,7 +141,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         iter.remove();
                     } else {
                         logger.log(Level.INFO, "500, InitialTradePosition,{0}:{1}:{2}:{3}:{4},Position={5}:PositionPrice:{6}",
-                                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(p.getKey().getSymbolID()).getDisplayname(), -1, -1, p.getValue().getPosition(), p.getValue().getPrice()});
+                                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(p.getKey().getSymbolID()).getDisplayname(), -1, -1, String.valueOf(p.getValue().getPosition()), String.valueOf(p.getValue().getPrice())});
                     }
                 }
             }
@@ -304,7 +304,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 tempOpenPosition = this.openPositionCount.get(i);
                                 this.openPositionCount.add(i, tempOpenPosition + 1);
                                 logger.log(Level.INFO, "500, InitialOpenPositionCount,{0}:{1}:{2}:{3}:{4},OpenPositionCount={5}",
-                                        new Object[]{orderReference, c.getAccountName(), Trade.getEntrySymbol(db, key), -1, -1, openPositionCount.get(i)});
+                                        new Object[]{orderReference, c.getAccountName(), Trade.getEntrySymbol(db, key), -1, -1, String.valueOf(openPositionCount.get(i))});
                             }
                             break;
                         case SHORT:
@@ -323,7 +323,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 tempOpenPosition = this.openPositionCount.get(i);
                                 this.openPositionCount.add(i, tempOpenPosition + 1);
                                 logger.log(Level.INFO, "500, InitialOpenPositionCount,{0}:{1}:{2}:{3}:{4},OpenPositionCount={5}",
-                                        new Object[]{orderReference, c.getAccountName(), Trade.getEntrySymbol(db, key), -1, -1, openPositionCount.get(i)});
+                                        new Object[]{orderReference, c.getAccountName(), Trade.getEntrySymbol(db, key), -1, -1, String.valueOf(openPositionCount.get(i))});
                             }
                             break;
                         default:
@@ -747,7 +747,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
                     getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
                     logger.log(Level.INFO, "500,cleanScaleTrueOrders.LinkedActionsAdded,{0}:{1}:{2}:{3}:{4},LinkedAction=CLOSEPOSITION&PROPOGATE",
-                            new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), event.getInternalorder(), orderids.get(0)});
+                            new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), String.valueOf(event.getInternalorder()), String.valueOf(orderids.get(0))});
                     c.getWrapper().cancelOrder(c, orderids.get(0), true);
                     //}
                     lockLinkedAction.notifyAll();
@@ -782,7 +782,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
                     this.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, -1, event, EnumLinkedAction.PROPOGATE));
                     logger.log(Level.INFO, "500,cleanScaleFalseOrders.LinkedActionsAdded,{0}:{1}:{2}:{3}:{4},LinkedAction=CLOSEPOSITION&PROPOGATE",
-                            new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), event.getInternalorder(), orderids.get(0)});
+                            new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), String.valueOf(event.getInternalorder()), String.valueOf(orderids.get(0))});
                     c.getWrapper().cancelOrder(c, orderids.get(0), true);
                     lockLinkedAction.notifyAll();
                 }
@@ -818,7 +818,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (orders.size() > 0) {//trading is not halted 
                 this.getOpenPositionCount().set(connectionid, tempOpenPosition + 1);
                 logger.log(Level.INFO, "500,EntryOrder,{0}:{1}{2}:{3}:{4},OpenPosition={5}",
-                        new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), event.getInternalorder(), -1, this.getOpenPositionCount().get(connectionid)});
+                        new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), -1, this.getOpenPositionCount().get(connectionid)});
 
                 ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders, this);
 
@@ -873,7 +873,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         } else {
             logger.log(Level.INFO, "500,EntryOrderNotSent, {0}:{1}:{2}:{3}:{4},OpenPosition={5}:DayStopHit={6}:DayProfitTargetHit:{7}",
-                    new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), event.getInternalorder(), -1, tempOpenPosition, getS().getPlmanager().isDayProfitTargetHit(), getS().getPlmanager().isDayStopLossHit()});
+                    new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), -1, String.valueOf(tempOpenPosition), getS().getPlmanager().isDayProfitTargetHit(), getS().getPlmanager().isDayStopLossHit()});
         }
     }
 
@@ -920,7 +920,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             orders = c.getWrapper().createOrder(event);
         }
         logger.log(Level.INFO, "500,ExitOrder,{0}:{1}:{2}:{3}:{4},OrderSize={5}",
-                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), event.getInternalorder(), -1, event.getOrderSize()});
+                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), -1, String.valueOf(event.getOrderSize())});
         ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders, this);
 
         //orderid structures impacted
@@ -937,7 +937,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         if (event.getExpireTime() != 0) {//orders have an expiration time. put them in fasttrack queue
             for (int orderid : orderids) {
                 logger.log(Level.INFO, "500,ExitOrderCancellationQueueAdded,{0}:{1}:{2}:{3}:{4}",
-                        new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), event.getInternalorder(), orderid});
+                        new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), String.valueOf(orderid)});
                 c.getOrdersToBeFastTracked().put(orderid, new BeanOrderInformation(id, c, orderid, tempexpire, event));
 
             }
@@ -1031,7 +1031,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
                     if (amendedOrders.size() > 0 && (c.getOrders().get(orderids.get(0)).getParentStatus() == EnumOrderStatus.ACKNOWLEDGED || c.getOrders().get(orderids.get(0)).getParentStatus() == EnumOrderStatus.PARTIALFILLED)) {
                         logger.log(Level.INFO, "500,AmendmentOrder,{0}:{1}:{2}:{3}:{4}",
-                                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), event.getInternalorder(), Arrays.toString(orderids.toArray())});
+                                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), Arrays.toString(orderids.toArray())});
                         c.getWrapper().placeOrder(c, event, amendedOrders, this);
                         double parentlimitprice = 0D;
                         for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
@@ -1079,7 +1079,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             }
                             if (amendedOrders.size() > 0) {
                                 logger.log(Level.INFO, "500,AmendmentOrder,{0}:{1}:{2}:{3}:{4},NewLimitPrice={5}",
-                                        new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), event.getInternalorder(), ord.m_orderId, ord.m_lmtPrice});
+                                        new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), String.valueOf(ord.m_orderId), String.valueOf(ord.m_lmtPrice)});
                                 c.getWrapper().placeOrder(c, event, amendedOrders, this);
                                 c.getOrders().get(ord.m_orderId).setParentLimitPrice(event.getLimitPrice());
                                 //update orders information. Do we need the two lines below as its already set in TWSConnection.placeOrders
@@ -1134,7 +1134,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         orderid = orderids.size() >= 1 ? orderids.get(0) : 0;
         if (orderid > 0) {
             logger.log(Level.INFO, "500,CancellationOrder,{0}:{1}:{2}:{3}:{4}",
-                    new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), event.getInternalorder(), orderid});
+                    new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), String.valueOf(orderid)});
             c.getWrapper().cancelOrder(c, orderid, false);
         }
     }
