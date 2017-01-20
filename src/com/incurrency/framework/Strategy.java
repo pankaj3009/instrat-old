@@ -48,6 +48,7 @@ public class Strategy implements NotificationListener {
     private double exposure;
     private Date endDate;
     private Date startDate;
+    private Date shutdownDate;
     private transient AtomicBoolean longOnly = new AtomicBoolean(Boolean.TRUE);
     private transient AtomicBoolean shortOnly = new AtomicBoolean(Boolean.TRUE);
     private Boolean aggression = true;
@@ -321,8 +322,10 @@ public class Strategy implements NotificationListener {
         String currDateStr = df.format(currDate);
         String startDateStr = currDateStr + " " + p.getProperty("StartTime");
         String endDateStr = currDateStr + " " + p.getProperty("EndTime");
+        String shutdownDateStr=currDateStr+" "+p.getProperty("ShutDownTime","15:31:00");
         setStartDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr, timeZone));
         setEndDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, timeZone));
+        shutdownDate=DateUtil.parseDate("yyyyMMdd HH:mm:ss",shutdownDateStr,timeZone);
         if(new Date().after(endDate)){
             String endDateStrTemp=DateUtil.getFormatedDate("yyyy-MM-dd", getEndDate().getTime(), TimeZone.getTimeZone(timeZone));
             endDateStrTemp=DateUtil.getNextBusinessDay(endDateStrTemp,"yyyy-MM-dd");
@@ -332,6 +335,10 @@ public class Strategy implements NotificationListener {
             startDateStrTemp=DateUtil.getNextBusinessDay(startDateStrTemp,"yyyy-MM-dd");
             startDateStr=startDateStrTemp+startDateStr.substring(8);
             setStartDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", startDateStr, timeZone));
+            String shutdownDateStrTemp=DateUtil.getFormatedDate("yyyy-MM-dd", shutdownDate.getTime(), TimeZone.getTimeZone(timeZone));
+            shutdownDateStrTemp=DateUtil.getNextBusinessDay(shutdownDateStrTemp,"yyyy-MM-dd");
+            shutdownDateStr=shutdownDateStrTemp+shutdownDateStr.substring(8);
+            shutdownDate=DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", shutdownDateStr, timeZone);
         }
         setMaxSlippageEntry(p.getProperty("MaxSlippageEntry") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageEntry")) / 100); // divide by 100 as input was a percentage
         setMaxSlippageExit(p.getProperty("MaxSlippageExit") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageExit")) / 100); // divide by 100 as input was a percentage
@@ -340,11 +347,7 @@ public class Strategy implements NotificationListener {
        fallbackBidVol=Utilities.getDouble(p.getProperty("FallbackBidVol","0.10"),0.10);
        fallbackAskVol=Utilities.getDouble(p.getProperty("FallbackAskVol","0.50"),0.50);
         if (MainAlgorithm.isUseForTrading()) {
-            Date shutdownTime=DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 5) * 60);
-            if(shutdownTime.before(new Date())){
-                shutdownTime=DateUtil.addDays(shutdownTime, 1);
-            }
-            MainAlgorithm.setCloseDate(shutdownTime); //2 minutes after the enddate+max order duaration
+            MainAlgorithm.setCloseDate(shutdownDate); 
         }
         if(this.getDynamicOrderDuration()==0){
             this.setAggression(false);
@@ -811,7 +814,7 @@ public class Strategy implements NotificationListener {
                             Trade.closeTrade(db, key);
                         }
                          logger.log(Level.INFO, "201,ExitOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", 
-                                 new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), internalorderid, -1, position.get(id).getPosition(), position.get(id).getPrice()});
+                                 new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), Integer.toString(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
           
                     } else {
                         logger.log(Level.INFO, "201,ExitInternalIDNotFound,{0}:{1}:{2}:{3}:{4},Key={5}", 

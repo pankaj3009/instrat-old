@@ -943,7 +943,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         ob.setDisplaySize(order.m_displaySize);
                         ob.setChildOrderSize(order.m_totalQuantity);
                         int connectionid = Parameters.connection.indexOf(this.getC());
-                        logger.log(Level.INFO, "OrderSize: {0}, Residual:{1}", new Object[]{order.m_totalQuantity, subEvent.getOrderSize()});
+                        logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(subEvent.getOrderSize())});
                         if (Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
                             double limitprice = Utilities.getOptionLimitPriceForRel(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), side, Parameters.symbol.get(parentid).getRight(), oms.tickSize);
                             if (limitprice > 0) {
@@ -958,7 +958,9 @@ public class TWSConnection extends Thread implements EWrapper {
                         getRecentOrders().add(new Date().getTime());
                     }
                     logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
-                            new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname(), ob.getInternalOrderID(), String.valueOf(mOrderID), ob.getParentOrderSide(), order.m_totalQuantity, order.m_orderType, order.m_lmtPrice, order.m_auxPrice});
+                            new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname(), Integer.toString(ob.getInternalOrderID()),
+                                String.valueOf(mOrderID), ob.getParentOrderSide(), String.valueOf(order.m_totalQuantity), order.m_orderType, String.valueOf(order.m_lmtPrice),
+                                String.valueOf(order.m_auxPrice)});
                     orderids.add(mOrderID);
                 } else {//combo order
                     if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
@@ -1889,7 +1891,7 @@ public class TWSConnection extends Thread implements EWrapper {
             }
             if (id >= 0) {
                 logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
-                        new Object[]{getC().getOrders().get(execution.m_orderId).getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), execution.m_orderId, getC().getOrders().get(execution.m_orderId).getInternalOrderID(), execution.m_cumQty, execution.m_avgPrice});
+                        new Object[]{getC().getOrders().get(execution.m_orderId).getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), getC().getOrders().get(execution.m_orderId).getInternalOrderID(),execution.m_orderId, execution.m_cumQty, execution.m_avgPrice});
 
                 if (getC().getOrders().get(execution.m_orderId) != null) {
                     if (getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty == 0) {
@@ -1900,7 +1902,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 }
             } else {
                 logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
-                        new Object[]{"Unknown", c.getAccountName(), "Unknown", execution.m_orderId, -1, execution.m_cumQty, execution.m_avgPrice});
+                        new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, execution.m_orderId,execution.m_cumQty, execution.m_avgPrice});
 
             }
         } catch (Exception e) {

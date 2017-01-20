@@ -180,7 +180,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, settleDate);
                 this.setCloseVol(vol);
             }
-            logger.log(Level.INFO,"500,Option vol set,{0}:{1}:{2}:{3}:{4},Vol={5}",
+            logger.log(Level.INFO,"500,BeanSymbol.Option vol set,{0}:{1}:{2}:{3}:{4},Vol={5}",
                     new Object[]{"Unknown","Unknown",this.getDisplayname(),-1,-1,this.getCloseVol()});
         }
         

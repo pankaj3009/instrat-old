@@ -537,8 +537,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             ArrayList<Integer> openSell = getOpenOrdersForSide(c, id, EnumOrderSide.SELL);
                             ArrayList<Integer> openShort = getOpenOrdersForSide(c, id, EnumOrderSide.SHORT);
                             ArrayList<Integer> openCover = getOpenOrdersForSide(c, id, EnumOrderSide.COVER);
-                            logger.log(Level.INFO, "301,OrderReceived.ExecutionFlow,{0}:{1}:{2}:{3}:{4},Case={5}:OpenBuy={6}:OpenSell={7}:OpenShort={8}:OpenCover={9}",
-                                    new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), event.getInternalorder(), -1, rule, openBuy.size(), openSell.size(), openShort.size(), openCover.size()});
+                            logger.log(Level.INFO, "301,OrderReceived.ExecutionFlow,{0}:{1}:{2}:{3}:{4},Case={5}:OpenBuy={6}:OpenSell={7}:OpenShort={8}:OpenCover={9},:OrderSize={10}",
+                                    new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), Integer.toString(event.getInternalorder()), -1, rule, openBuy.size(), openSell.size(), openShort.size(), openCover.size(),Integer.toString(event.getOrderSize())});
                             switch (rule) {
                                 case "STUB":
                                     processStubOrder(id, c, event);
@@ -817,7 +817,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             HashMap<Integer, Order> orders = c.getWrapper().createOrder(event);
             if (orders.size() > 0) {//trading is not halted 
                 this.getOpenPositionCount().set(connectionid, tempOpenPosition + 1);
-                logger.log(Level.INFO, "500,EntryOrder,{0}:{1}{2}:{3}:{4},OpenPosition={5}",
+                logger.log(Level.FINE, "500,EntryOrder,{0}:{1}{2}:{3}:{4},OpenPosition={5}",
                         new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), -1, this.getOpenPositionCount().get(connectionid)});
 
                 ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders, this);
@@ -919,7 +919,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         } else if (event.isScale()) {
             orders = c.getWrapper().createOrder(event);
         }
-        logger.log(Level.INFO, "500,ExitOrder,{0}:{1}:{2}:{3}:{4},OrderSize={5}",
+        logger.log(Level.FINE, "500,ExitOrder,{0}:{1}:{2}:{3}:{4},OrderSize={5}",
                 new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalorder()), -1, String.valueOf(event.getOrderSize())});
         ArrayList<Integer> orderids = c.getWrapper().placeOrder(c, event, orders, this);
 

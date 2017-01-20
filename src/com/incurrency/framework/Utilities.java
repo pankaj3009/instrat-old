@@ -190,7 +190,7 @@ public class Utilities {
             }
             double bidprice = symbols.get(id).getBidPrice();
             double askprice = symbols.get(id).getAskPrice();
-            logger.log(Level.INFO, "Symbol:{0},price:{1},BidPrice:{2},AskPrice:{3}", new Object[]{symbols.get(id).getDisplayname(), price, bidprice, askprice});
+            logger.log(Level.INFO, "500,Calculating OptionLimitPrice,Symbol:{0},TheoreticalPrice:{1},BidPrice:{2},AskPrice:{3}", new Object[]{symbols.get(id).getDisplayname(), price, bidprice, askprice});
             switch (side) {
                 case BUY:
                 case COVER:
@@ -202,7 +202,7 @@ public class Utilities {
                         }
                     } else {
                         price = 0.80 * price;
-                        logger.log(Level.INFO, "Calculated Price as bidprice is zero. Symbol {0}, price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
+                        logger.log(Level.INFO, "Bidprice is zero. Symbol {0}, Calculated Limit Price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
                     }
                     break;
                 case SHORT:
@@ -212,7 +212,7 @@ public class Utilities {
 
                     } else {
                         price = 1.2 * price;
-                        logger.log(Level.INFO, "Calculated Price as askprice is zero. Symbol {0}, BidPrice:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
+                        logger.log(Level.INFO, "Askprice is zero. Symbol {0}, Calculated Limit Price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
                     }
                     break;
                 default:
@@ -2371,4 +2371,12 @@ public class Utilities {
         }
         return shortlistedkey;
        }
+       
+   public static String listToString(List<?> list) {
+    String result = "+";
+    for (int i = 0; i < list.size(); i++) {
+        result += " " + list.get(i);
+    }
+    return result;
+}
 }
