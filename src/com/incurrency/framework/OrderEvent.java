@@ -36,7 +36,6 @@ public class OrderEvent extends EventObject {
     private String _effectiveFrom;
     private HashMap _stubs;
     private String _log;
-    private int _disclosedsize;
     private HashMap<String,Object> _orderAttributes=new HashMap<>();
     
     public OrderEvent(Object obj){
@@ -69,7 +68,6 @@ public class OrderEvent extends EventObject {
     b._effectiveFrom=orig._effectiveFrom;
     b._stubs=orig._stubs;
     b._log=orig._log;
-    b._disclosedsize=orig._disclosedsize;
     b._orderAttributes=orig._orderAttributes;
     return b;
     }
@@ -130,7 +128,6 @@ public class OrderEvent extends EventObject {
         this._orderGroup=(order.get("ordergroup")!=null&&order.get("ordergroup")!="")?order.get("ordergroup").toString():null;
         this._effectiveFrom=(order.get("effectivefrom")!=null&&order.get("effectivefrom")!="")?order.get("effectivefrom").toString():null;
         this._log=(order.get("log")!=null&&order.get("log")!="")?order.get("log").toString():null;
-        this._disclosedsize=order.get("disclosedsize")!=null?Utilities.getInt(order.get("disclosedsize").toString(),0):0;
         this._orderAttributes=(HashMap<String,Object>)order.get("orderattributes");
     }
 
@@ -474,19 +471,7 @@ public class OrderEvent extends EventObject {
         this._log = log;
     }
 
-    /**
-     * @return the _disclosedsize
-     */
-    public int getDisclosedsize() {
-        return _disclosedsize;
-    }
 
-    /**
-     * @param disclosedsize the _disclosedsize to set
-     */
-    public void setDisclosedsize(int disclosedsize) {
-        this._disclosedsize = disclosedsize;
-    }
 
     /**
      * @return the _orderAttributes
