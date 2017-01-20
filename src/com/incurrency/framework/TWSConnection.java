@@ -336,7 +336,6 @@ public class TWSConnection extends Thread implements EWrapper {
         String ocaGroup = e.getOrderGroup();
         String effectiveFrom = e.getEffectiveFrom();
         HashMap<Integer, Integer> stubs = e.getStubs();
-        int disclosedsize = e.getDisclosedsize();
         out = createOrder(id, internalOrderID, size, ordSide, notify, orderType, stage, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, stubs, e.getOrderAttributes());
         return out;
     }
@@ -945,7 +944,7 @@ public class TWSConnection extends Thread implements EWrapper {
                         int connectionid = Parameters.connection.indexOf(this.getC());
                         logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(subEvent.getOrderSize())});
                         if (Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
-                            double limitprice = Utilities.getOptionLimitPriceForRel(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), side, Parameters.symbol.get(parentid).getRight(), oms.tickSize);
+                            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), side, oms.tickSize,event.getOrderType());
                             if (limitprice > 0) {
                                 order.m_lmtPrice = limitprice;
                             }
