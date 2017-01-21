@@ -2081,7 +2081,7 @@ public class Utilities {
      * @param content
      * @param timeZone
      */
-    public static void writeToFile(String filename, String[] content, String timeZone, boolean appendAtEnd) {
+    public static void writeToFile(String filename, Object[] content, String timeZone, boolean appendAtEnd) {
         try {
             File dir = new File("logs");
             File file = new File(dir, filename);
@@ -2091,16 +2091,8 @@ public class Utilities {
                 file.createNewFile();
             }
 
-            String dateString = "";
-            String timeString = "";
-            if (content[0] != null && !content[0].equals("")) {
-                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd");
-                SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm:ss");
-                dateFormatter.setTimeZone(TimeZone.getTimeZone(timeZone));
-                timeFormatter.setTimeZone(TimeZone.getTimeZone(timeZone));
-                dateString = dateFormatter.format(new java.util.Date(Long.parseLong(content[0])));
-                timeString = timeFormatter.format(new java.util.Date(Long.parseLong(content[0])));
-            }
+                String timeStamp="yyyyMMdd HH:mm:ss";
+                String dateString = DateUtil.getFormatedDate(timeStamp, new Date().getTime(), TimeZone.getTimeZone(timeZone));
             if (!appendAtEnd) {
                 if (!file.exists()) {
                     file.createNewFile();
@@ -2120,9 +2112,9 @@ public class Utilities {
                 if (i > 1) {
                     result = result + ",";
                 }
-                result = result + content[i];
+                result = result + content[i].toString();
             }
-            bufferWritter.write(dateString + "," + timeString + "," + result + newline);
+            bufferWritter.write(dateString + "," + result + newline);
             bufferWritter.close();
             if (!appendAtEnd) {
                 File newfile = new File(dir, filename + ".old");
