@@ -157,6 +157,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     @Override
     public synchronized void bidaskChanged(BidAskEvent event) {
         try {
+            boolean bestPrice = false;
             boolean fatfinger = false;
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
                 //check if there is a case for updating rel price. Only time criteron at present.
@@ -211,11 +212,11 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         break;
                                     default:
                                         calculatedPrice = bidPrice;
-                                        if(calculatedPrice==0){
-                                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                        if (calculatedPrice == 0) {
+                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
                                                     new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                         recentOrders.size()}, Algorithm.timeZone, true);
-                                                        return;
+                                            return;
                                         }
                                         break;
                                 }
@@ -254,6 +255,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 if (!fatfinger) {
                                     if (bidPrice <= plp && plp <= calculatedPrice) {
                                         //do nothing, we are the best bid
+                                        bestPrice = true;
                                         if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                             newLimitPrice = plp - Math.abs(improveamt);
                                         }
@@ -267,7 +269,11 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     double random = Math.random();
                                     if (random > improveprob) {//no improvement, therefore worsen price
-                                        newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));
+                                        if (!bestPrice) { //if not bestprice, bring to bidprice incrementally
+                                            newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));
+                                        } else if (bestPrice) { //if bestprice, be defensive and worsen price in a single tick
+                                            newLimitPrice = bidPrice - Math.abs(improveamt);
+                                        }
                                     }
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
                                             new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
@@ -315,7 +321,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                         }
                                         if (calculatedPrice == 0) {
-                                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
                                                     new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                         recentOrders.size()}, Algorithm.timeZone, true);
                                             return;
@@ -323,8 +329,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         break;
                                     default:
                                         calculatedPrice = bidPrice;
-                                        if(calculatedPrice==0){
-                                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                        if (calculatedPrice == 0) {
+                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
                                                     new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                         recentOrders.size()}, Algorithm.timeZone, true);
                                         }
@@ -352,9 +358,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         //To prevent frequent orders when we are not near market, we limit updates only if
                                         //new limitprice is off by 10 ticksize.
                                         newLimitPrice = calculatedPrice + 10 * ticksize;
-                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
-                                            new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
+                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                                new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
                                     }
                                 }
 
@@ -366,6 +372,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 if (!fatfinger) {
                                     if (calculatedPrice <= plp && plp <= askPrice) {
                                         //do nothing, we are the best ask
+                                        bestPrice = true;
                                         if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
                                             newLimitPrice = plp + Math.abs(improveamt);
                                         }
@@ -378,7 +385,11 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     double random = Math.random();
                                     if (random > improveprob) {
-                                        newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
+                                        if (!bestPrice) {
+                                            newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
+                                        } else if (bestPrice) {
+                                            newLimitPrice = askPrice + Math.abs(improveamt);
+                                        }
                                     }
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
                                             new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
