@@ -2236,6 +2236,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             ob.setChildFillSize(filled);
             ob.setFillPrice(avgFillPrice);
             ob.setChildStatus(EnumOrderStatus.PARTIALFILLED);
+            ob.setParentStatus(EnumOrderStatus.PARTIALFILLED);
             //2. Initialize BeanPosition
             BeanPosition p = c.getPositions().get(ind) == null ? new BeanPosition() : c.getPositions().get(ind);
             if (c.getPositions().get(ind) == null) {
