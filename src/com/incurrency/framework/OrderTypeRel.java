@@ -77,7 +77,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             side = event.getSide();
             limitPrice = event.getLimitPrice();
             this.oms = oms;
-            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + orderid,
+            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + orderid+".csv",
                     new String[]{"Condition", "bid", "ask", "lastprice", "recentorderssize", "calculatedprice", "priorlimitprice", "newlimitprice", "random", "improveprob"}, Algorithm.timeZone, true);
         } catch (Exception evt) {
             logger.log(Level.SEVERE, null, evt);
@@ -164,7 +164,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 if (recentOrders.size() == orderspermin
                         && (new Date().getTime() - (Long) recentOrders.get(0)) < 60000) {// Timestamp of the first of the "n" orders is *less* than 60 seconds prior. Stop!!
                     recalculate = false;
-                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                             new Object[]{"OrdersPerMinLimitHit", Parameters.symbol.get(id).getBidPrice(), Parameters.symbol.get(id).getAskPrice(),
                                 Parameters.symbol.get(id).getLastPrice(), recentOrders.size()}, Algorithm.timeZone, true);
                 } else {
@@ -204,7 +204,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                         }
                                         if (calculatedPrice == 0) { //underlying does not have a price. No recalculation.
-                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                                     new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                         recentOrders.size()}, Algorithm.timeZone, true);
                                             return;
@@ -213,7 +213,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     default:
                                         calculatedPrice = bidPrice;
                                         if (calculatedPrice == 0) {
-                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                                     new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                         recentOrders.size()}, Algorithm.timeZone, true);
                                             return;
@@ -243,7 +243,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         //new limitprice is off by 10 ticksize.
                                         newLimitPrice = calculatedPrice - 10 * ticksize;
                                     }
-                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                             new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                 recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
                                 }
@@ -275,13 +275,13 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             newLimitPrice = bidPrice - Math.abs(improveamt);
                                         }
                                     }
-                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                             new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                 recentOrders.size(), calculatedPrice, plp, newLimitPrice, random, improveprob}, Algorithm.timeZone, true);
                                 }
 
                                 if (newLimitPrice != plp && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
-                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                             new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                 recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
                                     recentOrders.add(new Date().getTime());
@@ -321,7 +321,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             }
                                         }
                                         if (calculatedPrice == 0) {
-                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                                     new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                         recentOrders.size()}, Algorithm.timeZone, true);
                                             return;
@@ -330,7 +330,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     default:
                                         calculatedPrice = bidPrice;
                                         if (calculatedPrice == 0) {
-                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                                     new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                         recentOrders.size()}, Algorithm.timeZone, true);
                                         }
@@ -358,7 +358,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         //To prevent frequent orders when we are not near market, we limit updates only if
                                         //new limitprice is off by 10 ticksize.
                                         newLimitPrice = calculatedPrice + 10 * ticksize;
-                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                                 new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                     recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
                                     }
@@ -396,7 +396,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                                 recentOrders.size(), calculatedPrice, plp, newLimitPrice, random, improveprob}, Algorithm.timeZone, true);
                                 }
                                 if (newLimitPrice != plp && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
-                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                             new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                 recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
                                     recentOrders.add(new Date().getTime());
