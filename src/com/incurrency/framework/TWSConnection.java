@@ -1760,12 +1760,12 @@ public class TWSConnection extends Thread implements EWrapper {
             if (id >= 0) {
                 //String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
                 logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
-                        new Object[]{strategy, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), getC().getOrders().get(orderId).getInternalOrderID(), orderId, status, filled, remaining});
+                        new Object[]{strategy, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(getC().getOrders().get(orderId).getInternalOrderID()), String.valueOf(orderId), status, filled, remaining});
                 //logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
                 tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
             } else {
                 logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
-                        new Object[]{strategy, c.getAccountName(), "Unknown", orderId, -1, status, filled, remaining});
+                        new Object[]{strategy, c.getAccountName(), "Unknown", String.valueOf(orderId), -1, status, filled, remaining});
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);

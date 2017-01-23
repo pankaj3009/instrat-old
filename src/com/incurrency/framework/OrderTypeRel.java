@@ -88,7 +88,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     public void run() {
         try {
             logger.log(Level.INFO, "501,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}",
-                    new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), externalOrderID, e.getLimitPrice()});
+                    new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(c.getOrders().get(externalOrderID).getInternalOrderID()), String.valueOf(externalOrderID), e.getLimitPrice()});
             RedisSubscribe.tes.addBidAskListener(this);
             RedisSubscribe.tes.addOrderStatusListener(this);
             for (BeanConnection c1 : Parameters.connection) {
@@ -102,9 +102,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                     Thread.yield();
                 }
                 logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
-                        new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), externalOrderID});
+                        new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), String.valueOf(externalOrderID)});
                 if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
-                    oms.getDb().delKey("opentrades", oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName());
+                    oms.getDb().delKey("opentrades", oms.orderReference + ":" + String.valueOf(internalOrderIDEntry) + ":" + c.getAccountName());
                 }
                 RedisSubscribe.tes.removeBidAskListener(this);
                 RedisSubscribe.tes.removeOrderStatusListener(this);

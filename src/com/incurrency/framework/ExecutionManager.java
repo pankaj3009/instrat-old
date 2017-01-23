@@ -1374,7 +1374,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
     //fireLinkedActions is triggered on partial/ complete fill and on order cancellation
     private synchronized void fireLinkedActions(BeanConnection c, int orderid) {
-        logger.log(Level.INFO, "204,LinkedActionOrderID,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid});
+        logger.log(Level.INFO, "500,LinkedActionOrderID,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid});
         //this function only supports linked actions for cancellation. What about linked action for fills?
         OrderBean ob = c.getOrders().get(orderid);
         int parentid = ob.getParentSymbolID() - 1;
@@ -2112,7 +2112,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int internalorderid = ob.getInternalOrderID();
         boolean stubOrderPlaced = false;
         //ob.setCancelRequested(false);
-        logger.log(Level.INFO, "000,Debug,{0}", new Object[]{Parameters.symbol.get(parentid).getDisplayname() + delimiter + ob.getChildFillSize() + delimiter + ob.getChildOrderSize() + delimiter + ob.getParentFillSize() + delimiter + ob.getParentOrderSize()});
+        logger.log(Level.FINE, "000,Debug,{0}", new Object[]{Parameters.symbol.get(parentid).getDisplayname() + delimiter + ob.getChildFillSize() + delimiter + ob.getChildOrderSize() + delimiter + ob.getParentFillSize() + delimiter + ob.getParentOrderSize()});
         if (ob.getChildFillSize() > 0 && ob.getChildFillSize() < ob.getChildOrderSize()) {
             ob.setChildStatus(EnumOrderStatus.CANCELLEDPARTIALFILL);
         } else if (ob.getChildFillSize() > 0 && ob.getChildFillSize() == ob.getChildOrderSize()) {
