@@ -1,3 +1,4 @@
+
 /*
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
@@ -297,7 +298,7 @@ public class Strategy implements NotificationListener {
                     if(reportingTime.before(new Date())){
                         reportingTime=DateUtil.addDays(reportingTime, 1);
                     }
-                    closeProcessing.schedule(runPrintOrders, reportingTime);
+                    closeProcessing.schedule(runPrintOrders, this.shutdownDate);
                     openTradingWindow.schedule(runOpenTradingWindow, this.startDate);
                     closeTradingWindow.schedule(runCloseTradingWindow, this.endDate);
                 }
@@ -347,7 +348,7 @@ public class Strategy implements NotificationListener {
        fallbackBidVol=Utilities.getDouble(p.getProperty("FallbackBidVol","0.10"),0.10);
        fallbackAskVol=Utilities.getDouble(p.getProperty("FallbackAskVol","0.50"),0.50);
         if (MainAlgorithm.isUseForTrading()) {
-            MainAlgorithm.setCloseDate(shutdownDate); 
+            MainAlgorithm.setCloseDate(DateUtil.addSeconds(shutdownDate,240)); 
         }
         if(this.getDynamicOrderDuration()==0){
             this.setAggression(false);
