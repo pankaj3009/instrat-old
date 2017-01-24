@@ -2108,13 +2108,10 @@ public class Utilities {
             FileWriter fileWritter = new FileWriter(file, true);
             BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
             String result = "";
-            for (int i = 1; i < content.length; i++) {
-                if (i > 1) {
-                    result = result + ",";
-                }
-                result = result + content[i].toString();
+            for (int i = 0; i < content.length; i++) {
+                result = result + ","+content[i].toString();
             }
-            bufferWritter.write(dateString + "," + result + newline);
+            bufferWritter.write(dateString + result + newline);
             bufferWritter.close();
             if (!appendAtEnd) {
                 File newfile = new File(dir, filename + ".old");
