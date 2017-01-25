@@ -185,6 +185,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 double bidPrice = s.getBidPrice();
                                 double askPrice = s.getAskPrice();
                                 double calculatedPrice = 0;
+                                int bidSize=s.getBidSize();
                                 switch (s.getType()) {
                                     case "OPT":
                                         s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
@@ -256,7 +257,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     if (bidPrice <= plp && plp <= calculatedPrice) {
                                         //do nothing, we are the best bid
                                         bestPrice = true;
-                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && bidSize==e.getOrderSize()) {
                                             newLimitPrice = plp - Math.abs(improveamt);
                                         }
                                     } else if (calculatedPrice >= bidPrice && bidPrice != plp) {
@@ -301,6 +302,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 recalculate = false;
                                 bidPrice = s.getBidPrice();
                                 askPrice = s.getAskPrice();
+                                int askSize=s.getAskSize();
                                 calculatedPrice = 0;
                                 switch (s.getType()) {
                                     case "OPT":
@@ -373,7 +375,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     if (calculatedPrice <= plp && plp <= askPrice) {
                                         //do nothing, we are the best ask
                                         bestPrice = true;
-                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000) {
+                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && askSize==e.getOrderSize()) {
                                             newLimitPrice = plp + Math.abs(improveamt);
                                         }
                                     } else if (calculatedPrice <= askPrice && askPrice != plp) {
