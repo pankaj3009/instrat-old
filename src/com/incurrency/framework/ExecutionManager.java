@@ -1264,7 +1264,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:The order price is outside of the allowable price limits")) {
                 int id = event.getConnection().getOrders().get(event.getId()).getParentSymbolID() - 1;
                 //send email
-                Thread t = new Thread(new Mail("Order placed by inStrat for symbol " + Parameters.symbol.get(id).getBrokerSymbol() + " over strategy " + getS().getStrategy() + " was outside permissible range. Please check inStrat status", "Algorithm SEVERE ALERT"));
+                Thread t = new Thread(new Mail(event.getConnection().getOwnerEmail(),"Order placed by inStrat for symbol " + Parameters.symbol.get(id).getBrokerSymbol() + " over strategy " + getS().getStrategy() + " was outside permissible range. Please check inStrat status", "Algorithm SEVERE ALERT"));
                 t.start();
                 logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getBrokerSymbol() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
                 this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
