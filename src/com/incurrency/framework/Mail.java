@@ -27,12 +27,12 @@ private String subject="Algorithm Alert";
 
 public Mail(String to, String text){
     this.text=text;
-    this.recepient=to.split(":");
+    this.recepient=to.trim().split(":");
 }
 
 public Mail(String to, String text,String subject){
     this.text=text;
-    this.recepient=to.split(":");
+    this.recepient=to.trim().split(":");
     this.subject=subject;
     
 }
