@@ -2214,7 +2214,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     break;
 
                 case 1102: //Reconnected
-                    MainAlgorithm.connectToTWS(c);
+                    //MainAlgorithm.connectToTWS(c);
                     if (eClientSocket.isConnected()) {
                         setHistoricalDataFarmConnected(true);
                         logger.log(Level.INFO, "402,Reconnected with Account,{0}:{1}:{2}:{3}:{4},ErrorCode={5},ErrorMsg={6}",
@@ -2300,7 +2300,10 @@ public class TWSConnection extends Thread implements EWrapper {
         StackTraceElement e = stacktrace[1];//coz 0th will be getStackTrace so 1st
         String methodName = e.getMethodName();
         logger.log(Level.SEVERE, "100,IBConnectionClosed", new Object[]{getC().getAccountName()});
+        logger.log(Level.SEVERE, "100,IBConnectionClosed", new Object[]{stacktrace[0]});
         //System.out.println(methodName);
+        this.eClientSocket.eDisconnect();
+        MainAlgorithm.connectToTWS(c);
     }
     //</editor-fold>
 
