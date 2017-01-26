@@ -10,6 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.logging.Logger;
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class Algorithm {
     private final String delimiter = "_";
     public static Properties globalProperties;
     public static Properties instratInfo=new Properties();
-    public static List<String> holidays;
+    public static List<String> holidays=new ArrayList<>();
     public static India ind=new India();
     public static String timeZone;
     public static int openHour=9;
