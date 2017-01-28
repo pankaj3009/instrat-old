@@ -15,12 +15,12 @@ public class LinkedAction {
     int orderID;
     OrderEvent e;
     EnumLinkedAction action=EnumLinkedAction.UNDEFINED;
-    
-    public LinkedAction(BeanConnection c, int orderID, OrderEvent e,EnumLinkedAction action) {
+    int delay=0;
+    public LinkedAction(BeanConnection c, int orderID, OrderEvent e,EnumLinkedAction action,int delaySeconds) {
         this.c = c;
         this.orderID = orderID;
         this.e = e;
         this.action=action;
-        
+        this.delay=delaySeconds;        
     }     
 }
