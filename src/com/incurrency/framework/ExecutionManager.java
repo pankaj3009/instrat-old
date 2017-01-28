@@ -609,7 +609,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                                     ArrayList<OrderEvent> e = new ArrayList<>();
                                                     //ArrayList<LinkedAction> fillRequests = getFillRequestsForTracking().get(connectionid);
                                                     //fillRequests.add(new LinkedAction(c, orderid, event, EnumLinkedAction.REVERSEFILL));
-                                                    getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderid, event, EnumLinkedAction.REVERSEFILL));
+                                                    getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderid, event, EnumLinkedAction.REVERSEFILL,0));
                                                 }
                                                 lockLinkedAction.notifyAll();
                                             }
@@ -635,7 +635,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                                     ArrayList<OrderEvent> e = new ArrayList<>();
                                                     //ArrayList<LinkedAction> fillRequests = getFillRequestsForTracking().get(connectionid);
                                                     //fillRequests.add(new LinkedAction(c, orderid, event, EnumLinkedAction.REVERSEFILL));
-                                                    getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderid, event, EnumLinkedAction.REVERSEFILL));
+                                                    getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderid, event, EnumLinkedAction.REVERSEFILL,0));
                                                 }
                                             }
                                         } else {
@@ -744,8 +744,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
                     //cancelRequests.add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
                     //getCancellationRequestsForTracking().set(connectionid, cancelRequests);
-                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
-                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE));
+                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION,0));
+                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.PROPOGATE,0));
                     logger.log(Level.INFO, "500,cleanScaleTrueOrders.LinkedActionsAdded,{0}:{1}:{2}:{3}:{4},LinkedAction=CLOSEPOSITION&PROPOGATE",
                             new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), String.valueOf(event.getInternalorder()), String.valueOf(orderids.get(0))});
                     c.getWrapper().cancelOrder(c, orderids.get(0), true);
@@ -779,8 +779,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (!skip) {
                 synchronized (lockLinkedAction) {
                     //if cancellation is a success, close position.
-                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION));
-                    this.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, -1, event, EnumLinkedAction.PROPOGATE));
+                    getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, orderids.get(0), event, EnumLinkedAction.CLOSEPOSITION,0));
+                    this.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, -1, event, EnumLinkedAction.PROPOGATE,0));
                     logger.log(Level.INFO, "500,cleanScaleFalseOrders.LinkedActionsAdded,{0}:{1}:{2}:{3}:{4},LinkedAction=CLOSEPOSITION&PROPOGATE",
                             new Object[]{orderReference, c.getAccountName(), event.getSymbolBean().getDisplayname(), String.valueOf(event.getInternalorder()), String.valueOf(orderids.get(0))});
                     c.getWrapper().cancelOrder(c, orderids.get(0), true);
@@ -1388,7 +1388,16 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             int i = 0;
             for (LinkedAction f : cancelledOrders) {
                 if (f.orderID == orderid && i == 0 && (ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDNOFILL) || ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDPARTIALFILL))) { //only fire one linkedaction at one time.
-                    fireLinkedAction(c, orderid, f.action, f);
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                        @Override
+                        public void run() {
+                            fireLinkedAction(c, orderid, f.action, f);
+                        }
+                    },
+                            f.delay*1000
+                    );
+                    //fireLinkedAction(c, orderid, f.action, f);
                     i = i + 1;
                     cleanseOrdersToBeRetried(c, parentid, ob.getParentOrderSide());
                     itemsToRemove.add(f);
@@ -1411,7 +1420,17 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
 
             for (LinkedAction f : actionsToFire) {
-                fireLinkedAction(c, orderid, f.action, f);
+                new java.util.Timer().schedule(
+                        new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        fireLinkedAction(c, orderid, f.action, f);
+                    }
+                },
+                        f.delay*1000
+                );
+
+//                fireLinkedAction(c, orderid, f.action, f);
             }
 
             for (LinkedAction f : itemsToRemove) {
@@ -1719,7 +1738,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             synchronized (lockLinkedAction) {
                                 //ArrayList<LinkedAction> cancelRequests = getCancellationRequestsForTracking().get(connectionid);
                                 //cancelRequests.add(new LinkedAction(c, key, boi.getOrigEvent(), EnumLinkedAction.PROPOGATE));
-                                getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, key, boi.getOrigEvent(), EnumLinkedAction.PROPOGATE));
+                                getCancellationRequestsForTracking().get(connectionid).add(new LinkedAction(c, key, boi.getOrigEvent(), EnumLinkedAction.PROPOGATE,0));
                                 logger.log(Level.FINE, "204,LinkedActionAdded,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + "PROPOGATE" + delimiter + boi.getOrigEvent().getInternalorder() + delimiter + boi.getOrigEvent().getSymbolBean().getDisplayname()});
                                 c.getWrapper().cancelOrder(c, key, false);
 
