@@ -75,7 +75,8 @@ public class TWSConnection extends Thread implements EWrapper {
     public RequestIDManager requestIDManager = new RequestIDManager();
     private SimpleDateFormat sdfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SynchronousQueue<String> startingOrderID = new SynchronousQueue<>();
-
+    private java.util.Random random=new java.util.Random();
+    
     public TWSConnection(BeanConnection c) {
         this.c = c;
         mTotalSymbols = Parameters.symbol.size();
@@ -870,12 +871,12 @@ public class TWSConnection extends Thread implements EWrapper {
         int internalOrderIDEntry = e.getInternalorderentry();
         EnumOrderType ordType = e.getOrderType();
         if (!orders.isEmpty()) {
-            orderids = placeOrder(c, symbolID, side, notify, stage, ordType, orders, internalOrderID, internalOrderIDEntry, e.getTag(), e.isScale(), e.getLog(), oms, e);
+            orderids = placeOrder1(c, symbolID, side, notify, stage, ordType, orders, internalOrderID, internalOrderIDEntry, e.getTag(), e.isScale(), e.getLog(), oms, e);
         }
         return orderids;
     }
 
-    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, EnumOrderType ordType, HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag, boolean scale, String log, ExecutionManager oms, OrderEvent event) {
+    private synchronized ArrayList<Integer> placeOrder1(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, EnumOrderType ordType, HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag, boolean scale, String log, ExecutionManager oms, OrderEvent event) {
         ArrayList<Integer> orderids = new ArrayList<>();
         if (!tradeIntegrityOK(side, stage, orders, true)) {//reset trading flag set during createorder
             return orderids;
@@ -904,7 +905,30 @@ public class TWSConnection extends Thread implements EWrapper {
                 ob.setOcaGroup(order.m_ocaGroup);
                 ob.setOcaExecutionLogic(order.m_ocaType);
                 ob.setOrderType(ordType);
-                int displaySize = Utilities.getInt(event.getOrderAttributes().get("displaysize"), 0) * Parameters.symbol.get(parentid).getMinsize();
+                int displaySize=0;
+                int value = Utilities.getInt(event.getOrderAttributes().get("value"), 0);
+                double bidPrice = Parameters.symbol.get(parentid).getBidPrice();
+                double askPrice = Parameters.symbol.get(parentid).getAskPrice();
+                double lastPrice=Parameters.symbol.get(parentid).getLastPrice();
+                if(value>0){
+                    if(lastPrice<=0){
+                        lastPrice=Math.max(bidPrice,askPrice);
+                    }
+                    if(lastPrice>0){
+                        displaySize=(int)(value/lastPrice);
+                    }
+                }else{
+                    displaySize = Utilities.getInt(event.getOrderAttributes().get("displaysize"), 0) * Parameters.symbol.get(parentid).getMinsize();
+                }
+                double impactCost = Math.abs((askPrice - bidPrice) * 2 / (askPrice + bidPrice));
+                double impactCostThreshold=Utilities.getDouble(event.getOrderAttributes().get("thresholdimpactcost" ), 0.05);
+                if (displaySize>0 && impactCost < impactCostThreshold) {
+                    double rand = random.nextGaussian();
+                    displaySize = (int) (displaySize * rand);
+                    displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
+                    displaySize=Math.max(Parameters.symbol.get(parentid).getMinsize(),displaySize);
+                }
+                logger.log(Level.INFO,"500,OrderSizeSet,{0}",new Object[]{displaySize});
                 order.m_displaySize = displaySize;
                 ob.setDisplaySize(order.m_displaySize);
                 ob.setScale(scale);
@@ -949,7 +973,8 @@ public class TWSConnection extends Thread implements EWrapper {
                                 order.m_lmtPrice = limitprice;
                             }
                         }
-                        oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE));
+                        int delay=Utilities.getInt(event.getOrderAttributes().get("delay"), 0);
+                        oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE,delay));
                     }
                     order.m_displaySize = 0; //reset display size to zero as we do not use IB's displaysize feature
                     eClientSocket.placeOrder(mOrderID, contracts.get(0), order);
