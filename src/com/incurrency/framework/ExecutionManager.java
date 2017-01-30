@@ -2249,13 +2249,19 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             lastFillPrice = (filled * avgFillPrice - ob.getChildFillSize() * ob.getFillPrice()) / fill;
         }
         ArrayList priorFillDetails = new ArrayList();
-        if (fill > 0) {
+            ob.setChildStatus(EnumOrderStatus.PARTIALFILLED);
+            ob.setParentStatus(EnumOrderStatus.PARTIALFILLED);
+            
+           if (c.getOrdersInProgress().contains(orderid) && ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
+                c.getOrdersInProgress().remove(Integer.valueOf(orderid));
+                logger.log(Level.FINE, "307,OrderProgressQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
+            }
+                        
+            if (fill > 0) {
             //1. Update orderbean
             priorFillDetails = comboFillSize(c, internalOrderID, parentid);
             ob.setChildFillSize(filled);
             ob.setFillPrice(avgFillPrice);
-            ob.setChildStatus(EnumOrderStatus.PARTIALFILLED);
-            ob.setParentStatus(EnumOrderStatus.PARTIALFILLED);
             //2. Initialize BeanPosition
             BeanPosition p = c.getPositions().get(ind) == null ? new BeanPosition() : c.getPositions().get(ind);
             if (c.getPositions().get(ind) == null) {

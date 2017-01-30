@@ -78,7 +78,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             limitPrice = event.getLimitPrice();
             this.oms = oms;
             Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + orderid + ".csv",
-                    new String[]{"Condition", "bid", "ask", "lastprice", "recentorderssize", "calculatedprice", "priorlimitprice", "newlimitprice", "random", "improveprob"}, Algorithm.timeZone, true);
+                    new String[]{"Condition", "bid", "ask", "lastprice", "recentorderssize", "calculatedprice", "priorlimitprice", "newlimitprice","orderstatus","random", "improveprob"}, Algorithm.timeZone, true);
         } catch (Exception evt) {
             logger.log(Level.SEVERE, null, evt);
         }
@@ -249,7 +249,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         }
                                         Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                                 new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
+                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), 0, 0}, Algorithm.timeZone, true);
                                     }
                                 } else {
                                     fatfinger = false;
@@ -272,7 +272,13 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         newLimitPrice = plp + improveamt; //improve in increments
                                     } else {
                                         //Change to second best bid
-                                        newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));
+                                        if(Math.abs(plp - bidPrice) > 10 * ticksize){
+                                            double increment=Math.abs(plp - bidPrice)/2;
+                                            increment=Utilities.roundTo(increment, ticksize);
+                                            newLimitPrice = bidPrice-increment;                                            
+                                        }else{
+                                            newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));                                            
+                                        }
                                     }
                                     double random = Math.random();
                                     if (random > improveprob) {//no improvement, therefore worsen price
@@ -284,13 +290,13 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                             new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, random, improveprob}, Algorithm.timeZone, true);
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), random, improveprob}, Algorithm.timeZone, true);
                                 }
 
                                 if (newLimitPrice != plp && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                             new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), 0, 0}, Algorithm.timeZone, true);
                                     recentOrders.add(new Date().getTime());
                                     e.setLimitPrice(newLimitPrice);
                                     e.setOrderStage(EnumOrderStage.AMEND);
@@ -372,7 +378,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         }
                                         Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                                 new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
+                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), 0, 0}, Algorithm.timeZone, true);
                                     } else {
                                         fatfinger = false;
                                     }
@@ -395,7 +401,13 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         newLimitPrice = plp - improveamt;
                                     } else {
                                         //Change to second best ask
-                                        newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
+                                        if (Math.abs(plp - askPrice) > 10 * ticksize) {
+                                            double increment = Math.abs(plp - askPrice) / 2;
+                                            increment = Utilities.roundTo(increment, ticksize);
+                                            newLimitPrice = askPrice + increment;
+                                        } else {
+                                            newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
+                                        }
                                     }
                                     double random = Math.random();
                                     if (random > improveprob) {
@@ -407,12 +419,12 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
                                             new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, random, improveprob}, Algorithm.timeZone, true);
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getParentStatus(),random, improveprob}, Algorithm.timeZone, true);
                                 }
                                 if (newLimitPrice != plp && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                             new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, 0, 0}, Algorithm.timeZone, true);
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), 0, 0}, Algorithm.timeZone, true);
                                     recentOrders.add(new Date().getTime());
                                     e.setLimitPrice(newLimitPrice);
                                     e.setOrderStage(EnumOrderStage.AMEND);
