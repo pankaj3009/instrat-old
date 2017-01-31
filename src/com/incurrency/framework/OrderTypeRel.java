@@ -417,7 +417,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                             newLimitPrice = askPrice + Math.abs(improveamt);
                                         }
                                     }
-                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID,
+                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                             new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
                                                 recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getParentStatus(),random, improveprob}, Algorithm.timeZone, true);
                                 }
