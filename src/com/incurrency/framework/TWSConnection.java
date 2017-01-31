@@ -959,8 +959,9 @@ public class TWSConnection extends Thread implements EWrapper {
                     ob.setInternalOrderIDEntry(internalOrderIDEntry);
                     ArrayList<Contract> contracts = c.getWrapper().createContract(ob.getChildSymbolID() - 1);
 
-                    if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0) {
+                    if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0 && !event.getOrderStage().equals(EnumOrderStage.AMEND)) {
                         OrderEvent subEvent = event.clone(event);
+                        subEvent.setOrderStage(EnumOrderStage.INIT);
                         subEvent.setOrderSize(event.getOrderSize() - order.m_displaySize);
                         order.m_totalQuantity = order.m_displaySize;
                         ob.setDisplaySize(order.m_displaySize);
@@ -1045,6 +1046,8 @@ public class TWSConnection extends Thread implements EWrapper {
                                         } else {
                                             ob.setChildOrderSide(switchSide(side));
                                         }
+                                        break;
+                                    default:
                                         break;
                                 }
                                 ob.setParentOrderSize(order.m_totalQuantity);
