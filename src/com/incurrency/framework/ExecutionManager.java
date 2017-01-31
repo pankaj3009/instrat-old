@@ -1207,7 +1207,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     }
                     if (orderStatus.get(orderid) == null || orderStatus.get(orderid) != fillStatus) {
                         logger.log(Level.INFO, "302,OrderStatus,{0}:{1}:{2}:{3}:{4},OrderStatus={5}",
-                                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(parentid).getDisplayname(), ob.getInternalOrderID(), orderid, fillStatus});
+                                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(parentid).getDisplayname(), ob.getInternalOrderID(), String.valueOf(orderid), fillStatus});
                         orderStatus.put(orderid, fillStatus);
                     }
                     switch (fillStatus) {

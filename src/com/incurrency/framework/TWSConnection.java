@@ -928,7 +928,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
                     displaySize=Math.max(Parameters.symbol.get(parentid).getMinsize(),displaySize);
                 }
-                logger.log(Level.INFO,"500,OrderSizeSet,{0}",new Object[]{displaySize});
+                logger.log(Level.INFO,"500,DisplaySizeSet,{0}",new Object[]{displaySize});
                 order.m_displaySize = displaySize;
                 ob.setDisplaySize(order.m_displaySize);
                 ob.setScale(scale);
@@ -1918,7 +1918,7 @@ public class TWSConnection extends Thread implements EWrapper {
             }
             if (id >= 0) {
                 logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
-                        new Object[]{getC().getOrders().get(execution.m_orderId).getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), getC().getOrders().get(execution.m_orderId).getInternalOrderID(),execution.m_orderId, execution.m_cumQty, execution.m_avgPrice});
+                        new Object[]{getC().getOrders().get(execution.m_orderId).getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(getC().getOrders().get(execution.m_orderId).getInternalOrderID()),String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice)});
 
                 if (getC().getOrders().get(execution.m_orderId) != null) {
                     if (getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty == 0) {
@@ -1929,7 +1929,7 @@ public class TWSConnection extends Thread implements EWrapper {
                 }
             } else {
                 logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
-                        new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, execution.m_orderId,execution.m_cumQty, execution.m_avgPrice});
+                        new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, String.valueOf(execution.m_orderId),String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice)});
 
             }
         } catch (Exception e) {
