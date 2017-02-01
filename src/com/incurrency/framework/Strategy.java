@@ -5,7 +5,6 @@
  */
 package com.incurrency.framework;
 
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -91,19 +90,19 @@ public class Strategy implements NotificationListener {
     public Database<String, String> db;
     private Boolean useRedis;
     private String redisDatabaseID;
-    private int connectionidForMarketData=0;
+    private int connectionidForMarketData = 0;
     private String headerStrategy;
     private EnumOrderType ordType;
     private HashMap<String, Object> orderAttributes = new HashMap<>();
-    public AtomicBoolean tradingWindow=new AtomicBoolean();
-    private double fallbackBidVol=0.10;
-    private double fallbackAskVol=0.50;
+    public AtomicBoolean tradingWindow = new AtomicBoolean();
+    private double fallbackBidVol = 0.10;
+    private double fallbackAskVol = 0.50;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
-            if(accounts.isEmpty()){
+            if (accounts.isEmpty()) {
                 //pop a message that no accounts were found. Then exit
-                JOptionPane.showMessageDialog(null, "No valid broker accounts found for strategy: "+headerStrategy+". Check the connection file and parameter file to ensure the accounts are consistent");
+                JOptionPane.showMessageDialog(null, "No valid broker accounts found for strategy: " + headerStrategy + ". Check the connection file and parameter file to ensure the accounts are consistent");
                 System.exit(0);
             }
             this.m = m;
@@ -112,11 +111,11 @@ public class Strategy implements NotificationListener {
             this.parameterFile = parameterFileName;
             this.tradedType = type;
             this.stratCount = stratCount;
-            this.headerStrategy=headerStrategy;
+            this.headerStrategy = headerStrategy;
             for (String account : getAccounts()) {
                 allAccounts = allAccounts == null ? account : allAccounts + ":" + account;
             }
-            
+
             String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
             if (stratCount == null) {
                 this.strategy = tempStrategyArray[tempStrategyArray.length - 1].toLowerCase();
@@ -135,53 +134,86 @@ public class Strategy implements NotificationListener {
                             ownerEmail = c.getOwnerEmail();
                         }
                     }
-                }                
+                }
                 if (useRedis) {
                     String redisURL = prop.getProperty("redisurl").toString().trim();
-                    redisDatabaseID=redisURL.split(":")[2];
-                    db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379),Utilities.getInt(redisURL.split(":")[2], 1));
+                    redisDatabaseID = redisURL.split(":")[2];
+                    db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), Utilities.getInt(redisURL.split(":")[2], 1));
                 } else {
                     logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
                 }
-                if(Algorithm.db==null){//using extended hashmap for executions. Initialize hashmap
-                     logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");       
+                if (Algorithm.db == null) {//using extended hashmap for executions. Initialize hashmap
+                    logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
                 }
-                stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy(),Boolean.TRUE);
+                stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail, this.getStrategy(), Boolean.TRUE);
                 if (!stratVal) {
-                stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail,this.getStrategy(),Boolean.FALSE);
-                if(!stratVal){
-                                logger.log(Level.INFO,"200,IntegerityCheckFailed,{0}:{1}:{2}:{3}:{4}",
-                    new Object[]{strategy,"Order","Unknown",-1,-1});                    }
+                    stratVal = Validator.reconcile("", db, Algorithm.db, account, ownerEmail, this.getStrategy(), Boolean.FALSE);
+                    if (!stratVal) {
+                        logger.log(Level.INFO, "200,IntegerityCheckFailed,{0}:{1}:{2}:{3}:{4}",
+                                new Object[]{strategy, "Order", "Unknown", -1, -1});
+                    }
                 }
                 validation = validation && stratVal;
             }
             //}
             //Add symbols if exist in position, but not in Parameters.symbol
-            for(String key:db.getKeys("opentrades_"+strategy)){
-                    String parentsymbolname = Trade.getParentSymbol(db, key);
-                    int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
-                    if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
-                        String[] input = parentsymbolname.split("_", -1);
-                        String brokerSymbol=input[0].replaceAll("[^A-Za-z0-9\\-]", "");
-                        brokerSymbol=brokerSymbol.substring(0, Math.min(brokerSymbol.length(), 9));
-                        BeanSymbol s = new BeanSymbol(brokerSymbol,input[0], input[1], input[2], input[3], input[4]);
-                        if(s.getBrokerSymbol().equals("NSENIFTY")){
-                            s.setBrokerSymbol("NIFTY50");
-                        }
-                        s.setCurrency("INR");
-                        s.setExchange("NSE");
-                        s.setPrimaryexchange("NSE");
-                        s.setStreamingpriority(1);
-                        s.setStrategy(headerStrategy.toUpperCase());
-                        s.setDisplayname(parentsymbolname);
-                        s.setSerialno(Parameters.symbol.size()+1);
-                        s.setAddedToSymbols(true);
-                        synchronized(Parameters.symbol){
-                            Parameters.symbol.add(s);
-                        }
-                        
-                        Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(s, false);
+            for (String key : db.getKeys("opentrades_" + strategy)) {
+                String parentsymbolname = Trade.getParentSymbol(db, key);
+                int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
+                if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
+                    String[] input = parentsymbolname.split("_", -1);
+                    String brokerSymbol = input[0].replaceAll("[^A-Za-z0-9\\-]", "");
+                    brokerSymbol = brokerSymbol.substring(0, Math.min(brokerSymbol.length(), 9));
+                    BeanSymbol s = new BeanSymbol(brokerSymbol, input[0], input[1], input[2], input[3], input[4]);
+                    if (s.getBrokerSymbol().equals("NSENIFTY")) {
+                        s.setBrokerSymbol("NIFTY50");
                     }
+                    s.setCurrency("INR");
+                    s.setExchange("NSE");
+                    s.setPrimaryexchange("NSE");
+                    s.setStreamingpriority(1);
+                    s.setStrategy(headerStrategy.toUpperCase());
+                    s.setDisplayname(parentsymbolname);
+                    s.setSerialno(Parameters.symbol.size() + 1);
+                    s.setAddedToSymbols(true);
+                    switch (s.getType()) {
+                        case "OPT":
+                            if (Parameters.symbol.get(id).getMinsize() == 0) {
+                                String referenceCashType="IND";
+                                if(!s.getDisplayname().contains("NSENIFTY")){
+                                    referenceCashType="STK";
+                                }
+                                int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
+                                String expiry = Parameters.symbol.get(id).getExpiry();
+                                //         if (optionPricingUsingFutures) {
+                                //we assume option pricing uses futures. Will not work for a non-indian option  
+                                underlyingid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, underlyingid, expiry);
+                                //           }
+                                Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                            }
+                            break;
+                        case "FUT":
+                            if (Parameters.symbol.get(id).getMinsize() == 0) {
+                                String referenceCashType="IND";
+                                if(!s.getDisplayname().contains("NSENIFTY")){
+                                    referenceCashType="STK";
+                                }
+                                int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
+                                Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                            }
+                            break;
+                        default:
+                            if (Parameters.symbol.get(id).getMinsize() == 0) {
+                                Parameters.symbol.get(id).setMinsize(1);
+                            }
+                            break;
+                    }
+                    synchronized (Parameters.symbol) {
+                        Parameters.symbol.add(s);
+                    }
+
+                    Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(s, false);
+                }
             }
             for (BeanSymbol s : Parameters.symbol) {
                 if (Pattern.compile(Pattern.quote(headerStrategy), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
@@ -189,20 +221,20 @@ public class Strategy implements NotificationListener {
                     position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, getStrategy()));
                 }
             }
-            
+
             if (validation) {
                 //Initialize open notional orders and positions
-                for (String key : db.getKeys("opentrades_"+strategy)) {
+                for (String key : db.getKeys("opentrades_" + strategy)) {
                     String parentsymbolname = Trade.getParentSymbol(db, key);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     int tempPosition = 0;
                     double tempPositionPrice = 0D;
                     if (id >= 0) {
-                        if(!Parameters.symbol.get(id).getStrategy().contains(this.getStrategy().toUpperCase())){
-                            String oldstrategy=Parameters.symbol.get(id).getStrategy();
-                            Parameters.symbol.get(id).setStrategy(oldstrategy+":"+this.getStrategy().toUpperCase());
+                        if (!Parameters.symbol.get(id).getStrategy().contains(this.getStrategy().toUpperCase())) {
+                            String oldstrategy = Parameters.symbol.get(id).getStrategy();
+                            Parameters.symbol.get(id).setStrategy(oldstrategy + ":" + this.getStrategy().toUpperCase());
                         }
-                        if (Trade.getAccountName(db, key).equals("Order") && key.contains("_"+strategy)) {
+                        if (Trade.getAccountName(db, key).equals("Order") && key.contains("_" + strategy)) {
                             BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
                             tempPosition = p.getPosition();
                             tempPositionPrice = p.getPrice();
@@ -224,7 +256,7 @@ public class Strategy implements NotificationListener {
                                     p.setPosition(tempPosition);
                                     p.setPrice(tempPositionPrice);
                                     p.setPointValue(pointValue);
-                                    p.setStrategy(strategy);    
+                                    p.setStrategy(strategy);
                                     position.put(id, p);
                                     break;
                                 default:
@@ -266,23 +298,22 @@ public class Strategy implements NotificationListener {
                     maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
                     maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
                 }
-                for (String key : db.getKeys("opentrades_"+strategy)) {
+                for (String key : db.getKeys("opentrades_" + strategy)) {
                     String intkey = key.split("_")[1].split(":")[1];
                     maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
                     maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
                 }
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
-                logger.log(Level.INFO, "200, OpeningInternalOrderID,{0}:{1}:{2}:{3}:{4}", 
-                        new Object[]{getStrategy(),"Order","Unknown",Algorithm.orderidint.get(),-1});
+                logger.log(Level.INFO, "200, OpeningInternalOrderID,{0}:{1}:{2}:{3}:{4}",
+                        new Object[]{getStrategy(), "Order", "Unknown", Algorithm.orderidint.get(), -1});
 
                 //print positions on initialization
                 for (int id : getStrategySymbols()) {
                     if (position.get(id).getPosition() != 0) {
-                        logger.log(Level.INFO, "200,InitialOrderPosition,{0}:{1}:{2}:{3}:{4},OpeningPosition={5},OpeningPositionPrice={6}", 
-                                new Object[]{this.getStrategy(),"Order",Parameters.symbol.get(id).getDisplayname(),-1,-1,position.get(id).getPosition(),position.get(id).getPrice()});
+                        logger.log(Level.INFO, "200,InitialOrderPosition,{0}:{1}:{2}:{3}:{4},OpeningPosition={5},OpeningPositionPrice={6}",
+                                new Object[]{this.getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), -1, -1, position.get(id).getPosition(), position.get(id).getPrice()});
                     }
                 }
-
 
                 if (MainAlgorithm.isUseForTrading()) {
                     Thread t = new Thread(oms = new ExecutionManager(this, getAggression(), this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts, getTradeFile()));
@@ -294,9 +325,9 @@ public class Strategy implements NotificationListener {
                     Timer closeProcessing = new Timer("Timer: " + this.strategy + " CloseProcessing");
                     Timer openTradingWindow = new Timer("Timer: " + this.strategy + " OpenTradingWindow");
                     Timer closeTradingWindow = new Timer("Timer: " + this.strategy + " CloseTradingWindow");
-                    Date reportingTime=DateUtil.addSeconds(endDate, (this.maxOrderDuration + 1) * 60);
-                    if(reportingTime.before(new Date())){
-                        reportingTime=DateUtil.addDays(reportingTime, 1);
+                    Date reportingTime = DateUtil.addSeconds(endDate, (this.maxOrderDuration + 1) * 60);
+                    if (reportingTime.before(new Date())) {
+                        reportingTime = DateUtil.addDays(reportingTime, 1);
                     }
                     closeProcessing.schedule(runPrintOrders, this.shutdownDate);
                     openTradingWindow.schedule(runOpenTradingWindow, this.startDate);
@@ -323,34 +354,34 @@ public class Strategy implements NotificationListener {
         String currDateStr = df.format(currDate);
         String startDateStr = currDateStr + " " + p.getProperty("StartTime");
         String endDateStr = currDateStr + " " + p.getProperty("EndTime");
-        String shutdownDateStr=currDateStr+" "+p.getProperty("ShutDownTime","15:31:00");
+        String shutdownDateStr = currDateStr + " " + p.getProperty("ShutDownTime", "15:31:00");
         setStartDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr, timeZone));
         setEndDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, timeZone));
-        shutdownDate=DateUtil.parseDate("yyyyMMdd HH:mm:ss",shutdownDateStr,timeZone);
-        if(new Date().after(endDate)){
-            String endDateStrTemp=DateUtil.getFormatedDate("yyyy-MM-dd", getEndDate().getTime(), TimeZone.getTimeZone(timeZone));
-            endDateStrTemp=DateUtil.getNextBusinessDay(endDateStrTemp,"yyyy-MM-dd");
-            endDateStr=endDateStrTemp+endDateStr.substring(8);
+        shutdownDate = DateUtil.parseDate("yyyyMMdd HH:mm:ss", shutdownDateStr, timeZone);
+        if (new Date().after(endDate)) {
+            String endDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", getEndDate().getTime(), TimeZone.getTimeZone(timeZone));
+            endDateStrTemp = DateUtil.getNextBusinessDay(endDateStrTemp, "yyyy-MM-dd");
+            endDateStr = endDateStrTemp + endDateStr.substring(8);
             setEndDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", endDateStr, timeZone));
-            String startDateStrTemp=DateUtil.getFormatedDate("yyyy-MM-dd", getStartDate().getTime(), TimeZone.getTimeZone(timeZone));
-            startDateStrTemp=DateUtil.getNextBusinessDay(startDateStrTemp,"yyyy-MM-dd");
-            startDateStr=startDateStrTemp+startDateStr.substring(8);
+            String startDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", getStartDate().getTime(), TimeZone.getTimeZone(timeZone));
+            startDateStrTemp = DateUtil.getNextBusinessDay(startDateStrTemp, "yyyy-MM-dd");
+            startDateStr = startDateStrTemp + startDateStr.substring(8);
             setStartDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", startDateStr, timeZone));
-            String shutdownDateStrTemp=DateUtil.getFormatedDate("yyyy-MM-dd", shutdownDate.getTime(), TimeZone.getTimeZone(timeZone));
-            shutdownDateStrTemp=DateUtil.getNextBusinessDay(shutdownDateStrTemp,"yyyy-MM-dd");
-            shutdownDateStr=shutdownDateStrTemp+shutdownDateStr.substring(8);
-            shutdownDate=DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", shutdownDateStr, timeZone);
+            String shutdownDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", shutdownDate.getTime(), TimeZone.getTimeZone(timeZone));
+            shutdownDateStrTemp = DateUtil.getNextBusinessDay(shutdownDateStrTemp, "yyyy-MM-dd");
+            shutdownDateStr = shutdownDateStrTemp + shutdownDateStr.substring(8);
+            shutdownDate = DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", shutdownDateStr, timeZone);
         }
         setMaxSlippageEntry(p.getProperty("MaxSlippageEntry") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageEntry")) / 100); // divide by 100 as input was a percentage
         setMaxSlippageExit(p.getProperty("MaxSlippageExit") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageExit")) / 100); // divide by 100 as input was a percentage
         setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
         setDynamicOrderDuration(p.getProperty("DynamicOrderDuration") == null ? 1 : Integer.parseInt(p.getProperty("DynamicOrderDuration")));
-       fallbackBidVol=Utilities.getDouble(p.getProperty("FallbackBidVol","0.10"),0.10);
-       fallbackAskVol=Utilities.getDouble(p.getProperty("FallbackAskVol","0.50"),0.50);
+        fallbackBidVol = Utilities.getDouble(p.getProperty("FallbackBidVol", "0.10"), 0.10);
+        fallbackAskVol = Utilities.getDouble(p.getProperty("FallbackAskVol", "0.50"), 0.50);
         if (MainAlgorithm.isUseForTrading()) {
-            MainAlgorithm.setCloseDate(DateUtil.addSeconds(shutdownDate,240)); 
+            MainAlgorithm.setCloseDate(DateUtil.addSeconds(shutdownDate, 240));
         }
-        if(this.getDynamicOrderDuration()==0){
+        if (this.getDynamicOrderDuration() == 0) {
             this.setAggression(false);
         }
         setStrategyLog(Boolean.parseBoolean(p.getProperty("StrategyLog", "true").toString().trim()));
@@ -366,14 +397,14 @@ public class Strategy implements NotificationListener {
         setDayStopLoss(p.getProperty("DayStopLoss") != null ? Double.parseDouble(p.getProperty("DayStopLoss")) : 0D);
         setMaxOpenPositions(p.getProperty("MaximumOpenPositions") == null ? 1 : Integer.parseInt(p.getProperty("MaximumOpenPositions")));
         setFutBrokerageFile(p.getProperty("BrokerageFile") == null ? "" : p.getProperty("BrokerageFile"));
-       if(!useRedis){
-         setTradeFile(p.getProperty("TradeFile"));
-         if (stratCount == null) {
-            setOrderFile(p.getProperty("OrderFile"));
-        } else {
-            setOrderFile(p.getProperty("OrderFile").split("\\.")[0] + stratCount + "." + p.getProperty("OrderFile").split("\\.")[1]);
+        if (!useRedis) {
+            setTradeFile(p.getProperty("TradeFile"));
+            if (stratCount == null) {
+                setOrderFile(p.getProperty("OrderFile"));
+            } else {
+                setOrderFile(p.getProperty("OrderFile").split("\\.")[0] + stratCount + "." + p.getProperty("OrderFile").split("\\.")[1]);
 
-        }
+            }
         }
         setStartingCapital(p.getProperty("StartingCapital") == null ? 0D : Double.parseDouble(p.getProperty("StartingCapital")));
 
@@ -382,14 +413,14 @@ public class Strategy implements NotificationListener {
         for (String s : ordTypeString.split(":")) {
             if (i == 0) {
                 setOrdType(EnumOrderType.valueOf(ordTypeString.split(":")[i]));
-            }else{
+            } else {
                 getOrderAttributes().put(s.split("=")[0], s.split("=")[1]);
             }
             i++;
         }
         longOnly = p.getProperty("Long") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Long")));
         shortOnly = p.getProperty("Short") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Short")));
-        connectionidForMarketData=Utilities.getInt(p.getProperty("ConnectionIDForMarketData","0"),0);
+        connectionidForMarketData = Utilities.getInt(p.getProperty("ConnectionIDForMarketData", "0"), 0);
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Accounts" + delimiter + allAccounts});
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartDate" + delimiter + getStartDate()});
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EndDate" + delimiter + getEndDate()});
@@ -442,15 +473,15 @@ public class Strategy implements NotificationListener {
 
         }
     }
-    
+
     public void updatePositions() {
         //Initialize open notional orders and positions
-        for(BeanPosition p:position.values()){
+        for (BeanPosition p : position.values()) {
             p.setPosition(0);
             p.setBrokerage(0);
             p.setPrice(0);
         }
-        for (String key : db.getKeys("opentrades_"+strategy)) {
+        for (String key : db.getKeys("opentrades_" + strategy)) {
             String parentsymbolname = Trade.getParentSymbol(db, key);
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
             int tempPosition = 0;
@@ -516,18 +547,18 @@ public class Strategy implements NotificationListener {
             }
         }
     }
-    
-    TimerTask runOpenTradingWindow=new TimerTask(){
+
+    TimerTask runOpenTradingWindow = new TimerTask() {
 
         @Override
         public void run() {
             tradingWindow.set(Boolean.TRUE);
-            logger.log(Level.INFO,"200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
-                    new Object[]{strategy,"Order","Unknown",-1,-1,tradingWindow.get()});
-        }        
+            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
+                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
+        }
     };
-    
-    TimerTask runCloseTradingWindow=new TimerTask(){
+
+    TimerTask runCloseTradingWindow = new TimerTask() {
 
         @Override
         public void run() {
@@ -552,8 +583,7 @@ public class Strategy implements NotificationListener {
             }
         }
     };
-    
-    
+
     TimerTask runPrintOrders = new TimerTask() {
         @Override
         public void run() {
@@ -593,24 +623,24 @@ public class Strategy implements NotificationListener {
             }
             String orderFileFullName = s.getOrderFile();
             if (prefix.equals("")) {
-                profitGrid = TradingUtil.applyBrokerage(db, s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName,s.getStrategy());
+                profitGrid = TradingUtil.applyBrokerage(db, s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName, s.getStrategy());
                 TradingUtil.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
-                        TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
-                        TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
-                        TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
-                        TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
-                        TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
-                        TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
-                        TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
-                        TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
-                        TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
-                        TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
-                        TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
-                        TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
-                
+                TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
+                TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
+                TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
+                TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
+                TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
+                TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
+                TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
+                TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
+                TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
+                TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
+                TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
+                TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
+
             }
             if (!useRedis) {
-            logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
+                logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
             }
             //Now write trade file 
 //            String tradeFileFullName = "logs" + File.separator + prefix + s.getTradeFile();
@@ -618,7 +648,7 @@ public class Strategy implements NotificationListener {
             if (prefix.equals("")) {
                 for (BeanConnection c : Parameters.connection) {
                     if (s.accounts.contains(c.getAccountName())) {
-                        profitGrid = TradingUtil.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTradeFile(), s.getTimeZone(), s.getStartingCapital(), c.getAccountName(), equityFileName,s.getStrategy());
+                        profitGrid = TradingUtil.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTradeFile(), s.getTimeZone(), s.getStartingCapital(), c.getAccountName(), equityFileName, s.getStrategy());
                         TradingUtil.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
                         TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
                         TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
@@ -632,20 +662,19 @@ public class Strategy implements NotificationListener {
                         TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
                         TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
                         TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
-                        
-                        String message =
-                                "Strategy Name:" + s.strategy + Strategy.newline
+
+                        String message
+                                = "Strategy Name:" + s.strategy + Strategy.newline
                                 + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
                                 + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
                                 + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
                                 + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
                                 + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
-                                + "# days in history: " + df.format(profitGrid[9]) +Strategy.newline
+                                + "# days in history: " + df.format(profitGrid[9]) + Strategy.newline
                                 + "Average Drawdown Cycle:  " + df.format(profitGrid[10]) + Strategy.newline
-                                + "# days in current drawdown: " + df.format(profitGrid[11])+Strategy.newline
+                                + "# days in current drawdown: " + df.format(profitGrid[11]) + Strategy.newline
                                 + "Average Drawdown Value:  " + df.format(profitGrid[12]) + Strategy.newline
                                 + "Current Drawdown Value: " + df.format(profitGrid[13]);
-                        
 
                         String openPositions = Validator.openPositions(c.getAccountName(), s);
 
@@ -653,11 +682,11 @@ public class Strategy implements NotificationListener {
                             message = message + newline + "No open trade positions";
                         } else {
                             message = message + newline + openPositions;
-                        }                      
-                        message=message +"\n"+"\n";
-                        message=message + "PNL Summary"+"\n";
-                        
-                        message=message+Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
+                        }
+                        message = message + "\n" + "\n";
+                        message = message + "PNL Summary" + "\n";
+
+                        message = message + Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
                         Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
                         t.start();
                         try {
@@ -669,29 +698,29 @@ public class Strategy implements NotificationListener {
                 }
             }
             if (!useRedis) {
-            logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
+                logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
             }
-                for (BeanConnection c : Parameters.connection) {
-                    if (s.accounts.contains(c.getAccountName())) {
-                        Validator.reconcile(prefix, db, s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(),this.getStrategy(),Boolean.TRUE);
-                    }
-                    //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
+            for (BeanConnection c : Parameters.connection) {
+                if (s.accounts.contains(c.getAccountName())) {
+                    Validator.reconcile(prefix, db, s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
                 }
-                if(Algorithm.useForSimulation){
-                    System.exit(0);
-                }
-            
+                //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
+            }
+            if (Algorithm.useForSimulation) {
+                System.exit(0);
+            }
+
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
     }
 
     public HashSet<Integer> getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
-        HashSet<Integer>out=new HashSet<>();
+        HashSet<Integer> out = new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-        for (String key : db.getKeys("opentrades_"+strategy)) {
-            if (key.contains("_"+this.getStrategy()) && Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
+        for (String key : db.getKeys("opentrades_" + strategy)) {
+            if (key.contains("_" + this.getStrategy()) && Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
                 out.add(Trade.getEntryOrderIDInternal(db, key));
                 //return Trade.getEntryOrderIDInternal(db, key);
             }
@@ -701,7 +730,7 @@ public class Strategy implements NotificationListener {
 
     public int entry(HashMap<String, Object> order) {
         EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
-        if((!getLongOnly() && side.equals(EnumOrderSide.BUY))||(!getShortOnly() && side.equals(EnumOrderSide.SHORT))){
+        if ((!getLongOnly() && side.equals(EnumOrderSide.BUY)) || (!getShortOnly() && side.equals(EnumOrderSide.SHORT))) {
             return -1;
         }
         int id = Integer.valueOf(order.get("id").toString());
@@ -753,12 +782,12 @@ public class Strategy implements NotificationListener {
         } else {
             return -1;
         }
-        
+
     }
 
     public synchronized void exit(HashMap<String, Object> order) {
         EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
-        if((!getLongOnly() && side.equals(EnumOrderSide.COVER))||(!getShortOnly() && side.equals(EnumOrderSide.SELL))){
+        if ((!getLongOnly() && side.equals(EnumOrderSide.COVER)) || (!getShortOnly() && side.equals(EnumOrderSide.SELL))) {
             return;
         }
         int id = Integer.valueOf(order.get("id").toString());
@@ -814,12 +843,12 @@ public class Strategy implements NotificationListener {
                         if (newexitSize == entrySize) {
                             Trade.closeTrade(db, key);
                         }
-                         logger.log(Level.INFO, "201,ExitOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", 
-                                 new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), Integer.toString(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
-          
+                        logger.log(Level.INFO, "201,ExitOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}",
+                                new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), Integer.toString(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
+
                     } else {
-                        logger.log(Level.INFO, "201,ExitInternalIDNotFound,{0}:{1}:{2}:{3}:{4},Key={5}", 
-                                new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), tempinternalOrderID, -1,key});
+                        logger.log(Level.INFO, "201,ExitInternalIDNotFound,{0}:{1}:{2}:{3}:{4},Key={5}",
+                                new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), tempinternalOrderID, -1, key});
                     }
                 }
             }
@@ -831,49 +860,50 @@ public class Strategy implements NotificationListener {
 
     /**
      * Initializes the strategy for any new symbol that is added during the run.
-     * @param id 
+     *
+     * @param id
      */
-    public void initSymbol(int id, boolean optionPricingUsingFutures,String referenceCashType){
-        if (id >=0 && Parameters.symbol.get(id).isAddedToSymbols()) {
+    public void initSymbol(int id, boolean optionPricingUsingFutures, String referenceCashType) {
+        if (id >= 0 && Parameters.symbol.get(id).isAddedToSymbols()) {
             //do housekeeping
             //1. ensure it exists in positions for strategy and oms
-                switch (Parameters.symbol.get(id).getType()) {
-                    case "OPT":
-                        if (Parameters.symbol.get(id).getMinsize() == 0) {
-                            int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
-                            String expiry = Parameters.symbol.get(id).getExpiry();
-                            if (optionPricingUsingFutures) {
-                                underlyingid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, underlyingid, expiry);
-                            }
-                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+            switch (Parameters.symbol.get(id).getType()) {
+                case "OPT":
+                    if (Parameters.symbol.get(id).getMinsize() == 0) {
+                        int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
+                        String expiry = Parameters.symbol.get(id).getExpiry();
+                        if (optionPricingUsingFutures) {
+                            underlyingid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, underlyingid, expiry);
                         }
-                        break;
-                    case "FUT":
-                        if (Parameters.symbol.get(id).getMinsize() == 0) {
-                            int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
-                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
-                        }
-                        break;
-                    default:
-                        if (Parameters.symbol.get(id).getMinsize() == 0) {
-                            Parameters.symbol.get(id).setMinsize(1);
-                        }
-                        break;
-                }
-                if (!this.getStrategySymbols().contains(Integer.valueOf(id))) {
+                        Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                    }
+                    break;
+                case "FUT":
+                    if (Parameters.symbol.get(id).getMinsize() == 0) {
+                        int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
+                        Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                    }
+                    break;
+                default:
+                    if (Parameters.symbol.get(id).getMinsize() == 0) {
+                        Parameters.symbol.get(id).setMinsize(1);
+                    }
+                    break;
+            }
+            if (!this.getStrategySymbols().contains(Integer.valueOf(id))) {
                 this.getStrategySymbols().add(id);
-                String localStrategy=Parameters.symbol.get(id).getStrategy();
-                if(!localStrategy.contains(strategy)){
-                    switch(localStrategy){
+                String localStrategy = Parameters.symbol.get(id).getStrategy();
+                if (!localStrategy.contains(strategy)) {
+                    switch (localStrategy) {
                         case "":
-                            localStrategy=headerStrategy.toUpperCase();
+                            localStrategy = headerStrategy.toUpperCase();
                             break;
                         default:
-                           localStrategy=localStrategy+":"+headerStrategy.toUpperCase();
+                            localStrategy = localStrategy + ":" + headerStrategy.toUpperCase();
                             break;
                     }
                     Parameters.symbol.get(id).setStrategy(localStrategy);
-                }                
+                }
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
                 Index ind = new Index(this.getStrategy(), id);
                 if (Parameters.symbol.get(id).getBidPrice() == 0) {
@@ -888,28 +918,27 @@ public class Strategy implements NotificationListener {
                 for (BeanConnection c : Parameters.connection) {
                     c.initializeConnection(this.getStrategy(), id);
                 }
-                    if (plmanager != null) {
-                        plmanager.init(id);
-                    } else {
-                        logger.log(Level.SEVERE, "Symbol {0} not initialized. Probably the strategy has irreconciled positions", new Object[]{Parameters.symbol.get(id).getDisplayname()});
-                    }
+                if (plmanager != null) {
+                    plmanager.init(id);
+                } else {
+                    logger.log(Level.SEVERE, "Symbol {0} not initialized. Probably the strategy has irreconciled positions", new Object[]{Parameters.symbol.get(id).getDisplayname()});
+                }
             }
         }
     }
-    
-    
-        public void insertSymbol(List<BeanSymbol> symbols, String displayName,boolean optionPricingUsingFutures,String referenceCashType){
-        BeanSymbol s=new BeanSymbol(displayName);
+
+    public void insertSymbol(List<BeanSymbol> symbols, String displayName, boolean optionPricingUsingFutures, String referenceCashType) {
+        BeanSymbol s = new BeanSymbol(displayName);
         s.setExchange(Algorithm.defaultExchange);
         s.setPrimaryexchange(Algorithm.defaultPrimaryExchange);
         s.setCurrency(Algorithm.defaultCurrency);
-        int id=Parameters.symbol.size();
-        s.setSerialno(id+1);
+        int id = Parameters.symbol.size();
+        s.setSerialno(id + 1);
         Parameters.symbol.add(s);
         Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
-        initSymbol(s.getSerialno()-1,optionPricingUsingFutures,referenceCashType);
+        initSymbol(s.getSerialno() - 1, optionPricingUsingFutures, referenceCashType);
     }
-        
+
     @Override
     public void notificationReceived(NotificationEvent event) {
     }
@@ -943,9 +972,9 @@ public class Strategy implements NotificationListener {
      * @param longOnly the longOnly to set
      */
     public synchronized void setLongOnly(Boolean l) {
-            logger.log(Level.INFO,"200,LongOnlySet,{0}:{1}:{2}:{3}:{4},LongOnlyValue={5}",
-                    new Object[]{strategy,"Order","Unknown",-1,-1,l});    
-            this.longOnly = new AtomicBoolean(l);
+        logger.log(Level.INFO, "200,LongOnlySet,{0}:{1}:{2}:{3}:{4},LongOnlyValue={5}",
+                new Object[]{strategy, "Order", "Unknown", -1, -1, l});
+        this.longOnly = new AtomicBoolean(l);
     }
 
     /**
@@ -959,8 +988,8 @@ public class Strategy implements NotificationListener {
      * @param shortOnly the shortOnly to set
      */
     public synchronized void setShortOnly(Boolean s) {
-            logger.log(Level.INFO,"200,ShortOnlySet,{0}:{1}:{2}:{3}:{4},ShortOnlyValue={5}",
-                    new Object[]{strategy,"Order","Unknown",-1,-1,s});    
+        logger.log(Level.INFO, "200,ShortOnlySet,{0}:{1}:{2}:{3}:{4},ShortOnlyValue={5}",
+                new Object[]{strategy, "Order", "Unknown", -1, -1, s});
         this.shortOnly = new AtomicBoolean(s);
     }
 
@@ -1371,13 +1400,13 @@ public class Strategy implements NotificationListener {
      */
     public void setStopOrders(boolean stopOrders) {
         synchronized (lockPL) {
-            logger.log(Level.INFO,"200,StopOrdersSet,{0}:{1}:{2}:{3}:{4},StopOrders={5}",
-                    new Object[]{strategy,"Order","Unknown",-1,-1,stopOrders});    
+            logger.log(Level.INFO, "200,StopOrdersSet,{0}:{1}:{2}:{3}:{4},StopOrders={5}",
+                    new Object[]{strategy, "Order", "Unknown", -1, -1, stopOrders});
             this.stopOrders = stopOrders;
         }
     }
-    
-        /**
+
+    /**
      * @return the combosAdded
      */
     public static synchronized HashMap<String, String> getCombosAdded() {
@@ -1408,14 +1437,14 @@ public class Strategy implements NotificationListener {
     /**
      * @return the orderAttributes
      */
-    public HashMap<String,Object> getOrderAttributes() {
+    public HashMap<String, Object> getOrderAttributes() {
         return orderAttributes;
     }
 
     /**
      * @param orderAttributes the orderAttributes to set
      */
-    public void setOrderAttributes(HashMap<String,Object> orderAttributes) {
+    public void setOrderAttributes(HashMap<String, Object> orderAttributes) {
         this.orderAttributes = orderAttributes;
     }
 
