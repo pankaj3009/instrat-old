@@ -176,9 +176,13 @@ public class Strategy implements NotificationListener {
                     s.setDisplayname(parentsymbolname);
                     s.setSerialno(Parameters.symbol.size() + 1);
                     s.setAddedToSymbols(true);
+                    synchronized (Parameters.symbol) {
+                        Parameters.symbol.add(s);
+                    }
+                    id=s.getSerialno()-1;
                     switch (s.getType()) {
                         case "OPT":
-                            if (Parameters.symbol.get(id).getMinsize() == 0) {
+                            if (s.getMinsize() == 0) {
                                 String referenceCashType="IND";
                                 if(!s.getDisplayname().contains("NSENIFTY")){
                                     referenceCashType="STK";
@@ -208,9 +212,7 @@ public class Strategy implements NotificationListener {
                             }
                             break;
                     }
-                    synchronized (Parameters.symbol) {
-                        Parameters.symbol.add(s);
-                    }
+
 
                     Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(s, false);
                 }
