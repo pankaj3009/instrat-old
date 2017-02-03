@@ -269,13 +269,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         }
                                     } else if (calculatedPrice >= bidPrice && bidPrice != plp) {
                                         //Change to Best Bid
-                                        newLimitPrice = plp + improveamt; //improve in increments
+                                        if (Math.abs(plp - bidPrice) > 10 * ticksize) {
+                                            newLimitPrice = bidPrice + Math.abs(improveamt);
+                                        } else {
+                                            newLimitPrice = plp + improveamt;
+                                        }
                                     } else {
                                         //Change to second best bid
                                         if(Math.abs(plp - bidPrice) > 10 * ticksize){
-                                            double increment=Math.abs(plp - bidPrice)/2;
-                                            increment=Utilities.roundTo(increment, ticksize);
-                                            newLimitPrice = bidPrice-increment;                                            
+                                            newLimitPrice = bidPrice-Math.abs(improveamt);                                            
                                         }else{
                                             newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));                                            
                                         }
@@ -398,13 +400,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         }
                                     } else if (calculatedPrice <= askPrice && askPrice != plp) {
                                         //Change to Best Ask
-                                        newLimitPrice = plp - improveamt;
+                                        if (Math.abs(plp - askPrice) > 10 * ticksize) {
+                                            newLimitPrice = askPrice - Math.abs(improveamt);
+                                        } else {
+                                            newLimitPrice = plp - improveamt;
+                                        }
                                     } else {
                                         //Change to second best ask
                                         if (Math.abs(plp - askPrice) > 10 * ticksize) {
-                                            double increment = Math.abs(plp - askPrice) / 2;
-                                            increment = Utilities.roundTo(increment, ticksize);
-                                            newLimitPrice = askPrice + increment;
+                                            newLimitPrice = askPrice + Math.abs(improveamt);
                                         } else {
                                             newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
                                         }
