@@ -202,7 +202,7 @@ public class Utilities {
                         }
                     } else {
                         price = 0.80 * price;
-                        logger.log(Level.INFO, "Bidprice is zero. Symbol {0}, Calculated Limit Price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
+                        logger.log(Level.INFO, "500,Bidprice is zero. Symbol {0}, Calculated Limit Price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
                     }
                     break;
                 case SHORT:
@@ -212,7 +212,7 @@ public class Utilities {
 
                     } else {
                         price = 1.2 * price;
-                        logger.log(Level.INFO, "Askprice is zero. Symbol {0}, Calculated Limit Price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
+                        logger.log(Level.INFO, "500,Askprice is zero. Symbol {0}, Calculated Limit Price:{1}", new Object[]{Parameters.symbol.get(id).getDisplayname(), price});
                     }
                     break;
                 default:
