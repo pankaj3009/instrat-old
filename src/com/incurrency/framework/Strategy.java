@@ -37,6 +37,20 @@ import org.jquantlib.time.JDate;
  */
 public class Strategy implements NotificationListener {
 
+    /**
+     * @return the iamail
+     */
+    public String getIamail() {
+        return iamail;
+    }
+
+    /**
+     * @param iamail the iamail to set
+     */
+    public void setIamail(String iamail) {
+        this.iamail = iamail;
+    }
+
     //--common parameters required for all strategies
     MainAlgorithm m;
     public HashMap<Integer, Integer> internalOpenOrders = new HashMap(); //holds mapping of symbol id to latest initialization internal order
@@ -97,6 +111,7 @@ public class Strategy implements NotificationListener {
     public AtomicBoolean tradingWindow = new AtomicBoolean();
     private double fallbackBidVol = 0.10;
     private double fallbackAskVol = 0.50;
+    private String iamail;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -409,7 +424,7 @@ public class Strategy implements NotificationListener {
             }
         }
         setStartingCapital(p.getProperty("StartingCapital") == null ? 0D : Double.parseDouble(p.getProperty("StartingCapital")));
-
+        setIamail(p.getProperty("iamail","psharma@incurrency.com"));
         String ordTypeString = p.getProperty("OrderType", "LMT");
         int i = 0;
         for (String s : ordTypeString.split(":")) {
