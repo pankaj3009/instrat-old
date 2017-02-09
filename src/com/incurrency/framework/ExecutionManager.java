@@ -2262,6 +2262,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             priorFillDetails = comboFillSize(c, internalOrderID, parentid);
             ob.setChildFillSize(filled);
             ob.setFillPrice(avgFillPrice);
+                if (ob.getChildOrderSize() - ob.getChildFillSize() == 0) {
+                    ob.setChildStatus(EnumOrderStatus.COMPLETEFILLED);
+                    logger.log(Level.INFO, "DEBUG: Child Symbol: {0},ChildStatus:{1}", new Object[]{Parameters.symbol.get(childid).getDisplayname(), ob.getChildStatus()});
+                }
             //2. Initialize BeanPosition
             BeanPosition p = c.getPositions().get(ind) == null ? new BeanPosition() : c.getPositions().get(ind);
             if (c.getPositions().get(ind) == null) {
@@ -2384,7 +2388,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 c.getOrdersToBeFastTracked().remove(orderid);
                 //logger.log(Level.FINE, "{0},{1},Execution Manager,Removed order id from fast track queue, OrderID: {2}", new Object[]{c.getAccountName(), orderReference, orderid});
             }
-
+            
             if (c.getOrdersInProgress().contains(orderid) && ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
                 c.getOrdersInProgress().remove(Integer.valueOf(orderid));
                 logger.log(Level.FINE, "307,OrderProgressQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
@@ -2395,10 +2399,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 logger.log(Level.FINE, "307,OrderMissedQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid});
             }
 
-            if (ob.getChildOrderSize() - ob.getChildFillSize() == 0) {
-                ob.setChildStatus(EnumOrderStatus.COMPLETEFILLED);
-                logger.log(Level.INFO, "DEBUG: Child Symbol: {0},ChildStatus:{1}", new Object[]{Parameters.symbol.get(childid).getDisplayname(), ob.getChildStatus()});
-            }
 
             if (ob.getChildOrderSize() - ob.getChildFillSize() == 0) { //instead of checking for COMPLETEFILLED
                 ArrayList<SymbolOrderMap> orderMaps = c.getOrdersSymbols().get(ind);
