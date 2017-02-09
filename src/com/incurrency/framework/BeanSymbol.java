@@ -171,7 +171,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void SetOptionProcess(){//expiry,right,strike
         if(getCloseVol()==0){
             double optionlastprice = Utilities.getSettlePrice(this);
-            int futureid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, this.getSerialno()-1, expiry);
+            int futureid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.getSerialno()-1, expiry);
             double underlyingpriorclose = Utilities.getSettlePrice(Parameters.symbol.get(futureid));
 
             if (optionlastprice != 0) {
@@ -276,7 +276,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
         if(symbol.equals("NSENIFTY")){
-        this.brokerSymbol = "NIFTY50";            
+        this.brokerSymbol = "NIFTY50";
         }else{
             this.brokerSymbol=symbol;
         }
@@ -293,7 +293,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     }
 
     public BeanSymbol(String displayName){
-        this(displayName.split("_",-1)[0],displayName,displayName.split("_",-1)[1],null,null,displayName.split("_",-1)[2],displayName.split("_",-1)[4],displayName.split("_",-1)[3],0);
+        this(displayName.split("_",-1)[0],displayName,displayName.split("_",-1)[1],null,null,displayName.split("_",-1)[2],displayName.split("_",-1)[3],displayName.split("_",-1)[4],0);
     }
     
     public BeanSymbol(String brokerSymbol,String exchangeSymbol, String type, String expiry, String right,String option) {
