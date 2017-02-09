@@ -271,7 +271,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param right
      * @param minsize
      */
-    public BeanSymbol(String symbol, String displayName, String type, String exchange, String currency, String expiry, String option, String right, int minsize) {
+    public BeanSymbol(String symbol, String displayName, String type, String exchange, String currency, String expiry, String right,String option,  int minsize) {
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
