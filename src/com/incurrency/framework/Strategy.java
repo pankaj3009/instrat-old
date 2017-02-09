@@ -890,7 +890,7 @@ public class Strategy implements NotificationListener {
                         int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
                         String expiry = Parameters.symbol.get(id).getExpiry();
                         if (optionPricingUsingFutures) {
-                            underlyingid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, underlyingid, expiry);
+                            underlyingid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, underlyingid, expiry);
                         }
                         Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
                     }
