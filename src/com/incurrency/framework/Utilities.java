@@ -1988,6 +1988,7 @@ public class Utilities {
             int futureid = Utilities.getFutureIDFromBrokerSymbol(symbols, underlyingid, expiry);
             if (futureid >= 0) {
                 String brokerSymbol = exchangeSymbol.replaceAll("[^A-Za-z0-9\\-]", "");
+                brokerSymbol=brokerSymbol.length()>9?brokerSymbol.substring(0, 9):brokerSymbol;
                 if(brokerSymbol.equals("NSENIFTY")){
                     brokerSymbol="NIFTY50";
                 }
@@ -2013,6 +2014,9 @@ public class Utilities {
 
     
     public static int getNetPosition(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id, String type) {
+    //Returns net positions, netting buy and sell.
+    //For option, net position netting across all strikes for the specified CALL or PUT. For options, the net positions
+    //are for CALL or PUT.
         int out = 0;
         try {
             ArrayList<Integer> tempSymbols = new ArrayList<>();
