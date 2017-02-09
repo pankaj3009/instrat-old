@@ -66,7 +66,7 @@ public class Algorithm {
         SimpleDateFormat sdf_yyyymmdd = new SimpleDateFormat("yyyyMMdd");
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
         topic=globalProperties.getProperty("topic", "INR");
-        defaultExchange = globalProperties.getProperty("defaultexchange", "SMART").toString().trim();
+        defaultExchange = globalProperties.getProperty("defaultexchange", "NSE").toString().trim();
         defaultPrimaryExchange = globalProperties.getProperty("defaultprimaryexchange", "NSE").toString().trim();
         defaultCurrency = globalProperties.getProperty("defaultcurrency", "INR").toString().trim();
         generateSymbolFile = Boolean.valueOf(globalProperties.getProperty("generatesymbolfile", "false").toString().trim());

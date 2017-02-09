@@ -183,9 +183,9 @@ public class Strategy implements NotificationListener {
                     if (s.getBrokerSymbol().equals("NSENIFTY")) {
                         s.setBrokerSymbol("NIFTY50");
                     }
-                    s.setCurrency("INR");
-                    s.setExchange("NSE");
-                    s.setPrimaryexchange("NSE");
+                    s.setCurrency(Algorithm.defaultCurrency);
+                    s.setExchange(Algorithm.defaultExchange);
+                    s.setPrimaryexchange(Algorithm.defaultPrimaryExchange);
                     s.setStreamingpriority(1);
                     s.setStrategy(headerStrategy.toUpperCase());
                     s.setDisplayname(parentsymbolname);
