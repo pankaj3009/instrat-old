@@ -278,11 +278,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         if(symbol.equals("NSENIFTY")){
         this.brokerSymbol = "NIFTY50";
         }else{
-            String tempbrokerSymbol = exchangeSymbol.replaceAll("[^A-Za-z0-9\\-]", "").toUpperCase().trim();
+            String tempbrokerSymbol = symbol.replaceAll("[^A-Za-z0-9\\-]", "").toUpperCase().trim();
             this.brokerSymbol=tempbrokerSymbol.length()>9?tempbrokerSymbol.substring(0, 9):tempbrokerSymbol;
                 
         }
-        
+        this.exchangeSymbol=symbol;        
         this.happyName = displayName;
         this.displayName=displayName;
         this.type = type;
