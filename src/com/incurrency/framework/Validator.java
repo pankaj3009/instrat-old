@@ -172,7 +172,7 @@ public class Validator {
         //String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
         try {
             ArrayList<String> tradeList = new ArrayList<>();
-            for (String key : s.db.getKeys("opentrades_"+s.getStrategy())) {
+            for (String key : s.getDb().getKeys("opentrades_"+s.getStrategy())) {
                 tradeList.add(key);
             }
             Set<String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account,s.getStrategy());

@@ -1887,7 +1887,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         if (Trade.getEntrySize(db, tradeKey) == 0) {
                             Trade.deleteOpenTrade(db, tradeKey);
                             String orderKey = getS().getStrategy() + ":" + String.valueOf(parentInternalOrderIDEntry) + ":" + "Order";
-                            Trade.deleteOpenTrade(this.getS().db, orderKey);
+                            Trade.deleteOpenTrade(this.getS().getDb(), orderKey);
                         }
                     }
 

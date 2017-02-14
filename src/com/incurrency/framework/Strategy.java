@@ -37,6 +37,17 @@ import org.jquantlib.time.JDate;
  */
 public class Strategy implements NotificationListener {
 
+
+
+    /**
+     * @return the db
+     */
+    public Database<String, String> getDb() {
+        synchronized(syncDB){
+        return db;
+        }
+    }
+
     /**
      * @return the iamail
      */
@@ -101,7 +112,8 @@ public class Strategy implements NotificationListener {
     public final String delimiter = "_";
     private boolean strategyLog;
     private boolean stopOrders = false;
-    public Database<String, String> db;
+    private Database<String, String> db;
+    private Database<String, String> dbParameters;
     private Boolean useRedis;
     private String redisDatabaseID;
     private int connectionidForMarketData = 0;
@@ -112,6 +124,7 @@ public class Strategy implements NotificationListener {
     private double fallbackBidVol = 0.10;
     private double fallbackAskVol = 0.50;
     private String iamail;
+    private final Object syncDB=new Object();
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -154,6 +167,7 @@ public class Strategy implements NotificationListener {
                     String redisURL = prop.getProperty("redisurl").toString().trim();
                     redisDatabaseID = redisURL.split(":")[2];
                     db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), Utilities.getInt(redisURL.split(":")[2], 1));
+                    dbParameters=new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), 1);
                 } else {
                     logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
                 }
@@ -498,8 +512,8 @@ public class Strategy implements NotificationListener {
             p.setBrokerage(0);
             p.setPrice(0);
         }
-        for (String key : db.getKeys("opentrades_" + strategy)) {
-            String parentsymbolname = Trade.getParentSymbol(db, key);
+        for (String key : getDb().getKeys("opentrades_" + strategy)) {
+            String parentsymbolname = Trade.getParentSymbol(getDb(), key);
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
             int tempPosition = 0;
             double tempPositionPrice = 0D;
@@ -508,13 +522,13 @@ public class Strategy implements NotificationListener {
                     String oldstrategy = Parameters.symbol.get(id).getStrategy();
                     Parameters.symbol.get(id).setStrategy(oldstrategy + ":" + this.getStrategy().toUpperCase());
                 }
-                if (Trade.getAccountName(db, key).equals("Order") && key.contains("_" + strategy)) {
+                if (Trade.getAccountName(getDb(), key).equals("Order") && key.contains("_" + strategy)) {
                     BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
                     tempPosition = p.getPosition();
                     tempPositionPrice = p.getPrice();
-                    int entrySize = Trade.getEntrySize(db, key);
-                    double entryPrice = Trade.getEntryPrice(db, key);
-                    switch (Trade.getEntrySide(db, key)) {
+                    int entrySize = Trade.getEntrySize(getDb(), key);
+                    double entryPrice = Trade.getEntryPrice(getDb(), key);
+                    switch (Trade.getEntrySide(getDb(), key)) {
                         case BUY:
                             tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
                             tempPosition = tempPosition + entrySize;
@@ -536,9 +550,9 @@ public class Strategy implements NotificationListener {
                         default:
                             break;
                     }
-                    int exitSize = Trade.getExitSize(db, key);
-                    double exitPrice = Trade.getExitPrice(db, key);
-                    switch (Trade.getExitSide(db, key)) {
+                    int exitSize = Trade.getExitSize(getDb(), key);
+                    double exitPrice = Trade.getExitPrice(getDb(), key);
+                    switch (Trade.getExitSide(getDb(), key)) {
                         case COVER:
                             tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
                             tempPosition = tempPosition + exitSize;
@@ -640,7 +654,7 @@ public class Strategy implements NotificationListener {
             }
             String orderFileFullName = s.getOrderFile();
             if (prefix.equals("")) {
-                profitGrid = TradingUtil.applyBrokerage(db, s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName, s.getStrategy());
+                profitGrid = TradingUtil.applyBrokerage(getDb(), s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName, s.getStrategy());
                 TradingUtil.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
                 TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
                 TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
@@ -719,7 +733,7 @@ public class Strategy implements NotificationListener {
             }
             for (BeanConnection c : Parameters.connection) {
                 if (s.accounts.contains(c.getAccountName())) {
-                    Validator.reconcile(prefix, db, s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
+                    Validator.reconcile(prefix, getDb(), s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
                 }
                 //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
             }
@@ -736,9 +750,9 @@ public class Strategy implements NotificationListener {
         HashSet<Integer> out = new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-        for (String key : db.getKeys("opentrades_" + strategy)) {
-            if (key.contains("_" + this.getStrategy()) && Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
-                out.add(Trade.getEntryOrderIDInternal(db, key));
+        for (String key : getDb().getKeys("opentrades_" + strategy)) {
+            if (key.contains("_" + this.getStrategy()) && Trade.getAccountName(getDb(), key).equals(accountName) && Trade.getParentSymbol(getDb(), key).equals(symbol) && Trade.getEntrySide(getDb(), key).equals(entrySide) && Trade.getEntrySize(getDb(), key) > Trade.getExitSize(getDb(), key)) {
+                out.add(Trade.getEntryOrderIDInternal(getDb(), key));
                 //return Trade.getEntryOrderIDInternal(db, key);
             }
         }
@@ -789,7 +803,7 @@ public class Strategy implements NotificationListener {
             String log = order.get("log") != null ? order.get("log").toString() : "";
             double lastprice = Parameters.symbol.get(id).getLastPrice();
             lastprice = lastprice == 0 ? Utilities.getDouble(order.get("limitprice"), 0) : lastprice;
-            new Trade(db, id, id, EnumOrderReason.REGULARENTRY, side, lastprice, size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+            new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, side, lastprice, size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
             logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), internalorderid, -1, position.get(id).getPosition(), position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(order);
@@ -843,22 +857,22 @@ public class Strategy implements NotificationListener {
             for (int tempinternalOrderID : tempinternalOrderIDs) {
                 if (tradeSize > 0) { //only update trades if tradeSize>0
                     String key = this.getStrategy() + ":" + tempinternalOrderID + ":" + "Order";
-                    boolean entryTradeExists = Trade.getEntrySize(db, key) > 0 ? true : false;
+                    boolean entryTradeExists = Trade.getEntrySize(getDb(), key) > 0 ? true : false;
                     if (entryTradeExists) {
                         int internalorderid = getInternalOrderID();
                         order.put("orderidint", internalorderid);
-                        int entrySize = Trade.getEntrySize(db, key);
-                        int exitSize = Trade.getExitSize(db, key);
-                        double exitPrice = Trade.getExitPrice(db, key);
+                        int entrySize = Trade.getEntrySize(getDb(), key);
+                        int exitSize = Trade.getExitSize(getDb(), key);
+                        double exitPrice = Trade.getExitPrice(getDb(), key);
                         int adjTradeSize = exitSize + tradeSize > entrySize ? (entrySize - exitSize) : tradeSize;
                         int newexitSize = adjTradeSize + exitSize;
                         tradeSize = tradeSize - adjTradeSize;
                         double newexitPrice = (exitPrice * exitSize + adjTradeSize * expectedFillPrice) / (newexitSize);
                         order.put("entryorderidint", tempinternalOrderID);
                         String log = order.get("log") != null ? order.get("log").toString() : "";
-                        Trade.updateExit(db, id, reason, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+                        Trade.updateExit(getDb(), id, reason, side, newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
                         if (newexitSize == entrySize) {
-                            Trade.closeTrade(db, key);
+                            Trade.closeTrade(getDb(), key);
                         }
                         logger.log(Level.INFO, "201,ExitOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}",
                                 new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), Integer.toString(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
@@ -1477,5 +1491,14 @@ public class Strategy implements NotificationListener {
      */
     public void setOrdType(EnumOrderType ordType) {
         this.ordType = ordType;
+    }
+
+    /**
+     * @return the dbParameters
+     */
+    public Database<String, String> getDbParameters() {
+        synchronized(syncDB){
+        return dbParameters;
+        }
     }
 }
