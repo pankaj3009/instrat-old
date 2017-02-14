@@ -1493,12 +1493,4 @@ public class Strategy implements NotificationListener {
         this.ordType = ordType;
     }
 
-    /**
-     * @return the dbParameters
-     */
-    public Database<String, String> getDbParameters() {
-        synchronized(syncDB){
-        return dbParameters;
-        }
-    }
 }
