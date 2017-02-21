@@ -819,9 +819,9 @@ public class Strategy implements NotificationListener {
 
     public synchronized void exit(HashMap<String, Object> order) {
         EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
-        if ((!getLongOnly() && side.equals(EnumOrderSide.COVER)) || (!getShortOnly() && side.equals(EnumOrderSide.SELL))) {
-            return;
-        }
+        //if ((!getLongOnly() && side.equals(EnumOrderSide.COVER)) || (!getShortOnly() && side.equals(EnumOrderSide.SELL))) {
+        //    return;
+        //}
         int id = Integer.valueOf(order.get("id").toString());
         int size = Utilities.getInt(order.get("size"), 0);
         order.put("orderref", this.getStrategy());
