@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
@@ -16,7 +17,7 @@ import java.util.List;
 public class Parameters {
 
     static public List<BeanConnection> connection = Collections.synchronizedList(new ArrayList<BeanConnection>());
-    static public ArrayList<BeanSymbol> symbol = new ArrayList<>();
+    static public CopyOnWriteArrayList<BeanSymbol> symbol = new CopyOnWriteArrayList<>();
     //static public List<BeanSymbol> symbol = Collections.synchronizedList(new ArrayList<BeanSymbol>());
     private static ArrayList _listeners = new ArrayList();
 //control variables
