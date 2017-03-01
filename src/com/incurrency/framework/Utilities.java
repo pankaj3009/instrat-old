@@ -1683,7 +1683,17 @@ public class Utilities {
     public static int getCashReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {
         String symbol = symbols.get(id).getBrokerSymbol();
         String type = referenceType;
-        return getIDFromBrokerSymbol(symbols, symbol, type, "", "", "");
+        if(type!=null){
+             return getIDFromBrokerSymbol(symbols, symbol, type, "", "", "");
+        }else{
+            int ref=getIDFromBrokerSymbol(symbols, symbol, "STK", "", "", "");
+            if(ref<0){
+                return getIDFromBrokerSymbol(symbols, symbol, "IND", "", "", "");
+            }else{
+                return ref;
+            }
+        }
+       
     }
 
     public static int getNextExpiryID(List<BeanSymbol> symbols, int id, String expiry) {

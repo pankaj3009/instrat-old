@@ -814,6 +814,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             synchronized (c.lockOrderMapping) {
                 c.getOrderMapping().put(new Index(getS().getStrategy(), event.getInternalorder()), new ArrayList<Integer>());
             }
+            int referenceid = Utilities.getCashReferenceID(Parameters.symbol, id, null);
+            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getSide(), tickSize, event.getOrderType());
+            event.setLimitPrice(limitprice);
+        
             HashMap<Integer, Order> orders = c.getWrapper().createOrder(event);
             if (orders.size() > 0) {//trading is not halted 
                 this.getOpenPositionCount().set(connectionid, tempOpenPosition + 1);
@@ -912,6 +916,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     void processExitOrder(int id, BeanConnection c, OrderEvent event) {
         Index ind = new Index(event.getOrdReference(), id);
         int positions = c.getPositions().get(ind) == null ? 0 : Math.abs(c.getPositions().get(ind).getPosition());
+        int referenceid = Utilities.getCashReferenceID(Parameters.symbol, id, null);
+        double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getSide(), tickSize, event.getOrderType());
+        event.setLimitPrice(limitprice);
         HashMap<Integer, Order> orders = new HashMap<>();
         if (!event.isScale()) {
             event.setOrderSize(positions);
