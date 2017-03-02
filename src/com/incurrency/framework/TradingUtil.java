@@ -531,6 +531,9 @@ public class TradingUtil {
 
     public static boolean checkLicense() {
         try {
+            if(!Algorithm.lc){
+                return true;
+            }
             digest = new byte[]{
                 (byte) 0x42,
                 (byte) 0x2B, (byte) 0xB1, (byte) 0xBE, (byte) 0xD9, (byte) 0x04, (byte) 0xE1, (byte) 0xD1, (byte) 0x96,

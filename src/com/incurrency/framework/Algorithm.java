@@ -57,6 +57,7 @@ public class Algorithm {
     public static String defaultCurrency;
     public static JedisPool marketdatapool;
     public static String topic;
+    public static boolean lc;
     
     
     
@@ -66,6 +67,7 @@ public class Algorithm {
         SimpleDateFormat sdf_yyyymmdd = new SimpleDateFormat("yyyyMMdd");
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
         topic=globalProperties.getProperty("topic", "INR");
+        lc=Boolean.valueOf(globalProperties.getProperty("lc", "true"));
         defaultExchange = globalProperties.getProperty("defaultexchange", "NSE").toString().trim();
         defaultPrimaryExchange = globalProperties.getProperty("defaultprimaryexchange", "NSE").toString().trim();
         defaultCurrency = globalProperties.getProperty("defaultcurrency", "INR").toString().trim();
