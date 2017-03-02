@@ -4,8 +4,17 @@
  */
 package com.incurrency.framework.display;
 
+import com.incurrency.framework.Algorithm;
+import static com.incurrency.framework.Algorithm.timeZone;
 import com.incurrency.framework.BeanSymbol;
+import com.incurrency.framework.DateUtil;
+import com.incurrency.framework.Pair;
 import com.incurrency.framework.Parameters;
+import com.incurrency.framework.Utilities;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.logging.Logger;
 
 /**
@@ -13,16 +22,18 @@ import java.util.logging.Logger;
  * @author Pankaj
  */
 public class PricesForm extends javax.swing.JFrame {
+
     private int rowno;
-     private static final Logger logger = Logger.getLogger(MarketDataForm.class.getName());
+    private static final Logger logger = Logger.getLogger(MarketDataForm.class.getName());
+
     /**
      * Creates new form PricesForm
      */
     public PricesForm(int rowno) {
         initComponents();
-        this.rowno=rowno;
-        BeanSymbol s=Parameters.symbol.get(rowno);
-        String symbol=s.getDisplayname();
+        this.rowno = rowno;
+        BeanSymbol s = Parameters.symbol.get(rowno);
+        String symbol = s.getDisplayname();
         this.lblSymbol.setText(symbol);
         this.txtClose.setText(String.valueOf(s.getClosePrice()));
         this.txtOpen.setText(String.valueOf(s.getOpenPrice()));
@@ -55,6 +66,7 @@ public class PricesForm extends javax.swing.JFrame {
         lblLow = new javax.swing.JLabel();
         lblVolume = new javax.swing.JLabel();
         lblEmpty = new javax.swing.JLabel();
+        btnReload = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -198,22 +210,126 @@ public class PricesForm extends javax.swing.JFrame {
         gridBagConstraints.gridy = 0;
         getContentPane().add(lblEmpty, gridBagConstraints);
 
+        btnReload.setText("Reload");
+        btnReload.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReloadActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        getContentPane().add(btnReload, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
-        BeanSymbol s=Parameters.symbol.get(rowno);
+        BeanSymbol s = Parameters.symbol.get(rowno);
         s.setClosePrice(Double.valueOf(txtClose.getText()));
         s.setOpenPrice(Double.valueOf(txtOpen.getText()));
-        s.setHighPrice(Double.valueOf(txtHigh.getText()),true);
-        s.setLowPrice(Double.valueOf(txtLow.getText()),true);
-        s.setVolume(Integer.valueOf(txtVolume.getText()),true);
+        s.setHighPrice(Double.valueOf(txtHigh.getText()), true);
+        s.setLowPrice(Double.valueOf(txtLow.getText()), true);
+        s.setVolume(Integer.valueOf(txtVolume.getText()), true);
         dispose();
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         dispose(); //Destroy the JFrame object
     }//GEN-LAST:event_btnCancelActionPerformed
+
+    private void btnReloadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReloadActionPerformed
+        BeanSymbol s = Parameters.symbol.get(rowno);
+        String today = DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+        today = today + " " + Algorithm.openHour + ":" + Algorithm.openMinute + ":" + "00";
+        long ltoday = DateUtil.getFormattedDate(today, "yyyy-MM-dd HH:mm:ss", timeZone).getTime();
+        if (new Date().getTime() > ltoday) {
+            ArrayList<Pair> pairs = Utilities.getPrices(s, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+            if (pairs.size() > 0) {
+                ArrayList<Integer> itemsToRemove = new ArrayList<>();
+                int i = -1;
+                for (Pair p : pairs) {
+                    i++;
+                    if (p.getTime() < ltoday) {
+                        itemsToRemove.add(i);
+                    }
+                }
+                if (itemsToRemove.size() > 1) {
+                    itemsToRemove.remove(itemsToRemove.size() - 1);
+                }
+                Collections.sort(itemsToRemove, Collections.reverseOrder());
+                for (int r : itemsToRemove) {
+                    pairs.remove(r);
+                }
+                double out = 0;
+                for (Pair p : pairs) {
+                    double value = Utilities.getDouble(p.getValue(), 0);
+                    out = Math.max(out, value);
+                }
+                out = Math.max(out, s.getLastPrice());
+                s.setHighPrice(out, false);
+            }
+        }
+
+        today = DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+        today = today + " " + Algorithm.openHour + ":" + Algorithm.openMinute + ":" + "00";
+        ltoday = DateUtil.getFormattedDate(today, "yyyy-MM-dd HH:mm:ss", timeZone).getTime();
+        if (new Date().getTime() > ltoday) {
+            ArrayList<Pair> pairs = Utilities.getPrices(s, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+            if (pairs.size() > 0) {
+                ArrayList<Integer> itemsToRemove = new ArrayList<>();
+                int i = -1;
+                for (Pair p : pairs) {
+                    i++;
+                    if (p.getTime() < ltoday) {
+                        itemsToRemove.add(i);
+                    }
+                }
+                if (itemsToRemove.size() > 1) {
+                    itemsToRemove.remove(itemsToRemove.size() - 1);
+                }
+                Collections.sort(itemsToRemove, Collections.reverseOrder());
+                for (int r : itemsToRemove) {
+                    pairs.remove(r);
+                }
+                double out = Double.MAX_VALUE;
+                for (Pair p : pairs) {
+                    double value = Utilities.getDouble(p.getValue(), Double.MAX_VALUE);
+                    out = Math.min(out, value);
+                }
+                out = Math.min(out, s.getLastPrice());
+                s.setLowPrice(out, false);
+            }
+        }
+
+        today = DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+        today = today + " " + Algorithm.openHour + ":" + Algorithm.openMinute + ":" + "00";
+        ltoday = DateUtil.getFormattedDate(today, "yyyy-MM-dd HH:mm:ss", timeZone).getTime();
+        if (new Date().getTime() > ltoday) {
+            ArrayList<Pair> pairs = Utilities.getPrices(s, ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", timeZone), new Date());
+            if (pairs.size() > 0) {
+                ArrayList<Integer> itemsToRemove = new ArrayList<>();
+                int i = -1;
+                for (Pair p : pairs) {
+                    i++;
+                    if (p.getTime() < ltoday) {
+                        itemsToRemove.add(i);
+                    }
+                }
+                if (itemsToRemove.size() > 1) {
+                    itemsToRemove.remove(itemsToRemove.size() - 1);
+                }
+                Collections.sort(itemsToRemove, Collections.reverseOrder());
+                for (int r : itemsToRemove) {
+                    pairs.remove(r);
+                }
+                double out = Utilities.getDouble(pairs.size() > 0 ? pairs.get(0).getValue() : 0, 0);
+                s.setOpenPrice(out);
+            }
+        }
+
+    }//GEN-LAST:event_btnReloadActionPerformed
 
     /**
      * @param args the command line arguments
@@ -251,6 +367,7 @@ public class PricesForm extends javax.swing.JFrame {
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnReload;
     private javax.swing.JButton btnSave;
     private javax.swing.JLabel lblClose;
     private javax.swing.JLabel lblEmpty;
