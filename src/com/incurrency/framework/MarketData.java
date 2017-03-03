@@ -131,7 +131,7 @@ public class MarketData implements Runnable {
 
                     if (isSnap) {
                         s.get(row).setConnectionidUsedForMarketData(-1);
-                        //Thread.sleep(100);
+                        Thread.sleep(100);
                     } else {
                         s.get(row).setConnectionidUsedForMarketData(connectionid);
                     }

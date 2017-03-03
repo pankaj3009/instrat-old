@@ -251,23 +251,29 @@ public class MainAlgorithm extends Algorithm {
                     tempC.getWrapper().getContractDetails(s, "");
                     System.out.print("ContractDetails Requested:" + s.getBrokerSymbol()+"\n");
                 }
+                /*
                 while (TWSConnection.mTotalSymbols > 0) {
                     //System.out.println(TWSConnection.mTotalSymbols);
                     //do nothing
                     if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                     }
                 }
-
+*/
 
                 for (BeanSymbol s : Parameters.symbol) {
+                    /*
                     while (s.isStatus() == null) {
                         Thread.sleep(1000);
                         logger.log(Level.FINE, "307,AwaitingContractDetails,{0}", new Object[]{s.getDisplayname()});
+                        
                         if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                             //Launch.setMessage("Waiting for contract details for " + s.getSymbol());
                         }
                     }
                     contractIdAvailable.add(s.isStatus());
+                    */
+                    contractIdAvailable.add(Boolean.TRUE);
+                    
                 }
             }
             //Add combos
