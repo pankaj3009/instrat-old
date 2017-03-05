@@ -928,7 +928,7 @@ public class TWSConnection extends Thread implements EWrapper {
                     displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
                     displaySize=Math.max(Parameters.symbol.get(parentid).getMinsize(),displaySize);
                 }
-                logger.log(Level.INFO,"500,DisplaySizeSet,{0}",new Object[]{displaySize});
+                logger.log(Level.FINE,"500,DisplaySizeSet,{0}",new Object[]{displaySize});
                 order.m_displaySize = displaySize;
                 ob.setDisplaySize(order.m_displaySize);
                 ob.setScale(scale);

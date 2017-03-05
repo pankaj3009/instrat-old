@@ -805,7 +805,7 @@ public class Strategy implements NotificationListener {
             double lastprice = Parameters.symbol.get(id).getLastPrice();
             lastprice = lastprice == 0 ? Utilities.getDouble(order.get("limitprice"), 0) : lastprice;
             new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, side, lastprice, size, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
-            logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), internalorderid, -1, position.get(id).getPosition(), position.get(id).getPrice()});
+            logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
             if (MainAlgorithm.isUseForTrading()) {
                 oms.tes.fireOrderEvent(order);
                 //oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
