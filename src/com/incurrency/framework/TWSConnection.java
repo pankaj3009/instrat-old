@@ -30,7 +30,7 @@ import redis.clients.jedis.Jedis;
  *
  * @author admin
  */
-public class TWSConnection extends Thread implements EWrapper {
+public class TWSConnection extends Thread implements EWrapper,Connection {
 
     protected final static int MAX_WAIT_COUNT = 10;
     protected final static int WAIT_TIME = 1;//seconds
@@ -89,7 +89,7 @@ public class TWSConnection extends Thread implements EWrapper {
         }
     }
 
-    public synchronized boolean connectToTWS() {
+    public synchronized boolean connect() {
         try {
             String twsHost = getC().getIp();
             int twsPort = getC().getPort();
@@ -140,31 +140,6 @@ public class TWSConnection extends Thread implements EWrapper {
         eClientSocket.reqAccountUpdates(false, null);
     }
 
-    public void getContractDetails() {
-        Contract con = new Contract();
-        for (BeanSymbol s : Parameters.symbol) {
-            con.m_symbol = s.getBrokerSymbol();
-            con.m_currency = s.getCurrency();
-            con.m_exchange = s.getExchange();
-            con.m_expiry = s.getExpiry();
-            con.m_primaryExch = s.getPrimaryexchange();
-            con.m_right = s.getRight();
-            con.m_secType = s.getType();
-            con.m_strike = s.getOption() == null ? 0 : Double.parseDouble(s.getOption());
-            if (getC().getReqHandle().requestContractDetailsHandle()) {
-                getC().getReqHandle().setContractDetailsReturned(false);
-                if (getC().getReqHandle().getHandle()) {
-                    mRequestId = requestIDManager.getNextRequestId();
-                    //c.getmReqID().put(mRequestId, s.getSerialno());
-                    requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB, mRequestId, s, EnumRequestType.CONTRACTDETAILS, EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(), c.getAccountName()));
-                    eClientSocket.reqContractDetails(mRequestId, con);
-                } else {
-                    System.out.println("### Error getting handle while requesting market data for contract Name: " + s.getBrokerSymbol());
-                }
-            }
-        }
-    }
-
     public void getContractDetails(BeanSymbol s, String overrideType) {
         Contract con = new Contract();
         con.m_symbol = s.getBrokerSymbol();
@@ -213,7 +188,9 @@ public class TWSConnection extends Thread implements EWrapper {
         }
     }
 
-    public synchronized void getMktData(BeanSymbol s, Contract contract, boolean isSnap) {
+    public void getMktData(BeanSymbol s, boolean isSnap) {
+        Contract contract;
+        contract = createContract(s);
         //for streaming request
         if (!isSnap) { //streaming data request
             if (getC().getReqHandle().getHandle()) {
@@ -279,12 +256,6 @@ public class TWSConnection extends Thread implements EWrapper {
         }
     }
 
-    public void getMktData(BeanSymbol s, boolean isSnap) {
-        Contract con;
-        con = createContract(s);
-        getMktData(s, con, isSnap);
-    }
-
     public void getRealTimeBars(BeanSymbol s) {
         Contract con = new Contract();
         con.m_symbol = s.getBrokerSymbol();
@@ -341,7 +312,7 @@ public class TWSConnection extends Thread implements EWrapper {
         return out;
     }
 
-    public HashMap<Integer, Order> createOrder(int id, int internalOrderID, int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, EnumOrderStage stage, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<Integer, Integer> stubs, HashMap<String, Object> orderAttributes) {
+    private HashMap<Integer, Order> createOrder(int id, int internalOrderID, int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, EnumOrderStage stage, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<Integer, Integer> stubs, HashMap<String, Object> orderAttributes) {
         if (recentOrders == null) {
             recentOrders = new LimitedQueue(getC().getOrdersHaltTrading());
         }
@@ -355,7 +326,7 @@ public class TWSConnection extends Thread implements EWrapper {
             return orders;
         } else if (Parameters.symbol.get(id).getType().equals("COMBO") && stubs == null) {//regular combo order
             HashMap<Integer, Double> tickValue = getTickValues(id);
-            HashMap<Integer, Double> limitPrices = initializeLimitPricesUsingAggression(id, limit, ordSide, tickValue);
+//            HashMap<Integer, Double> limitPrices = initializeLimitPricesUsingAggression(id, limit, ordSide, tickValue);
             int i = 0;
 
             for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(id).getCombo().entrySet()) {
@@ -392,8 +363,8 @@ public class TWSConnection extends Thread implements EWrapper {
                     default:
                         break;
                 }
-                Order order = createChildOrder(Math.abs(entry.getValue()) * size, subSide, notify, orderType, limitPrices.get(entry.getKey().getSerialno() - 1), trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
-                orders.put(entry.getKey().getSerialno() - 1, order);
+//                Order order = createChildOrder(Math.abs(entry.getValue()) * size, subSide, notify, orderType, limitPrices.get(entry.getKey().getSerialno() - 1), trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
+//                orders.put(entry.getKey().getSerialno() - 1, order);
                 i = i + 1;
             }
         } else if (stubs != null) {//stub order
@@ -414,8 +385,8 @@ public class TWSConnection extends Thread implements EWrapper {
                     subSide = EnumOrderSide.SELL;
                 }
                 if (childsize != 0) {
-                    Order order = createChildOrder(Math.abs(childsize), subSide, notify, orderType, 0D, 0D, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
-                    orders.put(childid, order);
+//                    Order order = createChildOrder(Math.abs(childsize), subSide, notify, orderType, 0D, 0D, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
+//                    orders.put(childid, order);
                 }
             }
         }
@@ -489,59 +460,7 @@ public class TWSConnection extends Thread implements EWrapper {
 
     }
 
-    private double getAggression(int id) {
-        double aggr = 0;
-        int uptick = 0;
-        int downtick = 0;
-        LimitedQueue<Double> e = Parameters.symbol.get(id).getTradedPrices();
-        if (e.size() > 1) {
-            for (int i = 1; i < e.size(); i++) {
-                if (e.get(i) > e.get(i - 1)) {
-                    uptick++;
-                } else if (e.get(i) < e.get(i - 1)) {
-                    downtick++;
-                }
-            }
-        }
-        if (uptick + downtick > 0) {
-            aggr = (double) uptick / (uptick + downtick);
-        }
-        return aggr;
-    }
-
-    public double getLimitPriceUsingAggression(int id, double originalLimitPrice, EnumOrderSide side) {//for a single id
-        double aggr = getAggression(id);
-        double bidprice;
-        double askprice;
-        double tickSize;
-        bidprice = Parameters.symbol.get(id).getBidPrice();
-        askprice = Parameters.symbol.get(id).getAskPrice();
-        tickSize = Parameters.symbol.get(id).getTickSize();
-        double newlimitprice = 0;
-        switch (side) {
-            case BUY:
-            case COVER:
-                if (originalLimitPrice > 0 && bidprice == originalLimitPrice) {
-                    newlimitprice = originalLimitPrice;
-                } else {
-                    newlimitprice = ((int) ((bidprice + ((askprice - bidprice) * aggr)) / tickSize)) * tickSize;
-                }
-                break;
-            case SHORT:
-            case SELL:
-                if (originalLimitPrice > 0 && askprice == originalLimitPrice) {
-                    newlimitprice = originalLimitPrice;
-                } else {
-                    newlimitprice = ((int) ((askprice - (askprice - bidprice) * (1 - aggr)) / tickSize)) * tickSize;
-                }
-                break;
-        }
-
-        logger.log(Level.FINE, "307,RecalculatedLimitPrice,{0}", new Object[]{aggr + delimiter + bidprice + delimiter + askprice + delimiter + side + delimiter + originalLimitPrice + delimiter + newlimitprice + delimiter + tickSize});
-        return newlimitprice;
-    }
-
-    public double calculatePairPrice(int pairID, HashMap<Integer, Double> limitPrices) {
+     public double calculatePairPrice(int pairID, HashMap<Integer, Double> limitPrices) {
         HashMap<BeanSymbol, Integer> combo = Parameters.symbol.get(pairID).getCombo();
         double pairPrice = 0;
         int i = 0;
@@ -550,166 +469,6 @@ public class TWSConnection extends Thread implements EWrapper {
             i = i + 1;
         }
         return pairPrice;
-    }
-
-    private HashMap<Integer, Double> initializeLimitPricesUsingAggression(int pairID, double limit, EnumOrderSide orderSide, HashMap<Integer, Double> tickValue) {
-        HashMap<Integer, Double> limitPrices = new HashMap<>();
-        HashMap<Integer, Integer> buysell = new HashMap<>();
-        HashMap<BeanSymbol, Integer> combo = Parameters.symbol.get(pairID).getCombo();
-        double tickSize = 0;
-        for (Map.Entry<BeanSymbol, Integer> entry : combo.entrySet()) { //ordering of orders and combo should be the same. This appears to be a correct assumption
-            limitPrices.put(entry.getKey().getSerialno() - 1, getLimitPriceUsingAggression(entry.getKey().getSerialno() - 1, 0D, orderSide));
-            tickSize = entry.getKey().getTickSize();
-            if (entry.getValue() > 0) {
-                buysell.put(entry.getKey().getSerialno() - 1, 1);
-            } else {
-                buysell.put(entry.getKey().getSerialno() - 1, -1);
-            }
-        }
-        double pairLimitPrice = calculatePairPrice(pairID, limitPrices);
-        if (limit == 0) {
-            for (Map.Entry<Integer, Double> limitPrice : limitPrices.entrySet()) {
-                limitPrice.setValue(0D);//set limit =0 for market orders
-            }
-        } else {
-            int loops = 0;
-            double maxTickValue = 0;
-            double minTickValue = Double.MAX_VALUE;
-            switch (orderSide) {
-                case BUY:
-                case COVER:
-                    for (Double d : tickValue.values()) {
-                        maxTickValue = Math.max(maxTickValue, d);
-                        minTickValue = Math.min(minTickValue, d);
-                    }
-                    while (pairLimitPrice > limit) {
-                        loops = loops + 1;
-                        for (Map.Entry<Integer, Double> limitPrice : limitPrices.entrySet()) {
-                            int symbolid = limitPrice.getKey();
-                            if (Math.round((minTickValue * loops) / tickValue.get(symbolid)) > Math.round((minTickValue * (loops - 1)) / tickValue.get(symbolid))) {
-                                limitPrices.put(symbolid, limitPrices.get(symbolid) - tickSize * buysell.get(symbolid));
-                            }
-                        }
-                        pairLimitPrice = this.calculatePairPrice(pairID, limitPrices);
-                    }
-                    break;
-                case SHORT:
-                case SELL:
-                    for (double d : tickValue.values()) {
-                        maxTickValue = Math.max(maxTickValue, d);
-                        minTickValue = Math.min(minTickValue, d);
-                    }
-                    while (pairLimitPrice < limit || loops == 0) {
-                        loops = loops + 1;
-                        for (Map.Entry<Integer, Double> limitPrice : limitPrices.entrySet()) {
-                            int symbolid = limitPrice.getKey();
-                            if (Math.round((minTickValue * loops) / tickValue.get(symbolid)) > Math.round((minTickValue * (loops - 1)) / tickValue.get(symbolid))) {
-                                limitPrices.put(symbolid, limitPrices.get(symbolid) + tickSize * buysell.get(symbolid));
-                            }
-                        }
-                        pairLimitPrice = this.calculatePairPrice(pairID, limitPrices);
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        return limitPrices;
-    }
-
-    public HashMap<Integer, Double> amendLimitPricesUsingAggression(int parentid, double limit, ArrayList<Integer> orders, EnumOrderSide orderSide) {
-        HashMap<Integer, Double> tickValue = getTickValues(parentid);
-        HashMap<Integer, Double> out = new HashMap<>();
-        HashMap<Integer, Double> limitPrices = new HashMap<>();//Integer = symbol id, double = limit price
-        HashMap<Integer, Integer> buysell = new HashMap<>();
-        double tickSize = 0;
-        ArrayList<Integer> symbolids = new ArrayList<>();
-
-        HashMap<BeanSymbol, Integer> combo = Parameters.symbol.get(parentid).getCombo();
-        for (Map.Entry<BeanSymbol, Integer> entry : combo.entrySet()) { //ordering of orders and combo should be the same. This appears to be a correct assumption
-            int childsymbolid = entry.getKey().getSerialno() - 1;
-            EnumOrderSide childSide = EnumOrderSide.UNDEFINED;
-            switch (orderSide) {
-                case BUY:
-                    childSide = entry.getValue() > 0 ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-                    break;
-                case SHORT:
-                    childSide = entry.getValue() > 0 ? EnumOrderSide.SHORT : EnumOrderSide.BUY;
-                    break;
-                case SELL:
-                    childSide = entry.getValue() > 0 ? EnumOrderSide.SELL : EnumOrderSide.COVER;
-                    break;
-                case COVER:
-                    childSide = entry.getValue() > 0 ? EnumOrderSide.COVER : EnumOrderSide.SELL;
-                    break;
-                default:
-                    break;
-
-            }
-            limitPrices.put(childsymbolid, getLimitPriceUsingAggression(entry.getKey().getSerialno() - 1, 0D, childSide));
-            tickSize = entry.getKey().getTickSize();
-            symbolids.add(childsymbolid);
-            if (entry.getValue() > 0) {
-                buysell.put(childsymbolid, 1);
-            } else {
-                buysell.put(childsymbolid, -1);
-            }
-        }
-        double pairLimitPrice = calculatePairPrice(parentid, limitPrices);
-        int loops = 0;
-        double maxTickValue = 0;
-        double minTickValue = Double.MAX_VALUE;
-        switch (orderSide) {
-            case BUY:
-            case COVER:
-                for (double d : tickValue.values()) {
-                    maxTickValue = Math.max(maxTickValue, d);
-                    minTickValue = Math.min(minTickValue, d);
-                }
-                while (pairLimitPrice > limit) {
-                    loops = loops + 1;
-                    for (int i = 0; i < orders.size(); i++) {
-                        OrderBean ob = getC().getOrders().get(orders.get(i));
-                        int childid = ob.getChildSymbolID() - 1;
-                        if (ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-                            limitPrices.put(childid, getC().getOrders().get(orders.get(i)).getFillPrice());
-                        } else if (Math.round((minTickValue * loops) / tickValue.get(childid)) > Math.round((minTickValue * (loops - 1)) / tickValue.get(childid))) {
-                            limitPrices.put(childid, limitPrices.get(childid) - Parameters.symbol.get(childid).getTickSize() * buysell.get(childid));
-                        }
-                    }
-                    pairLimitPrice = this.calculatePairPrice(parentid, limitPrices);
-                }
-                break;
-            case SHORT:
-            case SELL:
-                for (double d : tickValue.values()) {
-                    maxTickValue = Math.max(maxTickValue, d);
-                    minTickValue = Math.min(minTickValue, d);
-                }
-                while (pairLimitPrice < limit) {
-                    loops = loops + 1;
-                    for (int j = 0; j < orders.size(); j++) {
-                        OrderBean ob = getC().getOrders().get(orders.get(j));
-                        int childid = ob.getChildSymbolID() - 1;
-                        if (ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-                            limitPrices.put(childid, getC().getOrders().get(orders.get(j)).getFillPrice());
-                        } else if (Math.round((minTickValue * loops) / tickValue.get(childid)) > Math.round((minTickValue * (loops - 1)) / tickValue.get(childid))) {
-                            limitPrices.put(childid, limitPrices.get(childid) + tickSize * buysell.get(childid));
-                        }
-                    }
-                    pairLimitPrice = this.calculatePairPrice(parentid, limitPrices);
-                }
-                break;
-            default:
-                break;
-
-        }
-        int i = 0;
-        for (int symbolid : symbolids) {
-            out.put(symbolid, limitPrices.get(symbolid));
-            i = i + 1;
-        }
-        return out;
     }
 
     public HashMap<Integer, Order> createOrderFromExisting(BeanConnection c, int internalorderid, String strategy) {
@@ -752,42 +511,6 @@ public class TWSConnection extends Thread implements EWrapper {
             out.put(ordExisting.getChildSymbolID() - 1, ordNew);
         }
         return out;
-
-    }
-
-    public Order createOrderFromExisting(BeanConnection c, int orderid) {
-
-        OrderBean ordExisting = c.getOrders().get(orderid);
-        Order ordNew = new Order();
-        ordNew.m_action = (ordExisting.getChildOrderSide() == EnumOrderSide.BUY || ordExisting.getChildOrderSide() == EnumOrderSide.COVER || ordExisting.getParentOrderSide() == EnumOrderSide.TRAILBUY) ? "BUY" : "SELL";
-        ordNew.m_auxPrice = ordExisting.getTriggerPrice() > 0 ? ordExisting.getTriggerPrice() : 0;
-        ordNew.m_lmtPrice = ordExisting.getChildLimitPrice() > 0 ? ordExisting.getChildLimitPrice() : 0;
-        ordNew.m_tif = ordExisting.getOrderValidity();
-//        ordNew.m_totalQuantity=ordExisting.getOrderSize();
-        switch (ordExisting.getOrderType()) {
-            case MKT:
-                ordNew.m_orderType = "MKT";
-                break;
-            case LMT:
-                ordNew.m_orderType = "LMT";
-                break;
-            case STPLMT:
-                ordNew.m_orderType = "STP LMT";
-                break;
-            case STP:
-                ordNew.m_orderType = "STP";
-                break;
-            default:
-                break;
-        }
-        ordNew.m_ocaGroup = ordExisting.getOcaGroup();
-        ordNew.m_ocaType = ordExisting.getOcaExecutionLogic();
-        ordNew.m_orderRef = ordExisting.getOrderReference();
-        ordNew.m_totalQuantity = ordExisting.getChildOrderSize();
-        ordNew.m_orderId = ordExisting.getOrderID();
-        //ordNew.m_goodTillDate = ordExisting.getExpireTime();
-        logger.log(Level.FINE, "307,OrderDetails,{0}", new Object[]{c.getAccountName() + delimiter + ordNew.m_orderRef + delimiter + ordNew.m_action + delimiter + ordNew.m_totalQuantity + delimiter + ordNew.m_orderType + delimiter + ordNew.m_lmtPrice + delimiter + ordNew.m_auxPrice + delimiter + ordNew.m_tif + delimiter + ordNew.m_goodTillDate});
-        return ordNew;
 
     }
 
@@ -1037,14 +760,14 @@ public class TWSConnection extends Thread implements EWrapper {
                                         if (entry2.getValue() > 0) {
                                             ob.setChildOrderSide(side);
                                         } else {
-                                            ob.setChildOrderSide(switchSide(side));
+                                            ob.setChildOrderSide(Utilities.switchSide(side));
                                         }
                                         break;
                                     case "STUBREDUCE":
                                         if (entry2.getValue() < 0) {
                                             ob.setChildOrderSide(side);
                                         } else {
-                                            ob.setChildOrderSide(switchSide(side));
+                                            ob.setChildOrderSide(Utilities.switchSide(side));
                                         }
                                         break;
                                     default:
@@ -1088,7 +811,7 @@ public class TWSConnection extends Thread implements EWrapper {
         return orderids;
     }
 
-    synchronized boolean tradeIntegrityOK(EnumOrderSide side, EnumOrderStage stage, HashMap<Integer, Order> orders, boolean reset) {
+    public synchronized boolean tradeIntegrityOK(EnumOrderSide side, EnumOrderStage stage, HashMap<Integer, Order> orders, boolean reset) {
         if ((side == EnumOrderSide.BUY || side == EnumOrderSide.SHORT) && stage != EnumOrderStage.AMEND && (isStopTrading() || (getRecentOrders().size() == c.getOrdersHaltTrading() && (new Date().getTime() - (Long) getRecentOrders().get(0)) < 120000))) {
             setStopTrading(!reset);
             Thread t = new Thread(new Mail(c.getOwnerEmail(), "Account: " + c.getAccountName() + ", Connection: " + c.getIp() + ", Port: " + c.getPort() + ", ClientID: " + c.getClientID() + " has sent " + c.getOrdersHaltTrading() + " orders in the last two minutes. Trading halted", "Algorithm SEVERE ALERT - " + orders.get(0).m_orderRef.toUpperCase()));
@@ -1096,29 +819,6 @@ public class TWSConnection extends Thread implements EWrapper {
             return false;
         }
         return true;
-    }
-
-    private EnumOrderSide switchSide(EnumOrderSide side) {
-        EnumOrderSide out;
-        switch (side) {
-            case BUY:
-                out = EnumOrderSide.SHORT;
-                break;
-            case SELL:
-                out = EnumOrderSide.COVER;
-                break;
-            case SHORT:
-                out = EnumOrderSide.BUY;
-                break;
-            case COVER:
-                out = EnumOrderSide.SELL;
-                break;
-            default:
-                out = EnumOrderSide.UNDEFINED;
-                break;
-        }
-
-        return out;
     }
 
     public void cancelMarketData(BeanSymbol s) {
@@ -1195,33 +895,6 @@ public class TWSConnection extends Thread implements EWrapper {
         eClientSocket.cancelFundamentalData(reqId);
     }
 
-    public void requestDailyBar(BeanSymbol s, String duration) {
-        Contract con = new Contract();
-        con.m_symbol = s.getBrokerSymbol();
-        con.m_currency = s.getCurrency();
-        con.m_exchange = s.getExchange();
-        con.m_expiry = s.getExpiry();
-        con.m_primaryExch = s.getPrimaryexchange();
-        if (s.getExchangeSymbol() != null) {
-            con.m_localSymbol = s.getExchangeSymbol();
-        }
-        con.m_right = s.getRight();
-        con.m_secType = s.getType();
-        if (getC().getReqHistoricalHandle().getHandle()) {
-            if (getC().getReqHandle().getHandle()) {
-                mRequestId = requestIDManager.getNextRequestId();
-                requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB, mRequestId, s, EnumRequestType.HISTORICAL, EnumBarSize.DAILY, EnumRequestStatus.PENDING, new Date().getTime(), c.getAccountName()));
-                logger.log(Level.FINER, "HistoricalDataRequestSent_Historical,{0}", new Object[]{mRequestId + delimiter + s.getDisplayname()});
-                String currDateStr = DateUtil.getFormattedDate("yyyyMMdd", Parameters.connection.get(0).getConnectionTime());
-                String endDateStr = currDateStr + " " + "23:30:00";
-                //System.out.println(s.getDisplayname()+":"+mRequestId+":"+"DailyBars");
-                eClientSocket.reqHistoricalData(mRequestId, con, endDateStr, duration, "1 day", "TRADES", 1, 2, null);
-                logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + "1 day"});
-            } else {
-                System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getBrokerSymbol());
-            }
-        }
-    }
 
     public void requestOpenOrders() {
         eClientSocket.reqOpenOrders();

@@ -1273,7 +1273,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         if(!Parameters.connection.get(connectionIndex).getWrapper().eClientSocket.isConnected()){
             BeanConnection c=Parameters.connection.get(connectionIndex);
             //c.setWrapper(new TWSConnection(c));
-            c.getWrapper().connectToTWS();
+            c.getWrapper().connect();
         }
     }//GEN-LAST:event_cmdReconnectActionPerformed
 

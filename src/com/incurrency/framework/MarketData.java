@@ -126,7 +126,7 @@ public class MarketData implements Runnable {
                         }
                     }
                     if(!contract.m_secType.equals("COMBO")){
-                              mIB.getWrapper().getMktData(s.get(row), contract, isSnap);              
+                              mIB.getWrapper().getMktData(s.get(row), isSnap);              
                     }
 
                     if (isSnap) {

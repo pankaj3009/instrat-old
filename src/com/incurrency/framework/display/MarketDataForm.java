@@ -281,7 +281,7 @@ public class MarketDataForm extends javax.swing.JFrame {
         Contract con;
         con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
         try{
-        Parameters.connection.get(newconnection).getWrapper().getMktData(s, con,false);
+        Parameters.connection.get(newconnection).getWrapper().getMktData(s,false);
         }
         catch (Exception e){
             logger.log(Level.SEVERE,null,e);
@@ -300,10 +300,10 @@ public class MarketDataForm extends javax.swing.JFrame {
         if(oldconnection>=0){
         Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
         }
-        Contract con;
-        con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
+//        Contract con;
+//        con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
         try{
-        Parameters.connection.get(newconnection).getWrapper().getMktData(s, con,true);
+        Parameters.connection.get(newconnection).getWrapper().getMktData(s,true);
         }
         catch (Exception e){
             logger.log(Level.SEVERE,null,e);

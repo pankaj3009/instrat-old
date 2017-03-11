@@ -80,7 +80,29 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
-    
+        public static EnumOrderSide switchSide(EnumOrderSide side) {
+        EnumOrderSide out;
+        switch (side) {
+            case BUY:
+                out = EnumOrderSide.SHORT;
+                break;
+            case SELL:
+                out = EnumOrderSide.COVER;
+                break;
+            case SHORT:
+                out = EnumOrderSide.BUY;
+                break;
+            case COVER:
+                out = EnumOrderSide.SELL;
+                break;
+            default:
+                out = EnumOrderSide.UNDEFINED;
+                break;
+        }
+
+        return out;
+    }
+        
     public static String getJsonUsingPut(String url, int timeout, String body) {
         HttpURLConnection c = null;
         try {

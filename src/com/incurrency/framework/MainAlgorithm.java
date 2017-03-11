@@ -159,7 +159,7 @@ public class MainAlgorithm extends Algorithm {
             logger.log(Level.INFO, "100,ConnectionParameters, Messages per second_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getRtMessageLimit()});
             logger.log(Level.INFO, "100,ConnectionParameters, Orders Per 2 minutes for triggering system halt_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getOrdersHaltTrading()});
             logger.log(Level.INFO, "100,ConnectionParameters, Owner Email_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getOwnerEmail()});
-            c.getWrapper().connectToTWS();
+            c.getWrapper().connect();
             connectioncount = connectioncount + 1;
             //wait for connection
             if (!c.getWrapper().eClientSocket.isConnected()) {
@@ -219,7 +219,7 @@ public class MainAlgorithm extends Algorithm {
    public static void connectToTWS(BeanConnection c){
             c.getWrapper().eClientSocket.eDisconnect();
             c.setWrapper(new TWSConnection(c));
-            c.getWrapper().connectToTWS();
+            c.getWrapper().connect();
         }
     
 

@@ -447,7 +447,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         // ***
         // Order is placed at amended price IF its and entry order and slippage has not been exceeded
         // OR its an exit order and slippage has been exceeded. For exit orders, the wait time is ignored if slippage is exceeded.
-
+/*
         int id = event.getSymbolID();
         for (BeanConnection c : Parameters.connection) {
             Index ind = new Index(orderReference, id);
@@ -509,6 +509,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 }
             }
         }
+        */
     }
 
     @Override
@@ -1013,7 +1014,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         //limit prices will contain hashmap<childid, limit price> 
                         //if childid is filled, limit price will = fill price
                         //limitprices size = combo size
-                        limitPrices = c.getWrapper().amendLimitPricesUsingAggression(parentid, event.getLimitPrice(), c.getOrderMapping().get(new Index(orderReference, internalorderid)), event.getSide());
+          //              limitPrices = c.getWrapper().amendLimitPricesUsingAggression(parentid, event.getLimitPrice(), c.getOrderMapping().get(new Index(orderReference, internalorderid)), event.getSide());
                     }
 
                     HashMap<Integer, Boolean> ordersToBePlaced = this.ComoOrdersToBePlaced(c, event.getInternalorder());
