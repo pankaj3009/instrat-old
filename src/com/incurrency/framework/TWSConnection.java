@@ -83,6 +83,8 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     
     public TWSConnection(BeanConnection c) {
         this.c = c;
+        cassandra.setTopic(Algorithm.topic);
+        cassandra.setCassandraPort(4242);
         mTotalSymbols = Parameters.symbol.size();
         if (mTotalATMChecks == 0) {
             for (BeanSymbol s : Parameters.symbol) {
