@@ -70,7 +70,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     private boolean historicalDataFarmConnected = true;
     public static boolean skipsymbol = false;
     //Parameters for dataserver
-    private BeanCassandraConnection cassandra;
+    private BeanCassandraConnection cassandra=new BeanCassandraConnection();
     public Socket cassandraConnection;
     public PrintStream output;
     Jedis jedis = Algorithm.marketdatapool.getResource();    
