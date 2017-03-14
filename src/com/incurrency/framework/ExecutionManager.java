@@ -1213,11 +1213,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         }
 
                     }
-                    if (orderStatus.get(orderid) == null || orderStatus.get(orderid) != fillStatus) {
+                    //if (orderStatus.get(orderid) == null || orderStatus.get(orderid) != fillStatus) {
                         logger.log(Level.INFO, "302,OrderStatus,{0}:{1}:{2}:{3}:{4},OrderStatus={5}",
                                 new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(parentid).getDisplayname(), ob.getInternalOrderID(), String.valueOf(orderid), fillStatus});
                         orderStatus.put(orderid, fillStatus);
-                    }
+                    //}
                     switch (fillStatus) {
                         case COMPLETEFILLED:
                             updateFilledOrders(event.getC(), orderid, event.getFilled(), event.getAvgFillPrice(), event.getLastFillPrice());
