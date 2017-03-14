@@ -32,6 +32,21 @@ import redis.clients.jedis.Jedis;
  */
 public class TWSConnection extends Thread implements EWrapper,Connection {
 
+
+    /**
+     * @return the outstandingSnapshots
+     */
+    public int getOutstandingSnapshots() {
+        return outstandingSnapshots;
+    }
+
+    /**
+     * @param outstandingSnapshots the outstandingSnapshots to set
+     */
+    public void setOutstandingSnapshots(int outstandingSnapshots) {
+        this.outstandingSnapshots = outstandingSnapshots;
+    }
+
     protected final static int MAX_WAIT_COUNT = 10;
     protected final static int WAIT_TIME = 1;//seconds
     public EClientSocket eClientSocket = new EClientSocket(this);
@@ -49,27 +64,16 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     AtomicBoolean severeEmailSent = new AtomicBoolean(Boolean.FALSE);
     public ConcurrentHashMap<Integer, Request> requestDetails = new ConcurrentHashMap<>();
     public ConcurrentHashMap<Integer, Request> requestDetailsWithSymbolKey = new ConcurrentHashMap<>();
-    public int outstandingSnapshots = 0;
+    private int outstandingSnapshots = 0;
     private final String delimiter = "_";
     static final Object lock_request = new Object();
     private boolean historicalDataFarmConnected = true;
     public static boolean skipsymbol = false;
     //Parameters for dataserver
-    public String cassandraIP;
-    public int cassandraPort = 4242;
+    private BeanCassandraConnection cassandra;
     public Socket cassandraConnection;
     public PrintStream output;
-    //public boolean useRTVolume = false;
-    public String topic=Algorithm.topic;
-    Jedis jedis = Algorithm.marketdatapool.getResource();
-    public boolean saveToCassandra;
-    public boolean realtime = false;
-    public String tickEquityMetric;
-    public String tickFutureMetric;
-    public String tickOptionMetric;
-    public String rtEquityMetric;
-    public String rtFutureMetric;
-    public String rtOptionMetric;
+    Jedis jedis = Algorithm.marketdatapool.getResource();    
     public static String[][] marketData;
     public static AtomicBoolean serverInitialized = new AtomicBoolean();
     public RequestIDManager requestIDManager = new RequestIDManager();
@@ -227,7 +231,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                         requestDetailsWithSymbolKey.get(s.getSerialno()).requestStatus = EnumRequestStatus.CANCELLED;
                         if (requestDetailsWithSymbolKey.get(origReqID) != null) {
                             requestDetails.get(origReqID).requestStatus = EnumRequestStatus.CANCELLED;
-                            getC().getWrapper().eClientSocket.cancelMktData(origReqID);
+                            getC().getWrapper().cancelMarketData(s);
                             logger.log(Level.FINEST, "403,SnapshotCancelled, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
                         }
                         requestDetailsWithSymbolKey.remove(s.getSerialno());
@@ -1009,7 +1013,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     @Override
     public void tickPrice(int tickerId, int field, double price, int canAutoExecute) {
         try {
-            if (realtime && serverInitialized.get()) {
+            if (this.getCassandraDetails().isRealtime() && serverInitialized.get()) {
                 realtime_tickPrice(tickerId, field, price, canAutoExecute);
             } else {
 
@@ -1070,7 +1074,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                             Parameters.symbol.get(id).setOpenPrice(price);
                         }
                         if (Parameters.symbol.get(id).isAddedToSymbols()) {
-                            jedis.publish(topic,field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());
+                            jedis.publish(this.getCassandraDetails().getTopic(),field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());
 
                         }
                     }
@@ -1103,7 +1107,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                 }
 
                 String type = Parameters.symbol.get(id).getType();
-                String header = topic;
+                String header = this.getCassandraDetails().getTopic();
                 String symbol = Parameters.symbol.get(id).getDisplayname();
 
                 if (field == com.ib.client.TickType.CLOSE) {
@@ -1160,7 +1164,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     @Override
     public void tickSize(int tickerId, int field, int size) {
         try {
-            if (realtime && serverInitialized.get()) {
+            if (this.getCassandraDetails().isRealtime() && serverInitialized.get()) {
                 realtime_tickSize(tickerId, field, size);
             } else {
 
@@ -1227,7 +1231,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                             }
                         }
                         if (Parameters.symbol.get(id).isAddedToSymbols()) {
-                            jedis.publish(topic, field + "," + new Date().getTime() + "," + size + "," + Parameters.symbol.get(id).getDisplayname());
+                            jedis.publish(this.getCassandraDetails().getTopic(), field + "," + new Date().getTime() + "," + size + "," + Parameters.symbol.get(id).getDisplayname());
 
                         }
                     }
@@ -1260,7 +1264,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                     r.requestStatus = EnumRequestStatus.SERVICED;
                 }
                 String type = Parameters.symbol.get(id).getType();
-                String header = topic;
+                String header = this.getCassandraDetails().getTopic();
                 String symbol = Parameters.symbol.get(id).getDisplayname();
                 if (field == com.ib.client.TickType.BID_SIZE || field == com.ib.client.TickType.ASK_SIZE) {
                     Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
@@ -1334,7 +1338,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     public void tickString(int tickerId, int tickType, String value) {
         try {
             if (tickType == 48) {
-                if (realtime && serverInitialized.get()) {
+                if (this.getCassandraDetails().isRealtime() && serverInitialized.get()) {
                     realtime_rtVolume(tickerId, value);
                 } else {
                     boolean proceed = true;
@@ -1419,7 +1423,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                         r.requestStatus = EnumRequestStatus.SERVICED;
                     }
                     String type = Parameters.symbol.get(id).getType();
-                    String header = topic;
+                    String header = this.getCassandraDetails().getTopic();
                     String symbol = Parameters.symbol.get(id).getDisplayname();
                     int lastSize = volume - Parameters.symbol.get(id).getVolume();
                     Rates.rateServer.send(header, TickType.VOLUME + "," + time + "," + volume + "," + symbol);
@@ -1431,9 +1435,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                         TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize_RT," + last_size);
                         TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + last);
                     }
-
                 }
-
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
@@ -2132,5 +2134,25 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     @Override
     public void displayGroupUpdated(int reqId, String contractInfo) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public void disconnect() {
+       this.eClientSocket.eDisconnect();
+    }
+
+    @Override
+    public void getCurrentTime() {
+        this.eClientSocket.reqCurrentTime();
+    }
+
+    @Override
+    public boolean isConnected() {
+       return this.eClientSocket.isConnected(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public BeanCassandraConnection getCassandraDetails() {
+        return this.cassandra;
     }
 }

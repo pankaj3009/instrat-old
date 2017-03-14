@@ -100,18 +100,18 @@ public class Rates {
         boolean savetocassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra", "false"));
         if (Parameters.connection.size() > 0) {
             for (BeanConnection c : Parameters.connection) {
-                c.getWrapper().cassandraIP = cassandraIP;
-                c.getWrapper().cassandraPort = cassandraPort;
-                c.getWrapper().topic = topic;
-                c.getWrapper().saveToCassandra = pushToCassandra;
-                c.getWrapper().tickEquityMetric = tickEquityMetric;
-                c.getWrapper().tickFutureMetric = tickFutureMetric;
-                c.getWrapper().tickOptionMetric = tickOptionMetric;
-                c.getWrapper().rtEquityMetric = rtEquityMetric;
-                c.getWrapper().rtFutureMetric = rtFutureMetric;
-                c.getWrapper().rtOptionMetric = rtOptionMetric;
-                c.getWrapper().realtime = realtime;
-                c.getWrapper().saveToCassandra = savetocassandra;
+                c.getWrapper().getCassandraDetails().setCassandraIP(cassandraIP);
+                c.getWrapper().getCassandraDetails().setCassandraPort(cassandraPort);
+                c.getWrapper().getCassandraDetails().setTopic(topic);
+                c.getWrapper().getCassandraDetails().setSaveToCassandra(pushToCassandra);
+                c.getWrapper().getCassandraDetails().setTickEquityMetric(tickEquityMetric); 
+                c.getWrapper().getCassandraDetails().setTickFutureMetric(tickFutureMetric);
+                c.getWrapper().getCassandraDetails().setTickOptionMetric(tickOptionMetric);
+                c.getWrapper().getCassandraDetails().setRtEquityMetric(rtEquityMetric);
+                c.getWrapper().getCassandraDetails().setRtFutureMetric(rtFutureMetric);
+                c.getWrapper().getCassandraDetails().setRtOptionMetric(rtOptionMetric);
+                c.getWrapper().getCassandraDetails().setRealtime(realtime);
+                c.getWrapper().getCassandraDetails().setSaveToCassandra(savetocassandra);
                 if (savetocassandra) {
                     try {
                       //  ZMQPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);

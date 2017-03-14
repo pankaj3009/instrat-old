@@ -117,7 +117,7 @@ public class MarketData implements Runnable {
                     contract.m_secType = s.get(row).getType();
                     contract.m_currency = s.get(row).getCurrency();
                     int i = 0;
-                    while (isSnap && mIB.getWrapper().outstandingSnapshots>= 80 - this.rtrequets && i < 20 && !contract.m_secType.equals("COMBO")) {
+                    while (isSnap && mIB.getWrapper().getOutstandingSnapshots()>= 80 - this.rtrequets && i < 20 && !contract.m_secType.equals("COMBO")) {
                         Thread.sleep(100);
                         i = i + 1;
                         if (i >= 20) { //trim snapshots after 2 seconds. 
@@ -162,6 +162,7 @@ public class MarketData implements Runnable {
         mStopThread = flag;
     }
 
+    /*
     public void pruneOutstandingSnapshots() {
         Iterator it = mIB.getWrapper().requestDetailsWithSymbolKey.entrySet().iterator();
         ArrayList<Integer> reqID = new ArrayList();
@@ -189,7 +190,7 @@ public class MarketData implements Runnable {
             mIB.getWrapper().requestDetails.remove(i);
         }
         }
-    
+    */
     /**
      * @return the snapshot
      */

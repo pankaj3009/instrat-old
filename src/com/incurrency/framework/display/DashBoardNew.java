@@ -1270,7 +1270,7 @@ public class DashBoardNew extends javax.swing.JFrame {
 
     private void cmdReconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdReconnectActionPerformed
         int connectionIndex = comboDisplay.getSelectedIndex();
-        if(!Parameters.connection.get(connectionIndex).getWrapper().eClientSocket.isConnected()){
+        if(!Parameters.connection.get(connectionIndex).getWrapper().isConnected()){
             BeanConnection c=Parameters.connection.get(connectionIndex);
             //c.setWrapper(new TWSConnection(c));
             c.getWrapper().connect();

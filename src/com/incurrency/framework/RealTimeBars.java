@@ -65,7 +65,10 @@ public class RealTimeBars implements Runnable {
                     //Launch.setMessage("Market Data Store: Requesting realtime bars for: " + s.getSymbol() + "(" + completed + "/" + size + ")");
                 }
                 //logger.log(Level.INFO, "Market Data Store,{0},{1},Requesting RealTime Bars, Symbol:{2} ,Completed: {3}/{4}", new Object[]{tempC.getAccountName(), "ALL", s.getSymbol(), completed, size});
+                /*
+                Commented line as getRealTimeBars(s) requirement for TWS needs to be understood
                 tempC.getWrapper().getRealTimeBars(s);
+                */
                 i = i + 1;
                 if (i >= connectionCount) {
                     i = 0; //reset counter

@@ -38,7 +38,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     private Integer histMessageLimit; //one message per x seconds
     private Integer tickersLimit;
     private String strategy;
-    private transient TWSConnection wrapper;
+    private transient Connection wrapper;
     private transient RequestIDManager idmanager;
     private long timeDiff;
     private transient ReqHandle reqHandle = new ReqHandle();
@@ -263,14 +263,14 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the wrapper
      */
-    public TWSConnection getWrapper() {
+    public Connection getWrapper() {
         return wrapper;
     }
 
     /**
      * @param wrapper the wrapper to set
      */
-    public void setWrapper(TWSConnection wrapper) {
+    public void setWrapper(Connection wrapper) {
         this.wrapper = wrapper;
     }
 

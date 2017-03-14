@@ -162,7 +162,7 @@ public class MainAlgorithm extends Algorithm {
             c.getWrapper().connect();
             connectioncount = connectioncount + 1;
             //wait for connection
-            if (!c.getWrapper().eClientSocket.isConnected()) {
+            if (!c.getWrapper().isConnected()) {
                 notConnected.add(c);
             }
         }
@@ -175,7 +175,7 @@ public class MainAlgorithm extends Algorithm {
 
         //Synchronize clocks
         for (BeanConnection c : Parameters.connection) {
-            c.getWrapper().eClientSocket.reqCurrentTime();
+            c.getWrapper().getCurrentTime();
         }
 
         //check license
@@ -217,7 +217,7 @@ public class MainAlgorithm extends Algorithm {
     }
     
    public static void connectToTWS(BeanConnection c){
-            c.getWrapper().eClientSocket.eDisconnect();
+            c.getWrapper().disconnect();
             c.setWrapper(new TWSConnection(c));
             c.getWrapper().connect();
         }
@@ -371,7 +371,7 @@ public class MainAlgorithm extends Algorithm {
         @Override
         public void run() {
             for (BeanConnection c : Parameters.connection) {
-                if (!c.getWrapper().eClientSocket.isConnected()) {
+                if (!c.getWrapper().isConnected()) {
                     MainAlgorithm.connectToTWS(c);
                 }
             }
