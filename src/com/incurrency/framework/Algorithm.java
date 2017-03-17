@@ -58,6 +58,7 @@ public class Algorithm {
     public static JedisPool marketdatapool;
     public static String topic;
     public static boolean lc;
+    public static String broker;
     
     
     
@@ -67,6 +68,7 @@ public class Algorithm {
         SimpleDateFormat sdf_yyyymmdd = new SimpleDateFormat("yyyyMMdd");
         timeZone = globalProperties.getProperty("timezone", "Asia/Kolkata").toString().trim();
         topic=globalProperties.getProperty("topic", "INR");
+        broker=globalProperties.getProperty("broker", "ib");
         lc=Boolean.valueOf(globalProperties.getProperty("lc", "true"));
         defaultExchange = globalProperties.getProperty("defaultexchange", "NSE").toString().trim();
         defaultPrimaryExchange = globalProperties.getProperty("defaultprimaryexchange", "NSE").toString().trim();
