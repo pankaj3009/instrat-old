@@ -205,7 +205,7 @@ public class Validator {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
                 }
                 if (entrySize - exitSize != 0) {
-                    out = out +TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(entryPrice), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,2)), 10) + TradingUtil.padRight(String.valueOf(mtmToday), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
+                    out = out +TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryPrice,2)), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,2)), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(mtmToday, 0)), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                 }
             }
             for (String key : comboTrades) {
