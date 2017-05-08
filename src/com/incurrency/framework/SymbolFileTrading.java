@@ -66,7 +66,7 @@ public class SymbolFileTrading {
             s.setCurrency("INR");
             s.setExchange("NSE");
             s.setStreamingpriority(1);
-            s.setStrategy("SWING:OPTSALE:MANAGER");
+            s.setStrategy("SWING:OPTSALE:MANAGER:CONTRA");
             s.setMinsize(40);
             s.setStrikeDistance(100);
             out.add(s);
