@@ -61,7 +61,16 @@ public class SymbolFileHistoricalEquity {
         s.setDisplayname("NSENIFTY");
         out.add(s.clone(s));
         
+        s = new BeanSymbol("BANKNIFTY", "BANKNIFTY", "IND", "", "", "");
+        s.setCurrency("INR");
+        s.setExchange("NSE");
+        s.setStreamingpriority(1);
+        s.setStrategy("DATA");
+        s.setDisplayname("BANKNIFTY");
+        out.add(s.clone(s));
+        
         out.addAll(cnx500);
+        
         for(int i=0;i<cnx500.size();i++){
           // cnx500.get(i).setDisplayname(cnx500.get(i).getExchangeSymbol().replaceAll("[^A-Za-z0-9]", ""));
             cnx500.get(i).setDisplayname(cnx500.get(i).getExchangeSymbol().replaceAll(" ", ""));
