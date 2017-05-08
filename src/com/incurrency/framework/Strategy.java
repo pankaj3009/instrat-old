@@ -229,9 +229,9 @@ public class Strategy implements NotificationListener {
                         case "FUT":
                             if (Parameters.symbol.get(id).getMinsize() == 0) {
                                 String referenceCashType="IND";
-                                if(!s.getDisplayname().contains("NSENIFTY")){
-                                    referenceCashType="STK";
-                                }
+                              //  if(!s.getDisplayname().contains("NSENIFTY")){
+                              //      referenceCashType="STK";
+                              //  }
                                 int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
                                 Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
                             }
