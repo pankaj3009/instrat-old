@@ -859,7 +859,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                         this.eClientSocket.cancelOrder(orderid);
                         //handle cancellations that are not successful
                         logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4},Force={5}",
-                                new Object[]{c.getOrders().get(orderID).getOrderReference(), c.getAccountName(), Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname(), c.getOrders().get(orderID).getInternalOrderID(), orderID, force});
+                                new Object[]{c.getOrders().get(orderID).getOrderReference(), c.getAccountName(), Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname(), String.valueOf(c.getOrders().get(orderID).getInternalOrderID()), String.valueOf(orderID), force});
                         break;
                 }
             } else {
@@ -867,7 +867,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                 this.eClientSocket.cancelOrder(orderid);
                 //handle cancellations that are not successful
                 logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4},Force={5}",
-                        new Object[]{c.getOrders().get(orderID).getOrderReference(), c.getAccountName(), Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname(), c.getOrders().get(orderID).getInternalOrderID(), orderID, force});
+                        new Object[]{c.getOrders().get(orderID).getOrderReference(), c.getAccountName(), Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname(), String.valueOf(c.getOrders().get(orderID).getInternalOrderID()), String.valueOf(orderID), force});
 
             }
         }
