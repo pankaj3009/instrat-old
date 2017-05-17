@@ -1395,7 +1395,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             ArrayList<LinkedAction> actionsToFire = new ArrayList<>();
             int i = 0;
             for (LinkedAction f : cancelledOrders) {
-                if (f.orderID == orderid && i == 0 && (ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDNOFILL) || ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDPARTIALFILL))) { //only fire one linkedaction at one time.
+                if (f.orderID == orderid && i == 0 && (ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDNOFILL) || ob.getChildStatus().equals(EnumOrderStatus.CANCELLEDPARTIALFILL)|| ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED))) { //only fire one linkedaction at one time.
                     new java.util.Timer().schedule(
                             new java.util.TimerTask() {
                         @Override
