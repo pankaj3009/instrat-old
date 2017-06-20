@@ -61,7 +61,7 @@ public class OrderForm extends javax.swing.JFrame {
         this.lblSide.setText(side.toString());
         if(ibOrderID>0){ //retrieve orders
             internalOrderId=Parameters.connection.get(connection).getOrders().get(ibOrderID).getInternalOrderID();
-            internalOrderIdEntry=Parameters.connection.get(connection).getOrders().get(ibOrderID).getInternalOrderIDEntry();
+            internalOrderIdEntry=Parameters.connection.get(connection).getOrders().get(ibOrderID).getParentInternalOrderIdEntry();
         }
         ob=Parameters.connection.get(connection).getOrders().get(ibOrderID);
         if(id>=0){

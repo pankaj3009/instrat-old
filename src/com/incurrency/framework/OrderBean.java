@@ -1,524 +1,345 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package com.incurrency.framework;
 
-
-import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
- * @author admin
+ * @author psharma
  */
-public class OrderBean implements Serializable {
-    private int parentSymbolID;//starts with 1.
-    private int childSymbolID;
-    private int orderID;
-    private int parentInternalOrderID;
-    private int internalOrderID;
-    private int internalOrderIDEntry;
-    private Long orderDate;
-    private EnumOrderSide parentOrderSide;
-    private EnumOrderSide childOrderSide;
-    private EnumOrderType orderType; //1. MKT 2. LMT 3. STP LMT 4. Take Profit 5. Other
-    private EnumOrderStatus childStatus; //1. Submitted 2. Acknowledged 3. Cancelled
-    private EnumOrderStatus parentStatus;
-    private int parentOrderSize;
-    private int childOrderSize;
-    private int childFillSize;
-    private int parentFillSize;
-    private double fillPrice;
-    private boolean cancelRequested=false;
-    private int positionsize;
-    private double childLimitPrice;
-    private double parentLimitPrice;
-    private double triggerPrice;
-    private String orderValidity;
-    private String expireTime;
-    private String orderReference;
-    private EnumOrderStage intent;
-    private EnumOrderReason reason;
-    private String ocaGroup;
-    private int ocaExecutionLogic;
-    private boolean scale;
-    private final Object lockparentlimitprice=new Object();
-    private String log;
-    private int displaySize;
-   
-    private static final Object childstatus_Lock=new Object();
-    
+public class OrderBean extends ConcurrentHashMap<String, String> {
 
-    
-    public OrderBean() {
-        
+    public void createLinkedAction(int parentid, String action, String status, String delay) {
+        this.put("LinkInternalOrderID", String.valueOf(parentid));
+        this.put("LinkStatusTrigger", status);
+        this.put("LinkAction", action);
+        this.put("LinkDelay", delay);
     }
 
-    /**
-     * @return the symbolID
-     */
+    public boolean linkedActionExists() {
+        return this.get("LinkInternalOrderID") != null ? Boolean.TRUE : Boolean.FALSE;
+    }
+
     public int getParentSymbolID() {
-        return parentSymbolID;
+        String parentSymbolDisplayName = this.get("ParentDisplayName");
+        return Utilities.getIDFromDisplayName(Parameters.symbol, parentSymbolDisplayName);
     }
 
-    /**
-     * @param symbolID the symbolID to set
-     */
-    public void setParentSymbolID(int parentSymbolID) {
-        this.parentSymbolID = parentSymbolID;
-    }
-
-    /**
-     * @return the orderID
-     */
-    public synchronized int getOrderID() {
-        return orderID;
-    }
-
-    /**
-     * @param orderID the orderID to set
-     */
-    public synchronized void setOrderID(int orderID) {
-        this.orderID = orderID;
-    }
-
-
-    /**
-     * @return the orderSize
-     */
-    public int getParentOrderSize() {
-        return parentOrderSize;
-    }
-
-    /**
-     * @param orderSize the orderSize to set
-     */
-    public void setParentOrderSize(int parentOrderSize) {
-        this.parentOrderSize = parentOrderSize;
-    }
-
-    /**
-     * @return the fillSize
-     */
-    public int getChildFillSize() {
-        return childFillSize;
-    }
-
-    /**
-     * @param fillSize the fillSize to set
-     */
-    public void setChildFillSize(int childFillSize) {
-        this.childFillSize = childFillSize;
-    }
-
-    /**
-     * @return the cancelRequested
-     */
-    public boolean isCancelRequested() {
-        return cancelRequested;
-    }
-
-    /**
-     * @param cancelRequested the cancelRequested to set
-     */
-    public void setCancelRequested(boolean cancelRequested) {
-        this.cancelRequested = cancelRequested;
-    }
-
-    /**
-     * @return the positionsize
-     */
-    public int getPositionsize() {
-        return positionsize;
-    }
-
-    /**
-     * @param positionsize the positionsize to set
-     */
-    public void setPositionsize(int positionsize) {
-        this.positionsize = positionsize;
-    }
-
-    /**
-     * @return the status
-     */
-    public EnumOrderStatus getChildStatus() {
-        synchronized(childstatus_Lock){
-        return childStatus;
-        }
-    }
-
-    /**
-     * @param status the status to set
-     */
-    public void setChildStatus(EnumOrderStatus childStatus) {
-        synchronized(childstatus_Lock){
-            this.childStatus = childStatus;
-        }
-    }
-
-    /**
-     * @return the orderType
-     */
-    public EnumOrderType getOrderType() {
-        return orderType;
-    }
-
-    /**
-     * @param orderType the orderType to set
-     */
-    public void setOrderType(EnumOrderType orderType) {
-        this.orderType = orderType;
-    }
-
-    /**
-     * @return the orderSide
-     */
-    public EnumOrderSide getParentOrderSide() {
-        return parentOrderSide;
-    }
-
-    /**
-     * @param orderSide the orderSide to set
-     */
-    public void setParentOrderSide(EnumOrderSide parentOrderSide) {
-        this.parentOrderSide = parentOrderSide;
-    }
-
-    void setOrderType(String m_orderType) {
-        this.orderType=m_orderType.compareTo("MKT")==0?EnumOrderType.MKT:m_orderType.compareTo("LMT")==0? EnumOrderType.LMT:
-                m_orderType.compareTo("STP LMT")==0?EnumOrderType.STPLMT:m_orderType.compareTo("STP")==0?EnumOrderType.STP:
-                EnumOrderType.UNDEFINED;
-        
-    }
-
-    /**
-     * @return the fillPrice
-     */
-    public double getFillPrice() {
-        return fillPrice;
-    }
-
-    /**
-     * @param fillPrice the fillPrice to set
-     */
-    public void setFillPrice(double fillPrice) {
-        this.fillPrice = fillPrice;
-    }
-
-    /**
-     * @return the childLimitPrice
-     */
-    public double getChildLimitPrice() {
-        return childLimitPrice;
-    }
-
-    /**
-     * @param childLimitPrice the childLimitPrice to set
-     */
-    public void setChildLimitPrice(double childLimitPrice) {
-        this.childLimitPrice = childLimitPrice;
-    }
-
-    /**
-     * @return the triggerPrice
-     */
-    public double getTriggerPrice() {
-        return triggerPrice;
-    }
-
-    /**
-     * @param triggerPrice the triggerPrice to set
-     */
-    public void setTriggerPrice(double triggerPrice) {
-        this.triggerPrice = triggerPrice;
-    }
-
-    /**
-     * @return the orderValidity
-     */
-    public String getOrderValidity() {
-        return orderValidity;
-    }
-
-    /**
-     * @param orderValidity the orderValidity to set
-     */
-    public void setOrderValidity(String orderValidity) {
-        this.orderValidity = orderValidity;
-    }
-
-    /**
-     * @return the expireTime
-     */
-    public String getExpireTime() {
-        return expireTime;
-    }
-
-    /**
-     * @param expireTime the expireTime to set
-     */
-    public void setExpireTime(String expireTime) {
-        this.expireTime = expireTime;
-    }
-
-    /**
-     * @return the orderReference
-     */
-    public String getOrderReference() {
-        return orderReference;
-    }
-
-    /**
-     * @param orderReference the orderReference to set
-     */
-    public void setOrderReference(String orderReference) {
-        this.orderReference = orderReference;
-    }
-
-    /**
-     * @return the orderDate
-     */
-    public Long getOrderDate() {
-        return orderDate;
-    }
-
-    /**
-     * @param orderDate the orderDate to set
-     */
-    public void setOrderDate(Long orderDate) {
-        this.orderDate = orderDate;
-    }
-
-    /**
-     * @return the internalOrderID
-     */
-    public int getInternalOrderID() {
-        return internalOrderID;
-    }
-
-    /**
-     * @param internalOrderID the internalOrderID to set
-     */
-    public void setInternalOrderID(int internalOrderID) {
-        this.internalOrderID = internalOrderID;
-    }
-
-    /**
-     * @return the internalOrderIDEntry
-     */
-    public int getInternalOrderIDEntry() {
-        return internalOrderIDEntry;
-    }
-
-    /**
-     * @param internalOrderIDEntry the internalOrderIDEntry to set
-     */
-    public void setInternalOrderIDEntry(int internalOrderIDEntry) {
-        this.internalOrderIDEntry = internalOrderIDEntry;
-    }
-
-    /**
-     * @return the intent
-     */
-    public EnumOrderStage getIntent() {
-        return intent;
-    }
-
-    /**
-     * @param intent the intent to set
-     */
-    public void setIntent(EnumOrderStage intent) {
-        this.intent = intent;
-    }
-
-    /**
-     * @return the reason
-     */
-    public EnumOrderReason getReason() {
-        return reason;
-    }
-
-    /**
-     * @param reason the reason to set
-     */
-    public void setReason(EnumOrderReason reason) {
-        this.reason = reason;
-    }
-
-    /**
-     * @return the ocaGroup
-     */
-    public String getOcaGroup() {
-        return ocaGroup;
-    }
-
-    /**
-     * @param ocaGroup the ocaGroup to set
-     */
-    public void setOcaGroup(String ocaGroup) {
-        this.ocaGroup = ocaGroup;
-    }
-
-    /**
-     * @return the ocaExecutionLogic
-     */
-    public int getOcaExecutionLogic() {
-        return ocaExecutionLogic;
-    }
-
-    /**
-     * @param ocaExecutionLogic the ocaExecutionLogic to set
-     */
-    public void setOcaExecutionLogic(int ocaExecutionLogic) {
-        this.ocaExecutionLogic = ocaExecutionLogic;
-    }
-
-    /**
-     * @return the childSymbolID
-     */
     public int getChildSymbolID() {
-        return childSymbolID;
+        String childSymbolDisplayName = this.get("ChildDisplayName");
+        return Utilities.getIDFromDisplayName(Parameters.symbol, childSymbolDisplayName);
     }
 
-    /**
-     * @param childSymbolID the childSymbolID to set
-     */
-    public void setChildSymbolID(int childSymbolID) {
-        this.childSymbolID = childSymbolID;
-    }
-
-    /**
-     * @return the childOrderSide
-     */
-    public EnumOrderSide getChildOrderSide() {
-        return childOrderSide;
-    }
-
-    /**
-     * @param childOrderSide the childOrderSide to set
-     */
-    public void setChildOrderSide(EnumOrderSide childOrderSide) {
-        this.childOrderSide = childOrderSide;
-    }
-
-    /**
-     * @return the childOrderSize
-     */
-    public int getChildOrderSize() {
-        return childOrderSize;
-    }
-
-    /**
-     * @param childOrderSize the childOrderSize to set
-     */
-    public void setChildOrderSize(int childOrderSize) {
-        this.childOrderSize = childOrderSize;
-    }
-
-    /**
-     * @return the parentFillSize
-     */
-    public int getParentFillSize() {
-        return parentFillSize;
-    }
-
-    /**
-     * @param parentFillSize the parentFillSize to set
-     */
-    public void setParentFillSize(int parentFillSize) {
-        this.parentFillSize = parentFillSize;
-    }
-
-    /**
-     * @return the parentStatus
-     */
-    public EnumOrderStatus getParentStatus() {
-        return parentStatus;
-    }
-
-    /**
-     * @param parentStatus the parentStatus to set
-     */
-    public void setParentStatus(EnumOrderStatus parentStatus) {
-        this.parentStatus = parentStatus;
-    }
-
-    /**
-     * @return the parentLimitPrice
-     */
-    public double getParentLimitPrice() {
-        synchronized(lockparentlimitprice){
-            return parentLimitPrice;
-    }
-    }
-
-    /**
-     * @param parentLimitPrice the parentLimitPrice to set
-     */
-    public void setParentLimitPrice(double parentLimitPrice) {
-        synchronized(lockparentlimitprice){
-            this.parentLimitPrice = parentLimitPrice;
+    public EnumOrderSide getOrderSide() {
+        String orderSide = this.get("OrderSide");
+        if (orderSide != null) {
+            return (EnumOrderSide.valueOf(orderSide));
+        } else {
+            return EnumOrderSide.UNDEFINED;
         }
     }
 
-    /**
-     * @return the parentInternalOrderID
-     */
-    public int getParentInternalOrderID() {
-        return parentInternalOrderID;
+    public EnumOrderReason getOrderReason() {
+        String orderReason = this.get("OrderReason");
+        if (orderReason != null) {
+            return (EnumOrderReason.valueOf(orderReason));
+        } else {
+            return EnumOrderReason.UNDEFINED;
+        }
     }
 
-    /**
-     * @param parentInternalOrderID the parentInternalOrderID to set
-     */
-    public void setParentInternalOrderID(int parentInternalOrderID) {
-        this.parentInternalOrderID = parentInternalOrderID;
+    public EnumOrderType getOrderType() {
+        String orderType = this.get("OrderType");
+        if (orderType != null) {
+            return (EnumOrderType.valueOf(orderType));
+        } else {
+            return EnumOrderType.UNDEFINED;
+        }
     }
 
-    /**
-     * @return the scale
-     */
-    public boolean isScale() {
-        return scale;
+    public EnumOrderStage getOrderStage() {
+        String orderStage = this.get("OrderStage");
+        if (orderStage != null) {
+            return (EnumOrderStage.valueOf(orderStage));
+        } else {
+            return EnumOrderStage.UNDEFINED;
+        }
     }
 
-    /**
-     * @param scale the scale to set
-     */
-    public void setScale(boolean scale) {
-        this.scale = scale;
+    public EnumOrderStatus getOrderStatus() {
+        String orderStatus = this.get("OrderStatus");
+        if (orderStatus != null) {
+            return (EnumOrderStatus.valueOf(orderStatus));
+        } else {
+            return EnumOrderStatus.UNDEFINED;
+        }
     }
 
-    /**
-     * @return the log
-     */
-    public String getLog() {
-        return log;
+    public int getOriginalOrderSize() {
+        String orderSize = this.get("OriginalOrderSize");
+        return Utilities.getInt(orderSize, 0);
+
     }
 
-    /**
-     * @param log the log to set
-     */
-    public void setLog(String log) {
-        this.log = log;
+    public int getCurrentOrderSize() {
+        String orderSize = this.get("CurrentOrderSize");
+        return Utilities.getInt(orderSize, 0);
     }
 
-    /**
-     * @return the displaySize
-     */
+    public int getCurrentFillSize() {
+        String fillSize = this.get("CurrentFillSize");
+        return Utilities.getInt(fillSize, 0);
+
+    }
+
+    public int getTotalFillSize() {
+        String fillSize = this.get("TotalFillSize");
+        return Utilities.getInt(fillSize, 0);
+
+    }
+    
+        public int getTotalFillPrice() {
+        String fillSize = this.get("TotalFillPrice");
+        return Utilities.getInt(fillSize, 0);
+
+    }
+
     public int getDisplaySize() {
-        return displaySize;
+        String displaySize = this.get("DisplaySize");
+        return Utilities.getInt(displaySize, 0);
+
     }
 
-    /**
-     * @param displaySize the displaySize to set
-     */
-    public void setDisplaySize(int displaySize) {
-        this.displaySize = displaySize;
+    public int getMaximumOrderValue() {
+        String maximumOrderValue = this.get("MaximumOrderValue");
+        return Utilities.getInt(maximumOrderValue, 0);
     }
 
+    public int getParentInternalOrderID() {
+        String parentInternalOrderID = this.get("ParentInternalOrderID");
+        return Utilities.getInt(parentInternalOrderID, -1);
+    }
 
+    public int getParentInternalOrderIDEntry() {
+        String parentEntryInternalOrderID = this.get("ParentInternalOrderIDEntry");
+        return Utilities.getInt(parentEntryInternalOrderID, -1);
+    }
+
+    public int getInternalOrderID() {
+        String childInternalOrderID = this.get("InternalOrderID");
+        return Utilities.getInt(childInternalOrderID, -1);
+    }
+
+    public int getExternalOrderID() {
+        String externalOrderID = this.get("ExternalOrderID");
+        return Utilities.getInt(externalOrderID, 0);
+    }
+
+    public int getLinkDelay() {
+        String linkDelay = this.get("LinkDelay");
+        return Utilities.getInt(linkDelay, 0);
+    }
+
+    public double getLimitPrice() {
+        String limitPrice = this.get("LimitPrice");
+        return Utilities.getDouble(limitPrice, 0);
+    }
+
+    public double getTriggerPrice() {
+        String triggerPrice = this.get("TriggerPrice");
+        return Utilities.getDouble(triggerPrice, 0);
+    }
+
+    public double getMaxPermissibleImpactCost() {
+        String maxPermissibleImpactCost = this.get("MaxPermissibleImpactCost");
+        return Utilities.getDouble(maxPermissibleImpactCost, 0);
+    }
+
+    public double getCurrentFillPrice(){
+        return Utilities.getDouble("CurrentFillPrice", 0);
+    }
+    
+    public boolean isScale() {
+        String scale = this.get("Scale");
+        if (scale != null) {
+            return Boolean.valueOf(scale);
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    public boolean isCancelRequested() {
+        String cancelRequested = this.get("CancelRequested");
+        if (cancelRequested != null) {
+            return Boolean.valueOf(cancelRequested);
+        } else {
+            return Boolean.FALSE;
+        }
+    }
+
+    public String getOrderReference() {
+        return this.get("OrderReference");
+    }
+
+    public String getEffectiveFrom() {
+        return this.get("EffectiveFrom");
+    }
+
+    public String getEffectiveTill() {
+        return this.get("EffectiveTill");
+    }
+
+    public String getParentDisplayName() {
+        return this.get("ParentDisplayName");
+    }
+
+    public String getChildDisplayName() {
+        return this.get("ChildDisplayName");
+    }    
+
+    public String getOrderLog(){
+        String value=this.get("OrderLog");
+        if(value==null){
+            return "";
+        }else{
+            return value;
+        }
+    }
+    
+     public String getSpecifiedBrokerAccount(){
+        String value=this.get("SpecifiedBrokerAccount");
+        return value;
+    }
+    
+    public String getStubs() {
+        return null;
+    }
+    public Date getEffectiveTillDate(){
+        return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("EffectiveTill"), Algorithm.timeZone);
+    }
     
     
+    
+    //Setters
+    
+    public void setInternalOrderID(int value){
+        this.put("InternalOrderID", String.valueOf(value));
+    }
+    
+    public void setParentInternalOrderID(int value){
+        this.put("ParentInternalOrderID", String.valueOf(value));
+    }
+    
+     public void setParentInternalOrderIDEntry(int value){
+        this.put("ParentInternalOrderIDEntry", String.valueOf(value));
+    }
+    
+    
+    public void setOrderLog(String value){
+        this.put("OrderLog",value);
+    }
+    
+    public void setOrderStatus(EnumOrderStatus value) {
+        this.put("OrderStatus", String.valueOf(value));
+    }
+
+    public void setTriggerPrice(double value) {
+        this.put("TriggerPrice", String.valueOf(value));
+    }
+
+    public void setLimitPrice(double value) {
+        this.put("LimitPrice", String.valueOf(value));
+    }
+
+    public void setCurrentOrderSize(int value) {
+        this.put("CurrentOrderSize", String.valueOf(value));
+    }
+    
+    public void setChildDisplayName(String value) {
+        this.put("ChildDisplayName", String.valueOf(value));
+    }
+
+    public void setExternalOrderID(int value) {
+        this.put("ExternalOrderID", String.valueOf(value));
+    }
+
+    public void setOrderTime() {
+        this.put("OrderTime", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
+    }
+    
+    public void setOrderStage(EnumOrderStage value){
+        this.put("OrderStage", String.valueOf(value));
+    }
+
+    public void setCurrentFillSize(int value){
+        this.put("CurrentFillSize", String.valueOf(value));
+    }
+    
+    public void setCurrentFillPrice(double value){
+        this.put("CurrentFillPrice", String.valueOf(this));
+    }
+    
+    public void setTotalFillSize(int value) {
+        this.put("TotalFillSize", String.valueOf(value));
+    }
+    
+    public void setTotalFillPrice(double value) {
+        this.put("TotalFillPrice", String.valueOf(value));
+    }
+    
+    public void setOrderReason(String value) {
+        this.put("OrderReason", String.valueOf(value));
+    }
+    
+    public void setSpecifiedBrokerAccount(String value){
+        this.put("SpecifiedBrokerAccount", value);
+    }
+    
+    //Order Attributes
+    public int getOrdersPerMinute() {
+        return Utilities.getInt(this.get("OrdersPerMinute"), 1);
+    }
+
+    public void setOrdersPerMinute(int value) {
+        this.put("OrdersPerMinute", String.valueOf(value));
+    }
+
+    public double getImproveProbability() {
+        return Utilities.getInt(this.get("ImproveProbability"), 1);
+    }
+
+    public void setImproveProbability(double value) {
+        this.put("ImproveProbability", String.valueOf(value));
+    }
+
+    public double getImproveAmount() {
+        return Utilities.getInt(this.get("ImproveAmount"), 0);
+    }
+
+    public void setImproveAmount(double value) {
+        this.put("ImproveAmount", String.valueOf(value));
+    }
+
+    public int getFatFingerWindow() {
+        return Utilities.getInt(this.get("FatFingerWindow"), 120);
+    }
+
+    public void setFatFingerWindow(int value) {
+        this.put("FatFingerWindow", String.valueOf(value));
+    }
+
+    public int getStickyPeriod() {
+        return Utilities.getInt(this.get("StickyPeriod"), 60);
+    }
+
+    public void setStickyPeriod(int value) {
+        this.put("StickyPeriod", String.valueOf(value));
+    }
 }

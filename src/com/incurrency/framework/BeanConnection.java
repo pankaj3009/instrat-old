@@ -50,13 +50,9 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     //private transient HashMap<Integer, RequestID> mSnapShotSymbolID = new HashMap(); //this holds symbolID as key
     //private transient HashMap mRealTimeBarsReqID = new HashMap();
     private transient Long connectionTime;
-    private ConcurrentHashMap<Integer, OrderBean> orders = new ConcurrentHashMap<>(); //holds map of orderid and order object
-    private HashMap<Index, ArrayList<SymbolOrderMap>> ordersSymbols = new HashMap<>(); //holds map of <strategy,symbol> and a list of all open orders against the index.
+    private HashMap<OrderQueueKey, ArrayList<OrderBean>> ordersSymbols = new HashMap<>(); //holds map of <strategy,symbol> and a list of all open orders against the index.
     private HashMap<Index, BeanPosition> Positions = new HashMap<>(); //holds map of <symbol, strategy> and system position.
-    private HashMap<Integer, BeanOrderInformation> ordersToBeCancelled = new HashMap(); //holds the orderid as integer
-    private HashMap<Integer, BeanOrderInformation> ordersToBeFastTracked = new HashMap(); // holds the orderid as integer.
-    private HashMap<Long, OrderEvent> ordersToBeRetried = new HashMap(); // holds the current system time and order event that needs to be retried. Orders are retried after 60sec
-    private ArrayList<Integer> ordersMissed = new ArrayList();
+     private ArrayList<Integer> ordersMissed = new ArrayList();
     private ArrayList<Integer> ordersInProgress = new ArrayList();
     private String accountName;
     private PropertyChangeSupport propertySupport;
@@ -69,9 +65,6 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     private HashMap<String, Double> minpnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
     private int ordersHaltTrading=10;
     private String ownerEmail;
-    private  HashMultimap <Index, BeanOrderInformation> activeOrders = HashMultimap.create(); //holds the symbol id and corresponding order information
-    private ConcurrentHashMap<Index,ArrayList<Integer>> orderMapping=new ConcurrentHashMap<>(); //internal order id mapped to arraylist of IB orders
-    
     final Object lockPNLStrategy=new Object();
     final Object lockActiveOrders=new Object();  
     final Object lockOrderMapping=new Object();
@@ -131,7 +124,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
 
             for (int i = 0; i < Parameters.symbol.size(); i++) {
                 Index ind = new Index(strategyName, i);
-                ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
+                //ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
                 pnlBySymbol.put(ind, 0D);
                 if (this.mtmBySymbol.get(ind) == null) {
                     this.mtmBySymbol.put(ind, 0D);
@@ -139,7 +132,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
             }
         } else {//adding a symbol
             Index ind = new Index(strategyName, id);
-            ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
+//            ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
             pnlBySymbol.put(ind, 0D);
             if (this.mtmBySymbol.get(ind) == null) {
                 this.mtmBySymbol.put(ind, 0D);
@@ -332,33 +325,27 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         this.connectionTime = connectionTime;
     }
 
-    /**
-     * @return the orders
-     */
-    public ConcurrentHashMap<Integer, OrderBean> getOrders() {
-        
-            return orders;
-            }
-
-    /**
-     * @param orders the orders to set
-     */
-    public void setOrders(ConcurrentHashMap<Integer, OrderBean> orders) {
-        
-        this.orders = orders;
-            }
 
     /**
      * @return the ordersSymbols
      */
-    public HashMap<Index, ArrayList<SymbolOrderMap>> getOrdersSymbols() {
+    public HashMap<OrderQueueKey, ArrayList<OrderBean>> getOrdersSymbols() {
         return ordersSymbols;
+    }
+    
+    /**
+     * @param oqki
+     * @return the ordersSymbols
+     */
+    public OrderBean getOrderBean(OrderQueueKey oqki) {
+        int index=ordersSymbols.get(oqki).size()-1;
+        return ordersSymbols.get(oqki).get(index);
     }
 
     /**
      * @param ordersSymbols the ordersSymbols to set
      */
-    public void setOrdersSymbols(HashMap<Index, ArrayList<SymbolOrderMap>> ordersSymbols) {
+    public void setOrdersSymbols(HashMap<OrderQueueKey, ArrayList<OrderBean>> ordersSymbols) {
         this.ordersSymbols = ordersSymbols;
     }
 
@@ -376,47 +363,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         this.Positions = Positions;
     }
 
-    /**
-     * @return the ordersToBeCancelled
-     */
-    public synchronized HashMap<Integer, BeanOrderInformation> getOrdersToBeCancelled() {
-        return ordersToBeCancelled;
-    }
-
-    /**
-     * @param ordersToBeCancelled the ordersToBeCancelled to set
-     */
-    public void setOrdersToBeCancelled(HashMap<Integer, BeanOrderInformation> ordersToBeCancelled) {
-        this.ordersToBeCancelled = ordersToBeCancelled;
-    }
-
-    /**
-     * @return the ordersToBeFastTracked
-     */
-    public HashMap<Integer, BeanOrderInformation> getOrdersToBeFastTracked() {
-        return ordersToBeFastTracked;
-    }
-
-    /**
-     * @param ordersToBeFastTracked the ordersToBeFastTracked to set
-     */
-    public void setOrdersToBeFastTracked(HashMap<Integer, BeanOrderInformation> ordersToBeFastTracked) {
-        this.ordersToBeFastTracked = ordersToBeFastTracked;
-    }
-
-    /**
-     * @return the ordersToBeRetried
-     */
-    public HashMap<Long, OrderEvent> getOrdersToBeRetried() {
-        return ordersToBeRetried;
-    }
-
-    /**
-     * @param ordersToBeRetried the ordersToBeRetried to set
-     */
-    public void setOrdersToBeRetried(HashMap<Long, OrderEvent> ordersToBeRetried) {
-        this.ordersToBeRetried = ordersToBeRetried;
-    }
+ 
 
     /**
      * @return the ordersMissed
@@ -633,32 +580,6 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     public void setReqHistoricalHandle(ReqHandleHistorical reqHistoricalHandle) {
         this.reqHistoricalHandle = reqHistoricalHandle;
     }
-
-    /**
-     * @return the activeOrders
-     */
-    public HashMultimap<Index, BeanOrderInformation> getActiveOrders() {
-        synchronized(lockActiveOrders){
-        return activeOrders;
-        }
-    }
-
-    /**
-     * @param activeOrders the activeOrders to set
-     */
-    public void setActiveOrders(HashMultimap<Index, BeanOrderInformation> activeOrders) {
-        synchronized(lockActiveOrders){
-        this.activeOrders = activeOrders;
-        }
-    }
-
-    /**
-     * @return the orderMapping
-     */
-    public ConcurrentHashMap<Index,ArrayList<Integer>> getOrderMapping() {
-        return orderMapping;
-    }
-
 
     /**
      * @return the mtmByStrategy

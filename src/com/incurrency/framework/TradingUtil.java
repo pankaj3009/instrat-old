@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,9 @@ import java.util.regex.Pattern;
 import javax.mail.internet.InternetAddress;
 import javax.swing.JOptionPane;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.ScanResult;
 
 
 /**
@@ -2146,19 +2150,133 @@ public class TradingUtil {
      * @param orderId reference to an order for which linked orders are needed
      */
     static ArrayList<Integer> getLinkedOrderIds(int orderid, BeanConnection c) {
-        ArrayList<Integer> out = new ArrayList<>();
-        ConcurrentHashMap<Index, ArrayList<Integer>> orderMapping;
-            orderMapping = c.getOrderMapping();
-        
-        for (Map.Entry<Index, ArrayList<Integer>> arr : orderMapping.entrySet()) {
-            if (arr.getValue().contains(Integer.valueOf(orderid))) {
-                for (int i : arr.getValue()) {
-                    out.add(i);
-                    //logger.log(Level.FINE, "Debug: GetLinkedOrderIds, Requested Order childid: {0},orderid added:{1}, Strategy:{2},InternalOrderID:{3}", new Object[]{orderid,i,arr.getKey().getStrategy(),arr.getKey().getSymbolID()});
-                }
+        ArrayList<Integer>out=new ArrayList<>();
+        String searchString="OQ:"+orderid+":"+c.getAccountName()+":*";
+        Set<OrderQueueKey> oqks=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+        if(oqks.size()>1){
+            logger.log(Level.SEVERE,"501,DuplicateExternalOrderID during linkedid search,Account={0},ExternalOrderID={1}",new Object[]{c.getAccountName(),orderid});
+            return out;
+        }else if (oqks.size()==1){
+            for(OrderQueueKey oqki:oqks){
+                int id=Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
+                boolean combo=TradingUtil.isSyntheticSymbol(id);
+                if(combo){
+                    int parentorderidint=oqki.getParentorderidint();
+                    searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
+                    Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+                    for(OrderQueueKey oqkinew:oqksnew){
+                        int obsize=c.getOrdersSymbols().get(oqkinew).size();
+                        OrderBean ob=c.getOrdersSymbols().get(oqkinew).get(obsize-1);
+                        if(ob.getExternalOrderID()>=0 && TradingUtil.isLiveOrder(c, oqkinew)){
+                            out.add(ob.getExternalOrderID());
+                        }
+                    }
+                }            
+                
             }
         }
         return out;
+    }
+
+        /**
+     * Returns linked external broker orders. The integer argument must specify
+     * the reference to a broker order.
+     * <p>
+     * If the argument is not found as an open order, an empty ArrayList will be
+     * returned. If there are no other linked orders, and the argument is the
+     * only order, * the size of the list will be 1 and will contain the
+     * argument value
+     *
+     * @param orderId reference to an order for which linked orders are needed
+     */
+    static ArrayList<OrderBean> getLinkedOrderBeans(int orderid, BeanConnection c) {
+        ArrayList<OrderBean>out=new ArrayList<>();
+        String searchString="OQ:"+orderid+":"+c.getAccountName()+":*";
+        Set<OrderQueueKey> oqks=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+        if(oqks.size()>1){
+            logger.log(Level.SEVERE,"501,DuplicateExternalOrderID during linkedid search,Account={0},ExternalOrderID={1}",new Object[]{c.getAccountName(),orderid});
+            return out;
+        }else if (oqks.size()==1){
+            for(OrderQueueKey oqki:oqks){
+                int id=Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
+                boolean combo=TradingUtil.isSyntheticSymbol(id);
+                if(combo){
+                    int parentorderidint=oqki.getParentorderidint();
+                    searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
+                    Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+                    for(OrderQueueKey oqkinew:oqksnew){
+                        int obsize=c.getOrdersSymbols().get(oqkinew).size();
+                        OrderBean ob=c.getOrdersSymbols().get(oqkinew).get(obsize-1);
+                        if(ob.getExternalOrderID()>0 && TradingUtil.isLiveOrder(c, oqkinew)){
+                            out.add(ob);
+                        }
+                    }
+                }            
+                
+            }
+        }
+        return out;
+    }
+    
+      static ArrayList<OrderBean> getLinkedOrderBeansGivenParentBean(OrderBean ob, BeanConnection c) {
+        ArrayList<OrderBean>out=new ArrayList<>();
+        String searchString="OQ:*"+":"+c.getAccountName()+":"+ob.getOrderReference()+":"+ob.getParentDisplayName()+":"+ob.getChildDisplayName()+":"+ob.getParentInternalOrderID()+":*";
+        Set<OrderQueueKey> oqks=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+        for(OrderQueueKey oqki:oqks){
+                int id=Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
+                boolean combo=TradingUtil.isSyntheticSymbol(id);
+                if(combo){
+                    int parentorderidint=oqki.getParentorderidint();
+                    searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
+                    Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+                    for(OrderQueueKey oqkinew:oqksnew){
+                        int obsize=c.getOrdersSymbols().get(oqkinew).size();
+                        OrderBean obi=c.getOrdersSymbols().get(oqkinew).get(obsize-1);
+                        if(ob.getExternalOrderID()>0 && TradingUtil.isLiveOrder(c, oqkinew)){
+                            out.add(obi);
+                        }
+                    }
+                }            
+                
+            }
+        
+        return out;
+    }
+
+    
+    /**
+     * Returns orders connected to a parent id. The integer argument must specify
+     * the reference to a parent id.
+     * <p>
+     * If the argument is not found as an open order, an empty ArrayList will be
+     * returned. If there are no other linked orders, and the argument is the
+     * only order, * the size of the list will be 1 and will contain the
+     * argument value
+     *
+     * @param db
+     * @param c
+     * @param strategy
+     * @param parentid
+     * @return 
+     */
+    static ArrayList<Integer> getLinkedOrdersByParentID(Database db, BeanConnection c, OrderBean obp) {
+        ArrayList<Integer> orderids = new ArrayList<>();
+        int parentid=obp.getParentSymbolID();
+        String strategy=obp.getOrderReference();
+        String[] childDisplayNames = TradingUtil.getChildDisplayNames(parentid);
+        String parentDisplayName = Parameters.symbol.get(parentid).getDisplayname();
+        for (String childDisplayName : childDisplayNames) {
+            String searchString = "OQ:*" + c.getAccountName() + ":" + strategy + ":" + parentDisplayName + ":" + childDisplayName;
+            Set<String> oqks = db.getKeys("", searchString);
+            for (String oqki : oqks) {
+                OrderQueueKey oqk = new OrderQueueKey(oqki);
+                if (TradingUtil.isLiveOrder(c, oqk)) {
+                    int lastindex = c.getOrdersSymbols().get(oqk).size() - 1;
+                    orderids.add(c.getOrdersSymbols().get(oqk).get(lastindex).getExternalOrderID());
+                }
+            }
+        }
+        return orderids;
     }
 
     public static void logProperties() {
@@ -2172,4 +2290,87 @@ public class TradingUtil {
         }
         logger.log(Level.INFO, "------------------------------------------------------------");
     }
+    
+    /**
+     * Returns the status of the order referenced by OrderQueueKey
+     *
+     * @param c
+     * @param oqk
+     * @return
+     */
+    public static boolean isLiveOrder(BeanConnection c, OrderQueueKey oqk) {
+        ArrayList<OrderBean> oqvs = c.getOrdersSymbols().get(oqk);
+        if (oqvs != null) {
+            OrderBean oqv = oqvs.get(oqvs.size() - 1);
+            if (oqv.getOrderStatus() == EnumOrderStatus.ACKNOWLEDGED || oqv.getOrderStatus() == EnumOrderStatus.PARTIALFILLED || oqv.getOrderStatus() == EnumOrderStatus.SUBMITTED) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+    
+   
+        /**
+     * Returns child display names for a given symbolid
+     * @param id
+     * @return 
+     */
+    public static String[] getChildDisplayNames(int id){
+        String parentDisplayName=Parameters.symbol.get(id).getDisplayname();
+        String[] childDisplayName=parentDisplayName.split(":");
+        return childDisplayName;
+    }
+    
+        /**
+     * Returns true if the symbol referenced by id is a synthetic Symbol
+     * @param id
+     * @return 
+     */
+    public static boolean isSyntheticSymbol(int id){
+        String[] childDisplayName=getChildDisplayNames(id);
+        if(childDisplayName.length>1){
+            return true;
+        }else{
+            return false;
+        }
+    }
+    
+    public static Set<OrderQueueKey> getAllOrderKeys(Database db,BeanConnection c, String searchString) {
+        Set<OrderQueueKey>out=new HashSet<>();
+        Set<String> oqks = db.getKeys("", searchString);
+        for (String oqki : oqks) { //for each orderqueuekey string
+            OrderQueueKey oqk = new OrderQueueKey(oqki);
+            out.add(oqk);
+        }
+        return out;
+    }
+    
+        public static Set<OrderQueueKey> getLiveOrderKeys(Database db,BeanConnection c, String searchString) {
+        Set<OrderQueueKey>oqks=getAllOrderKeys(db, c, searchString);
+        Set<OrderQueueKey>out=new HashSet<>();
+        for(OrderQueueKey oqki:oqks){
+            if(TradingUtil.isLiveOrder(c, oqki)){
+                out.add(oqki);
+            }            
+        }
+        return out;
+    }
+        
+       public static Set<OrderBean> getLiveOrders(Database db,BeanConnection c, String searchString) {
+        Set<OrderQueueKey>oqks=getAllOrderKeys(db, c, searchString);
+        Set<OrderBean>out=new HashSet<>();
+        for(OrderQueueKey oqki:oqks){
+            if(TradingUtil.isLiveOrder(c, oqki)){
+                out.add(c.getOrderBean(oqki));
+            }            
+        }
+        return out;
+    }
+       
+       public static OrderBean getSyntheticOrder(Database db,BeanConnection c,OrderBean ob){
+           String key="OQ:-1:"+c.getAccountName()+":"+ob.getOrderReference()+":"+ob.getParentDisplayName()+":"+ob.getParentDisplayName()+":"+ob.getInternalOrderID()+":"+ob.getInternalOrderID();
+           return c.getOrderBean(new OrderQueueKey(key));
+       }
 }

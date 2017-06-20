@@ -98,7 +98,7 @@ public class TableModelOpenOrders extends AbstractTableModel{
                 String symbol = s.getDisplayname();
                 return id==-100?"": symbol;
             case 2:
-                return orderid==-100?"":Parameters.connection.get(display).getOrders().get(orderid).getOrderID();
+                return orderid==-100?"":Parameters.connection.get(display).getOrders().get(orderid).getExternalOrderId();
             case 3:
                 return orderid==-100?"":isComboDisplay()?Parameters.connection.get(display).getOrders().get(orderid).getParentOrderSide():Parameters.connection.get(display).getOrders().get(orderid).getChildOrderSide();
             case 4:

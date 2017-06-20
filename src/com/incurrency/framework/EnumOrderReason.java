@@ -8,6 +8,6 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumOrderReason { SL,TP,REGULARENTRY,REGULAREXIT,OCOSL,OCOTP,UNDEFINED
+public enum EnumOrderReason { SL,TP,REGULARENTRY,REGULAREXIT,OCOSL,OCOTP,UNDEFINED,SQUAREOFF
     
 }

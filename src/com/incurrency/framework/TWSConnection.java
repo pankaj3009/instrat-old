@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.ib.client.TickType;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
@@ -294,120 +295,113 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
         }
         return tickValue;
     }
-
-    public HashMap<Integer, Order> createOrder(OrderEvent e) {
-        HashMap<Integer, Order> out;
-        int id = e.getSymbolBean().getSerialno() - 1;
-        int internalOrderID = e.getInternalorder();
-        int size = e.getOrderSize();
-        EnumOrderSide ordSide = e.getSide();
-        EnumOrderReason notify = e.getReason();
-        EnumOrderType orderType = e.getOrderType();
-        EnumOrderStage stage = e.getOrderStage();
-        double limit = e.getLimitPrice();
-        double trigger = e.getTriggerPrice();
-        String ordValidity = e.getValidity();
-        String orderRef = e.getOrdReference();
-        String validAfter = e.getEffectiveFrom();
-        String link = e.getTag();
-        boolean transmit = e.isTransmit();
-        String ocaGroup = e.getOrderGroup();
-        String effectiveFrom = e.getEffectiveFrom();
-        HashMap<Integer, Integer> stubs = e.getStubs();
-        out = createOrder(id, internalOrderID, size, ordSide, notify, orderType, stage, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, stubs, e.getOrderAttributes());
-        return out;
-    }
-
-    private HashMap<Integer, Order> createOrder(int id, int internalOrderID, int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, EnumOrderStage stage, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<Integer, Integer> stubs, HashMap<String, Object> orderAttributes) {
+/**
+ * Returns a Map containing parentsymbolid and corresponding Order for non-combo orders.For combo orders, returns childsymbolid and corresponding order
+ * @param e
+ * @return 
+ */
+    public HashMap<Integer, Order> createOrder(OrderBean e) {
         if (recentOrders == null) {
             recentOrders = new LimitedQueue(getC().getOrdersHaltTrading());
         }
         HashMap<Integer, Order> orders = new HashMap<>();
-        if (!tradeIntegrityOK(ordSide, stage, orders, true)) {
+        if (!tradeIntegrityOK(e.getOrderSide(), e.getOrderStage(), orders, true)) {
             return orders;
         }
-        if (!Parameters.symbol.get(id).getType().equals("COMBO")) {
-            Order order = createChildOrder(size, ordSide, notify, orderType, limit, trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
-            orders.put(id, order);
+        if (!TradingUtil.isSyntheticSymbol(e.getParentSymbolID())) {
+            Order order = createBrokerOrder(e);
+            orders.put(e.getParentSymbolID(), order);
             return orders;
-        } else if (Parameters.symbol.get(id).getType().equals("COMBO") && stubs == null) {//regular combo order
-            HashMap<Integer, Double> tickValue = getTickValues(id);
-//            HashMap<Integer, Double> limitPrices = initializeLimitPricesUsingAggression(id, limit, ordSide, tickValue);
-            int i = 0;
-
-            for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(id).getCombo().entrySet()) {
-                int subSize = entry.getValue();
-                EnumOrderSide subSide = EnumOrderSide.UNDEFINED;
-                switch (ordSide) {
-                    case BUY:
-                        if (subSize > 0) {
-                            subSide = EnumOrderSide.BUY;
-                        } else {
-                            subSide = EnumOrderSide.SHORT;
-                        }
-                        break;
-                    case SELL:
-                        if (subSize > 0) {
-                            subSide = EnumOrderSide.SELL;
-                        } else {
-                            subSide = EnumOrderSide.COVER;
-                        }
-                        break;
-                    case SHORT:
-                        if (subSize > 0) {
-                            subSide = EnumOrderSide.SHORT;
-                        } else {
-                            subSide = EnumOrderSide.BUY;
-                        }
-                        break;
-                    case COVER:
-                        if (subSize > 0) {
-                            subSide = EnumOrderSide.COVER;
-                        } else {
-                            subSide = EnumOrderSide.SELL;
-                        }
-                    default:
-                        break;
-                }
-//                Order order = createChildOrder(Math.abs(entry.getValue()) * size, subSide, notify, orderType, limitPrices.get(entry.getKey().getSerialno() - 1), trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
-//                orders.put(entry.getKey().getSerialno() - 1, order);
-                i = i + 1;
-            }
-        } else if (stubs != null) {//stub order
-            EnumOrderSide subSide = EnumOrderSide.UNDEFINED;
-            int childid;
-            int childsize;
-            for (Map.Entry<Integer, Integer> entry : stubs.entrySet()) {
-                childid = entry.getKey();
-                childsize = entry.getValue();
-
-                if (childsize > 0 && link.equals("STUBREDUCE")) { //entry being reversed
-                    subSide = EnumOrderSide.SHORT;
-                } else if (childsize < 0 && link.equals("STUBREDUCE")) {
-                    subSide = EnumOrderSide.BUY;
-                } else if (childsize > 0 && link.equals("STUBCOMPLETE")) {
-                    subSide = EnumOrderSide.COVER;
-                } else if (childsize < 0 && link.equals("STUBCOMPLETE")) {
-                    subSide = EnumOrderSide.SELL;
-                }
-                if (childsize != 0) {
-//                    Order order = createChildOrder(Math.abs(childsize), subSide, notify, orderType, 0D, 0D, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
-//                    orders.put(childid, order);
-                }
-            }
+        } else {//regular combo order
+//            HashMap<Integer, Double> tickValue = getTickValues(id);
+////            HashMap<Integer, Double> limitPrices = initializeLimitPricesUsingAggression(id, limit, ordSide, tickValue);
+//            int i = 0;
+//
+//            for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(id).getCombo().entrySet()) {
+//                int subSize = entry.getValue();
+//                EnumOrderSide subSide = EnumOrderSide.UNDEFINED;
+//                switch (ordSide) {
+//                    case BUY:
+//                        if (subSize > 0) {
+//                            subSide = EnumOrderSide.BUY;
+//                        } else {
+//                            subSide = EnumOrderSide.SHORT;
+//                        }
+//                        break;
+//                    case SELL:
+//                        if (subSize > 0) {
+//                            subSide = EnumOrderSide.SELL;
+//                        } else {
+//                            subSide = EnumOrderSide.COVER;
+//                        }
+//                        break;
+//                    case SHORT:
+//                        if (subSize > 0) {
+//                            subSide = EnumOrderSide.SHORT;
+//                        } else {
+//                            subSide = EnumOrderSide.BUY;
+//                        }
+//                        break;
+//                    case COVER:
+//                        if (subSize > 0) {
+//                            subSide = EnumOrderSide.COVER;
+//                        } else {
+//                            subSide = EnumOrderSide.SELL;
+//                        }
+//                    default:
+//                        break;
+//                }
+////                Order order = createChildOrder(Math.abs(entry.getValue()) * size, subSide, notify, orderType, limitPrices.get(entry.getKey().getSerialno() - 1), trigger, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
+////                orders.put(entry.getKey().getSerialno() - 1, order);
+//                i = i + 1;
+//            }
+//        } else if (stubs != null) {//stub order
+//            EnumOrderSide subSide = EnumOrderSide.UNDEFINED;
+//            int childid;
+//            int childsize;
+//            for (Map.Entry<Integer, Integer> entry : stubs.entrySet()) {
+//                childid = entry.getKey();
+//                childsize = entry.getValue();
+//
+//                if (childsize > 0 && link.equals("STUBREDUCE")) { //entry being reversed
+//                    subSide = EnumOrderSide.SHORT;
+//                } else if (childsize < 0 && link.equals("STUBREDUCE")) {
+//                    subSide = EnumOrderSide.BUY;
+//                } else if (childsize > 0 && link.equals("STUBCOMPLETE")) {
+//                    subSide = EnumOrderSide.COVER;
+//                } else if (childsize < 0 && link.equals("STUBCOMPLETE")) {
+//                    subSide = EnumOrderSide.SELL;
+//                }
+//                if (childsize != 0) {
+////                    Order order = createChildOrder(Math.abs(childsize), subSide, notify, orderType, 0D, 0D, ordValidity, orderRef, validAfter, link, transmit, ocaGroup, effectiveFrom, orderAttributes);
+////                    orders.put(childid, order);
+//                }
+//            }
+//        }
+            return orders;
         }
-        return orders;
     }
 
-    private Order createChildOrder(int size, EnumOrderSide ordSide, EnumOrderReason notify, EnumOrderType orderType, double limit, double trigger, String ordValidity, String orderRef, String validAfter, String link, boolean transmit, String ocaGroup, String effectiveFrom, HashMap<String, Object> orderAttributes) {
+   
+    @Override
+    public Order createBrokerOrder(OrderBean e) {
         Order order = new Order();
-        order.m_action = (ordSide == EnumOrderSide.BUY || ordSide == EnumOrderSide.COVER || ordSide == EnumOrderSide.TRAILBUY) ? "BUY" : "SELL";
+        int size = e.getCurrentOrderSize();
+        EnumOrderSide ordSide = e.getOrderSide();
+        EnumOrderReason reason = e.getOrderReason();
+        EnumOrderType orderType = e.getOrderType();
+        double limit = e.getLimitPrice();
+        double trigger = e.getTriggerPrice();
+        String ordValidity = null;
+        String orderRef = e.getOrderReference();
+        String effectiveFrom = e.getEffectiveFrom();
+        order.m_orderId=e.getExternalOrderID();
+        order.m_action = (ordSide == EnumOrderSide.BUY || ordSide == EnumOrderSide.COVER) ? "BUY" : "SELL";
         order.m_auxPrice = trigger > 0 ? trigger : 0;
         order.m_lmtPrice = limit > 0 ? limit : 0;
         order.m_tif = ordValidity;
         order.m_goodAfterTime = effectiveFrom;
-
-        order.m_displaySize = Utilities.getInt(orderAttributes.get("displaysize"), 0);
+        order.m_displaySize = e.getDisplaySize();
 
         switch (orderType) {
             case MKT:
@@ -443,20 +437,15 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
         order.m_orderRef = orderRef;
         order.m_totalQuantity = size;
         order.m_account = getC().getAccountName().toUpperCase();
-        if ("".compareTo(link) != 0) {
-            order.m_ocaGroup = ocaGroup;
-            order.m_ocaType = 2;
-        }
-        order.m_transmit = transmit;
+        order.m_transmit = true;
         //order.m_tif = validity; //All orders go as DAY orders after expireminutes logic was removed
-        if (validAfter != null) {
-            order.m_goodAfterTime = validAfter;
+        if (effectiveFrom != null) {
+            order.m_goodAfterTime = effectiveFrom;
         }
-        switch (notify) {
+        switch (reason) {
             case OCOSL:
+                break;
             case OCOTP:
-                order.m_ocaGroup = ocaGroup;
-                order.m_ocaType = 2;
                 break;
             default:
                 break;
@@ -475,49 +464,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
             i = i + 1;
         }
         return pairPrice;
-    }
-
-    public HashMap<Integer, Order> createOrderFromExisting(BeanConnection c, int internalorderid, String strategy) {
-        HashMap<Integer, Order> out = new HashMap<>();
-        ArrayList<Integer> orderids;
-        orderids = c.getOrderMapping().get(new Index(strategy, internalorderid));
-        for (int orderid : orderids) {
-            OrderBean ordExisting = c.getOrders().get(orderid);
-            Order ordNew = new Order();
-            ordNew.m_action = (ordExisting.getChildOrderSide() == EnumOrderSide.BUY || ordExisting.getChildOrderSide() == EnumOrderSide.COVER || ordExisting.getParentOrderSide() == EnumOrderSide.TRAILBUY) ? "BUY" : "SELL";
-            ordNew.m_auxPrice = ordExisting.getTriggerPrice() > 0 ? ordExisting.getTriggerPrice() : 0;
-            ordNew.m_lmtPrice = ordExisting.getChildLimitPrice() > 0 ? ordExisting.getChildLimitPrice() : 0;
-            ordNew.m_tif = ordExisting.getOrderValidity();
-            ordNew.m_account = c.getAccountName();
-//        ordNew.m_totalQuantity=ordExisting.getOrderSize();
-            switch (ordExisting.getOrderType()) {
-                case MKT:
-                    ordNew.m_orderType = "MKT";
-                    break;
-                case LMT:
-                    ordNew.m_orderType = "LMT";
-                    break;
-                case STPLMT:
-                    ordNew.m_orderType = "STP LMT";
-                    break;
-                case STP:
-                    ordNew.m_orderType = "STP";
-                    break;
-                default:
-                    break;
-            }
-            ordNew.m_ocaGroup = ordExisting.getOcaGroup();
-            ordNew.m_ocaType = ordExisting.getOcaExecutionLogic();
-            ordNew.m_orderRef = ordExisting.getOrderReference();
-            ordNew.m_totalQuantity = ordExisting.getChildOrderSize();
-            ordNew.m_orderId = ordExisting.getOrderID();
-            ordNew.m_displaySize = ordExisting.getDisplaySize();
-            //ordNew.m_goodTillDate = ordExisting.getExpireTime();            
-            logger.log(Level.FINE, "307,OrderDetails,{0}", new Object[]{c.getAccountName() + delimiter + ordNew.m_orderRef + delimiter + ordNew.m_action + delimiter + ordNew.m_totalQuantity + delimiter + ordNew.m_orderType + delimiter + ordNew.m_lmtPrice + delimiter + ordNew.m_auxPrice + delimiter + ordNew.m_tif + delimiter + ordNew.m_goodTillDate});
-            out.put(ordExisting.getChildSymbolID() - 1, ordNew);
-        }
-        return out;
-
     }
 
     public ArrayList<Contract> createContract(int id) {
@@ -590,24 +536,10 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
         return contract;
     }
 
-    public ArrayList<Integer> placeOrder(BeanConnection c, OrderEvent e, HashMap<Integer, Order> orders, ExecutionManager oms) {
+    @Override
+    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, HashMap<Integer, Order> orders,  ExecutionManager oms, OrderBean event) {
         ArrayList<Integer> orderids = new ArrayList<>();
-        int symbolID = e.getSymbolBean().getSerialno();
-        EnumOrderSide side = e.getSide();
-        EnumOrderReason notify = e.getReason();
-        EnumOrderStage stage = e.getOrderStage();
-        int internalOrderID = e.getInternalorder();
-        int internalOrderIDEntry = e.getInternalorderentry();
-        EnumOrderType ordType = e.getOrderType();
-        if (!orders.isEmpty()) {
-            orderids = placeOrder1(c, symbolID, side, notify, stage, ordType, orders, internalOrderID, internalOrderIDEntry, e.getTag(), e.isScale(), e.getLog(), oms, e);
-        }
-        return orderids;
-    }
-
-    private synchronized ArrayList<Integer> placeOrder1(BeanConnection c, int symbolID, EnumOrderSide side, EnumOrderReason reason, EnumOrderStage stage, EnumOrderType ordType, HashMap<Integer, Order> orders, int internalOrderID, int internalOrderIDEntry, String tag, boolean scale, String log, ExecutionManager oms, OrderEvent event) {
-        ArrayList<Integer> orderids = new ArrayList<>();
-        if (!tradeIntegrityOK(side, stage, orders, true)) {//reset trading flag set during createorder
+        if (!tradeIntegrityOK(event.getOrderSide(), event.getOrderStage(), orders, true)) {//reset trading flag set during createorder
             return orderids;
         }
         int i = -1;
@@ -616,26 +548,16 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
             i = i + 1;
             Order order = entry1.getValue();
             int symbolid = entry1.getKey();
-            if (c.getReqHandle().getHandle()) {
-                OrderBean ob;
+            if (c.getReqHandle().getHandle()) {                
                 int mOrderID = order.m_orderId == 0 ? c.getIdmanager().getNextOrderId() : order.m_orderId;
-                if (order.m_orderId == 0) {
-                    c.getOrders().put(mOrderID, new OrderBean());
-                }
-                int parentid = symbolID - 1;
-                ob = c.getOrders().get(mOrderID);
+                event.put("ExternalOrderID",String.valueOf(mOrderID));
+                int parentid = event.getParentSymbolID();
                 //save orderIDs at two places
                 //1st location
-                ob.setOrderDate(new Date().getTime());
-                ob.setOrderID(mOrderID);
-                ob.setChildOrderSize(order.m_totalQuantity);
-                ob.setIntent(stage);
-                ob.setReason(reason);
-                ob.setOcaGroup(order.m_ocaGroup);
-                ob.setOcaExecutionLogic(order.m_ocaType);
-                ob.setOrderType(ordType);
+                event.put("OrderTime",DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
+                event.put("OrderSize",String.valueOf(order.m_totalQuantity));
                 int displaySize=0;
-                int value = Utilities.getInt(event.getOrderAttributes().get("value"), 0);
+                int value = event.getMaximumOrderValue();
                 double bidPrice = Parameters.symbol.get(parentid).getBidPrice();
                 double askPrice = Parameters.symbol.get(parentid).getAskPrice();
                 double lastPrice=Parameters.symbol.get(parentid).getLastPrice();
@@ -647,11 +569,11 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                         displaySize=(int)(value/lastPrice);
                     }
                 }else{
-                    displaySize = Utilities.getInt(event.getOrderAttributes().get("displaysize"), 0) * Parameters.symbol.get(parentid).getMinsize();
+                    displaySize = event.getDisplaySize() * Parameters.symbol.get(parentid).getMinsize();
                 }
                 double impactCost = Math.abs((askPrice - bidPrice) * 2 / (askPrice + bidPrice));
-                double impactCostThreshold=Utilities.getDouble(event.getOrderAttributes().get("thresholdimpactcost" ), 0.05);
-                if (displaySize>0 && impactCost < impactCostThreshold) {
+                double impactCostThreshold=event.getMaxPermissibleImpactCost();
+                if (displaySize>0 && (impactCostThreshold==0 || impactCost < impactCostThreshold)) {
                     double rand = random.nextGaussian();
                     displaySize = (int) (displaySize * rand);
                     displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
@@ -659,157 +581,147 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                 }
                 logger.log(Level.FINE,"500,DisplaySizeSet,{0}",new Object[]{displaySize});
                 order.m_displaySize = displaySize;
-                ob.setDisplaySize(order.m_displaySize);
-                ob.setScale(scale);
-                ob.setLog(log);
-                boolean singlelegorder = Parameters.symbol.get(parentid).getCombo().isEmpty() & orders.size() == 1;
+                //event.put("DisplaySize",String.valueOf(order.m_displaySize));
+                boolean singlelegorder = TradingUtil.isSyntheticSymbol(event.getParentSymbolID());
                 if (singlelegorder) {
-                    ob.setParentSymbolID(symbolID); //symbolID = the only order    
-                    if (ob.getChildSymbolID() == 0) {
-                        ob.setChildSymbolID(symbolID);
+                    if (event.getChildSymbolID() == 0) {
+                        event.put("ChildDisplayName",Parameters.symbol.get(parentid).getDisplayname());
                     }
-                    ob.setParentOrderSide(side);
-                    if (ob.getChildOrderSide() == null) {
-                        ob.setChildOrderSide(side);
-                    }
-                    ob.setParentOrderSize(order.m_totalQuantity);
-                    if (ob.getChildOrderSize() == 0) {
-                        ob.setChildOrderSize(order.m_totalQuantity);
-                    }
-                    ob.setChildLimitPrice(order.m_lmtPrice);
-                    ob.setParentLimitPrice(order.m_lmtPrice);
-                    ob.setTriggerPrice(order.m_auxPrice);
-                    ob.setChildStatus(EnumOrderStatus.SUBMITTED);
-                    ob.setParentStatus(EnumOrderStatus.SUBMITTED);
-                    ob.setOrderValidity(order.m_tif);
-                    ob.setOrderReference(order.m_orderRef);
-                    ob.setParentInternalOrderID(internalOrderID);
-                    ob.setInternalOrderID(internalOrderID);
-                    ob.setInternalOrderIDEntry(internalOrderIDEntry);
-                    ArrayList<Contract> contracts = c.getWrapper().createContract(ob.getChildSymbolID() - 1);
-
+                    event.put("CurrentOrderSize",String.valueOf(order.m_totalQuantity));
+                    event.put("LimitPrice",String.valueOf(order.m_lmtPrice));
+                    event.put("TriggerPrice",String.valueOf(order.m_auxPrice));
+                    event.put("OrderStatus","SUBMITTED");
+                    ArrayList<Contract> contracts = c.getWrapper().createContract(event.getChildSymbolID());
                     if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0 && !event.getOrderStage().equals(EnumOrderStage.AMEND)) {
-                        OrderEvent subEvent = event.clone(event);
-                        subEvent.setOrderStage(EnumOrderStage.INIT);
-                        subEvent.setOrderSize(event.getOrderSize() - order.m_displaySize);
-                        order.m_totalQuantity = order.m_displaySize;
-                        ob.setDisplaySize(order.m_displaySize);
-                        ob.setChildOrderSize(order.m_totalQuantity);
+                        String key="OQ:*"+c.getAccountName()+":"+event.getOrderReference()+":"+event.getParentDisplayName()+":"+event.getChildDisplayName()+":"+event.getParentInternalOrderID()+":"+event.getInternalOrderID();
+                        event.put("OrderStage","INIT");
+                        event.put("CurrentFillSize", "0");
+                        order.m_totalQuantity = Math.min(order.m_displaySize,(event.getOriginalOrderSize()-event.getTotalFillSize()));
+                        event.put("CurrentOrderSize",String.valueOf(order.m_totalQuantity ));
                         int connectionid = Parameters.connection.indexOf(this.getC());
-                        logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(subEvent.getOrderSize())});
+                        logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize())});
                         if (Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
-                            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), side, oms.tickSize,event.getOrderType());
+                            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), event.getOrderSide(), oms.tickSize,event.getOrderType());
                             if (limitprice > 0) {
                                 order.m_lmtPrice = limitprice;
                             }
                         }
-                        int delay=Utilities.getInt(event.getOrderAttributes().get("delay"), 0);
-                        oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE,delay));
+                        event.createLinkedAction(event.getInternalOrderID(), "PROPOGATE", "COMPLETEFILLED", String.valueOf(event.getLinkDelay()));
+                        //oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE,delay));
                     }
                     order.m_displaySize = 0; //reset display size to zero as we do not use IB's displaysize feature
                     eClientSocket.placeOrder(mOrderID, contracts.get(0), order);
-                    if (stage != EnumOrderStage.AMEND) {
+                    if (event.getOrderStage() != EnumOrderStage.AMEND) {
                         getRecentOrders().add(new Date().getTime());
                     }
                     logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
-                            new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname(), Integer.toString(ob.getInternalOrderID()),
-                                String.valueOf(mOrderID), ob.getParentOrderSide(), String.valueOf(order.m_totalQuantity), order.m_orderType, String.valueOf(order.m_lmtPrice),
+                            new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(event.getParentSymbolID()).getDisplayname(), Integer.toString(event.getInternalOrderID()),
+                                String.valueOf(mOrderID), event.getOrderSide(), String.valueOf(order.m_totalQuantity), order.m_orderType, String.valueOf(order.m_lmtPrice),
                                 String.valueOf(order.m_auxPrice)});
                     orderids.add(mOrderID);
                 } else {//combo order
-                    if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
-                        //do nothing
-                    } else if (orders.size() > 1 && tag.equals("")) {//combo new order
-                        int j = -1;
-                        for (Map.Entry<BeanSymbol, Integer> entry2 : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-                            j = j + 1;
-                            if (symbolid == entry2.getKey().getSerialno() - 1) {//order is for the childsymbol
-                                ob.setChildSymbolID(entry2.getKey().getSerialno());
-                                ob.setParentSymbolID(symbolID);
-                                ob.setParentOrderSide(side);
-                                ob.setScale(scale);
-                                ob.setInternalOrderID(Algorithm.orderidint.addAndGet(1));
-                                ob.setParentOrderSize(Math.abs(order.m_totalQuantity / entry2.getValue()));
-                                if (entry2.getValue() > 0) {
-                                    ob.setChildOrderSide(side);
-                                } else {
-                                    switch (side) {
-                                        case BUY:
-                                            ob.setChildOrderSide(EnumOrderSide.SHORT);
-                                            break;
-                                        case SELL:
-                                            ob.setChildOrderSide(EnumOrderSide.COVER);
-                                            break;
-                                        case SHORT:
-                                            ob.setChildOrderSide(EnumOrderSide.BUY);
-                                            break;
-                                        case COVER:
-                                            ob.setChildOrderSide(EnumOrderSide.SELL);
-                                            break;
-                                        default:
-                                            ob.setChildOrderSide(EnumOrderSide.UNDEFINED);
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-                    } else if (tag.contains("STUB")) {//if order size==1 and its a combo, then it is a tag
-                        int j = -1;
-                        for (Map.Entry<BeanSymbol, Integer> entry2 : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-                            j = j + 1;
-                            if (symbolid == entry2.getKey().getSerialno() - 1) {//order is for the childsymbol
-                                ob.setParentSymbolID(symbolID);
-                                ob.setChildSymbolID(entry2.getKey().getSerialno());
-                                ob.setParentOrderSide(side);
-                                switch (tag) {
-                                    case "STUBCOMPLETE":
-                                        if (entry2.getValue() > 0) {
-                                            ob.setChildOrderSide(side);
-                                        } else {
-                                            ob.setChildOrderSide(Utilities.switchSide(side));
-                                        }
-                                        break;
-                                    case "STUBREDUCE":
-                                        if (entry2.getValue() < 0) {
-                                            ob.setChildOrderSide(side);
-                                        } else {
-                                            ob.setChildOrderSide(Utilities.switchSide(side));
-                                        }
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                ob.setParentOrderSize(order.m_totalQuantity);
-                                ob.setChildOrderSize(order.m_totalQuantity);
-                            }
-                        }
-                    }
-                    ob.setChildStatus(EnumOrderStatus.SUBMITTED);
-                    ob.setParentStatus(EnumOrderStatus.SUBMITTED);
-                    ob.setOrderValidity(order.m_tif);
-                    ob.setTriggerPrice(order.m_auxPrice);
-                    ob.setChildLimitPrice(order.m_lmtPrice);
-                    ob.setOrderReference(order.m_orderRef);
-                    ob.setInternalOrderID(internalOrderID);
-                    ob.setInternalOrderIDEntry(internalOrderIDEntry);
-                    ob.setLog(log);
-
-                    if (orders.size() > 1 && !comboOrderMapsUpdated) {
-                        ArrayList<Integer> temp = new ArrayList<>();
-                        for (i = 0; i < orders.size(); i++) {
-                            temp.add(mOrderID + i);
-                        }
-                        comboOrderMapsUpdated = true;
-                        c.getOrderMapping().put(new Index(order.m_orderRef, internalOrderID), temp);
-
-                    }
-                    ArrayList<Contract> contracts = c.getWrapper().createContract(ob.getChildSymbolID() - 1);
-                    eClientSocket.placeOrder(mOrderID, contracts.get(0), order);
-                    if (stage != EnumOrderStage.AMEND) {
-                        getRecentOrders().add(new Date().getTime());
-                    }
-                    logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate + delimiter});
-                    orderids.add(mOrderID);
+//                    if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
+//                        //do nothing
+//                    } else if (orders.size() > 1 && tag.equals("")) {//combo new order
+//                        int j = -1;
+//                        for (Map.Entry<BeanSymbol, Integer> entry2 : Parameters.symbol.get(parentid).getCombo().entrySet()) {
+//                            j = j + 1;
+//                            if (symbolid == entry2.getKey().getSerialno() - 1) {//order is for the childsymbol
+//                                ob.setChildSymbolID(entry2.getKey().getSerialno());
+//                                ob.setParentSymbolID(symbolID);
+//                                ob.setParentOrderSide(side);
+//                                ob.setScale(scale);
+//                                ob.setInternalOrderID(Algorithm.orderidint.addAndGet(1));
+//                                ob.setParentOrderSize(Math.abs(order.m_totalQuantity / entry2.getValue()));
+//                                if (entry2.getValue() > 0) {
+//                                    ob.setChildOrderSide(side);
+//                                } else {
+//                                    switch (side) {
+//                                        case BUY:
+//                                            ob.setChildOrderSide(EnumOrderSide.SHORT);
+//                                            break;
+//                                        case SELL:
+//                                            ob.setChildOrderSide(EnumOrderSide.COVER);
+//                                            break;
+//                                        case SHORT:
+//                                            ob.setChildOrderSide(EnumOrderSide.BUY);
+//                                            break;
+//                                        case COVER:
+//                                            ob.setChildOrderSide(EnumOrderSide.SELL);
+//                                            break;
+//                                        default:
+//                                            ob.setChildOrderSide(EnumOrderSide.UNDEFINED);
+//                                            break;
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    } else if (tag.contains("STUB")) {//if order size==1 and its a combo, then it is a tag
+//                        int j = -1;
+//                        for (Map.Entry<BeanSymbol, Integer> entry2 : Parameters.symbol.get(parentid).getCombo().entrySet()) {
+//                            j = j + 1;
+//                            if (symbolid == entry2.getKey().getSerialno() - 1) {//order is for the childsymbol
+//                                ob.setParentSymbolID(symbolID);
+//                                ob.setChildSymbolID(entry2.getKey().getSerialno());
+//                                ob.setParentOrderSide(side);
+//                                switch (tag) {
+//                                    case "STUBCOMPLETE":
+//                                        if (entry2.getValue() > 0) {
+//                                            ob.setChildOrderSide(side);
+//                                        } else {
+//                                            ob.setChildOrderSide(Utilities.switchSide(side));
+//                                        }
+//                                        break;
+//                                    case "STUBREDUCE":
+//                                        if (entry2.getValue() < 0) {
+//                                            ob.setChildOrderSide(side);
+//                                        } else {
+//                                            ob.setChildOrderSide(Utilities.switchSide(side));
+//                                        }
+//                                        break;
+//                                    default:
+//                                        break;
+//                                }
+//                                ob.setParentOrderSize(order.m_totalQuantity);
+//                                ob.setChildOrderSize(order.m_totalQuantity);
+//                            }
+//                        }
+//                    }
+//                    ob.setChildStatus(EnumOrderStatus.SUBMITTED);
+//                    ob.setParentStatus(EnumOrderStatus.SUBMITTED);
+//                    ob.setOrderValidity(order.m_tif);
+//                    ob.setParentTriggerPrice(order.m_auxPrice);
+//                    ob.setChildLimitPrice(order.m_lmtPrice);
+//                    ob.setOrderReference(order.m_orderRef);
+//                    ob.setInternalOrderID(internalOrderID);
+//                    ob.setParentInternalOrderIdEntry(internalOrderIDEntry);
+//                    ob.setLog(log);
+//
+//                    if (orders.size() > 1 && !comboOrderMapsUpdated) {
+//                        ArrayList<Integer> temp = new ArrayList<>();
+//                        for (i = 0; i < orders.size(); i++) {
+//                            temp.add(mOrderID + i);
+//                        }
+//                        comboOrderMapsUpdated = true;
+//                        c.getOrderMapping().put(new Index(order.m_orderRef, internalOrderID), temp);
+//
+//                    }
+//                    ArrayList<Contract> contracts = c.getWrapper().createContract(ob.getChildSymbolID() - 1);
+//                    eClientSocket.placeOrder(mOrderID, contracts.get(0), order);
+//                    OrderQueueKey oqk=new OrderQueueKey(c.getAccountName(),event.getOrdReference(),Parameters.symbol.get(parentid).getDisplayname(),internalOrderIDEntry,mOrderID);
+//                    if(c.getOrdersSymbols().get(oqk)==null){
+//                       OrderQueueValue oqv=new OrderQueueValue();
+//                       ArrayList<OrderBean> oba=new ArrayList<>();
+//                       oba.add(ob);
+//                       c.getOrdersSymbols().put(oqk,oba);                       
+//                    }else{
+//                       c.getOrdersSymbols().get(oqk).add(ob);
+//                    }
+//                    if (stage != EnumOrderStage.AMEND) {
+//                        getRecentOrders().add(new Date().getTime());
+//                    }
+//                    logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate + delimiter});
+//                    orderids.add(mOrderID);
                 }
             }
         }
@@ -848,30 +760,31 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
         }
     }
 
-    public void cancelOrder(BeanConnection c, int orderID, boolean force) {
-        ArrayList<Integer> linkedorderids = TradingUtil.getLinkedOrderIds(orderID, c);
-        for (int orderid : linkedorderids) {
-            if (!force) {//regular cancellation
-                switch (c.getOrders().get(orderid).getChildStatus()) {
-                    case SUBMITTED:
-                    case ACKNOWLEDGED:
-                        c.getOrders().get(orderid).setCancelRequested(true);
-                        this.eClientSocket.cancelOrder(orderid);
-                        //handle cancellations that are not successful
-                        logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4},Force={5}",
-                                new Object[]{c.getOrders().get(orderID).getOrderReference(), c.getAccountName(), Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname(), String.valueOf(c.getOrders().get(orderID).getInternalOrderID()), String.valueOf(orderID), force});
-                        break;
-                }
-            } else {
-                c.getOrders().get(orderid).setCancelRequested(true);
-                this.eClientSocket.cancelOrder(orderid);
-                //handle cancellations that are not successful
-                logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4},Force={5}",
-                        new Object[]{c.getOrders().get(orderID).getOrderReference(), c.getAccountName(), Parameters.symbol.get(c.getOrders().get(orderID).getParentSymbolID() - 1).getDisplayname(), String.valueOf(c.getOrders().get(orderID).getInternalOrderID()), String.valueOf(orderID), force});
+    @Override
+    public void cancelOrder(BeanConnection c, OrderBean ob) {
+        if (!ob.isCancelRequested()) {
+            ob.put("CancelRequested", "TRUE");
+            if (ob.getExternalOrderID() > 0) {
+                this.eClientSocket.cancelOrder(ob.getExternalOrderID());
+                logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
+                        new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
+            }
+            String searchString = "OQ:*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":"+ob.getInternalOrderID()+":";
+            Set<OrderQueueKey> oqks = TradingUtil.getLiveOrderKeys(Algorithm.db, c, searchString);
+            for (OrderQueueKey oqki : oqks) {
+                int obindex = c.getOrdersSymbols().get(oqki).size() - 1;
+                OrderBean obvi = c.getOrdersSymbols().get(oqki).get(obindex);
+                if (!obvi.isCancelRequested() && obvi.getExternalOrderID() > 0) {
+                    this.eClientSocket.cancelOrder(obvi.getExternalOrderID());
+                    logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
+                            new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
 
+                }
             }
         }
     }
+        
+    
 
     public void requestFundamentalData(BeanSymbol s, String reportType) {
 
@@ -1454,24 +1367,12 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
 
     @Override
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-        try {
-            int id = -1;
-            String strategy = "Unknown";
-            if (getC().getOrders().get(orderId) != null) {
-                id = getC().getOrders().get(orderId).getParentSymbolID() - 1;
-                strategy = c.getOrders().get(orderId).getOrderReference();
-            }
-
-            if (id >= 0) {
-                //String orderRef = getC().getOrders() == null ? getC().getOrders().get(orderId).getOrderReference() : "NA";
-                logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
-                        new Object[]{strategy, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(getC().getOrders().get(orderId).getInternalOrderID()), String.valueOf(orderId), status, filled, remaining});
+        try {            
+                 logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
+                        new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, String.valueOf(orderId), status, filled, remaining});
                 //logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
                 tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-            } else {
-                logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
-                        new Object[]{strategy, c.getAccountName(), "Unknown", String.valueOf(orderId), -1, status, filled, remaining});
-            }
+             
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
@@ -1589,25 +1490,19 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     @Override
     public void execDetails(int reqId, Contract contract, Execution execution) {
         try {
-            int id = -1;
-            if (getC().getOrders().get(execution.m_orderId) != null) {
-                id = getC().getOrders().get(execution.m_orderId).getParentSymbolID() - 1;
-            }
-            if (id >= 0) {
-                logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
-                        new Object[]{getC().getOrders().get(execution.m_orderId).getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(getC().getOrders().get(execution.m_orderId).getInternalOrderID()),String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice)});
-
-                if (getC().getOrders().get(execution.m_orderId) != null) {
-                    if (getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty == 0) {
-                        tes.fireOrderStatus(getC(), execution.m_orderId, "Filled", execution.m_cumQty, getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+            logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
+                    new Object[]{"Unknown", c.getAccountName(), "Unknown", "-1", String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice)});
+            Set<OrderQueueKey> oqks = TradingUtil.getAllOrderKeys(Algorithm.db, c, "OQ:" + reqId + ":" + c.getAccountName() + ":*");
+            if (oqks.size() == 1) {
+                for (OrderQueueKey oqki : oqks) {
+                    OrderBean ob = c.getOrderBean(oqki);
+                    int remaining = ob.getCurrentOrderSize() - execution.m_cumQty;
+                    if (remaining == 0) {
+                        tes.fireOrderStatus(getC(), execution.m_orderId, "Filled", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
                     } else {
-                        tes.fireOrderStatus(getC(), execution.m_orderId, "Submitted", execution.m_cumQty, getC().getOrders().get(execution.m_orderId).getParentOrderSize() - execution.m_cumQty, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                        tes.fireOrderStatus(getC(), execution.m_orderId, "Submitted", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
                     }
                 }
-            } else {
-                logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
-                        new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, String.valueOf(execution.m_orderId),String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice)});
-
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
@@ -2157,4 +2052,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     public BeanCassandraConnection getCassandraDetails() {
         return this.cassandra;
     }
+
+
 }

@@ -42,6 +42,9 @@ public interface Database<K,V> {
     public void lpush(String key, String value);
     public List<String> lrange(String storeName,String key,int start, int end);
     public void rename(String storeName,String newStoreName);
+    public Set<String> getKeys(String storeName,String searchString);
+    public OrderBean getLatestOrderBean(String key);
+    public void insertOrder(String key, OrderBean ob);
     //public int loadVariables();
     //public int saveVariables();
     //public Set<String> getKeys(String pattern);

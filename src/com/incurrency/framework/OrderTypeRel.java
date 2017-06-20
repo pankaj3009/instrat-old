@@ -25,7 +25,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     BeanConnection c;
     int id;
     int underlyingid = -1;
-    OrderEvent e;
+    OrderBean ob;
     double ticksize = 0.05;
     EnumOrderSide side;
     private double limitPrice;
@@ -50,18 +50,18 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     private SynchronousQueue<String> sync = new SynchronousQueue<>();
     AtomicBoolean completed = new AtomicBoolean();
 
-    public OrderTypeRel(int id, int orderid, BeanConnection c, OrderEvent event, double ticksize, ExecutionManager oms) {
+    public OrderTypeRel(int id, int orderid, BeanConnection c, OrderBean event, double ticksize, ExecutionManager oms) {
         try {
             completed.set(Boolean.FALSE);
             this.c = c;
             this.id = id;
             this.externalOrderID = orderid;
             this.ticksize = ticksize;
-            orderspermin = Utilities.getInt(event.getOrderAttributes().get("orderspermin"), 1);
-            improveprob = Utilities.getDouble(event.getOrderAttributes().get("improveprob"), 1);
-            improveamt = Utilities.getInt(event.getOrderAttributes().get("improveamt"), 0) * this.ticksize;
-            fatFingerWindow = Utilities.getInt(event.getOrderAttributes().get("fatfingerwindow"), 120);
-            stickyperiod = Utilities.getInt(event.getOrderAttributes().get("stickperiod"), 60);
+            orderspermin = event.getOrdersPerMinute();
+            improveprob = event.getImproveProbability();
+            improveamt = event.getImproveAmount()* this.ticksize;
+            fatFingerWindow = event.getFatFingerWindow();
+            stickyperiod = event.getStickyPeriod();
             recentOrders = new LimitedQueue(orderspermin);
             //We need underlyingid, if we are doing options.
             //As there are only two possibilities for underlying(as of now), we test for both.
@@ -73,8 +73,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 }
                 underlyingid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, symbolid, expiry);
             }
-            this.e = event;
-            side = event.getSide();
+            this.ob = event;
+            side = event.getOrderSide();
             limitPrice = event.getLimitPrice();
             this.oms = oms;
             Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + orderid + ".csv",
@@ -88,7 +88,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     public void run() {
         try {
             logger.log(Level.INFO, "501,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}",
-                    new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(c.getOrders().get(externalOrderID).getInternalOrderID()), String.valueOf(externalOrderID), e.getLimitPrice()});
+                    new Object[]{oms.orderReference, c.getAccountName(), ob.getChildDisplayName(), ob.getInternalOrderID(),ob.getExternalOrderID(), ob.getLimitPrice()});
             RedisSubscribe.tes.addBidAskListener(this);
             RedisSubscribe.tes.addOrderStatusListener(this);
             for (BeanConnection c1 : Parameters.connection) {
@@ -102,7 +102,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                     Thread.yield();
                 }
                 logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
-                        new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), c.getOrders().get(externalOrderID).getInternalOrderID(), String.valueOf(externalOrderID)});
+                        new Object[]{oms.orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), String.valueOf(externalOrderID)});
                 if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.orderReference + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
                     oms.getDb().delKey("opentrades", oms.orderReference + ":" + String.valueOf(internalOrderIDEntry) + ":" + c.getAccountName());
                 }
@@ -171,11 +171,9 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                     recalculate = true;
                 }
                 if (recalculate) {
-                    OrderBean ob = c.getOrders().get(externalOrderID);
                     BeanSymbol s = Parameters.symbol.get(id);
-                    if (ob != null) {
-                        internalOrderIDEntry = ob.getInternalOrderIDEntry();
-                        limitPrice = ob.getParentLimitPrice();
+                    internalOrderIDEntry = ob.getParentInternalOrderIDEntry();
+                        limitPrice = ob.getLimitPrice();
                         double newLimitPrice = limitPrice;
                         plp = limitPrice;
                         switch (side) {
@@ -249,7 +247,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         }
                                         Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                                 new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), 0, 0}, Algorithm.timeZone, true);
+                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
                                     }
                                 } else {
                                     fatfinger = false;
@@ -264,7 +262,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     if (bidPrice <= plp && plp <= calculatedPrice) {
                                         //do nothing, we are the best bid
                                         bestPrice = true;
-                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && bidSize == e.getOrderSize()) {
+                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && bidSize == ob.getCurrentOrderSize()) {
                                             newLimitPrice = plp - Math.abs(improveamt);
                                         }
                                     } else if (calculatedPrice >= bidPrice && bidPrice != plp) {
@@ -292,22 +290,21 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                             new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), random, improveprob}, Algorithm.timeZone, true);
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), random, improveprob}, Algorithm.timeZone, true);
                                 }
 
-                                if (newLimitPrice != plp && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                if (newLimitPrice != plp && ob.getOrderStatus() != EnumOrderStatus.SUBMITTED) {
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                             new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), 0, 0}, Algorithm.timeZone, true);
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
                                     recentOrders.add(new Date().getTime());
-                                    e.setLimitPrice(newLimitPrice);
-                                    e.setOrderStage(EnumOrderStage.AMEND);
-                                    e.setAccount(c.getAccountName());
-                                    e.setTag("BIDASKCHANGED");
-                                    String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",fatfinger:" + fatfinger;
+                                    ob.setLimitPrice(newLimitPrice);
+                                    ob.setOrderStage(EnumOrderStage.AMEND);
+                                    ob.setSpecifiedBrokerAccount(c.getAccountName());
+                                    String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
                                     logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
                                     //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-                                    oms.orderReceived(e);
+                                    oms.orderReceived(ob);
 
                                 }
                                 break;
@@ -380,7 +377,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                         }
                                         Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                                 new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), 0, 0}, Algorithm.timeZone, true);
+                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
                                     } else {
                                         fatfinger = false;
                                     }
@@ -395,7 +392,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     if (calculatedPrice <= plp && plp <= askPrice) {
                                         //do nothing, we are the best ask
                                         bestPrice = true;
-                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && askSize == e.getOrderSize()) {
+                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && askSize == ob.getCurrentOrderSize()) {
                                             newLimitPrice = plp + Math.abs(improveamt);
                                         }
                                     } else if (calculatedPrice <= askPrice && askPrice != plp) {
@@ -423,26 +420,25 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                     }
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
                                             new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getParentStatus(),random, improveprob}, Algorithm.timeZone, true);
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getOrderStatus(),random, improveprob}, Algorithm.timeZone, true);
                                 }
-                                if (newLimitPrice != plp && ob.getParentStatus() != EnumOrderStatus.SUBMITTED) {
+                                if (newLimitPrice != plp && ob.getOrderStatus() != EnumOrderStatus.SUBMITTED) {
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
                                             new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getParentStatus(), 0, 0}, Algorithm.timeZone, true);
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
                                     recentOrders.add(new Date().getTime());
-                                    e.setLimitPrice(newLimitPrice);
-                                    e.setOrderStage(EnumOrderStage.AMEND);
-                                    e.setAccount(c.getAccountName());
-                                    e.setTag("BIDASKCHANGED");
-                                    String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getChildStatus() + ",fatfinger:" + fatfinger;
+                                    ob.setLimitPrice(newLimitPrice);
+                                    ob.setOrderStage(EnumOrderStage.AMEND);
+                                    ob.setSpecifiedBrokerAccount(c.getAccountName());
+                                    String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
                                     logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
                                     //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-                                    oms.orderReceived(e);
+                                    oms.orderReceived(ob);
                                 }
                                 break;
                         }
 
-                    }
+                    
                 }
             }
         } catch (Exception ex) {
@@ -451,17 +447,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     }
 
     @Override
-    public synchronized void orderStatusReceived(OrderStatusEvent event) {
-        OrderBean ob = c.getOrders().get(event.getOrderID());
-        try {
-            if (ob != null) {
-                if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && (ob.getParentSymbolID() - 1) == id) {
+    public synchronized void orderStatusReceived(OrderStatusEvent event) {        
+        try {            
+                if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && ob.getParentSymbolID() == id) {
                     if (!completed.get() && (event.getRemaining() == 0 || event.getStatus().equals("Cancelled") || event.getStatus().equals("Inactive"))) {
                         completed.set(Boolean.TRUE);
                         sync.offer("FINISHED", 1, TimeUnit.SECONDS);
                     }
                 }
-            }
+            
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }

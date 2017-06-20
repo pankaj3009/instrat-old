@@ -4,13 +4,21 @@
  */
 package com.incurrency.framework;
 
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.ScanResult;
 
 /**
  *
@@ -21,6 +29,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
     public JedisPool pool;
     String uri;
     int port;
+    private static final Logger logger = Logger.getLogger(RedisConnect.class.getName());
     
     private static final Object blpop_lock=new Object();
     private static final Object lpush_lock=new Object();
@@ -156,4 +165,51 @@ public class RedisConnect<K, V> implements Database<K, V> {
             }
         }
     //}
+
+    @Override
+    public Set<String> getKeys(String storeName,String searchString) {
+        Set<String>shortlist=new HashSet<>();
+           String cursor = "";
+           while (!cursor.equals("0")) {
+                cursor = cursor.equals("") ? "0" : cursor;
+                try (Jedis jedis = pool.getResource()) {
+                    ScanResult s = jedis.scan(cursor);
+                    cursor = s.getCursor();
+                    for (Object key : s.getResult()) {
+                        if (key.toString().contains(searchString)) {
+                            shortlist.addAll(jedis.smembers(key.toString()));
+                        }
+                    }
+                }
+            }
+           return shortlist;
+    }
+
+    @Override
+    public OrderBean getLatestOrderBean(String key) {
+        OrderBean ob = null;
+        try (Jedis jedis = pool.getResource()) {
+            Object o = jedis.lrange(key, -1, -1);
+            try {
+                Type type = new TypeToken<List<OrderBean>>() {
+                }.getType();
+                Gson gson = new GsonBuilder().create();
+                ob = gson.fromJson((String) o, type);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "{0}_{1}", new Object[]{(String) o, key});
+            }
+        }
+        return ob;
+    }
+
+    @Override
+    public void insertOrder(String key, OrderBean ob) {
+        try (Jedis jedis = pool.getResource()) {
+             Gson gson = new GsonBuilder().create();
+             String string=gson.toJson(ob);
+            jedis.lpush(key, string);
+        }
+    }
+    
+    
 }

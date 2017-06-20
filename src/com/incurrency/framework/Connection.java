@@ -28,14 +28,14 @@ public interface Connection {
     public void requestSingleSnapshot(BeanSymbol s);
     public void getMktData(BeanSymbol s, boolean isSnap);
     public int getOutstandingSnapshots();
-    public HashMap<Integer, Order> createOrder(OrderEvent e);
-    public HashMap<Integer, Order> createOrderFromExisting(BeanConnection c, int internalorderid, String strategy) ;
+    public HashMap<Integer, Order> createOrder(OrderBean e);
+    public Object createBrokerOrder(OrderBean e);
     public ArrayList<Contract> createContract(int id);
     public Contract createContract(BeanSymbol s);
-    public ArrayList<Integer> placeOrder(BeanConnection c, OrderEvent e, HashMap<Integer, Order> orders, ExecutionManager oms);
+    public ArrayList<Integer> placeOrder(BeanConnection c, HashMap<Integer, Order> orders,  ExecutionManager oms, OrderBean event);
     boolean tradeIntegrityOK(EnumOrderSide side, EnumOrderStage stage, HashMap<Integer, Order> orders, boolean reset);   
     public void cancelMarketData(BeanSymbol s);
-    public void cancelOrder(BeanConnection c, int orderID, boolean force);
+    public void cancelOrder(BeanConnection c, OrderBean ob);
     public void requestFundamentalData(BeanSymbol s, String reportType);
     public void cancelFundamentalData(int reqId);
     public void requestOpenOrders();

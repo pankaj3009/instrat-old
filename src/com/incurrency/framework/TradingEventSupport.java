@@ -135,79 +135,15 @@ public class TradingEventSupport {
         }           
             ((TradeListener) itrListeners.next()).tradeReceived(trade);
         }
-    }
-    
-    //this event is triggered by csv orders
-/*
-    public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, boolean transmit, String validity, boolean scale,String passToOrderObject,String effectiveFrom, HashMap<Integer,Integer> stubs) {
-      
-        OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime,intent,  dynamicorderduration, maxslippage,transmit,validity,scale,passToOrderObject,effectiveFrom,stubs);
-        logger.log(Level.INFO,"303, NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
-                            +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
-                            +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
-                            +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
-                            +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())});
-        logger.log(Level.INFO,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getSymbol()});
-        Iterator itrListeners = orderListeners.iterator();
-        while (itrListeners.hasNext()) {
-            ((OrderListener) itrListeners.next()).orderReceived(order);
-        }
-    }
-*/    
-    public void fireOrderEvent(OrderEvent order){
-         logger.log(Level.INFO,"301,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
-                            +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
-                            +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
-                            +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
-                            +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())});
-        logger.log(Level.FINE,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
-       Iterator itrListeners = orderListeners.iterator();
-        while (itrListeners.hasNext()) {
-            ((OrderListener) itrListeners.next()).orderReceived(order);
-        }
-    }
-    
-    //this event is triggered by adr order
-    // public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String link, boolean transmit, String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer> stubs) {    
-       public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, boolean transmit,String validity, boolean scale,String orderGroup,String effectiveFrom, HashMap<Integer,Integer>stubs,String log) {
-       OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent, dynamicorderduration, maxslippage,transmit,validity,scale,orderGroup,effectiveFrom,stubs,log);
-                logger.log(Level.INFO,"301,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
-                            +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
-                            +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
-                            +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
-                            +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())}); 
-       logger.log(Level.FINE,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
-       Iterator itrListeners = orderListeners.iterator();
-        while (itrListeners.hasNext()) {
-            ((OrderListener) itrListeners.next()).orderReceived(order);
-        }
-    }  
-       
-    public  void fireOrderEvent(HashMap<String,Object>orderDetails) {
-        OrderEvent order = new OrderEvent(this, orderDetails);
-       logger.log(Level.FINE,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
+    }    
+   
+    public void fireOrderEvent(OrderBean order){
        Iterator itrListeners = orderListeners.iterator();
         while (itrListeners.hasNext()) {
             ((OrderListener) itrListeners.next()).orderReceived(order);
         }
     }     
-
-       //this is fired by profit loss manager. It sets the account for squareoff.
-        public  void fireOrderEvent(int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side,EnumOrderReason notify,EnumOrderType orderType, int size, double lmtprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicorderduration, double maxslippage, String account, boolean scale,String passToOrderObject,String log) {
-        OrderEvent order = new OrderEvent(this, internalorder, internalorderentry, s, side,notify,orderType, size, lmtprice, triggerprice, ordReference, expireTime, intent,  dynamicorderduration, maxslippage,true,"DAY",scale,passToOrderObject,"",null,log);
-        order.setAccount(account);
-                 logger.log(Level.INFO,"301,NewOrder,{0}",new Object[]{order.getInternalorder()+delimiter+order.getInternalorderentry()+delimiter
-                            +order.getSymbolBean().getDisplayname()+delimiter+order.getSide()+delimiter+order.getOrderType()+delimiter+order.getOrderSize()+delimiter+order.getLimitPrice()+delimiter+order.getTriggerPrice()+delimiter
-                            +order.getOrdReference()+delimiter+order.getExpireTime()+delimiter+order.getDynamicOrderDuration()+delimiter+order.getMaxSlippage()+delimiter+order.getOrderStage()+delimiter
-                            +order.getTag()+delimiter+order.isTransmit()+delimiter+order.getValidity()+delimiter+order.isScale()+delimiter+order.getReason()+delimiter+order.getOrderGroup()+delimiter
-                            +order.getEffectiveFrom()+delimiter+(order.getStubs()==null?0:order.getStubs().size())});
-        logger.log(Level.FINE,"301,NewOrderSymbolName,{0}",new Object[]{order.getSymbolBean().getBrokerSymbol()});
-       Iterator itrListeners = orderListeners.iterator();
-        while (itrListeners.hasNext()) {
-            ((OrderListener) itrListeners.next()).orderReceived(order);
-        }
-    }
-        
+    
     public synchronized void fireHistoricalBars(int barNumber,TreeMapExtension list, BeanSymbol s,BeanOHLC ohlc) {
         
         HistoricalBarEvent bars = new HistoricalBarEvent(this, 0, list, s,ohlc);
