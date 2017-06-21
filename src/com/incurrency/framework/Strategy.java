@@ -843,7 +843,7 @@ public class Strategy implements NotificationListener {
             int internalorderid = getInternalOrderID();
             order.setInternalOrderID(internalorderid);
             order.setParentInternalOrderID(internalorderid);
-            order.setParentInternalOrderIDEntry(internalorderid);            
+            order.setOrderIDForSquareOff(internalorderid);            
             this.internalOpenOrders.put(id, internalorderid);
             String log = order.get("log") != null ? order.get("log").toString() : "";
             double lastprice = Parameters.symbol.get(id).getLastPrice();
@@ -901,7 +901,7 @@ public class Strategy implements NotificationListener {
                         int newexitSize = adjTradeSize + exitSize;
                         tradeSize = tradeSize - adjTradeSize;
                         double newexitPrice = (exitPrice * exitSize + adjTradeSize * expectedFillPrice) / (newexitSize);
-                        order.setParentInternalOrderIDEntry(tempinternalOrderID);
+                        order.setOrderIDForSquareOff(tempinternalOrderID);
                         String log = order.get("log") != null ? order.get("log").toString() : "";
                         Trade.updateExit(getDb(), id, order.getOrderReason(), order.getOrderSide(), newexitPrice, newexitSize, internalorderid, 0, internalorderid, tempinternalOrderID, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
                         if (newexitSize == entrySize) {

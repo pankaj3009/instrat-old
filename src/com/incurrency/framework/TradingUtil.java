@@ -2373,4 +2373,11 @@ public class TradingUtil {
            String key="OQ:-1:"+c.getAccountName()+":"+ob.getOrderReference()+":"+ob.getParentDisplayName()+":"+ob.getParentDisplayName()+":"+ob.getInternalOrderID()+":"+ob.getInternalOrderID();
            return c.getOrderBean(new OrderQueueKey(key));
        }
+       
+           /**
+     * @return the internalOrderID
+     */
+    public static synchronized int getInternalOrderID() {
+        return Algorithm.orderidint.addAndGet(1);
+    }
 }

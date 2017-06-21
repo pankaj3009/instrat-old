@@ -1102,9 +1102,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
         int parentid=ob.getParentSymbolID();
         if (!stubSizeZero) {
-            OrderEvent e = new OrderEvent(new Object(), ob.getInternalOrderID(), ob.getInternalOrderID(), Parameters.symbol.get(parentid), ob.getOrderSide(), EnumOrderReason.REGULARENTRY, EnumOrderType.MKT, 0, 0, 0, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", true, "", "", stubs, "REDUCESTUB");
-            e.setAccount(c.getAccountName());
-            tes.fireOrderEvent(e);
+            OrderBean newob=new OrderBean(ob);
+            newob.setSpecifiedBrokerAccount(c.getAccountName());
+            int internalorderid = TradingUtil.getInternalOrderID();
+            newob.setInternalOrderID(internalorderid);
+            newob.setParentInternalOrderID(internalorderid);
+            tes.fireOrderEvent(newob);
         }
     }
 
@@ -1122,10 +1125,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
         if (!stubSizeZero) {
-            int parentid=ob.getParentSymbolID();
-            OrderEvent e = new OrderEvent(new Object(), ob.getInternalOrderID(), ob.getInternalOrderID(), Parameters.symbol.get(parentid), ob.getOrderSide(), EnumOrderReason.REGULAREXIT, EnumOrderType.MKT, 0, 0, 0, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", true, "", "", stubs, "COMPLETESTUB");
-            e.setAccount(c.getAccountName());
-            tes.fireOrderEvent(e);
+            OrderBean newob=new OrderBean(ob);
+            newob.setSpecifiedBrokerAccount(c.getAccountName());
+            int internalorderid=TradingUtil.getInternalOrderID();
+            newob.setInternalOrderID(internalorderid);
+            newob.setParentInternalOrderID(internalorderid);
+            tes.fireOrderEvent(newob);
         }
     }
 
@@ -1312,45 +1317,55 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
     private void fireLinkedAction(BeanConnection c, OrderBean ob, EnumLinkedAction nextAction, LinkedAction f) {
         int orderid=ob.getExternalOrderID();
-        int parentid = ob.getParentSymbolID() - 1;
-        OrderEvent e;
+        int parentid = ob.getParentSymbolID();
         int size;
+        OrderBean newob=new OrderBean(ob);
+        
         switch (nextAction) {
             case COMPLETEFILL:
                 size = ob.getCurrentOrderSize() - ob.getCurrentFillSize();
-                e = OrderEvent.fastClose(Parameters.symbol.get(parentid), ob.getOrderSide(), size, orderReference);
-                e.setAccount(c.getAccountName());
-                logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + String.valueOf(ob.getInternalOrderID()) + delimiter + String.valueOf(ob.getExternalOrderID())});
-                tes.fireOrderEvent(e);
+                newob.setOrderType(EnumOrderType.MKT);
+                newob.setSpecifiedBrokerAccount(c.getAccountName());
+                newob.setCurrentOrderSize(size);
+                int internalorderid = TradingUtil.getInternalOrderID();
+                newob.setInternalOrderID(internalorderid);
+                newob.setParentInternalOrderID(internalorderid);
+                logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + String.valueOf(newob.getInternalOrderID()) + delimiter + String.valueOf(newob.getExternalOrderID())});
+                tes.fireOrderEvent(ob);
                 break;
             case REVERSEFILL:
                 size = ob.getCurrentFillSize();
-                e = f.e;
                 int newOrderSize = size;
                 logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + String.valueOf(ob.getInternalOrderID()) + delimiter + String.valueOf(ob.getExternalOrderID()) + delimiter + newOrderSize});
                 if (newOrderSize > 0) {
-                    e.setOrderSize(newOrderSize);
+                    ob.setCurrentOrderSize(newOrderSize);
 //                e = OrderEvent.fastClose(Parameters.symbol.get(parentid), reverse(ob.getParentOrderSide()), size, orderReference);
-                    e.setAccount(c.getAccountName());
-                    tes.fireOrderEvent(e);
+                    ob.setSpecifiedBrokerAccount(c.getAccountName());
+                internalorderid = TradingUtil.getInternalOrderID();
+                newob.setInternalOrderID(internalorderid);
+                newob.setParentInternalOrderID(internalorderid);
+                    tes.fireOrderEvent(ob);
                 }
                 break;
             case CLOSEPOSITION:
                 size = c.getPositions().get(new Index(orderReference, parentid)) != null ? c.getPositions().get(new Index(orderReference, parentid)).getPosition() : 0;
                 if (size != 0) {
                     EnumOrderSide side = size > 0 ? EnumOrderSide.SELL : EnumOrderSide.COVER;
-                    e = OrderEvent.fastClose(Parameters.symbol.get(parentid), side, size, orderReference);
-                    e.setAccount(c.getAccountName());
+                     internalorderid = TradingUtil.getInternalOrderID();
+                newob.setInternalOrderID(internalorderid);
+                newob.setParentInternalOrderID(internalorderid);
+                    newob.setSpecifiedBrokerAccount(c.getAccountName());
+                    newob.setOrderType(EnumOrderType.MKT);
                     logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + String.valueOf(ob.getInternalOrderID()) + delimiter + String.valueOf(ob.getExternalOrderID())});
                     int connectionid = Parameters.connection.indexOf(c);
                     ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
                     for (LinkedAction f1 : filledOrders) {
-                        if (f1.e.getSymbolBean().getSerialno() - 1 == parentid && f.orderID == orderid) {
+                        if (f1.e.getParentSymbolID() == parentid && f.orderID == orderid) {
                             f.orderID = -1; //reset the orderid for tracking completed fills. 
                             break;//update the first occurrence
                         }
                     }
-                    tes.fireOrderEvent(e);
+                    tes.fireOrderEvent(newob);
 
                 }
                 break;
@@ -1380,10 +1395,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         childside = EnumOrderSide.UNDEFINED;
                         parentside = EnumOrderSide.UNDEFINED;
                     }
-                    e = OrderEvent.fastClose(Parameters.symbol.get(ob.getParentSymbolID() - 1), parentside, 1, orderReference);
-                    e.setAccount(c.getAccountName());
+                    internalorderid = TradingUtil.getInternalOrderID();
+                newob.setInternalOrderID(internalorderid);
+                newob.setParentInternalOrderID(internalorderid);
+                    newob.setSpecifiedBrokerAccount(c.getAccountName());
+                    newob.setOrderType(EnumOrderType.MKT);
+                    newob.setOrderSide(parentside);                   
                     logger.log(Level.INFO, "204,LinkedAction,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + nextAction + delimiter + ob.getInternalOrderID()});
-                    tes.fireOrderEvent(e);
+                    tes.fireOrderEvent(newob);
                 }
                 break;
             case PROPOGATE:
@@ -1465,19 +1484,19 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
            OrderBean oqv=new OrderBean();
            int internalorderid=getS().getInternalOrderID();
            String displayName=Parameters.symbol.get(id).getDisplayname();
-           oqv.put("InternalOrderID", String.valueOf(internalorderid));
-           oqv.put("ParentInternalOrderID", String.valueOf(internalorderid));
-           oqv.put("OrderSide", "SELL");
-           oqv.put("LimitPrice", "0");
-           oqv.put("OriginalOrderSize", String.valueOf(position));
-           oqv.put("CurrentOrderSize", String.valueOf(position));
-           oqv.put("TriggerPrice", "0");
-           oqv.put("OrderReason", "SQUAREOFF");
-           oqv.put("OrderStage", "INIT");
-           oqv.put("OrderReference", strategy);
-           oqv.put("OrderType","MKT");
-           oqv.put("ParentDisplayName",displayName);
-           oqv.put("ChildDisplayName",displayName);
+           oqv.setInternalOrderID(internalorderid);
+           oqv.setParentInternalOrderID(internalorderid);
+           oqv.setOrderSide(EnumOrderSide.SELL);
+           oqv.setLimitPrice(0);
+           oqv.setOriginalOrderSize(position);
+           oqv.setCurrentOrderSize(position);
+           oqv.setTriggerPrice(0);
+           oqv.setOrderReason(EnumOrderReason.SQUAREOFF);
+           oqv.setOrderStage(EnumOrderStage.INIT);
+           oqv.setOrderReference(strategy);
+           oqv.setOrderType(EnumOrderType.MKT);
+           oqv.setParentDisplayName(displayName);
+           oqv.setChildDisplayName(displayName);
            String key="OQ:-1:"+c.getAccountName()+":"+strategy+":"+displayName+":"+displayName+":"+internalorderid+":"+internalorderid;
            db.insertOrder(key, oqv);
         } else if (position < 0) {
@@ -1485,19 +1504,19 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
            OrderBean oqv=new OrderBean();
            int internalorderid=getS().getInternalOrderID();
            String displayName=Parameters.symbol.get(id).getDisplayname();
-           oqv.put("InternalOrderID", String.valueOf(internalorderid));
-           oqv.put("ParentInternalOrderID", String.valueOf(internalorderid));
-           oqv.put("OrderSide", "COVER");
-           oqv.put("LimitPrice", "0");
-           oqv.put("OriginalOrderSize", String.valueOf(position));
-           oqv.put("CurrentOrderSize", String.valueOf(position));
-           oqv.put("TriggerPrice", "0");
-           oqv.put("OrderReason", "SQUAREOFF");
-           oqv.put("OrderStage", "INIT");
-           oqv.put("OrderReference", strategy);
-           oqv.put("OrderType","MKT");
-           oqv.put("ParentDisplayName",displayName);
-           oqv.put("ChildDisplayName",displayName);
+           oqv.setInternalOrderID(internalorderid);
+           oqv.setParentInternalOrderID(internalorderid);
+           oqv.setOrderSide(EnumOrderSide.COVER);
+           oqv.setLimitPrice(0);
+           oqv.setCurrentOrderSize(position);
+           oqv.setOriginalOrderSize(position);
+           oqv.setTriggerPrice(0);
+           oqv.setOrderReason(EnumOrderReason.SQUAREOFF);
+           oqv.setOrderStage(EnumOrderStage.INIT);
+           oqv.setOrderReference(strategy);
+           oqv.setOrderType(EnumOrderType.MKT);
+           oqv.setChildDisplayName(displayName);
+           oqv.setParentDisplayName(displayName);
            String key="OQ:-1:"+c.getAccountName()+":"+strategy+":"+displayName+":"+displayName+":"+internalorderid+":"+internalorderid;
            db.insertOrder(key, oqv);
         }
@@ -1728,7 +1747,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             int connectionid = Parameters.connection.indexOf(c);
             ArrayList<LinkedAction> filledOrders = this.getFillRequestsForTracking().get(connectionid);
             for (LinkedAction f : filledOrders) {
-                if (f.e.getSymbolBean().getSerialno() - 1 == childid && f.orderID == -1) {//only fire one linked action at one time
+                if (f.e.getChildSymbolID() == childid && f.orderID == -1) {//only fire one linked action at one time
                     f.orderID = orderid;
                     break;//update the first occurrence
                 }
@@ -1969,11 +1988,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             boolean entry = ob.getOrderSide() == EnumOrderSide.BUY || ob.getOrderSide() == EnumOrderSide.SHORT ? true : false;
             //update trades if order is completely filled. For either combo or regular orders, this will be reflected
             if (!entry) {
-                parentInternalOrderIDsEntry = getFirstInternalOpenOrder(parentid, ob.getOrderSide(), c.getAccountName(), true);
+                parentInternalOrderIDsEntry = getFirstInternalOpenOrder(c,ob,false);
                 childInternalOrderIDsEntry = getFirstInternalOpenOrder(parentid, ob.getOrderSide(), c.getAccountName(), false);
             } else {
                 parentInternalOrderIDsEntry.add(getEntryParentOrderIDInt(ob, account));
-                childInternalOrderIDsEntry.add(ob.getParentInternalOrderIDEntry());
+                childInternalOrderIDsEntry.add(ob.getOrderIDForSquareOff());
             }
 
             //String key =s.getStrategy() + ":" + String.valueOf(childInternalOrderIDEntry) + ":" + account;
@@ -2055,7 +2074,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             double exitPrice = Trade.getExitPrice(db, key);
                             exitSize = exitSize + filled;
                             exitPrice = (exitPrice * exitSize + filled * avgFillPrice) / (exitSize);
-                            Trade.updateExit(db, childid, ob.getOrderReason(), ob.getOrderSide(), exitPrice, exitSize, ob.getInternalOrderID(), orderid, ob.getParentInternalOrderID(), ob.getParentInternalOrderIDEntry(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog());
+                            Trade.updateExit(db, childid, ob.getOrderReason(), ob.getOrderSide(), exitPrice, exitSize, ob.getInternalOrderID(), orderid, ob.getParentInternalOrderID(), ob.getOrderIDForSquareOff(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog());
                             if (c.getPositions().get(ind).getPosition() == 0) {
                                 Trade.closeTrade(db, key);
                             }
@@ -2079,7 +2098,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             return ob.getParentInternalOrderID();
         } else {
             //exit order
-            int entryOrderIDInt = ob.getParentInternalOrderIDEntry(); //this is the entry id of a child order
+            int entryOrderIDInt = ob.getOrderIDForSquareOff(); //this is the entry id of a child order
             return Trade.getParentEntryOrderIDInternal(db, getS().getStrategy() + ":" + entryOrderIDInt + ":" + account);
         }
     }
@@ -2245,21 +2264,20 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
     }
 
-    private HashSet<Integer> getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName, boolean parentOrderID) {
+    public HashSet<Integer> getFirstInternalOpenOrder(BeanConnection c,OrderBean ob,boolean synthetic) {
         HashSet<Integer> out = new HashSet<>();
-        String symbol = Parameters.symbol.get(id).getDisplayname();
-        EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
+        String symbol=ob.getParentDisplayName();
+        if(TradingUtil.isSyntheticSymbol(ob.getParentSymbolID())){
+            symbol=ob.getParentDisplayName();
+        }
+        EnumOrderSide entrySide = ob.getOrderSide() == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
         for (String key : getDb().getKeys("opentrades")) {
             if (key.contains("_" + getS().getStrategy())) {
-                if (Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key)) {
-                    if (!parentOrderID) {
+                if (Trade.getAccountName(db, key).equals(c.getAccountName()) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key) && Trade.getParentSymbol(db, key).equals(Trade.getEntrySymbol(db, key))) {
                         out.add(Trade.getEntryOrderIDInternal(db, key));
-                    } else {
-                        out.add(Trade.getParentEntryOrderIDInternal(db, key));
-                    }
                 }
             }
-        }
+        }        
         return out;
 
     }

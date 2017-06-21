@@ -210,6 +210,23 @@ public class RedisConnect<K, V> implements Database<K, V> {
             jedis.lpush(key, string);
         }
     }
+
+    @Override
+    public OrderBean getTradeBean(String key) {
+        OrderBean ob = null;
+        try (Jedis jedis = pool.getResource()) {
+            Object o = jedis.hgetAll(key);
+            try {
+                Type type = new TypeToken<OrderBean>() {
+                }.getType();
+                Gson gson = new GsonBuilder().create();
+                ob = gson.fromJson((String) o, type);
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "{0}_{1}", new Object[]{(String) o, key});
+            }
+        }
+        return ob;
+    }
     
     
 }

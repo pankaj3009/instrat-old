@@ -13,10 +13,12 @@ import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.ExecutionManager;
 import com.incurrency.framework.OrderBean;
 import com.incurrency.framework.OrderEvent;
+import com.incurrency.framework.OrderQueueKey;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.TradingUtil;
 import com.incurrency.framework.Utilities;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -60,10 +62,14 @@ public class OrderForm extends javax.swing.JFrame {
         this.lblSymbol.setText(symbol);
         this.lblSide.setText(side.toString());
         if(ibOrderID>0){ //retrieve orders
-            internalOrderId=Parameters.connection.get(connection).getOrders().get(ibOrderID).getInternalOrderID();
-            internalOrderIdEntry=Parameters.connection.get(connection).getOrders().get(ibOrderID).getParentInternalOrderIdEntry();
+            String key="OQ:"+ibOrderID+":"+Parameters.connection.get(connection).getAccountName()+":"+strategy+":"+symbol+":"+symbol;
+            OrderQueueKey oqk=new OrderQueueKey(key);
+            ob=Parameters.connection.get(connection).getOrderBean(oqk);
+            if(ob!=null){
+            internalOrderId=ob.getInternalOrderID();
+            internalOrderIdEntry=ob.getOrderIDForSquareOff();
+            }
         }
-        ob=Parameters.connection.get(connection).getOrders().get(ibOrderID);
         if(id>=0){
         this.txtLimitPrice.setText(Double.toString(Parameters.symbol.get(id).getLastPrice()));
         if(Parameters.symbol.get(id).getType().equals("COMBO")){
@@ -275,9 +281,23 @@ public class OrderForm extends javax.swing.JFrame {
         if (oms != null) {
 //                internalOrderId=s.getInternalOrderID();
                 HashMap<String,Object> order=new HashMap<>();
-                if(ob!=null){
-                order.put("orderidint", ob.getInternalOrderID());
+                if(ob==null){
+                    ob=new OrderBean();
+                    int internalorderid=TradingUtil.getInternalOrderID();
+                    ob.setInternalOrderID(internalorderid);
+                    ob.setParentInternalOrderID(internalorderid);
+                    ob.setChildDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
+                    ob.setParentDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
+                    ob.setOrderSide(side);
+                    if(side.equals(EnumOrderSide.BUY)||side.equals(EnumOrderSide.SHORT)){
+                        ob.setOrderIDForSquareOff(internalorderid);
+                    }else{
+                        HashSet<Integer> parententryid=oms.getFirstInternalOpenOrder(symbolid, side, Parameters.connection.get(connection).getAccountName(), true);
+                        
+                    }
                 }
+                order.put("orderidint", ob.getInternalOrderID());
+                
 
                 order.put("id", symbolid);
                 order.put("side", side);

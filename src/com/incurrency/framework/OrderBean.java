@@ -16,6 +16,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class OrderBean extends ConcurrentHashMap<String, String> {
 
+    public OrderBean(OrderBean ob){
+        super(ob);
+    }
+    
+    public OrderBean(){
+        
+    }
+    
     public void createLinkedAction(int parentid, String action, String status, String delay) {
         this.put("LinkInternalOrderID", String.valueOf(parentid));
         this.put("LinkStatusTrigger", status);
@@ -127,8 +135,8 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         return Utilities.getInt(parentInternalOrderID, -1);
     }
 
-    public int getParentInternalOrderIDEntry() {
-        String parentEntryInternalOrderID = this.get("ParentInternalOrderIDEntry");
+    public int getOrderIDForSquareOff() {
+        String parentEntryInternalOrderID = this.get("OrderIDForSquareOff");
         return Utilities.getInt(parentEntryInternalOrderID, -1);
     }
 
@@ -225,20 +233,40 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("EffectiveTill"), Algorithm.timeZone);
     }
     
+    public Date getOrderTime(){
+         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("OrderTime"), Algorithm.timeZone);
+    }
+    
     
     
     //Setters
     
+    public void setParentDisplayName(String value){
+        this.put("ParentDisplayName", value);
+    }
+    
+    public void setOrderReference(String value){
+        this.put("OrderReference", value);
+    }
+    
     public void setInternalOrderID(int value){
         this.put("InternalOrderID", String.valueOf(value));
+    }
+    
+    public void setOrderSide(EnumOrderSide value){
+        this.put("OrderSide",String.valueOf(value));
     }
     
     public void setParentInternalOrderID(int value){
         this.put("ParentInternalOrderID", String.valueOf(value));
     }
     
-     public void setParentInternalOrderIDEntry(int value){
-        this.put("ParentInternalOrderIDEntry", String.valueOf(value));
+    public void setOriginalOrderSize(int value){
+        this.put("OriginalOrderSize",String.valueOf(value));
+    }
+    
+     public void setOrderIDForSquareOff(int value){
+        this.put("OrderIDForSquareOff", String.valueOf(value));
     }
     
     
@@ -294,12 +322,16 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.put("TotalFillPrice", String.valueOf(value));
     }
     
-    public void setOrderReason(String value) {
+    public void setOrderReason(EnumOrderReason value) {
         this.put("OrderReason", String.valueOf(value));
     }
     
     public void setSpecifiedBrokerAccount(String value){
         this.put("SpecifiedBrokerAccount", value);
+    }
+    
+    public void setOrderType(EnumOrderType orderType){
+        this.put("OrderType", String.valueOf(orderType));
     }
     
     //Order Attributes

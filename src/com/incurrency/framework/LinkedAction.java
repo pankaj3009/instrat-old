@@ -13,10 +13,10 @@ import java.util.ArrayList;
 public class LinkedAction {
     BeanConnection c;
     int orderID;
-    OrderEvent e;
+    OrderBean e;
     EnumLinkedAction action=EnumLinkedAction.UNDEFINED;
     int delay=0;
-    public LinkedAction(BeanConnection c, int orderID, OrderEvent e,EnumLinkedAction action,int delaySeconds) {
+    public LinkedAction(BeanConnection c, int orderID, OrderBean e,EnumLinkedAction action,int delaySeconds) {
         this.c = c;
         this.orderID = orderID;
         this.e = e;
