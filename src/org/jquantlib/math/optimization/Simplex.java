@@ -44,7 +44,6 @@ package org.jquantlib.math.optimization;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.math.Constants;
 import org.jquantlib.math.matrixutilities.Array;
 

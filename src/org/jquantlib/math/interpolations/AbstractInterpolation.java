@@ -41,10 +41,9 @@
 
 package org.jquantlib.math.interpolations;
 
-import static org.jquantlib.math.Closeness.isClose;
-
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
+import static org.jquantlib.math.Closeness.isClose;
 import org.jquantlib.math.matrixutilities.Array;
 
 

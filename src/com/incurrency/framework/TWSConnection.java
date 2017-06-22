@@ -4,27 +4,26 @@
  */
 package com.incurrency.framework;
 
-import com.incurrency.framework.fundamental.FundamentalDataListener;
 import com.ib.client.*;
+import com.incurrency.framework.fundamental.FundamentalDataListener;
+import com.incurrency.framework.rateserver.Rates;
+import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.net.Socket;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import com.incurrency.framework.rateserver.Rates;
-import java.io.PrintStream;
-import java.net.Socket;
-import java.util.concurrent.atomic.AtomicBoolean;
-import com.ib.client.TickType;
-import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import redis.clients.jedis.Jedis;
 
 /**
@@ -772,8 +771,8 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
             String searchString = "OQ:*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":"+ob.getInternalOrderID()+":";
             Set<OrderQueueKey> oqks = TradingUtil.getLiveOrderKeys(Algorithm.db, c, searchString);
             for (OrderQueueKey oqki : oqks) {
-                int obindex = c.getOrdersSymbols().get(oqki).size() - 1;
-                OrderBean obvi = c.getOrdersSymbols().get(oqki).get(obindex);
+                int obindex = c.getOrders().get(oqki).size() - 1;
+                OrderBean obvi = c.getOrders().get(oqki).get(obindex);
                 if (!obvi.isCancelRequested() && obvi.getExternalOrderID() > 0) {
                     this.eClientSocket.cancelOrder(obvi.getExternalOrderID());
                     logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",

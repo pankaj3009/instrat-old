@@ -54,8 +54,8 @@ import org.jquantlib.termstructures.volatilities.BlackVarianceCurve;
 import org.jquantlib.termstructures.volatilities.LocalConstantVol;
 import org.jquantlib.termstructures.volatilities.LocalVolCurve;
 import org.jquantlib.termstructures.volatilities.LocalVolSurface;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 
 /**
  * Generalized Black-Scholes stochastic process

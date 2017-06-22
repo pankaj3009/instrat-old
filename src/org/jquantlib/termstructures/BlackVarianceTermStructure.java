@@ -41,7 +41,6 @@
 package org.jquantlib.termstructures;
 
 import org.jquantlib.daycounters.DayCounter;
-import org.jquantlib.termstructures.yieldcurves.FixedRateBondHelper;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
 import org.jquantlib.time.JDate;

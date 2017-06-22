@@ -3,14 +3,13 @@
 
 package com.ib.controller;
 
+import com.ib.controller.Profile.Allocation;
+import com.ib.controller.Profile.Type;
+import com.ib.controller.Types.Method;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-
-import com.ib.controller.Profile.Allocation;
-import com.ib.controller.Profile.Type;
-import com.ib.controller.Types.Method;
 
 
 

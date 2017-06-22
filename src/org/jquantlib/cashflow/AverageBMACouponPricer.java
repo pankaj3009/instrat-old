@@ -22,7 +22,6 @@
 package org.jquantlib.cashflow;
 
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.indexes.InterestRateIndex;
 import org.jquantlib.lang.annotation.Natural;

@@ -22,7 +22,6 @@
 package org.jquantlib.instruments.bonds;
 
 import java.util.List;
-
 import org.jquantlib.cashflow.Callability;
 import org.jquantlib.cashflow.Dividend;
 import org.jquantlib.daycounters.DayCounter;

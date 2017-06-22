@@ -41,7 +41,6 @@ package org.jquantlib.termstructures.yieldcurves;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -55,8 +54,8 @@ import org.jquantlib.termstructures.InterestRate;
 import org.jquantlib.termstructures.IterativeBootstrap;
 import org.jquantlib.termstructures.RateHelper;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Month;
 import org.jquantlib.time.Period;
 import org.jquantlib.util.LazyObject;

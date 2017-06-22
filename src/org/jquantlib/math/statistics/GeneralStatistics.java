@@ -44,7 +44,6 @@ package org.jquantlib.math.statistics;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;

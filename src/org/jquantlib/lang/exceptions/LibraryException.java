@@ -40,7 +40,6 @@ package org.jquantlib.lang.exceptions;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
-
 import org.jquantlib.QL;
 
 /**

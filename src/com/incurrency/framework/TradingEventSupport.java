@@ -6,15 +6,12 @@ package com.incurrency.framework;
 
 
 
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
-import static com.incurrency.framework.Algorithm.globalProperties;
-import java.util.concurrent.ConcurrentHashMap;
 /**
  *
  * @author pankaj

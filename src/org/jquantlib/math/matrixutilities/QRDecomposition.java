@@ -40,7 +40,6 @@ When applicable, the original copyright notice follows this notice.
 package org.jquantlib.math.matrixutilities;
 
 import java.util.Arrays;
-
 import org.jquantlib.QL;
 import org.jquantlib.math.optimization.Minpack;
 

@@ -24,7 +24,6 @@ package org.jquantlib.indexes;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import org.jquantlib.time.TimeSeries;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.ObservableValue;

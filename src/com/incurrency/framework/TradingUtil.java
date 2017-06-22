@@ -35,7 +35,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -45,16 +44,12 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.mail.internet.InternetAddress;
 import javax.swing.JOptionPane;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.ScanResult;
 
 
 /**
@@ -2165,8 +2160,8 @@ public class TradingUtil {
                     searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
                     Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
                     for(OrderQueueKey oqkinew:oqksnew){
-                        int obsize=c.getOrdersSymbols().get(oqkinew).size();
-                        OrderBean ob=c.getOrdersSymbols().get(oqkinew).get(obsize-1);
+                        int obsize=c.getOrders().get(oqkinew).size();
+                        OrderBean ob=c.getOrders().get(oqkinew).get(obsize-1);
                         if(ob.getExternalOrderID()>=0 && TradingUtil.isLiveOrder(c, oqkinew)){
                             out.add(ob.getExternalOrderID());
                         }
@@ -2205,8 +2200,8 @@ public class TradingUtil {
                     searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
                     Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
                     for(OrderQueueKey oqkinew:oqksnew){
-                        int obsize=c.getOrdersSymbols().get(oqkinew).size();
-                        OrderBean ob=c.getOrdersSymbols().get(oqkinew).get(obsize-1);
+                        int obsize=c.getOrders().get(oqkinew).size();
+                        OrderBean ob=c.getOrders().get(oqkinew).get(obsize-1);
                         if(ob.getExternalOrderID()>0 && TradingUtil.isLiveOrder(c, oqkinew)){
                             out.add(ob);
                         }
@@ -2230,8 +2225,8 @@ public class TradingUtil {
                     searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
                     Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
                     for(OrderQueueKey oqkinew:oqksnew){
-                        int obsize=c.getOrdersSymbols().get(oqkinew).size();
-                        OrderBean obi=c.getOrdersSymbols().get(oqkinew).get(obsize-1);
+                        int obsize=c.getOrders().get(oqkinew).size();
+                        OrderBean obi=c.getOrders().get(oqkinew).get(obsize-1);
                         if(ob.getExternalOrderID()>0 && TradingUtil.isLiveOrder(c, oqkinew)){
                             out.add(obi);
                         }
@@ -2271,8 +2266,8 @@ public class TradingUtil {
             for (String oqki : oqks) {
                 OrderQueueKey oqk = new OrderQueueKey(oqki);
                 if (TradingUtil.isLiveOrder(c, oqk)) {
-                    int lastindex = c.getOrdersSymbols().get(oqk).size() - 1;
-                    orderids.add(c.getOrdersSymbols().get(oqk).get(lastindex).getExternalOrderID());
+                    int lastindex = c.getOrders().get(oqk).size() - 1;
+                    orderids.add(c.getOrders().get(oqk).get(lastindex).getExternalOrderID());
                 }
             }
         }
@@ -2299,7 +2294,7 @@ public class TradingUtil {
      * @return
      */
     public static boolean isLiveOrder(BeanConnection c, OrderQueueKey oqk) {
-        ArrayList<OrderBean> oqvs = c.getOrdersSymbols().get(oqk);
+        ArrayList<OrderBean> oqvs = c.getOrders().get(oqk);
         if (oqvs != null) {
             OrderBean oqv = oqvs.get(oqvs.size() - 1);
             if (oqv.getOrderStatus() == EnumOrderStatus.ACKNOWLEDGED || oqv.getOrderStatus() == EnumOrderStatus.PARTIALFILLED || oqv.getOrderStatus() == EnumOrderStatus.SUBMITTED) {
@@ -2310,7 +2305,20 @@ public class TradingUtil {
         }
         return false;
     }
-    
+
+    public static boolean isRestingOrder(BeanConnection c, OrderQueueKey oqk) {
+        ArrayList<OrderBean> oqvs = c.getOrders().get(oqk);
+        if (oqvs != null) {
+            OrderBean oqv = oqvs.get(oqvs.size() - 1);
+            if (oqv.getOrderStatus() == EnumOrderStatus.UNDEFINED) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+        
    
         /**
      * Returns child display names for a given symbolid
@@ -2363,6 +2371,17 @@ public class TradingUtil {
         Set<OrderBean>out=new HashSet<>();
         for(OrderQueueKey oqki:oqks){
             if(TradingUtil.isLiveOrder(c, oqki)){
+                out.add(c.getOrderBean(oqki));
+            }            
+        }
+        return out;
+    }
+       
+       public static Set<OrderBean> getRestingOrders(Database db,BeanConnection c, String searchString) {
+        Set<OrderQueueKey>oqks=getAllOrderKeys(db, c, searchString);
+        Set<OrderBean>out=new HashSet<>();
+        for(OrderQueueKey oqki:oqks){
+            if(TradingUtil.isRestingOrder(c, oqki)){
                 out.add(c.getOrderBean(oqki));
             }            
         }

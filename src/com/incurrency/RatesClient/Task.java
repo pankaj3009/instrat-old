@@ -8,13 +8,9 @@ import static com.incurrency.RatesClient.RedisSubscribe.tes;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.Parameters;
 import com.incurrency.framework.TradingUtil;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicBoolean;
+import com.incurrency.framework.Utilities;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static com.incurrency.framework.Algorithm.*;
-import com.incurrency.framework.Utilities;
 
 /**
  *

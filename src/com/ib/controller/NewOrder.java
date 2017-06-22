@@ -3,9 +3,6 @@
 
 package com.ib.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.ib.client.Order;
 import com.ib.client.TagValue;
 import com.ib.controller.Types.Action;
@@ -18,6 +15,8 @@ import com.ib.controller.Types.Rule80A;
 import com.ib.controller.Types.TimeInForce;
 import com.ib.controller.Types.TriggerMethod;
 import com.ib.controller.Types.VolatilityType;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NewOrder {
 	// order id's

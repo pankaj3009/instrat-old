@@ -3,15 +3,14 @@
 
 package com.ib.controller;
 
-import java.util.ArrayList;
-import java.util.Vector;
-
 import com.ib.client.ComboLeg;
 import com.ib.client.Contract;
 import com.ib.client.UnderComp;
 import com.ib.controller.Types.Right;
 import com.ib.controller.Types.SecIdType;
 import com.ib.controller.Types.SecType;
+import java.util.ArrayList;
+import java.util.Vector;
 
 public class NewContract implements Cloneable {
     private int m_conid;

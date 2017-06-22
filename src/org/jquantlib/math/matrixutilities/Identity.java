@@ -2,7 +2,6 @@ package org.jquantlib.math.matrixutilities;
 
 import java.util.EnumSet;
 import java.util.Set;
-
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;

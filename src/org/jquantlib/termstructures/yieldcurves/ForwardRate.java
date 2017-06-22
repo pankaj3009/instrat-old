@@ -45,8 +45,8 @@ import org.jquantlib.Settings;
 import org.jquantlib.math.Constants;
 import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.termstructures.YieldTermStructure;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 
 /**
  * Forward-curve traits

@@ -39,7 +39,6 @@ package org.jquantlib.math.matrixutilities.internal;
 
 import java.util.EnumSet;
 import java.util.Set;
-
 import org.jquantlib.lang.exceptions.LibraryException;
 
 

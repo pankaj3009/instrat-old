@@ -25,7 +25,6 @@ package org.jquantlib.methods.finitedifferences;
  * @author Srinivas Hasti
  */
 import java.lang.reflect.Proxy;
-
 import org.jquantlib.lang.reflect.DynamicProxyInvocationHandler;
 
 public class DynamicPdeSecondOrderParabolic extends PdeSecondOrderParabolic {

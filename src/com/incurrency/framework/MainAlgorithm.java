@@ -6,11 +6,7 @@ package com.incurrency.framework;
 
 import com.incurrency.RatesClient.RedisSubscribe;
 import static com.incurrency.framework.Algorithm.globalProperties;
-import static com.incurrency.framework.Algorithm.instratInfo;
 import com.verhas.licensor.License;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;

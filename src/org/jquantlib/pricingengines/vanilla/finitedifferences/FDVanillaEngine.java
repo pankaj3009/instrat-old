@@ -21,7 +21,6 @@ package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.util.List;
 import java.util.Vector;
-
 import org.jquantlib.QL;
 import org.jquantlib.instruments.OneAssetOption;
 import org.jquantlib.instruments.Payoff;

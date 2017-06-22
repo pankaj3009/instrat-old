@@ -40,7 +40,6 @@
 package org.jquantlib.methods.lattices;
 
 import java.util.Vector;
-
 import org.jquantlib.QL;
 import org.jquantlib.instruments.DiscretizedAsset;
 import org.jquantlib.math.Closeness;

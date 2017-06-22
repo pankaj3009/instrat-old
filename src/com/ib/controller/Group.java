@@ -3,10 +3,9 @@
 
 package com.ib.controller;
 
+import com.ib.controller.Types.Method;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
-
-import com.ib.controller.Types.Method;
 
 public class Group {
 	private String m_name;

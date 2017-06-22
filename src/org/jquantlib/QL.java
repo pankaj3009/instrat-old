@@ -43,7 +43,6 @@ package org.jquantlib;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
-
 import org.jquantlib.lang.exceptions.LibraryException;
 
 /**

@@ -42,7 +42,6 @@ package org.jquantlib.instruments;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.cashflow.CashFlow;
 import org.jquantlib.cashflow.FixedRateCoupon;

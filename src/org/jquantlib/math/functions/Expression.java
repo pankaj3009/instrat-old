@@ -22,7 +22,6 @@
 package org.jquantlib.math.functions;
 
 import java.util.List;
-
 import org.jquantlib.math.Ops;
 import org.jquantlib.math.Ops.DoubleOp;
 

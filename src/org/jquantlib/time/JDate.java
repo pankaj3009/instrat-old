@@ -27,7 +27,6 @@ import java.util.Calendar;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
-
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.lang.exceptions.LibraryException;

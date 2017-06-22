@@ -1,7 +1,6 @@
 package org.jquantlib.model.shortrate.calibrationhelpers;
 
 import java.util.ArrayList;
-
 import org.jquantlib.lang.annotation.Time;
 import org.jquantlib.model.CalibrationHelper;
 import org.jquantlib.quotes.Handle;

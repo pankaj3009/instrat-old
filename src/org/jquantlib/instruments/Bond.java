@@ -46,7 +46,6 @@ package org.jquantlib.instruments;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.cashflow.CashFlow;
@@ -72,8 +71,8 @@ import org.jquantlib.termstructures.InterestRate;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.yieldcurves.ZeroSpreadedTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.util.Observer;

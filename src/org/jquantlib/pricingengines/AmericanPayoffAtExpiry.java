@@ -43,8 +43,8 @@ import org.jquantlib.QL;
 import org.jquantlib.instruments.AssetOrNothingPayoff;
 import org.jquantlib.instruments.CashOrNothingPayoff;
 import org.jquantlib.instruments.Option;
-import org.jquantlib.instruments.StrikedTypePayoff;
 import org.jquantlib.instruments.Option.Type;
+import org.jquantlib.instruments.StrikedTypePayoff;
 import org.jquantlib.math.distributions.CumulativeNormalDistribution;
 
 /**

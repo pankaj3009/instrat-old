@@ -24,7 +24,6 @@ package org.jquantlib.cashflow;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;

@@ -43,17 +43,16 @@ package org.jquantlib.math.matrixutilities;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.math.matrixutilities.internal.Address;
+import org.jquantlib.math.matrixutilities.internal.Address.MatrixAddress.MatrixOffset;
 import org.jquantlib.math.matrixutilities.internal.DirectArrayColAddress;
 import org.jquantlib.math.matrixutilities.internal.DirectArrayRowAddress;
 import org.jquantlib.math.matrixutilities.internal.DirectMatrixAddress;
 import org.jquantlib.math.matrixutilities.internal.MappedMatrixAddress;
-import org.jquantlib.math.matrixutilities.internal.Address.MatrixAddress.MatrixOffset;
 
 /**
  * Bidimensional matrix operations

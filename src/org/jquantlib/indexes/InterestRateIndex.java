@@ -26,7 +26,6 @@ import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.currencies.Currency;
 import org.jquantlib.daycounters.DayCounter;
-import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.Constants;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;

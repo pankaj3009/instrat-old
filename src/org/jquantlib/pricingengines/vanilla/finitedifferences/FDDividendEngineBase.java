@@ -43,7 +43,6 @@ package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.cashflow.Dividend;
 import org.jquantlib.cashflow.Event;

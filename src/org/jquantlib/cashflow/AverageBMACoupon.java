@@ -42,7 +42,6 @@ package org.jquantlib.cashflow;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.indexes.BMAIndex;
 import org.jquantlib.lang.exceptions.LibraryException;

@@ -88,8 +88,8 @@ public class Trade {
         Trade.updateEntryTradeLog(db, key, tradeStatus, log);
     }
 
-    public static void updateExit(Database db,int id, EnumOrderReason reason, EnumOrderSide side, double price, int size, int exitorderidint, int exitorderidext, int parentexitorderidint, int keyentryorderid, String timeZone, String accountName,String strategy,String tradeStatus,String log) {
-        String key = strategy+":"+keyentryorderid + ":" + accountName;
+    public static void updateExit(Database db,int id, EnumOrderReason reason, EnumOrderSide side, double price, int size, int exitorderidint, int exitorderidext, int parentexitorderidint, String timeZone, String accountName,String strategy,String tradeStatus,String log) {
+        String key = strategy+":"+exitorderidint + ":" + accountName;
         db.setHash(tradeStatus, key, "exitsymbol", Parameters.symbol.get(id).getDisplayname());
         db.setHash(tradeStatus, key, "exitside", String.valueOf(side));
         db.setHash(tradeStatus, key, "exitprice", String.valueOf(price));

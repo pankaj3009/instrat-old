@@ -39,7 +39,6 @@ package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
-
 import org.jquantlib.instruments.OneAssetOption;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.lang.reflect.ReflectConstants;

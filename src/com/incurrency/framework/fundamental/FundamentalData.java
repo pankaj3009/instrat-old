@@ -8,10 +8,8 @@ import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.EnumRequestType;
 import com.incurrency.framework.Parameters;
 import java.io.File;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
  * This call is used only for daily bars. For intra-day bars, use

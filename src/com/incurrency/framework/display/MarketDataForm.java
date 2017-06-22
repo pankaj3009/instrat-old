@@ -5,14 +5,13 @@
 package com.incurrency.framework.display;
 
 import com.ib.client.Contract;
+import static com.incurrency.framework.Algorithm.*;
 import com.incurrency.framework.BeanConnection;
 import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.DateUtil;
-import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.Parameters;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static com.incurrency.framework.Algorithm.*;
 
 /**
  *

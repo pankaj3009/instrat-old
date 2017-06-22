@@ -42,7 +42,6 @@ package org.jquantlib.currencies;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.currencies.America.PEHCurrency;

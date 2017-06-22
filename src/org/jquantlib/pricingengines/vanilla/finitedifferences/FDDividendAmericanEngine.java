@@ -41,7 +41,6 @@
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.util.List;
-
 import org.jquantlib.instruments.DividendVanillaOption;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 import org.jquantlib.util.Observer;

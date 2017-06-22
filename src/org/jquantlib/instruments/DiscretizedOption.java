@@ -39,7 +39,6 @@
 package org.jquantlib.instruments;
 
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.exercise.Exercise;
 import org.jquantlib.lang.exceptions.LibraryException;

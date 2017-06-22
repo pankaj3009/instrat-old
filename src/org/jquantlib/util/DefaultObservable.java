@@ -25,7 +25,6 @@ package org.jquantlib.util;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.jquantlib.QL;
 
 

@@ -22,7 +22,6 @@ When applicable, the original copyright notice follows this notice.
 package org.jquantlib.model.shortrate.twofactormodels;
 
 import java.util.ArrayList;
-
 import org.jquantlib.math.matrixutilities.Matrix;
 import org.jquantlib.methods.lattices.Lattice;
 import org.jquantlib.methods.lattices.TreeLattice2D;

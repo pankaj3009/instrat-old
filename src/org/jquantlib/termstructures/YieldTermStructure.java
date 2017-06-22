@@ -40,8 +40,8 @@
 package org.jquantlib.termstructures;
 
 import org.jquantlib.daycounters.DayCounter;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 
 

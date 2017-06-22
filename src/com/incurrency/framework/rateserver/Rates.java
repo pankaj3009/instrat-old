@@ -9,15 +9,13 @@ import com.incurrency.framework.BeanConnection;
 import com.incurrency.framework.DateUtil;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.Parameters;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import com.incurrency.framework.TWSConnection;
 import com.incurrency.framework.Utilities;
-import java.io.PrintStream;
-import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Generates Rates, Tick , TRIN initialise Rates passing the adrSymbols that

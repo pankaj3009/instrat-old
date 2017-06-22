@@ -22,7 +22,6 @@
 package org.jquantlib.util;
 
 import java.util.List;
-
 import org.jquantlib.lang.exceptions.LibraryException;
 
 /**

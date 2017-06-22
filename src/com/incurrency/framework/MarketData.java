@@ -4,15 +4,13 @@
  */
 package com.incurrency.framework;
 
-import javax.swing.JTable;
-import java.util.List;
-import java.util.ArrayList;
 import com.ib.client.Contract;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JTable;
 
 /**
  *

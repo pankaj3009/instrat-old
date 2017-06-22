@@ -40,7 +40,6 @@
 package org.jquantlib.model.volatility;
 
 import java.util.Iterator;
-
 import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeSeries;
 

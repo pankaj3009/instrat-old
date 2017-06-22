@@ -41,7 +41,6 @@
 package org.jquantlib.termstructures.volatilities;
 
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.daycounters.DayCounter;

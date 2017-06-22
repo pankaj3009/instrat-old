@@ -42,7 +42,6 @@ package org.jquantlib.termstructures.volatilities;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.LocalVolTermStructure;
-import org.jquantlib.termstructures.TermStructure;
 import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;

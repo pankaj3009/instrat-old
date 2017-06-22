@@ -21,7 +21,6 @@ package org.jquantlib.methods.finitedifferences;
 
 import java.util.List;
 import java.util.Vector;
-
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.matrixutilities.Array;
 

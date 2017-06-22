@@ -40,7 +40,6 @@
 package org.jquantlib.model.volatility;
 
 import java.util.Iterator;
-
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.IntervalPrice;
 import org.jquantlib.time.JDate;

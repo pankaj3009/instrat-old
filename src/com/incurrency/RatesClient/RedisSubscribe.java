@@ -1,19 +1,14 @@
 package com.incurrency.RatesClient;
 
-import java.util.concurrent.ExecutorService;
-import java.util.logging.Level;
-import redis.clients.jedis.Client;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPubSub;
 import static com.incurrency.framework.Algorithm.*;
 import com.incurrency.framework.TradingEventSupport;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+import redis.clients.jedis.Client;
+import redis.clients.jedis.JedisPubSub;
+
 
 /**
  *

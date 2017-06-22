@@ -22,12 +22,11 @@
 
 package org.jquantlib.termstructures.volatilities;
 
-import static org.jquantlib.math.Closeness.isClose;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.annotation.Rate;
 import org.jquantlib.lang.annotation.Real;
 import org.jquantlib.lang.annotation.Time;
+import static org.jquantlib.math.Closeness.isClose;
 import org.jquantlib.math.Constants;
 
 

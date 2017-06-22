@@ -40,7 +40,6 @@
 package org.jquantlib.math;
 
 import java.util.Iterator;
-
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.time.Series;
 

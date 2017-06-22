@@ -16,8 +16,6 @@
 package com.incurrency.kairosresponse;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import java.util.ArrayList;
 
 /**
  * A measurement. Contains the time when the measurement occurred and its value.

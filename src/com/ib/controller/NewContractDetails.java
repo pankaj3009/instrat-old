@@ -3,12 +3,10 @@
 
 package com.ib.controller;
 
-import static com.ib.controller.NewContract.add;
-
-import java.util.Vector;
-
 import com.ib.client.ContractDetails;
 import com.ib.client.TagValue;
+import static com.ib.controller.NewContract.add;
+import java.util.Vector;
 
 public class NewContractDetails {
 	private NewContract m_contract;

@@ -42,7 +42,6 @@
 package org.jquantlib.processes;
 
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;

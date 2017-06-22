@@ -40,7 +40,6 @@
 package org.jquantlib.instruments;
 
 import java.util.List;
-
 import org.jquantlib.methods.lattices.Lattice;
 
 /**

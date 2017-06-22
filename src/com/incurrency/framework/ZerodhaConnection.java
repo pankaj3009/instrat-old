@@ -26,7 +26,6 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import sun.util.logging.PlatformLogger;
 
 /**
  *

@@ -4,10 +4,10 @@
  */
 package com.incurrency.framework;
 
+import com.ib.client.TickType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
-import com.ib.client.TickType;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 

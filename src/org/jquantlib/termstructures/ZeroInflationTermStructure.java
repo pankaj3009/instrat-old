@@ -44,8 +44,8 @@ import org.jquantlib.lang.annotation.Rate;
 import org.jquantlib.lang.annotation.Time;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 
 /**

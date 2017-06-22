@@ -31,8 +31,8 @@ import org.jquantlib.lang.annotation.Time;
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.InflationTermStructure;
 import org.jquantlib.termstructures.ZeroInflationTermStructure;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.util.Pair;
 

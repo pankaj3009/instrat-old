@@ -39,7 +39,6 @@ package org.jquantlib.pricingengines.vanilla;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.instruments.DiscretizedAsset;
 import org.jquantlib.instruments.VanillaOption;
 import org.jquantlib.lang.exceptions.LibraryException;

@@ -23,7 +23,6 @@
 package org.jquantlib.cashflow;
 
 import java.util.ArrayList;
-
 import org.jquantlib.QL;
 
 /**

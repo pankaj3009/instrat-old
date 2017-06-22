@@ -42,7 +42,6 @@ package org.jquantlib.termstructures.yieldcurves;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.lang.exceptions.LibraryException;

@@ -49,9 +49,9 @@ import org.jquantlib.instruments.Bond;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.DateGeneration;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.Schedule;
 

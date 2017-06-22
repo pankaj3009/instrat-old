@@ -24,7 +24,6 @@ package org.jquantlib.indexes;
 
 import java.util.Iterator;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.iterators.Iterables;
 import org.jquantlib.math.Closeness;

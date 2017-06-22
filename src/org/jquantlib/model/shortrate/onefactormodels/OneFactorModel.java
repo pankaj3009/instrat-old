@@ -34,7 +34,6 @@ import org.jquantlib.methods.lattices.Tree;
 import org.jquantlib.methods.lattices.TreeLattice1D;
 import org.jquantlib.methods.lattices.TrinomialTree;
 import org.jquantlib.model.TermStructureFittingParameter;
-import org.jquantlib.model.TermStructureFittingParameter.NumericalImpl;
 import org.jquantlib.model.shortrate.ShortRateModel;
 import org.jquantlib.processes.StochasticProcess1D;
 import org.jquantlib.time.TimeGrid;

@@ -25,7 +25,6 @@ package org.jquantlib.time;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.lang.annotation.QualityAssurance;

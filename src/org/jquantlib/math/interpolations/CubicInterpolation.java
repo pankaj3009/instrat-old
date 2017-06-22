@@ -41,7 +41,6 @@
 package org.jquantlib.math.interpolations;
 
 import java.util.Arrays;
-
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.Closeness;
 import org.jquantlib.math.interpolations.factories.Cubic;

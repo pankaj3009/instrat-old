@@ -4,7 +4,6 @@
  */
 package com.incurrency.framework;
 
-import com.google.common.collect.HashMultimap;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
@@ -15,8 +14,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -50,7 +47,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     //private transient HashMap<Integer, RequestID> mSnapShotSymbolID = new HashMap(); //this holds symbolID as key
     //private transient HashMap mRealTimeBarsReqID = new HashMap();
     private transient Long connectionTime;
-    private HashMap<OrderQueueKey, ArrayList<OrderBean>> ordersSymbols = new HashMap<>(); //holds map of <strategy,symbol> and a list of all open orders against the index.
+    private HashMap<OrderQueueKey, ArrayList<OrderBean>> orders = new HashMap<>(); //holds map of <strategy,symbol> and a list of all open orders against the index.
     private HashMap<Index, BeanPosition> Positions = new HashMap<>(); //holds map of <symbol, strategy> and system position.
      private ArrayList<Integer> ordersMissed = new ArrayList();
     private ArrayList<Integer> ordersInProgress = new ArrayList();
@@ -152,6 +149,14 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         b.getReqHandle().maxreqpersec = orig.getRtMessageLimit();
         b.setStrategy(orig.getStrategy().toLowerCase());
         return b;
+    }
+    
+    public  ArrayList <OrderBean> getLiveOrders(){
+        return new ArrayList(TradingUtil.getLiveOrders(Algorithm.db, this,"OQ:*:"+this.getAccountName()+":"));
+    }
+    
+    public ArrayList <OrderBean> getRestingOrders(){
+        return new ArrayList(TradingUtil.getRestingOrders(Algorithm.db, this,"OQ:*:"+this.getAccountName()+":"));
     }
 
 
@@ -329,8 +334,8 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the ordersSymbols
      */
-    public HashMap<OrderQueueKey, ArrayList<OrderBean>> getOrdersSymbols() {
-        return ordersSymbols;
+    public HashMap<OrderQueueKey, ArrayList<OrderBean>> getOrders() {
+        return orders;
     }
     
     /**
@@ -338,15 +343,15 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @return the ordersSymbols
      */
     public OrderBean getOrderBean(OrderQueueKey oqki) {
-        int index=ordersSymbols.get(oqki).size()-1;
-        return ordersSymbols.get(oqki).get(index);
+        int index=orders.get(oqki).size()-1;
+        return orders.get(oqki).get(index);
     }
 
     /**
      * @param ordersSymbols the ordersSymbols to set
      */
-    public void setOrdersSymbols(HashMap<OrderQueueKey, ArrayList<OrderBean>> ordersSymbols) {
-        this.ordersSymbols = ordersSymbols;
+    public void setOrders(HashMap<OrderQueueKey, ArrayList<OrderBean>> ordersSymbols) {
+        this.orders = ordersSymbols;
     }
 
     /**

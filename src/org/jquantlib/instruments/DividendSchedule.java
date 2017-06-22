@@ -23,7 +23,6 @@
 package org.jquantlib.instruments;
 
 import java.util.ArrayList;
-
 import org.jquantlib.QL;
 import org.jquantlib.cashflow.Dividend;
 

@@ -40,7 +40,6 @@
 package org.jquantlib.termstructures;
 
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.daycounters.Actual365Fixed;

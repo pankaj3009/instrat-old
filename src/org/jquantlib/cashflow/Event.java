@@ -23,7 +23,6 @@
 package org.jquantlib.cashflow;
 
 import java.util.List;
-
 import org.jquantlib.Settings;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.time.JDate;

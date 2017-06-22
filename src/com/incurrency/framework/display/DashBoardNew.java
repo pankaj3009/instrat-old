@@ -4,7 +4,6 @@
  */
 package com.incurrency.framework.display;
 
-import com.incurrency.framework.Strategy;
 import com.incurrency.framework.*;
 import java.awt.Dimension;
 import java.awt.Point;

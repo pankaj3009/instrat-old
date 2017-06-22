@@ -42,7 +42,6 @@ package org.jquantlib.pricingengines.asian;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.exercise.Exercise;
@@ -56,8 +55,8 @@ import org.jquantlib.math.distributions.NormalDistribution;
 import org.jquantlib.pricingengines.BlackCalculator;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 import org.jquantlib.termstructures.Compounding;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 
 
 /**

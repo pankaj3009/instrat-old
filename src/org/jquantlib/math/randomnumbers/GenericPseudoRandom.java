@@ -42,7 +42,6 @@
 package org.jquantlib.math.randomnumbers;
 
 import java.lang.reflect.Constructor;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.exceptions.LibraryException;
 

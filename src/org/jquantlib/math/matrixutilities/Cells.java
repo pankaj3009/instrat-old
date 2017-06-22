@@ -21,7 +21,6 @@
 package org.jquantlib.math.matrixutilities;
 
 import java.util.Set;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.matrixutilities.internal.Address;

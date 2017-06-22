@@ -127,5 +127,10 @@ public class DataStore<K,V> implements Database<K,V> {
     public OrderBean getLatestOrderBean(String key) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
+
+    @Override
+    public OrderBean getTradeBean(String key) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
     
 }

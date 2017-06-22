@@ -24,7 +24,6 @@ When applicable, the original copyright notice follows this notice.
 package org.jquantlib.model.shortrate;
 
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;

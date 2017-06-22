@@ -43,7 +43,6 @@
 package org.jquantlib.methods.lattices;
 
 import java.util.Vector;
-
 import org.jquantlib.processes.StochasticProcess1D;
 import org.jquantlib.time.TimeGrid;
 

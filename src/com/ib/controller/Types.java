@@ -2,28 +2,27 @@
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
 
 package com.ib.controller;
+import com.ib.client.IApiEnum;
 import static com.ib.controller.Types.AlgoParam.allowPastEndTime;
+import static com.ib.controller.Types.AlgoParam.catchUp;
+import static com.ib.controller.Types.AlgoParam.componentSize;
 import static com.ib.controller.Types.AlgoParam.displaySize;
 import static com.ib.controller.Types.AlgoParam.endTime;
 import static com.ib.controller.Types.AlgoParam.forceCompletion;
 import static com.ib.controller.Types.AlgoParam.getDone;
+import static com.ib.controller.Types.AlgoParam.giveUp;
 import static com.ib.controller.Types.AlgoParam.maxPctVol;
 import static com.ib.controller.Types.AlgoParam.noTakeLiq;
 import static com.ib.controller.Types.AlgoParam.noTradeAhead;
 import static com.ib.controller.Types.AlgoParam.pctVol;
+import static com.ib.controller.Types.AlgoParam.randomizeSize55;
+import static com.ib.controller.Types.AlgoParam.randomizeTime20;
 import static com.ib.controller.Types.AlgoParam.riskAversion;
 import static com.ib.controller.Types.AlgoParam.startTime;
 import static com.ib.controller.Types.AlgoParam.strategyType;
-import static com.ib.controller.Types.AlgoParam.useOddLots;
-import static com.ib.controller.Types.AlgoParam.componentSize;
 import static com.ib.controller.Types.AlgoParam.timeBetweenOrders;
-import static com.ib.controller.Types.AlgoParam.randomizeTime20;
-import static com.ib.controller.Types.AlgoParam.randomizeSize55;
-import static com.ib.controller.Types.AlgoParam.giveUp;
-import static com.ib.controller.Types.AlgoParam.catchUp;
+import static com.ib.controller.Types.AlgoParam.useOddLots;
 import static com.ib.controller.Types.AlgoParam.waitForFill;
-
-import com.ib.client.IApiEnum;
 
 public class Types {
 	public static enum ComboParam {

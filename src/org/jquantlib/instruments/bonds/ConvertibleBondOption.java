@@ -23,7 +23,6 @@ package org.jquantlib.instruments.bonds;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.cashflow.Callability;
 import org.jquantlib.cashflow.Leg;

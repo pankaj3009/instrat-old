@@ -5,20 +5,18 @@
 package com.incurrency.framework.display;
 
 import com.incurrency.framework.EnumOrderReason;
-import com.incurrency.framework.Strategy;
-import com.incurrency.framework.EnumOrderStage;
 import com.incurrency.framework.EnumOrderSide;
+import com.incurrency.framework.EnumOrderStage;
 import com.incurrency.framework.EnumOrderType;
-import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.ExecutionManager;
+import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.OrderBean;
-import com.incurrency.framework.OrderEvent;
 import com.incurrency.framework.OrderQueueKey;
 import com.incurrency.framework.Parameters;
+import com.incurrency.framework.Strategy;
 import com.incurrency.framework.TradingUtil;
 import com.incurrency.framework.Utilities;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -283,59 +281,45 @@ public class OrderForm extends javax.swing.JFrame {
                 HashMap<String,Object> order=new HashMap<>();
                 if(ob==null){
                     ob=new OrderBean();
-                    int internalorderid=TradingUtil.getInternalOrderID();
+                    int internalorderid = TradingUtil.getInternalOrderID();
                     ob.setInternalOrderID(internalorderid);
                     ob.setParentInternalOrderID(internalorderid);
+                    if (side.equals(EnumOrderSide.COVER) || side.equals(EnumOrderSide.SELL)) {
+                        ob.setOrderIDForSquareOff(oms.ParentInternalOrderIDForSquareOff(Parameters.connection.get(connection), ob));
+                    }
                     ob.setChildDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
                     ob.setParentDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
                     ob.setOrderSide(side);
-                    if(side.equals(EnumOrderSide.BUY)||side.equals(EnumOrderSide.SHORT)){
-                        ob.setOrderIDForSquareOff(internalorderid);
-                    }else{
-                        HashSet<Integer> parententryid=oms.getFirstInternalOpenOrder(symbolid, side, Parameters.connection.get(connection).getAccountName(), true);
-                        
-                    }
-                }
-                order.put("orderidint", ob.getInternalOrderID());
-                
+                    ob.setLimitPrice(Double.valueOf(this.txtLimitPrice.getText()));
+                    ob.setTriggerPrice(Double.valueOf(this.txtTriggerPrice.getText()));
+                    ob.setOrderType(EnumOrderType.valueOf(comboType.getSelectedItem().toString()));
+                    ob.setOriginalOrderSize(Math.abs(quantity));
+                    ob.setOrderReference(s.getStrategy());
+                    ob.setOrderStage(EnumOrderStage.INIT);
+                    ob.setOrderReason(EnumOrderReason.UNDEFINED);
+                    //order attributes
+                    ob.setDisplaySize(Utilities.getInt(s.getOrderAttributes().get("displaysize"),0));
+                    ob.setValue(Utilities.getInt(s.getOrderAttributes().get("value"),0));
+                    ob.setMaxPermissibleImpactCost(Utilities.getDouble(s.getOrderAttributes().get("thresholdimpactcost"),0));
+                    ob.setLinkDelay(Utilities.getInt(s.getOrderAttributes().get("delay"),1));
+                    ob.setImproveProbability(Utilities.getDouble(s.getOrderAttributes().get("improveprob"),1));
+                    ob.setOrdersPerMinute(Utilities.getInt(s.getOrderAttributes().get("orderspermin"),1));
+                    ob.setImproveAmount(Utilities.getInt(s.getOrderAttributes().get("improveamt"),1));
+                    ob.setStickyPeriod(Utilities.getInt(s.getOrderAttributes().get("stickyperiod"),0));
+                    ob.setFatFingerWindow(Utilities.getInt(s.getOrderAttributes().get("fatfingerwindow"),120));
+                    ob.setScale(Boolean.FALSE);
 
-                order.put("id", symbolid);
-                order.put("side", side);
-                order.put("type", EnumOrderType.valueOf(comboType.getSelectedItem().toString()));
-                order.put("size", Math.abs(quantity));
-                order.put("limitprice", Double.valueOf(this.txtLimitPrice.getText()));
-                order.put("triggerprice", Double.valueOf(this.txtTriggerPrice.getText()));
-                order.put("orderref", s.getStrategy());
-                order.put("expiretime", expireTime);
-                order.put("orderstage", EnumOrderStage.INIT);
-                order.put("dynamicorderduration", dynamicOrderDuration);
-                order.put("maxslippage", maxSlippage);
-                order.put("transmit", "true");
-                order.put("reason", notify);
-                order.put("orderattributes", s.getOrderAttributes());
-            if (ob!=null) {
-                order.put("scale", ob.isScale());
-            }
-            switch (notify) {
-                case REGULAREXIT:
-                    if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
-                        s.exit(order);
-//                oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT,  dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
+                }
+//                if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
+                        s.exit(ob);
                         dispose();
-                    } else {
-                        oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy());
-                        s.exit(order);
-                        //oms.tes.fireOrderEvent(internalOrderId, internalOrderIdEntry, Parameters.symbol.get(symbolid), side,notify, EnumOrderType.valueOf(comboType.getSelectedItem().toString()),Math.abs(quantity), Double.valueOf(this.txtLimitPrice.getText()), Double.valueOf(this.txtTriggerPrice.getText()), s.getStrategy(), expireTime, EnumOrderStage.INIT, dynamicOrderDuration, maxSlippage,true,"DAY",false,"","",null);
-                        dispose();
-                    }
-                    break;
-                case REGULARENTRY:
-                    s.entry(order);
-                    dispose();
-                    break;
-                default:
-                    break;
-            }
+//                    } else {
+//                        oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy());
+//                        s.exit(ob);
+//                        dispose();
+//                    }
+                    
+
         }
     }//GEN-LAST:event_cmdPlaceOrderActionPerformed
 

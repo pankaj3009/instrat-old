@@ -41,7 +41,6 @@
 package org.jquantlib.quotes;
 
 import java.util.List;
-
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
 import org.jquantlib.util.WeakReferenceObservable;

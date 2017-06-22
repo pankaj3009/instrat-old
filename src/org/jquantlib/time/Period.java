@@ -44,7 +44,6 @@ package org.jquantlib.time;
 
 import java.util.Formatter;
 import java.util.Locale;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.exceptions.LibraryException;
 

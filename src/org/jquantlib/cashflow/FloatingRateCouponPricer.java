@@ -22,7 +22,6 @@
 package org.jquantlib.cashflow;
 
 import java.util.List;
-
 import org.jquantlib.util.DefaultObservable;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;

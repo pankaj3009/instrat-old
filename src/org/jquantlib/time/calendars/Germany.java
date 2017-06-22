@@ -22,11 +22,6 @@
 
 package org.jquantlib.time.calendars;
 
-import static org.jquantlib.time.Month.December;
-import static org.jquantlib.time.Month.January;
-import static org.jquantlib.time.Month.May;
-import static org.jquantlib.time.Month.October;
-
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
@@ -34,6 +29,10 @@ import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.time.Calendar;
 import org.jquantlib.time.JDate;
 import org.jquantlib.time.Month;
+import static org.jquantlib.time.Month.December;
+import static org.jquantlib.time.Month.January;
+import static org.jquantlib.time.Month.May;
+import static org.jquantlib.time.Month.October;
 import org.jquantlib.time.Weekday;
 
 /** German calendars

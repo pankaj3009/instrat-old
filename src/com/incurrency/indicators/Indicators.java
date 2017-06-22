@@ -7,24 +7,24 @@ package com.incurrency.indicators;
 import com.google.common.base.Preconditions;
 import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.BeanSymbol;
+import com.incurrency.framework.DataStore;
 import com.incurrency.framework.DateUtil;
 import com.incurrency.framework.EnumBarSize;
-import com.incurrency.framework.DataStore;
 import com.incurrency.framework.MatrixMethods;
+import static com.incurrency.framework.MatrixMethods.*;
 import com.incurrency.framework.ReservedValues;
 import com.incurrency.framework.Utilities;
 import com.tictactec.ta.lib.Core;
 import com.tictactec.ta.lib.MInteger;
 import com.tictactec.ta.lib.RetCode;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jblas.DoubleMatrix;
-import java.text.SimpleDateFormat;
-import static com.incurrency.framework.MatrixMethods.*;
-import java.util.Arrays;
 
 /**
  *

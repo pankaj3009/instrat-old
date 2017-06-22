@@ -25,7 +25,6 @@ package org.jquantlib.legacy.libormarkets;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
 import org.jquantlib.math.matrixutilities.PseudoSqrt;

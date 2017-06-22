@@ -2,7 +2,6 @@ package org.jquantlib.instruments;
 
 import java.io.Serializable;
 import java.util.Comparator;
-
 import org.jquantlib.cashflow.CashFlow;
 
 /**

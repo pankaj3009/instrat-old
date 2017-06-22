@@ -6,12 +6,9 @@ package com.incurrency.framework;
 
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static com.incurrency.framework.Algorithm.globalProperties;
 /**
  *
  * @author pankaj This class generates one min bars from 5 second bars.

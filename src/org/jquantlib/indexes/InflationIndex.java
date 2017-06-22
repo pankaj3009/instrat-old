@@ -24,14 +24,13 @@ package org.jquantlib.indexes;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.Settings;
 import org.jquantlib.currencies.Currency;
 import org.jquantlib.lang.annotation.Real;
 import org.jquantlib.termstructures.InflationTermStructure;
 import org.jquantlib.time.Calendar;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.calendars.NullCalendar;
 import org.jquantlib.util.Observer;

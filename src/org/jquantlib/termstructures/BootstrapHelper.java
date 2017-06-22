@@ -41,7 +41,6 @@ When applicable, the original copyright notice follows this notice.
 package org.jquantlib.termstructures;
 
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.quotes.Handle;

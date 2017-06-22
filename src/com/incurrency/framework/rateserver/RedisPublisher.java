@@ -6,8 +6,6 @@ package com.incurrency.framework.rateserver;
 
 import com.incurrency.framework.Algorithm;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
 
 /**
  *

@@ -24,6 +24,12 @@
 
 package org.jquantlib.time.calendars;
 
+import org.jquantlib.lang.annotation.QualityAssurance;
+import org.jquantlib.lang.annotation.QualityAssurance.Quality;
+import org.jquantlib.lang.annotation.QualityAssurance.Version;
+import org.jquantlib.time.Calendar;
+import org.jquantlib.time.JDate;
+import org.jquantlib.time.Month;
 import static org.jquantlib.time.Month.August;
 import static org.jquantlib.time.Month.December;
 import static org.jquantlib.time.Month.January;
@@ -31,13 +37,6 @@ import static org.jquantlib.time.Month.July;
 import static org.jquantlib.time.Month.May;
 import static org.jquantlib.time.Month.November;
 import static org.jquantlib.time.Month.September;
-
-import org.jquantlib.lang.annotation.QualityAssurance;
-import org.jquantlib.lang.annotation.QualityAssurance.Quality;
-import org.jquantlib.lang.annotation.QualityAssurance.Version;
-import org.jquantlib.time.Calendar;
-import org.jquantlib.time.JDate;
-import org.jquantlib.time.Month;
 import org.jquantlib.time.Weekday;
 
 /**

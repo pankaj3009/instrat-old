@@ -6,7 +6,6 @@
 package com.incurrency.framework;
 
 import com.ib.client.Contract;
-import com.ib.client.EWrapper;
 import com.ib.client.ExecutionFilter;
 import com.ib.client.Order;
 import com.incurrency.framework.fundamental.FundamentalDataListener;

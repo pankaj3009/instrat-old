@@ -23,7 +23,6 @@
 package org.jquantlib.termstructures.yieldcurves;
 
 import java.util.List;
-
 import org.jquantlib.math.interpolations.Interpolation;
 import org.jquantlib.math.interpolations.Interpolation.Interpolator;
 import org.jquantlib.termstructures.RateHelper;

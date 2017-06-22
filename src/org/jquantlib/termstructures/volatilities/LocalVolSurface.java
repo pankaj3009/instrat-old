@@ -46,7 +46,6 @@ import org.jquantlib.quotes.Quote;
 import org.jquantlib.quotes.SimpleQuote;
 import org.jquantlib.termstructures.BlackVolTermStructure;
 import org.jquantlib.termstructures.LocalVolTermStructure;
-import org.jquantlib.termstructures.TermStructure;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.JDate;
 import org.jquantlib.util.PolymorphicVisitor;

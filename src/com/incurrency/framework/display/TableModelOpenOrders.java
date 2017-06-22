@@ -5,12 +5,12 @@
 package com.incurrency.framework.display;
 
 import com.incurrency.framework.Algorithm;
-import com.incurrency.framework.BeanSymbol;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.OrderBean;
 import com.incurrency.framework.Parameters;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
 import javax.swing.Timer;
@@ -20,17 +20,17 @@ import javax.swing.table.AbstractTableModel;
  *
  * @author pankaj
  */
-public class TableModelOpenOrders extends AbstractTableModel{
+public class TableModelOpenOrders extends AbstractTableModel {
 
-    private String[] headers={"Strategy","Symbol","OrderID","Side","Size","OrderPrice","Market"};
+    private String[] headers = {"Strategy", "Symbol", "OrderID", "Side", "Size", "OrderPrice", "Market"};
     int delay = 1000; //milliseconds
     MainAlgorithm m;
     int display;
     private static final Logger logger = Logger.getLogger(TableModelOpenOrders.class.getName());
-    private HashMap <Integer,OrderBean> openOrders= new HashMap <>();
-        private boolean comboDisplay;
-    
-     ActionListener taskPerformer = new ActionListener() {
+    private HashMap<Integer, OrderBean> openOrders = new HashMap<>();
+    private boolean comboDisplay;
+    ArrayList<OrderBean> orders;
+    ActionListener taskPerformer = new ActionListener() {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -46,29 +46,28 @@ public class TableModelOpenOrders extends AbstractTableModel{
              */
             fireTableDataChanged();
         }
-    }; 
+    };
 
     public TableModelOpenOrders() {
         new Timer(delay, taskPerformer).start();
-   
+
     }
-        
+
     @Override
-     public String getColumnName(int column) {
-         return headers[column];
-     }
- 
-  
-    
+    public String getColumnName(int column) {
+        return headers[column];
+    }
+
     @Override
     public int getRowCount() {
         display = DashBoardNew.comboDisplayGetConnection();
-        if(!Algorithm.useForSimulation){
-        return Parameters.connection.get(display).getOrdersInProgress().size();
-        }else{
+        if (!Algorithm.useForSimulation) {
+            orders = Parameters.connection.get(display).getLiveOrders();
+            return orders.size();
+        } else {
             return 0;
         }
-               }
+    }
 
     @Override
     public int getColumnCount() {
@@ -77,39 +76,28 @@ public class TableModelOpenOrders extends AbstractTableModel{
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-        int orderid=-100;
-        int pid=-100;
-        int cid=-100;
-        int id=-100;
-        this.display=DashBoardNew.comboDisplayGetConnection();
-        if(Parameters.connection.get(display).getOrdersInProgress().size()>0){
-       orderid=Parameters.connection.get(display).getOrdersInProgress().get(rowIndex);
-        pid=Parameters.connection.get(display).getOrders().get(orderid).getParentSymbolID()-1;
-        cid=Parameters.connection.get(display).getOrders().get(orderid).getChildSymbolID()-1;
-        id=isComboDisplay()?pid:cid;
+        this.display = DashBoardNew.comboDisplayGetConnection();
 
-        
-        }
         switch (columnIndex) {
-            case 0:                
-                return orderid==-100?"":Parameters.connection.get(display).getOrders().get(orderid).getOrderReference();        
+            case 0:
+                return orders.get(rowIndex).getInternalOrderID();
             case 1:
-                BeanSymbol s = Parameters.symbol.get(id);
-                String symbol = s.getDisplayname();
-                return id==-100?"": symbol;
+                return orders.get(rowIndex).getChildDisplayName();
+
             case 2:
-                return orderid==-100?"":Parameters.connection.get(display).getOrders().get(orderid).getExternalOrderId();
+                return orders.get(rowIndex).getExternalOrderID();
             case 3:
-                return orderid==-100?"":isComboDisplay()?Parameters.connection.get(display).getOrders().get(orderid).getParentOrderSide():Parameters.connection.get(display).getOrders().get(orderid).getChildOrderSide();
+                return orders.get(rowIndex).getOrderSide();
             case 4:
-                return orderid==-100?"":isComboDisplay()?Parameters.connection.get(display).getOrders().get(orderid).getParentOrderSize():Parameters.connection.get(display).getOrders().get(orderid).getChildOrderSize();   
-            case 5: 
-                return orderid==-100?"":isComboDisplay()?Parameters.connection.get(display).getOrders().get(orderid).getParentLimitPrice():Parameters.connection.get(display).getOrders().get(orderid).getChildLimitPrice();   
-            case 6: 
-                return id==-100?"":Parameters.symbol.get(id).getLastPrice();            
+                return orders.get(rowIndex).getCurrentOrderSize();
+            case 5:
+                return orders.get(rowIndex).getLimitPrice();
+            case 6:
+                int id = orders.get(rowIndex).getChildSymbolID();
+                return Parameters.symbol.get(id).getLastPrice();
             default:
-                throw new IndexOutOfBoundsException(); 
-    }        
+                throw new IndexOutOfBoundsException();
+        }
     }
 
     /**

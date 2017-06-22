@@ -8,7 +8,6 @@ import static com.incurrency.framework.BeanSymbol.PROP_LASTPRICE;
 import static com.incurrency.framework.BeanSymbol.PROP_VOLUME;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**

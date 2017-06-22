@@ -39,7 +39,6 @@ package org.jquantlib.math.matrixutilities.internal;
 
 import java.util.ListIterator;
 import java.util.Set;
-
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
 

@@ -16,7 +16,6 @@
 package com.incurrency.kairosresponse;
 
 import com.google.gson.annotations.SerializedName;
-
 import java.util.List;
 
 /**

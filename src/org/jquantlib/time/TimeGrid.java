@@ -25,7 +25,6 @@ package org.jquantlib.time;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.annotation.NonNegative;
 import org.jquantlib.lang.annotation.Time;

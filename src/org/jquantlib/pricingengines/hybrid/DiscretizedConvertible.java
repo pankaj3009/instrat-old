@@ -39,7 +39,6 @@ package org.jquantlib.pricingengines.hybrid;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.QL;
 import org.jquantlib.cashflow.Callability;
 import org.jquantlib.cashflow.Dividend;
@@ -55,8 +54,8 @@ import org.jquantlib.math.Constants;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 import org.jquantlib.termstructures.Compounding;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeGrid;
 import org.jquantlib.util.Std;
 

@@ -2,7 +2,6 @@ package org.jquantlib.model.shortrate.calibrationhelpers;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.indexes.IborIndex;
 import org.jquantlib.lang.annotation.Time;
@@ -11,9 +10,9 @@ import org.jquantlib.quotes.Handle;
 import org.jquantlib.quotes.Quote;
 import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.JDate;
 import org.jquantlib.time.DateGeneration;
 import org.jquantlib.time.Frequency;
+import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.Schedule;
 import org.jquantlib.util.DefaultObservable;

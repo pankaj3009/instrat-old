@@ -21,11 +21,7 @@
  */
 package org.jquantlib.instruments.bonds;
 
-import java.util.List;
-
 import org.jquantlib.QL;
-import org.jquantlib.cashflow.Callability;
-import org.jquantlib.cashflow.Dividend;
 import org.jquantlib.cashflow.FixedRateLeg;
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.exercise.Exercise;

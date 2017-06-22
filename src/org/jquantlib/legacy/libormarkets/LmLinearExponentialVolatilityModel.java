@@ -26,7 +26,6 @@ package org.jquantlib.legacy.libormarkets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
 import org.jquantlib.math.optimization.PositiveConstraint;
 import org.jquantlib.model.ConstantParameter;
 

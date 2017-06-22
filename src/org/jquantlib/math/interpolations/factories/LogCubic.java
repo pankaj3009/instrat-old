@@ -40,11 +40,10 @@
 
 package org.jquantlib.math.interpolations.factories;
 
-import org.jquantlib.math.interpolations.CubicInterpolation;
-import org.jquantlib.math.interpolations.Interpolation;
-import org.jquantlib.math.interpolations.LogCubicInterpolation;
 import org.jquantlib.math.interpolations.CubicInterpolation.BoundaryCondition;
 import org.jquantlib.math.interpolations.CubicInterpolation.DerivativeApprox;
+import org.jquantlib.math.interpolations.Interpolation;
+import org.jquantlib.math.interpolations.LogCubicInterpolation;
 import org.jquantlib.math.matrixutilities.Array;
 
 /**

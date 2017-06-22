@@ -41,7 +41,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 package org.jquantlib.termstructures.yieldcurves;
 
 import java.util.Arrays;
-
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
 import org.jquantlib.math.Constants;

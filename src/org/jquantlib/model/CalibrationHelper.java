@@ -25,7 +25,6 @@ package org.jquantlib.model;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.lang.annotation.Time;
 import org.jquantlib.math.Ops;
 import org.jquantlib.math.solvers1D.Brent;

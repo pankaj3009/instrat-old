@@ -63,7 +63,6 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.termstructures.volatilities.BlackConstantVol;
 import org.jquantlib.termstructures.yieldcurves.FlatForward;
 import org.jquantlib.time.BusinessDayConvention;
-import org.jquantlib.time.DateParser;
 import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.India;

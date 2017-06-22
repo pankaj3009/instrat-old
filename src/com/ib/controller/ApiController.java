@@ -3,14 +3,6 @@
 
 package com.ib.controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map.Entry;
-import java.util.StringTokenizer;
-import java.util.Vector;
-
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
@@ -33,6 +25,13 @@ import com.ib.controller.Types.FundamentalType;
 import com.ib.controller.Types.MktDataType;
 import com.ib.controller.Types.NewsType;
 import com.ib.controller.Types.WhatToShow;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map.Entry;
+import java.util.StringTokenizer;
+import java.util.Vector;
 
 public class ApiController implements EWrapper {
 	private ApiConnection m_client;

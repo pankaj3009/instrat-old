@@ -38,7 +38,6 @@
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.util.List;
-
 import org.jquantlib.instruments.OneAssetOption;
 import org.jquantlib.instruments.VanillaOption;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;

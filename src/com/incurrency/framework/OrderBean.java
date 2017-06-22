@@ -5,9 +5,7 @@
  */
 package com.incurrency.framework;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -16,14 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class OrderBean extends ConcurrentHashMap<String, String> {
 
-    public OrderBean(OrderBean ob){
+    public OrderBean(OrderBean ob) {
         super(ob);
     }
-    
-    public OrderBean(){
-        
+
+    public OrderBean() {
+
     }
-    
+
     public void createLinkedAction(int parentid, String action, String status, String delay) {
         this.put("LinkInternalOrderID", String.valueOf(parentid));
         this.put("LinkStatusTrigger", status);
@@ -112,16 +110,10 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         return Utilities.getInt(fillSize, 0);
 
     }
-    
-        public int getTotalFillPrice() {
+
+    public int getTotalFillPrice() {
         String fillSize = this.get("TotalFillPrice");
         return Utilities.getInt(fillSize, 0);
-
-    }
-
-    public int getDisplaySize() {
-        String displaySize = this.get("DisplaySize");
-        return Utilities.getInt(displaySize, 0);
 
     }
 
@@ -150,11 +142,6 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         return Utilities.getInt(externalOrderID, 0);
     }
 
-    public int getLinkDelay() {
-        String linkDelay = this.get("LinkDelay");
-        return Utilities.getInt(linkDelay, 0);
-    }
-
     public double getLimitPrice() {
         String limitPrice = this.get("LimitPrice");
         return Utilities.getDouble(limitPrice, 0);
@@ -165,15 +152,10 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         return Utilities.getDouble(triggerPrice, 0);
     }
 
-    public double getMaxPermissibleImpactCost() {
-        String maxPermissibleImpactCost = this.get("MaxPermissibleImpactCost");
-        return Utilities.getDouble(maxPermissibleImpactCost, 0);
-    }
-
-    public double getCurrentFillPrice(){
+    public double getCurrentFillPrice() {
         return Utilities.getDouble("CurrentFillPrice", 0);
     }
-    
+
     public boolean isScale() {
         String scale = this.get("Scale");
         if (scale != null) {
@@ -210,70 +192,83 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
 
     public String getChildDisplayName() {
         return this.get("ChildDisplayName");
-    }    
+    }
 
-    public String getOrderLog(){
-        String value=this.get("OrderLog");
-        if(value==null){
+    public String getOrderLog() {
+        String value = this.get("OrderLog");
+        if (value == null) {
             return "";
-        }else{
+        } else {
             return value;
         }
     }
-    
-     public String getSpecifiedBrokerAccount(){
-        String value=this.get("SpecifiedBrokerAccount");
+
+    public String getSpecifiedBrokerAccount() {
+        String value = this.get("SpecifiedBrokerAccount");
         return value;
     }
-    
+
     public String getStubs() {
         return null;
     }
-    public Date getEffectiveTillDate(){
+
+    public Date getEffectiveTillDate() {
         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("EffectiveTill"), Algorithm.timeZone);
     }
-    
-    public Date getOrderTime(){
-         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("OrderTime"), Algorithm.timeZone);
+
+    public Date getEffectiveFromDate() {
+        return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("EffectiveFrom"), Algorithm.timeZone);
     }
-    
-    
-    
+
+    public Date getOrderTime() {
+        return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("OrderTime"), Algorithm.timeZone);
+    }
+
     //Setters
-    
-    public void setParentDisplayName(String value){
+    public void setScale(Boolean value) {
+        this.put("Scale", String.valueOf(value));
+    }
+
+    public void setEffectiveTill(Date value) {
+        this.put("EffectiveTill", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", value.getTime()));
+    }
+
+    public void setEffectiveFrom(Date value) {
+        this.put("EffectiveFrom", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", value.getTime()));
+    }
+
+    public void setParentDisplayName(String value) {
         this.put("ParentDisplayName", value);
     }
-    
-    public void setOrderReference(String value){
+
+    public void setOrderReference(String value) {
         this.put("OrderReference", value);
     }
-    
-    public void setInternalOrderID(int value){
+
+    public void setInternalOrderID(int value) {
         this.put("InternalOrderID", String.valueOf(value));
     }
-    
-    public void setOrderSide(EnumOrderSide value){
-        this.put("OrderSide",String.valueOf(value));
+
+    public void setOrderSide(EnumOrderSide value) {
+        this.put("OrderSide", String.valueOf(value));
     }
-    
-    public void setParentInternalOrderID(int value){
+
+    public void setParentInternalOrderID(int value) {
         this.put("ParentInternalOrderID", String.valueOf(value));
     }
-    
-    public void setOriginalOrderSize(int value){
-        this.put("OriginalOrderSize",String.valueOf(value));
+
+    public void setOriginalOrderSize(int value) {
+        this.put("OriginalOrderSize", String.valueOf(value));
     }
-    
-     public void setOrderIDForSquareOff(int value){
+
+    public void setOrderIDForSquareOff(int value) {
         this.put("OrderIDForSquareOff", String.valueOf(value));
     }
-    
-    
-    public void setOrderLog(String value){
-        this.put("OrderLog",value);
+
+    public void setOrderLog(String value) {
+        this.put("OrderLog", value);
     }
-    
+
     public void setOrderStatus(EnumOrderStatus value) {
         this.put("OrderStatus", String.valueOf(value));
     }
@@ -289,7 +284,7 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public void setCurrentOrderSize(int value) {
         this.put("CurrentOrderSize", String.valueOf(value));
     }
-    
+
     public void setChildDisplayName(String value) {
         this.put("ChildDisplayName", String.valueOf(value));
     }
@@ -301,39 +296,39 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public void setOrderTime() {
         this.put("OrderTime", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
     }
-    
-    public void setOrderStage(EnumOrderStage value){
+
+    public void setOrderStage(EnumOrderStage value) {
         this.put("OrderStage", String.valueOf(value));
     }
 
-    public void setCurrentFillSize(int value){
+    public void setCurrentFillSize(int value) {
         this.put("CurrentFillSize", String.valueOf(value));
     }
-    
-    public void setCurrentFillPrice(double value){
+
+    public void setCurrentFillPrice(double value) {
         this.put("CurrentFillPrice", String.valueOf(this));
     }
-    
+
     public void setTotalFillSize(int value) {
         this.put("TotalFillSize", String.valueOf(value));
     }
-    
+
     public void setTotalFillPrice(double value) {
         this.put("TotalFillPrice", String.valueOf(value));
     }
-    
+
     public void setOrderReason(EnumOrderReason value) {
         this.put("OrderReason", String.valueOf(value));
     }
-    
-    public void setSpecifiedBrokerAccount(String value){
+
+    public void setSpecifiedBrokerAccount(String value) {
         this.put("SpecifiedBrokerAccount", value);
     }
-    
-    public void setOrderType(EnumOrderType orderType){
+
+    public void setOrderType(EnumOrderType orderType) {
         this.put("OrderType", String.valueOf(orderType));
     }
-    
+
     //Order Attributes
     public int getOrdersPerMinute() {
         return Utilities.getInt(this.get("OrdersPerMinute"), 1);
@@ -355,7 +350,7 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         return Utilities.getInt(this.get("ImproveAmount"), 0);
     }
 
-    public void setImproveAmount(double value) {
+    public void setImproveAmount(int value) {
         this.put("ImproveAmount", String.valueOf(value));
     }
 
@@ -374,4 +369,41 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public void setStickyPeriod(int value) {
         this.put("StickyPeriod", String.valueOf(value));
     }
+
+    public void setLinkDelay(int value) {
+        this.put("LinkDelay", String.valueOf(value));
+    }
+
+    public int getLinkDelay() {
+        String linkDelay = this.get("LinkDelay");
+        return Utilities.getInt(linkDelay, 0);
+    }
+
+    public void setMaxPermissibleImpactCost(double value) {
+        this.put("MaxPermissibleImpactCost", String.valueOf(value));
+    }
+
+    public double getMaxPermissibleImpactCost() {
+        String maxPermissibleImpactCost = this.get("MaxPermissibleImpactCost");
+        return Utilities.getDouble(maxPermissibleImpactCost, 0);
+    }
+
+    public void setValue(double value) {
+        this.put("Value", String.valueOf(value));
+    }
+
+    public double getValue() {
+        String value = this.get("Value");
+        return Utilities.getDouble(value, 0);
+    }
+
+    public void setDisplaySize(int value) {
+        this.put("DisplaySize", String.valueOf(value));
+    }
+
+    public int getDisplaySize() {
+        String displaySize = this.get("DisplaySize");
+        return Utilities.getInt(displaySize, 0);
+    }
+
 }

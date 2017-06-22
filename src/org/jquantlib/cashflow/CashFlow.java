@@ -22,7 +22,6 @@
 
 package org.jquantlib.cashflow;
 
-import org.jquantlib.util.PolymorphicVisitable;
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 

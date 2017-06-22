@@ -25,7 +25,6 @@ package org.jquantlib.legacy.libormarkets;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.model.Parameter;
