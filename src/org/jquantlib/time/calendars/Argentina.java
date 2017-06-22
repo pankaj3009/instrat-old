@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -41,105 +40,100 @@ import static org.jquantlib.time.Weekday.Friday;
 import static org.jquantlib.time.Weekday.Monday;
 
 /**
- *  Argentinian calendars
- *  Holidays for the Buenos Aires stock exchange
- *       (data from <http://www.merval.sba.com.ar/>):
- *       <ul>
- *      <li>Saturdays</li>
- *       <li>Sundays</li>
- *       <li>New Year's Day, JANUARY 1st</li>
- *       <li>Holy Thursday</li>
- *       <li>Good Friday</li>
- *       <li>Labour Day, May 1st</li>
- *       <li>May Revolution, May 25th</li>
- *       <li>Death of General Manuel Belgrano, third Monday of June</li>
- *       <li>Independence Day, July 9th</li>
- *       <li>Death of General Jos� de San Mart�n, third Monday of August</li>
- *       <li>Columbus Day, October 12th (moved to preceding Monday if
- *           on Tuesday or Wednesday and to following if on Thursday
- *           or Friday)</li>
- *       <li>Immaculate Conception, December 8th</li>
- *       <li>Christmas Eve, December 24th</li>
- *       <li>New Year's Eve, December 31th</li>
- *       </ul>
- *      \ingroup calendars
+ * Argentinian calendars Holidays for the Buenos Aires stock exchange (data from
+ * <http://www.merval.sba.com.ar/>):
+ * <ul>
+ * <li>Saturdays</li>
+ * <li>Sundays</li>
+ * <li>New Year's Day, JANUARY 1st</li>
+ * <li>Holy Thursday</li>
+ * <li>Good Friday</li>
+ * <li>Labour Day, May 1st</li>
+ * <li>May Revolution, May 25th</li>
+ * <li>Death of General Manuel Belgrano, third Monday of June</li>
+ * <li>Independence Day, July 9th</li>
+ * <li>Death of General Jos� de San Mart�n, third Monday of August</li>
+ * <li>Columbus Day, October 12th (moved to preceding Monday if on Tuesday or
+ * Wednesday and to following if on Thursday or Friday)</li>
+ * <li>Immaculate Conception, December 8th</li>
+ * <li>Christmas Eve, December 24th</li>
+ * <li>New Year's Eve, December 31th</li>
+ * </ul>
+ * \ingroup calendars
  *
  * @author Srinivas Hasti
  * @author Dominik Holenstein
  * @author Richard Gomes
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 
 public class Argentina extends Calendar {
+
+    //
+    // public constructors
+    //
+    public Argentina() {
+        this(Market.MERVAL);
+    }
+
+    public Argentina(final Market m) {
+        impl = new MervalImpl();
+    }
 
     public static enum Market {
         /**
          * Buenos Aires stock exchange calendar
          */
         MERVAL
-    };
-
-
-    //
-    // public constructors
-    //
-
-    public Argentina() {
-		this(Market.MERVAL);
-	}
-
-	public Argentina(final Market m) {
-		impl = new MervalImpl();
     }
-
 
     //
     // private final inner classes
     //
+    private final class MervalImpl extends WesternImpl {
 
-	private final class MervalImpl extends WesternImpl {
+        @Override
+        public String name() {
+            return "Buenos Aires stock exchange";
+        }
 
-		@Override
-		public String name() { return "Buenos Aires stock exchange"; }
+        @Override
+        public boolean isBusinessDay(final JDate date) {
+            final Weekday w = date.weekday();
+            final int d = date.dayOfMonth(), dd = date.dayOfYear();
+            final Month m = date.month();
+            final int y = date.year();
+            final int em = easterMonday(y);
 
-		@Override
-        public boolean  isBusinessDay(final JDate date) {
-        	final Weekday w = date.weekday();
-			final int d = date.dayOfMonth(), dd = date.dayOfYear();
-			final Month m = date.month();
-			final int y = date.year();
-			final int em = easterMonday(y);
-
-			if (isWeekend(w)
-			// New Year's Day
-					|| (d == 1 && m == January)
-					// Holy Thursday
-					|| (dd == em - 4)
-					// Good Friday
-					|| (dd == em - 3)
-					// Labour Day
-					|| (d == 1 && m == May)
-					// May Revolution
-					|| (d == 25 && m == May)
-					// Death of General Manuel Belgrano
-					|| (d >= 15 && d <= 21 && w == Monday && m == June)
-					// Independence Day
-					|| (d == 9 && m == July)
-					// Death of General Jos� de San Mart�n
-					|| (d >= 15 && d <= 21 && w == Monday && m == August)
-					// Columbus Day
-					|| ((d == 10 || d == 11 || d == 12 || d == 15 || d == 16)
-							&& w == Monday && m == October)
-					// Immaculate Conception
-					|| (d == 8 && m == December)
-					// Christmas Eve
-					|| (d == 24 && m == December)
-					// New Year's Eve
-					|| ((d == 31 || (d == 30 && w == Friday)) && m == December)) {
+            if (isWeekend(w)
+                    // New Year's Day
+                    || (d == 1 && m == January)
+                    // Holy Thursday
+                    || (dd == em - 4)
+                    // Good Friday
+                    || (dd == em - 3)
+                    // Labour Day
+                    || (d == 1 && m == May)
+                    // May Revolution
+                    || (d == 25 && m == May)
+                    // Death of General Manuel Belgrano
+                    || (d >= 15 && d <= 21 && w == Monday && m == June)
+                    // Independence Day
+                    || (d == 9 && m == July)
+                    // Death of General Jos� de San Mart�n
+                    || (d >= 15 && d <= 21 && w == Monday && m == August)
+                    // Columbus Day
+                    || ((d == 10 || d == 11 || d == 12 || d == 15 || d == 16)
+                    && w == Monday && m == October)
+                    // Immaculate Conception
+                    || (d == 8 && m == December)
+                    // Christmas Eve
+                    || (d == 24 && m == December)
+                    // New Year's Eve
+                    || ((d == 31 || (d == 30 && w == Friday)) && m == December)) {
                 return false;
             }
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 }

@@ -17,7 +17,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2004, 2005, 2006 StatPro Italia srl
 
@@ -33,8 +33,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines.vanilla;
 
 import java.util.ArrayList;
@@ -56,17 +55,14 @@ public class DiscretizedVanillaOption extends DiscretizedAsset {
     //
     // private final fields
     //
-
     final private StochasticProcess process;
     final private VanillaOption.ArgumentsImpl a;
     // final private VanillaOption.ResultsImpl r;
     private final List<Double> stoppingTimes;
 
-
     //
     // public constructors
     //
-
     public DiscretizedVanillaOption(
             final VanillaOption.Arguments arguments,
             final StochasticProcess process) {
@@ -90,11 +86,9 @@ public class DiscretizedVanillaOption extends DiscretizedAsset {
         }
     }
 
-
     //
     // private methods
     //
-
     private void applySpecificCondition() {
         final Array grid = method().grid(time());
         for (int j = 0; j < values_.size(); j++) {
@@ -102,11 +96,9 @@ public class DiscretizedVanillaOption extends DiscretizedAsset {
         }
     }
 
-
     //
     // overrides DiscretizedAsset
     //
-
     @Override
     public void reset(final int size) {
         values_ = new Array(size);
@@ -122,24 +114,25 @@ public class DiscretizedVanillaOption extends DiscretizedAsset {
     protected void postAdjustValuesImpl() {
         final double now = time();
         switch (a.exercise.type()) {
-        case American:
-            if (now <= stoppingTimes.get(1) && now >= stoppingTimes.get(0)) {
-                applySpecificCondition();
-            }
-            break;
-        case European:
-            if (isOnTime(stoppingTimes.get(0))) {
-                applySpecificCondition();
-            }
-            break;
-        case Bermudan:
-            for (int i = 0; i < stoppingTimes.size(); i++)
-                if (isOnTime(stoppingTimes.get(i))) {
+            case American:
+                if (now <= stoppingTimes.get(1) && now >= stoppingTimes.get(0)) {
                     applySpecificCondition();
                 }
-            break;
-        default:
-            throw new LibraryException("invalid option type"); // QA:[RG]::verified
+                break;
+            case European:
+                if (isOnTime(stoppingTimes.get(0))) {
+                    applySpecificCondition();
+                }
+                break;
+            case Bermudan:
+                for (int i = 0; i < stoppingTimes.size(); i++) {
+                    if (isOnTime(stoppingTimes.get(i))) {
+                        applySpecificCondition();
+                    }
+                }
+                break;
+            default:
+                throw new LibraryException("invalid option type"); // QA:[RG]::verified
         }
     }
 

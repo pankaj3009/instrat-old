@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
  Copyright (C) 2004, 2005, 2006 Ferdinando Ametrano
@@ -40,7 +40,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.time;
 
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -64,28 +63,27 @@ public enum Weekday {
     /**
      * Returns a new Weekday object given its cardinality
      *
-     * @param value
-     *            is the cardinality from 1 (Sunday) till 7 (Saturday)
+     * @param value is the cardinality from 1 (Sunday) till 7 (Saturday)
      * @return a new Weekday object given its cardinality
      */
     static public Weekday valueOf(final int value) {
         switch (value) {
-        case 1:
-            return Weekday.Sunday;
-        case 2:
-            return Weekday.Monday;
-        case 3:
-            return Weekday.Tuesday;
-        case 4:
-            return Weekday.Wednesday;
-        case 5:
-            return Weekday.Thursday;
-        case 6:
-            return Weekday.Friday;
-        case 7:
-            return Weekday.Saturday;
-        default:
-            throw new LibraryException("value must be [1,7]"); // TODO: message
+            case 1:
+                return Weekday.Sunday;
+            case 2:
+                return Weekday.Monday;
+            case 3:
+                return Weekday.Tuesday;
+            case 4:
+                return Weekday.Wednesday;
+            case 5:
+                return Weekday.Thursday;
+            case 6:
+                return Weekday.Friday;
+            case 7:
+                return Weekday.Saturday;
+            default:
+                throw new LibraryException("value must be [1,7]"); // TODO: message
         }
     }
 
@@ -107,20 +105,20 @@ public enum Weekday {
     @Override
     public String toString() {
         switch (enumValue) {
-        case 1:
-            return "Sunday";
-        case 2:
-            return "Monday";
-        case 3:
-            return "Tuesday";
-        case 4:
-            return "Wednesday";
-        case 5:
-            return "Thursday";
-        case 6:
-            return "Friday";
-        case 7:
-            return "Saturday";
+            case 1:
+                return "Sunday";
+            case 2:
+                return "Monday";
+            case 3:
+                return "Tuesday";
+            case 4:
+                return "Wednesday";
+            case 5:
+                return "Thursday";
+            case 6:
+                return "Friday";
+            case 7:
+                return "Saturday";
         }
         throw new LibraryException("value must be [1,7]"); // TODO: message
     }
@@ -156,7 +154,7 @@ public enum Weekday {
     /**
      * Returns the name of weekdays in short format (3 letters)
      */
-    private String getAsShortFormat (){
+    private String getAsShortFormat() {
         final StringBuilder sb = new StringBuilder();
         sb.append(this);
         sb.setLength(3);
@@ -166,7 +164,7 @@ public enum Weekday {
     /**
      * Returns the name of weekdays in shortest format (2 letters)
      */
-    private String getAsShortestFormat(){
+    private String getAsShortestFormat() {
         final StringBuilder sb = new StringBuilder();
         sb.append(this);
         sb.setLength(2);

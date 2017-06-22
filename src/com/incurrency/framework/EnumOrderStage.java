@@ -8,6 +8,7 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumOrderStage { INIT,AMEND,CANCEL,SL,TP,UNDEFINED
-    
+public enum EnumOrderStage {
+    INIT, AMEND, CANCEL, SL, TP, UNDEFINED
+
 }

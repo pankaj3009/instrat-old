@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import org.jquantlib.QL;
@@ -42,144 +41,138 @@ import org.jquantlib.util.Visitor;
 /**
  * Fixed-coupon bond helper
  * <p>
- * WARNING: This class assumes that the reference date does not change
- * between calls of setTermStructure()
- * 
+ * WARNING: This class assumes that the reference date does not change between
+ * calls of setTermStructure()
+ *
  * @category instruments
- * 
+ *
  * @author Srinivas Hasti
  * @author Neel Sheyal
  */
 public class FixedRateBondHelper extends RateHelper {
 
-	//
-	// private fields
-	//
-     private FixedRateBond bond;
-     private final RelinkableHandle<YieldTermStructure> termStructureHandle = new RelinkableHandle<YieldTermStructure>(null);
-    
-	/**
-	 * 
-	 * @param cleanPrice
-	 * @param settlementDays
-	 * @param faceAmount
-	 * @param schedule
-	 * @param coupons
-	 * @param dayCounter
-	 * @param paymentConvention: default value = BusinessDayConvention.Following
-	 * @param redemption: default value = 100 
-	 * @param issueDate: default: new Date()
-	 */
-	public FixedRateBondHelper(final Handle<Quote> cleanPrice,
-                                final /* Natural */ int settlementDays,
-                                final /* Real */ double faceAmount,
-                                final Schedule schedule,
-                                final /* Rate */ double[] coupons,
-                                final DayCounter dayCounter) {
-		this(cleanPrice, settlementDays, faceAmount, schedule, coupons,
-				dayCounter, BusinessDayConvention.Following, 100.0, new JDate());
-	}
-	
-	/**
-	 * 
-	 * @param cleanPrice
-	 * @param settlementDays
-	 * @param faceAmount
-	 * @param schedule
-	 * @param coupons
-	 * @param dayCounter
-	 * @param paymentConvention
-	 * @param redemption
-	 * @param issueDate
-	 */
-	public FixedRateBondHelper(final Handle<Quote> cleanPrice,
-                                final /* Natural */ int settlementDays,
-                                final /* Real */ double faceAmount,
-                                final Schedule schedule,
-                                final /* Rate */ double[] coupons, 
-                                final DayCounter dayCounter,
-                                final BusinessDayConvention paymentConvention,
-                                final /* Real */ double redemption,
-                                final JDate issueDate) {
-		super(cleanPrice);
-		QL.validateExperimentalMode();  
-		
-		this.bond = new FixedRateBond(settlementDays, faceAmount, schedule,
-				coupons, dayCounter, paymentConvention, redemption, issueDate);
-		
-		this.latestDate = this.bond.maturityDate();
-		new Settings().evaluationDate().addObserver(this);
-		
-		final PricingEngine bondEngine = new DiscountingBondEngine(this.termStructureHandle);
-		this.bond.setPricingEngine(bondEngine);
-			 		
-}
-	
-	/**
-	 *  {@literal WARNING: Setting a pricing engine to the passed bond from
-                     external code will cause the bootstrap to fail or
-                     to give wrong results. It is advised to discard
-                     the bond after creating the helper, so that the
-                     helper has sole ownership of it.}
-     *                
-	 * @param cleanPrice
-	 * @param bond
-	 */
-	public FixedRateBondHelper(final Handle<Quote> cleanPrice,
-			                    final FixedRateBond bond) {
-		super(cleanPrice);
-		QL.validateExperimentalMode();  
-		
-		this.latestDate = bond.maturityDate();
-		new Settings().evaluationDate().addObserver(this);
-		
-		final PricingEngine bondEngine = new DiscountingBondEngine(this.termStructureHandle);
-		this.bond.setPricingEngine(bondEngine);
-			
-	}
-	
-	
-	//
-	// public methods
-	//
-	
-	public FixedRateBond  bond() {
-    	return this.bond;
+    //
+    // private fields
+    //
+    private FixedRateBond bond;
+    private final RelinkableHandle<YieldTermStructure> termStructureHandle = new RelinkableHandle<YieldTermStructure>(null);
+
+    /**
+     *
+     * @param cleanPrice
+     * @param settlementDays
+     * @param faceAmount
+     * @param schedule
+     * @param coupons
+     * @param dayCounter
+     * @param paymentConvention: default value = BusinessDayConvention.Following
+     * @param redemption: default value = 100
+     * @param issueDate: default: new Date()
+     */
+    public FixedRateBondHelper(final Handle<Quote> cleanPrice,
+            final /* Natural */ int settlementDays,
+            final /* Real */ double faceAmount,
+            final Schedule schedule,
+            final /* Rate */ double[] coupons,
+            final DayCounter dayCounter) {
+        this(cleanPrice, settlementDays, faceAmount, schedule, coupons,
+                dayCounter, BusinessDayConvention.Following, 100.0, new JDate());
     }
 
-	
-	//
-	// overrides BootstrapHelper
-	//
-	
-	@Override
-	public void setTermStructure(final YieldTermStructure t) {
-		// do not set the relinkable handle as an observer -
+    /**
+     *
+     * @param cleanPrice
+     * @param settlementDays
+     * @param faceAmount
+     * @param schedule
+     * @param coupons
+     * @param dayCounter
+     * @param paymentConvention
+     * @param redemption
+     * @param issueDate
+     */
+    public FixedRateBondHelper(final Handle<Quote> cleanPrice,
+            final /* Natural */ int settlementDays,
+            final /* Real */ double faceAmount,
+            final Schedule schedule,
+            final /* Rate */ double[] coupons,
+            final DayCounter dayCounter,
+            final BusinessDayConvention paymentConvention,
+            final /* Real */ double redemption,
+            final JDate issueDate) {
+        super(cleanPrice);
+        QL.validateExperimentalMode();
+
+        this.bond = new FixedRateBond(settlementDays, faceAmount, schedule,
+                coupons, dayCounter, paymentConvention, redemption, issueDate);
+
+        this.latestDate = this.bond.maturityDate();
+        new Settings().evaluationDate().addObserver(this);
+
+        final PricingEngine bondEngine = new DiscountingBondEngine(this.termStructureHandle);
+        this.bond.setPricingEngine(bondEngine);
+
+    }
+
+    /**
+     * {@literal WARNING: Setting a pricing engine to the passed bond from
+     * external code will cause the bootstrap to fail or
+     * to give wrong results. It is advised to discard
+     * the bond after creating the helper, so that the
+     * helper has sole ownership of it.}
+     *
+     * @param cleanPrice
+     * @param bond
+     */
+    public FixedRateBondHelper(final Handle<Quote> cleanPrice,
+            final FixedRateBond bond) {
+        super(cleanPrice);
+        QL.validateExperimentalMode();
+
+        this.latestDate = bond.maturityDate();
+        new Settings().evaluationDate().addObserver(this);
+
+        final PricingEngine bondEngine = new DiscountingBondEngine(this.termStructureHandle);
+        this.bond.setPricingEngine(bondEngine);
+
+    }
+
+    //
+    // public methods
+    //
+    public FixedRateBond bond() {
+        return this.bond;
+    }
+
+    //
+    // overrides BootstrapHelper
+    //
+    @Override
+    public void setTermStructure(final YieldTermStructure t) {
+        // do not set the relinkable handle as an observer -
         // force recalculation when needed
-		this.termStructureHandle.linkTo(t,false);
-		super.setTermStructure(t);
+        this.termStructureHandle.linkTo(t, false);
+        super.setTermStructure(t);
     }
-    
-	@Override
-	public/* Real */double impliedQuote() {
-		QL.require(this.termStructure != null, "term structure not set");
-		this.bond.recalculate();
-		return this.bond.cleanPrice();
-	}
 
-	
-	//
-	// implements PolymorphicVisitable
-	//
-	
-	@Override
-	public void accept(final PolymorphicVisitor pv) {
-		final Visitor<FixedRateBondHelper> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+    @Override
+    public/* Real */ double impliedQuote() {
+        QL.require(this.termStructure != null, "term structure not set");
+        this.bond.recalculate();
+        return this.bond.cleanPrice();
+    }
+
+    //
+    // implements PolymorphicVisitable
+    //
+    @Override
+    public void accept(final PolymorphicVisitor pv) {
+        final Visitor<FixedRateBondHelper> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {
             super.accept(pv);
         }
-	}
+    }
 
 }

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005, 2006 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.util;
 
 import java.util.List;
@@ -44,32 +43,34 @@ import java.util.List;
 /**
  * Observable and assignable proxy to concrete value
  * <p>
-   Observers can be registered with instances of this class so
-   that they are notified when a different value is assigned to
-   such instances. Client code can copy the contained value or
-   pass it to functions via implicit conversion.
-
-   @note it is not possible to call non-const method on the
-          returned value. This is by design, as this possibility
-          would necessarily bypass the notification code; client
-          code should modify the value via re-assignment instead.
-
-   @author Srinivas Hasti
-*/
-
+ * Observers can be registered with instances of this class so that they are
+ * notified when a different value is assigned to such instances. Client code
+ * can copy the contained value or pass it to functions via implicit conversion.
+ *
+ * @note it is not possible to call non-const method on the returned value. This
+ * is by design, as this possibility would necessarily bypass the notification
+ * code; client code should modify the value via re-assignment instead.
+ *
+ * @author Srinivas Hasti
+ */
 public class ObservableValue<T> implements Observable {
 
     //
     // private fields
     //
-
     private T value;
+    //
+    // implements Observable
+    //
 
+    /**
+     * Implements multiple inheritance via delegate pattern to an inner class
+     */
+    private final Observable delegatedObservable = new DefaultObservable(this);
 
     //
     // public constructors
     //
-
     public ObservableValue(final T value) {
         this.value = value;
     }
@@ -78,11 +79,9 @@ public class ObservableValue<T> implements Observable {
         this.value = observable.value;
     }
 
-
     //
     // public methods
     //
-
     public void assign(final T value) {
         this.value = value;
         delegatedObservable.notifyObservers();
@@ -96,16 +95,6 @@ public class ObservableValue<T> implements Observable {
     public T value() {
         return value;
     }
-
-
-    //
-    // implements Observable
-    //
-
-    /**
-     * Implements multiple inheritance via delegate pattern to an inner class
-     */
-    private final Observable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public void addObserver(final Observer observer) {

@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.indexes;
 
 import java.util.ArrayList;
@@ -52,15 +51,14 @@ public abstract class InflationIndex extends Index implements Observer {
     protected Frequency frequency;
     protected Period availabilityLag;
     protected Currency currency;
-    
-    
-    public InflationIndex(   final String familyName,
-            				 final Region region,
-            				 final boolean revised,
-            				 final boolean interpolated,
-            				 final Frequency frequency,
-            				 final Period availabilityLag,
-            				 final Currency currency) {
+
+    public InflationIndex(final String familyName,
+            final Region region,
+            final boolean revised,
+            final boolean interpolated,
+            final Frequency frequency,
+            final Period availabilityLag,
+            final Currency currency) {
         this.familyName = familyName;
         this.region = region;
         this.revised = revised;
@@ -71,7 +69,7 @@ public abstract class InflationIndex extends Index implements Observer {
         new Settings().evaluationDate().addObserver(this);
         IndexManager.getInstance().notifier(name()).addObserver(this);
     }
-    
+
     @Override
     public String name() {
         final StringBuilder builder = new StringBuilder(region.name());
@@ -79,11 +77,14 @@ public abstract class InflationIndex extends Index implements Observer {
         builder.append(familyName);
         return builder.toString();
     }
-    
+
     @Override
-    /** Inflation indices do not have fixing calendars.  An inflation index value is valid for every day (including
-     *  weekends) of a calendar period.  I.e. it uses the NullCalendar as its fixing calendar.
-     **/
+    /**
+     * Inflation indices do not have fixing calendars. An inflation index value
+     * is valid for every day (including weekends) of a calendar period. I.e. it
+     * uses the NullCalendar as its fixing calendar.
+     *
+     */
     public Calendar fixingCalendar() {
         return new NullCalendar();
     }
@@ -109,51 +110,53 @@ public abstract class InflationIndex extends Index implements Observer {
         return interpolated;
     }
 
-    
     public Frequency frequency() {
         return frequency;
     }
-    
-    /** The availability lag describes when the index is
-     * <i>available</i>, not how it is used.  Specifically the
-     * fixing for, say, January, may only be available in April
-     * but the index will always return the index value
-     * applicable for January as its January fixing (independent
+
+    /**
+     * The availability lag describes when the index is
+     * <i>available</i>, not how it is used. Specifically the fixing for, say,
+     * January, may only be available in April but the index will always return
+     * the index value applicable for January as its January fixing (independent
      * of the lag in availability).
-     **/
+     *
+     */
     public Period availabilityLag() {
         return availabilityLag;
     }
-    
+
     public Currency currency() {
         return currency;
     }
-    
+
     //
     // public methods
     //
     @Override
-    /** this method creates all the "fixings" for the relevant
-     * period of the index.  E.g. for monthly indices it will put
-     * the same value in every calendar day in the month.
-     **/
-    public void addFixing (final JDate fixingDate,
-    				       final @Real double fixing,
-    				       boolean forceOverwrite) {
-    	
-    	Pair<JDate,JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
-    	
-    	int n = (int)(lim.second().inc().sub(lim.first()));
-    	
-    	List<JDate> dates = new ArrayList<JDate>();
-    	List<Double> rates = new ArrayList<Double>();
-    	
-    	for (int i = 0; i < n; i++) {
-    		dates.add(i, lim.first().add(i));
-    		rates.add(i, Double.valueOf(fixing));
-    	}
-    	
-    	super.addFixings(dates.iterator(), rates.iterator(), forceOverwrite);
+    /**
+     * this method creates all the "fixings" for the relevant period of the
+     * index. E.g. for monthly indices it will put the same value in every
+     * calendar day in the month.
+     *
+     */
+    public void addFixing(final JDate fixingDate,
+            final @Real double fixing,
+            boolean forceOverwrite) {
+
+        Pair<JDate, JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
+
+        int n = (int) (lim.second().inc().sub(lim.first()));
+
+        List<JDate> dates = new ArrayList<JDate>();
+        List<Double> rates = new ArrayList<Double>();
+
+        for (int i = 0; i < n; i++) {
+            dates.add(i, lim.first().add(i));
+            rates.add(i, Double.valueOf(fixing));
+        }
+
+        super.addFixings(dates.iterator(), rates.iterator(), forceOverwrite);
     }
 
     @Override
@@ -162,6 +165,5 @@ public abstract class InflationIndex extends Index implements Observer {
         //XXX::OBS notifyObservers(arg);
         notifyObservers();
     }
-
 
 }

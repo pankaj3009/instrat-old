@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.indexes;
 
 import org.jquantlib.QL;
@@ -51,30 +50,30 @@ public abstract class InterestRateIndex extends Index implements Observer {
     protected Calendar fixingCalendar;
     protected Currency currency;
     protected DayCounter dayCounter;
-    
+
     public InterestRateIndex(final String familyName,
-            				 final Period tenor,
-            				 final int fixingDays,
-            				 final Currency currency,
-            				 final Calendar fixingCalendar,
-            				 final DayCounter dayCounter) {
+            final Period tenor,
+            final int fixingDays,
+            final Currency currency,
+            final Calendar fixingCalendar,
+            final DayCounter dayCounter) {
         this.familyName = familyName;
         this.tenor = tenor;
         this.fixingDays = fixingDays;
         this.fixingCalendar = fixingCalendar;
         this.currency = currency;
         this.dayCounter = dayCounter;
-        
+
         this.tenor.normalize();
 
         new Settings().evaluationDate().addObserver(this);
         IndexManager.getInstance().notifier(name()).addObserver(this);
     }
-    
+
     @Override
     public String name() {
         final StringBuilder builder = new StringBuilder(familyName);
-        if (tenor.equals(new Period(1,TimeUnit.Days))) {
+        if (tenor.equals(new Period(1, TimeUnit.Days))) {
             if (fixingDays == 0) {
                 builder.append("ON");
             } else if (fixingDays == 1) {
@@ -90,7 +89,7 @@ public abstract class InterestRateIndex extends Index implements Observer {
         builder.append(' ').append(dayCounter.name());
         return builder.toString();
     }
-    
+
     @Override
     public Calendar fixingCalendar() {
         return fixingCalendar;
@@ -113,7 +112,6 @@ public abstract class InterestRateIndex extends Index implements Observer {
         return fixingDays;
     }
 
-
     public Currency currency() {
         return currency;
     }
@@ -122,49 +120,45 @@ public abstract class InterestRateIndex extends Index implements Observer {
         return dayCounter;
     }
 
-
     //
     // protected abstract methods
     //
-
     protected abstract double forecastFixing(JDate fixingDate);
-
 
     //
     // public abstract methods
     //
-
     public abstract Handle<YieldTermStructure> termStructure();
-    public abstract JDate maturityDate(JDate valueDate);
 
+    public abstract JDate maturityDate(JDate valueDate);
 
     //
     // public methods
     //
     @Override
-    public double fixing(final JDate fixingDate, 
-    					 final boolean forecastTodaysFixing) {
-        QL.require(isValidFixingDate(fixingDate) , "Fixing date " + fixingDate.toString() + " is not valid"); // QA:[RG]::verified 
+    public double fixing(final JDate fixingDate,
+            final boolean forecastTodaysFixing) {
+        QL.require(isValidFixingDate(fixingDate), "Fixing date " + fixingDate.toString() + " is not valid"); // QA:[RG]::verified 
         final JDate today = new Settings().evaluationDate();
         final boolean enforceTodaysHistoricFixings = new Settings().isEnforcesTodaysHistoricFixings();
 
         if (fixingDate.lt(today) || (fixingDate.equals(today) && enforceTodaysHistoricFixings && !forecastTodaysFixing)) {
             // must have been fixed
-             double /*Rate*/ pastFixing =
-                    IndexManager.getInstance().getHistory(name()).get(fixingDate);
-             QL.require(pastFixing != Constants.NULL_REAL,
-                          "Missing " + name() + " fixing for " + fixingDate);
+            double /*Rate*/ pastFixing
+                    = IndexManager.getInstance().getHistory(name()).get(fixingDate);
+            QL.require(pastFixing != Constants.NULL_REAL,
+                    "Missing " + name() + " fixing for " + fixingDate);
             return pastFixing;
         }
 
         if ((fixingDate.equals(today)) && !forecastTodaysFixing) {
             // might have been fixed
             try {
-                double /*Rate*/ pastFixing =
-                	IndexManager.getInstance().getHistory(name()).get(fixingDate);
-                if (pastFixing != Constants.NULL_REAL)
+                double /*Rate*/ pastFixing
+                        = IndexManager.getInstance().getHistory(name()).get(fixingDate);
+                if (pastFixing != Constants.NULL_REAL) {
                     return pastFixing;
-                else
+                } else
                     ;   // fall through and forecast
             } catch (final Exception e) {
                 ; // fall through and forecast
@@ -181,20 +175,18 @@ public abstract class InterestRateIndex extends Index implements Observer {
 
     public JDate fixingDate(final JDate valueDate) {
         final JDate fixingDate = fixingCalendar().advance(valueDate, fixingDays, TimeUnit.Days);
-        QL.ensure(isValidFixingDate(fixingDate) , "fixing date " + fixingDate + " is not valid"); 
+        QL.ensure(isValidFixingDate(fixingDate), "fixing date " + fixingDate + " is not valid");
         return fixingDate;
     }
 
     public JDate valueDate(final JDate fixingDate) {
-        QL.require(isValidFixingDate(fixingDate) , "Fixing date is not valid"); // TODO: message
+        QL.require(isValidFixingDate(fixingDate), "Fixing date is not valid"); // TODO: message
         return fixingCalendar().advance(fixingDate, fixingDays, TimeUnit.Days);
     }
-
 
     //
     // implements Observer
     //
-
     //XXX:registerWith
     //    @Override
     //    public void registerWith(final Observable o) {
@@ -205,13 +197,11 @@ public abstract class InterestRateIndex extends Index implements Observer {
     //    public void unregisterWith(final Observable o) {
     //        o.deleteObserver(this);
     //    }
-
     @Override
     //XXX::OBS public void update(final Observable o, final Object arg) {
     public void update() {
         //XXX::OBS notifyObservers(arg);
         notifyObservers();
     }
-
 
 }

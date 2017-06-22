@@ -38,43 +38,37 @@ import org.jquantlib.termstructures.YieldTermStructure;
  *
  * @author Praneet Tiwari
  */
-@QualityAssurance(quality=Quality.Q3_DOCUMENTATION, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = "Richard Gomes")
 public class TermStructureFittingParameter extends Parameter {
 
     //
     // public constructors
     //
-
     public TermStructureFittingParameter(final Parameter.Impl impl) {
         super(0, impl, new NoConstraint());
     }
 
-    public TermStructureFittingParameter(final Handle <YieldTermStructure> term) {
+    public TermStructureFittingParameter(final Handle<YieldTermStructure> term) {
         super(0, new NumericalImpl(term), new NoConstraint());
     }
-
 
     //
     // protected inner classes
     //
-
     static public class NumericalImpl implements Parameter.Impl {
 
         //
         // private fields
         //
-
         private final List<Double> times;
         private final List<Double> values;
         private final Handle<YieldTermStructure> termStructure;
 
-
         //
         // public methods
         //
-
         public NumericalImpl(final Handle<YieldTermStructure> termStructure) {
-            this.times  = new ArrayList<Double>();
+            this.times = new ArrayList<Double>();
             this.values = new ArrayList<Double>();
             this.termStructure = termStructure;
         }
@@ -85,7 +79,7 @@ public class TermStructureFittingParameter extends Parameter {
         }
 
         public void change(final double x) {
-            final int last = values.size()-1;
+            final int last = values.size() - 1;
             values.set(last, x);
         }
 
@@ -95,7 +89,7 @@ public class TermStructureFittingParameter extends Parameter {
         }
 
         @Override
-        public double value(final Array  ref, /* @Time */ final double t) /* @ReadOnly */ {
+        public double value(final Array ref, /* @Time */ final double t) /* @ReadOnly */ {
             final int index = times.indexOf(t);
             QL.require(index > -1, "fitting parameter not set!"); // TODO: message
             return values.get(index);

@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.indexes;
 
 import java.util.Map;
@@ -28,62 +27,57 @@ import org.jquantlib.time.TimeSeries;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.ObservableValue;
 
-
 public class IndexManager {
 
     private static final long serialVersionUID = -9204254124065694863L;
-    
+
     private static Map<String, TimeSeries<Double>> data;
     private static volatile IndexManager instance;
 
-    
-	//
+    //
     // static public methods
     //
-    
     public static IndexManager getInstance() {
-		if (instance == null) {
-			synchronized (IndexManager.class) {
-				if (instance == null) {
-					instance = new IndexManager();
-				}
-			}
-		}
-		return instance;
-	}
-
+        if (instance == null) {
+            synchronized (IndexManager.class) {
+                if (instance == null) {
+                    instance = new IndexManager();
+                }
+            }
+        }
+        return instance;
+    }
 
     //
     // private constructors
     //
-    
     private IndexManager() {
-	    this.data = new ConcurrentHashMap<String, TimeSeries<Double>>();
-	}
+        this.data = new ConcurrentHashMap<String, TimeSeries<Double>>();
+    }
 
-	public TimeSeries<Double> getHistory(final String name) {
-		return data.get(name);
-	}
+    public TimeSeries<Double> getHistory(final String name) {
+        return data.get(name);
+    }
 
-	public void setHistory(final String name, final TimeSeries<Double> history) {
-		data.put(name, history);
-	}
+    public void setHistory(final String name, final TimeSeries<Double> history) {
+        data.put(name, history);
+    }
 
-	public void clearHistory(final String name) {
-		data.remove(name);
-	}
+    public void clearHistory(final String name) {
+        data.remove(name);
+    }
 
-	public void clearHistories() {
-		data.clear();
-	}
+    public void clearHistories() {
+        data.clear();
+    }
 
-	public Observable notifier(final String name) {
-	    TimeSeries<Double> value = data.get(name);
-		if (value == null){
-			value = new TimeSeries<Double>(Double.class);
-			data.put(name, value);
-		}
-		return new ObservableValue<TimeSeries<Double>>(value);
-	}
+    public Observable notifier(final String name) {
+        TimeSeries<Double> value = data.get(name);
+        if (value == null) {
+            value = new TimeSeries<Double>(Double.class);
+            data.put(name, value);
+        }
+        return new ObservableValue<TimeSeries<Double>>(value);
+    }
 
 }

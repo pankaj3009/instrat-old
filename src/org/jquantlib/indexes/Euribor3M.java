@@ -27,20 +27,19 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * 3-months Euribor index    
- * 
+ * 3-months Euribor index
+ *
  * @author Srinivas Hasti
  */
 public class Euribor3M extends Euribor {
 
-
     //
     // public constructors
     //
-
     public Euribor3M() {
-    	this(new Handle<YieldTermStructure>());
+        this(new Handle<YieldTermStructure>());
     }
+
     public Euribor3M(final Handle<YieldTermStructure> h) {
         super(new Period(3, TimeUnit.Months), h);
     }

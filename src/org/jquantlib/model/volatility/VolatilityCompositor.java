@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.model.volatility;
 
 import org.jquantlib.time.TimeSeries;
@@ -46,8 +45,8 @@ import org.jquantlib.time.TimeSeries;
  */
 public interface VolatilityCompositor {
 
-	public void calibrate(final TimeSeries<Double> timeSeries);
+    public void calibrate(final TimeSeries<Double> timeSeries);
 
-	public TimeSeries<Double> calculate(final TimeSeries<Double> volatilitySeries);
+    public TimeSeries<Double> calculate(final TimeSeries<Double> volatilitySeries);
 
 }

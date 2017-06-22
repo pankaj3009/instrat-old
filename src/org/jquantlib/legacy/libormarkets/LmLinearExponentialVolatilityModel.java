@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.legacy.libormarkets;
 
 import java.util.ArrayList;
@@ -43,7 +42,6 @@ import org.jquantlib.model.ConstantParameter;
  Caps/Swaptions Calibration,
  (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
  */
-
 public abstract class LmLinearExponentialVolatilityModel extends LmVolatilityModel {
 
     private final List<Double> fixingTimes_;
@@ -110,8 +108,8 @@ public abstract class LmLinearExponentialVolatilityModel extends LmVolatilityMod
                 * a
                 * b
                 * (d * (-1 - b * (S + T) + k1 * k1 * (1 + b * (S + T - 2 * u))) - 2 * c
-                        * (k3 * (1 + b * S) + k2 * (1 + b * T) - k1 * k3 * (1 + b * (S - u)) - k1 * k2 * (1 + b * (T - u)))))
-                        / (4 * b * b * b * k2 * k3);
+                * (k3 * (1 + b * S) + k2 * (1 + b * T) - k1 * k3 * (1 + b * (S - u)) - k1 * k2 * (1 + b * (T - u)))))
+                / (4 * b * b * b * k2 * k3);
     }
 
     @Override

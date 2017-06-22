@@ -27,20 +27,19 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * 5-months Euribor index    
- * 
+ * 5-months Euribor index
+ *
  * @author Srinivas Hasti
  */
 public class Euribor5M extends Euribor {
 
-
     //
     // public constructors
     //
-
     public Euribor5M() {
-    	this(new Handle<YieldTermStructure>());
+        this(new Handle<YieldTermStructure>());
     }
+
     public Euribor5M(final Handle<YieldTermStructure> h) {
         super(new Period(5, TimeUnit.Months), h);
     }

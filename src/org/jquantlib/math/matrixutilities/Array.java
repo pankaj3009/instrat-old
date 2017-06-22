@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
  Copyright (C) 2004 Ferdinando Ametrano
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.matrixutilities;
 
 import java.util.Arrays;
@@ -54,20 +53,17 @@ import org.jquantlib.math.functions.LessThanPredicate;
 import org.jquantlib.math.matrixutilities.internal.Address;
 import org.jquantlib.math.matrixutilities.internal.DirectArrayRowAddress;
 
-
-
 /**
  * 1-D array used in linear algebra.
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q2_RESEMBLANCE, version = Version.V097, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q2_RESEMBLANCE, version = Version.V097, reviewers = {"Richard Gomes"})
 public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Iterable<Double>, Algebra<Array> {
 
     //
     // public constructors
     //
-
     /**
      * Default constructor
      * <p>
@@ -76,7 +72,6 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array() {
         this(0, EnumSet.noneOf(Address.Flags.class));
     }
-
 
     /**
      * Default constructor
@@ -91,7 +86,6 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         super(1, 1, null);
         this.addr = new DirectArrayRowAddress(this.$, 0, null, 0, 0, flags, true, 1, 1);
     }
-
 
     /**
      * Builds an Array of <code>size</code>
@@ -114,7 +108,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
      */
     public Array(final int size, final Set<Address.Flags> flags) {
         super(1, size, null);
-        this.addr = new DirectArrayRowAddress(this.$, 0, null, 0, size-1, flags, true, 1, size);
+        this.addr = new DirectArrayRowAddress(this.$, 0, null, 0, size - 1, flags, true, 1, size);
     }
 
     /**
@@ -136,32 +130,36 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
      */
     public Array(final double[] array, final Set<Address.Flags> flags) {
         super(1, array.length, null);
-        this.addr = new DirectArrayRowAddress(this.$, 0, null, 0, array.length-1, flags, true, 1, array.length);
+        this.addr = new DirectArrayRowAddress(this.$, 0, null, 0, array.length - 1, flags, true, 1, array.length);
         System.arraycopy(array, 0, $, 0, this.size());
     }
 
     /**
-     * Creates an Array given a double[] array and the desired number of elements
+     * Creates an Array given a double[] array and the desired number of
+     * elements
      *
      * @param $ is a unidimensional array
-     * @param size is the desired number of elements to be taken, counted from the first position
+     * @param size is the desired number of elements to be taken, counted from
+     * the first position
      */
     public Array(final double[] array, final int size) {
         this(array, size, EnumSet.noneOf(Address.Flags.class));
     }
 
     /**
-     * Creates an Array given a double[] array and the desired number of elements
+     * Creates an Array given a double[] array and the desired number of
+     * elements
      *
      * @param $ is a unidimensional array
-     * @param size is the desired number of elements to be taken, counted from the first position
+     * @param size is the desired number of elements to be taken, counted from
+     * the first position
      * @param flags is a <code>Set&lt;Address.Flags&gt;</code>
      *
      * @see Address.Flags
      */
     public Array(final double[] array, final int size, final Set<Address.Flags> flags) {
         super(1, size, null);
-        this.addr = new DirectArrayRowAddress(this.$, 0, null, 0, size-1, flags, true, 1, size);
+        this.addr = new DirectArrayRowAddress(this.$, 0, null, 0, size - 1, flags, true, 1, size);
         System.arraycopy(array, 0, $, 0, this.size());
     }
 
@@ -186,20 +184,18 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         super(1, array.size(), null);
         this.addr = new DirectArrayRowAddress(this.$, 0, null, 0, array.size(), array.flags(), true, 1, array.size());
         if (array.addr.isContiguous()) {
-            final int begin = array.addr.col0()+(addr.isFortran() ? 1 : 0);
+            final int begin = array.addr.col0() + (addr.isFortran() ? 1 : 0);
             System.arraycopy(array.$, begin, $, 0, this.size());
         } else {
-            for (int i=0; i<array.size(); i++) {
+            for (int i = 0; i < array.size(); i++) {
                 this.$[i] = array.get(i);
             }
         }
     }
 
-
     //
     // protected constructors
     //
-
     protected Array(
             final int rows,
             final int cols,
@@ -208,11 +204,9 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         super(rows, cols, data, addr);
     }
 
-
     //
     // implements Cloneable
     //
-
     @Override
     public Array clone() {
         //XXX return new Array(this, this.flags());
@@ -220,23 +214,22 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         clone.$ = new double[this.size()];
         clone.addr = new DirectArrayRowAddress(clone.$, 0, null, 0, this.size(), this.flags(), true, 1, this.size());
         if (this.addr.isContiguous()) {
-            final int begin = this.addr.col0()+(addr.isFortran() ? 1 : 0);
+            final int begin = this.addr.col0() + (addr.isFortran() ? 1 : 0);
             System.arraycopy(this.$, begin, clone.$, 0, this.size());
         } else {
-            for (int i=0; i<this.size(); i++) {
+            for (int i = 0; i < this.size(); i++) {
                 clone.$[i] = this.get(i);
             }
         }
         return clone;
     }
 
-
     //
     // public methods
     //
-
     /**
-     * This is a convenience method intended to return the physical address of an element.
+     * This is a convenience method intended to return the physical address of
+     * an element.
      * <p>
      * <b>The use of this method is highly discouraged</b>
      *
@@ -270,8 +263,9 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     /**
      * Retrieves an element of <code>this</code> Matrix
      * <p>
-     * This method is provided for performance reasons. See methods {@link #getAddress(int)} and {@link #getAddress(int, int)} for
-     * more details
+     * This method is provided for performance reasons. See methods
+     * {@link #getAddress(int)} and {@link #getAddress(int, int)} for more
+     * details
      *
      * @param dim coordinate
      * @param col coordinate
@@ -287,8 +281,9 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     /**
      * Stores a value into an element of <code>this</code> Matrix
      * <p>
-     * This method is provided for performance reasons. See methods {@link #getAddress(int)} and {@link #getAddress(int, int)} for
-     * more details
+     * This method is provided for performance reasons. See methods
+     * {@link #getAddress(int)} and {@link #getAddress(int, int)} for more
+     * details
      *
      * @param dim coordinate
      * @param col coordinate
@@ -300,15 +295,11 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         $[addr.op(pos)] = value;
     }
 
-
-
     ////////////////////////////////////////////////////////////
     //
     // implements Algebra<Array>
     //
     ////////////////////////////////////////////////////////////
-
-
     //
     //    Assignment operations
     //
@@ -323,11 +314,10 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     //    /=    divAssign  Array   scalar   this
     //    /=    divAssign  Array   Array    this
     //
-
     @Override
     public Array addAssign(final double scalar) {
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             $[src.op()] += scalar;
             src.nextIndex();
         }
@@ -337,7 +327,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public Array subAssign(final double scalar) {
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             $[src.op()] -= scalar;
             src.nextIndex();
         }
@@ -345,7 +335,8 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     }
 
     /**
-     * Returns the result of a subtraction of <code>this</code> Array and <code>another</code> Array
+     * Returns the result of a subtraction of <code>this</code> Array and
+     * <code>another</code> Array
      *
      * @param another
      * @return this
@@ -355,7 +346,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         QL.require(this.size() == another.size(), ARRAY_IS_INCOMPATIBLE); // QA:[RG]::verified
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset();
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             $[toff.op()] -= another.$[aoff.op()];
             toff.nextIndex();
             aoff.nextIndex();
@@ -366,7 +357,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public Array mulAssign(final double scalar) {
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             $[src.op()] *= scalar;
             src.nextIndex();
         }
@@ -376,7 +367,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public Array divAssign(final double scalar) {
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             $[src.op()] /= scalar;
             src.nextIndex();
         }
@@ -388,7 +379,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         QL.require(this.size() == another.size(), ARRAY_IS_INCOMPATIBLE); // QA:[RG]::verified
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset();
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             $[toff.op()] += another.$[aoff.op()];
             toff.nextIndex();
             aoff.nextIndex();
@@ -401,7 +392,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         QL.require(this.size() == another.size(), ARRAY_IS_INCOMPATIBLE); // QA:[RG]::verified
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset();
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             $[toff.op()] *= another.$[aoff.op()];
             toff.nextIndex();
             aoff.nextIndex();
@@ -414,14 +405,13 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         QL.require(this.size() == another.size(), ARRAY_IS_INCOMPATIBLE); // QA:[RG]::verified
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset();
-        for (int i=0; i<size(); i++) {
+        for (int i = 0; i < size(); i++) {
             this.$[toff.op()] /= another.$[aoff.op()];
             toff.nextIndex();
             aoff.nextIndex();
         }
         return this;
     }
-
 
     //
     //    Algebraic products
@@ -440,12 +430,11 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     //    /     div        Array   scalar    Array
     //    /     div        Array   Array     Array
     //
-
     @Override
     public Array add(final double scalar) {
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int col=0; col<size(); col++) {
+        for (int col = 0; col < size(); col++) {
             result.$[col] = $[src.op()] + scalar;
             src.nextIndex();
         }
@@ -456,7 +445,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array sub(final double scalar) {
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int col=0; col<size(); col++) {
+        for (int col = 0; col < size(); col++) {
             result.$[col] = $[src.op()] - scalar;
             src.nextIndex();
         }
@@ -467,7 +456,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array mul(final double scalar) {
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int col=0; col<size(); col++) {
+        for (int col = 0; col < size(); col++) {
             result.$[col] = $[src.op()] * scalar;
             src.nextIndex();
         }
@@ -483,7 +472,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array div(final double scalar) {
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int col=0; col<size(); col++) {
+        for (int col = 0; col < size(); col++) {
             result.$[col] = $[src.op()] / scalar;
             src.nextIndex();
         }
@@ -496,7 +485,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset();
-        for (int col=0; col<size(); col++) {
+        for (int col = 0; col < size(); col++) {
             result.$[col] = $[toff.op()] + another.$[aoff.op()];
             toff.nextIndex();
             aoff.nextIndex();
@@ -510,7 +499,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset();
-        for (int col=0; col<size(); col++) {
+        for (int col = 0; col < size(); col++) {
             result.$[col] = $[toff.op()] - another.$[aoff.op()];
             toff.nextIndex();
             aoff.nextIndex();
@@ -524,7 +513,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset();
-        for (int col=0; col<size(); col++) {
+        for (int col = 0; col < size(); col++) {
             result.$[col] = $[toff.op()] * another.$[aoff.op()];
             toff.nextIndex();
             aoff.nextIndex();
@@ -538,7 +527,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset();
-        for (int col=0; col<size(); col++) {
+        for (int col = 0; col < size(); col++) {
             result.$[col] = $[toff.op()] / another.$[aoff.op()];
             toff.nextIndex();
             aoff.nextIndex();
@@ -550,15 +539,16 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array mul(final Matrix matrix) {
         QL.require(this.size() == matrix.rows(), MATRIX_IS_INCOMPATIBLE); // QA:[RG]::verified
         final Array result = new Array(matrix.cols());
-        final Address.ArrayAddress.ArrayOffset  toff = this.addr.offset();
+        final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.MatrixAddress.MatrixOffset moff = matrix.addr.offset();
         final int offsetA = this.addr.isFortran() ? 1 : 0;
         final int offsetM = matrix.addr.isFortran() ? 1 : 0;
-        for (int col=0; col<matrix.cols(); col++) {
+        for (int col = 0; col < matrix.cols(); col++) {
             toff.setIndex(offsetA);
-            moff.setRow(offsetM); moff.setCol(col+offsetM);
+            moff.setRow(offsetM);
+            moff.setCol(col + offsetM);
             double sum = 0.0;
-            for (int row=0; row<matrix.rows(); row++) {
+            for (int row = 0; row < matrix.rows(); row++) {
                 final double telem = this.$[toff.op()];
                 final double aelem = matrix.$[moff.op()];
                 sum += telem * aelem;
@@ -569,9 +559,6 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         }
         return result;
     }
-
-
-
 
     //
     //    Math functions
@@ -584,7 +571,6 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     //    sqrt  sqrt       Array            Array
     //    log   log        Array            Array
     //    exp   exp        Array            Array
-
     @Override
     public double min() {
         return min(0, this.size());
@@ -592,11 +578,11 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
 
     @Override
     public double min(final int from, final int to) {
-        QL.require(from >= 0 && to > from && to <= size(),  INVALID_ARGUMENTS); // QA:[RG]::verified
+        QL.require(from >= 0 && to > from && to <= size(), INVALID_ARGUMENTS); // QA:[RG]::verified
         final int offset = addr.isFortran() ? 1 : 0;
-        final Address.ArrayAddress.ArrayOffset src = this.addr.offset(from+offset);
+        final Address.ArrayAddress.ArrayOffset src = this.addr.offset(from + offset);
         double result = $[src.op()];
-        for (int i=0; i<(to-from); i++) {
+        for (int i = 0; i < (to - from); i++) {
             final double tmp = $[src.op()];
             src.nextIndex();
             if (tmp < result) {
@@ -613,11 +599,11 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
 
     @Override
     public double max(final int from, final int to) {
-        QL.require(from >= 0 && to > from && to <= size(),  INVALID_ARGUMENTS); // QA:[RG]::verified
+        QL.require(from >= 0 && to > from && to <= size(), INVALID_ARGUMENTS); // QA:[RG]::verified
         final int offset = addr.isFortran() ? 1 : 0;
-        final Address.ArrayAddress.ArrayOffset src = this.addr.offset(from+offset);
+        final Address.ArrayAddress.ArrayOffset src = this.addr.offset(from + offset);
         double result = $[src.op()];
-        for (int i=0; i<(to-from); i++) {
+        for (int i = 0; i < (to - from); i++) {
             final double tmp = $[src.op()];
             src.nextIndex();
             if (tmp > result) {
@@ -632,7 +618,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         final Array result = new Array(this.size(), this.addr.flags());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
         final int offset = addr.isFortran() ? 1 : 0;
-        for (int i=offset; i<this.size()+offset; i++) {
+        for (int i = offset; i < this.size() + offset; i++) {
             result.$[result._(i)] = Math.abs($[src.op()]);
             src.nextIndex();
         }
@@ -643,9 +629,9 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array sqr() {
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int i=0; i<this.size(); i++) {
+        for (int i = 0; i < this.size(); i++) {
             final double a = $[src.op()];
-            result.$[i] = a*a;
+            result.$[i] = a * a;
             src.nextIndex();
         }
         return result;
@@ -655,7 +641,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array sqrt() {
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int i=0; i<this.size(); i++) {
+        for (int i = 0; i < this.size(); i++) {
             result.$[i] = Math.sqrt($[src.op()]);
             src.nextIndex();
         }
@@ -666,7 +652,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array log() {
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int i=0; i<this.size(); i++) {
+        for (int i = 0; i < this.size(); i++) {
             result.$[i] = Math.log($[src.op()]);
             src.nextIndex();
         }
@@ -677,14 +663,12 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     public Array exp() {
         final Array result = new Array(this.size());
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset();
-        for (int i=0; i<this.size(); i++) {
+        for (int i = 0; i < this.size(); i++) {
             result.$[i] = Math.exp($[src.op()]);
             src.nextIndex();
         }
         return result;
     }
-
-
 
     //
     //    Miscellaneous
@@ -694,21 +678,20 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     //    outerProduct Array   Array    Matrix
     //    dotProduct   Array   Array    double
     //
-
     @Override
     public double dotProduct(final Array another) {
         final int offset = another.addr.isFortran() ? 1 : 0;
-        return dotProduct(another, offset, another.size()+offset);
+        return dotProduct(another, offset, another.size() + offset);
     }
 
     @Override
     public double dotProduct(final Array another, final int from, final int to) {
         final int offset = another.addr.isFortran() ? 1 : 0;
-        QL.require(from >= offset && to >= from && to <= another.size()+offset, INVALID_ARGUMENTS); // QA:[RG]::verified
+        QL.require(from >= offset && to >= from && to <= another.size() + offset, INVALID_ARGUMENTS); // QA:[RG]::verified
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset(from);
         double sum = 0.0;
-        for (int i=0; i<to-from; i++) {
+        for (int i = 0; i < to - from; i++) {
             final double telem = this.$[toff.op()];
             final double aelem = another.$[aoff.op()];
             sum += telem * aelem;
@@ -733,19 +716,19 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public Matrix outerProduct(final Array another) {
         final int offset = another.addr.isFortran() ? 1 : 0;
-        return outerProduct(another, offset, another.size()+offset);
+        return outerProduct(another, offset, another.size() + offset);
     }
 
     @Override
     public Matrix outerProduct(final Array another, final int from, final int to) {
         final int offset = another.addr.isFortran() ? 1 : 0;
-        QL.require(from >= offset && to >= from && to <= another.size()+offset, INVALID_ARGUMENTS); // QA:[RG]::verified
-        final Matrix result = new Matrix(this.size(), to-from);
+        QL.require(from >= offset && to >= from && to <= another.size() + offset, INVALID_ARGUMENTS); // QA:[RG]::verified
+        final Matrix result = new Matrix(this.size(), to - from);
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset();
         int addr = 0;
-        for (int i=0; i<this.size(); i++) {
+        for (int i = 0; i < this.size(); i++) {
             final Address.ArrayAddress.ArrayOffset aoff = another.addr.offset(from);
-            for (int j=from; j < to; j++) {
+            for (int j = from; j < to; j++) {
                 result.$[addr] = this.$[toff.op()] * another.$[aoff.op()];
                 addr++;
                 aoff.nextIndex();
@@ -755,12 +738,9 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         return result;
     }
 
-
     //
     // Routines ported from stdlibc++
     //
-
-
     @Override
     public double accumulate() {
         return accumulate(0, this.size(), 0.0);
@@ -773,10 +753,10 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
 
     @Override
     public double accumulate(final int first, final int last, final double init) {
-        QL.require(first>=0 && last>first && last<=size(),  INVALID_ARGUMENTS); // QA:[RG]::verified
+        QL.require(first >= 0 && last > first && last <= size(), INVALID_ARGUMENTS); // QA:[RG]::verified
         double sum = init;
         final Address.ArrayAddress.ArrayOffset src = this.addr.offset(first);
-        for (int i=0; i<last-first; i++) {
+        for (int i = 0; i < last - first; i++) {
             final double elem = this.$[src.op()];
             sum += elem;
             src.nextIndex();
@@ -787,22 +767,24 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public final Array adjacentDifference() {
         final int offset = addr.isFortran() ? 1 : 0;
-        return adjacentDifference(offset, size()+offset);
+        return adjacentDifference(offset, size() + offset);
     }
 
     @Override
     public final Array adjacentDifference(final int from, final int to) {
         final int offset = addr.isFortran() ? 1 : 0;
-        QL.require(from >= offset && to >= from && to <= this.size()+offset, INVALID_ARGUMENTS); // QA:[RG]::verified
+        QL.require(from >= offset && to >= from && to <= this.size() + offset, INVALID_ARGUMENTS); // QA:[RG]::verified
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset(from);
-        final Array diff = new Array(to-from, this.flags());
+        final Array diff = new Array(to - from, this.flags());
         // obtain first element and advance pointer
-        double prev = this.$[toff.op()]; toff.nextIndex();
+        double prev = this.$[toff.op()];
+        toff.nextIndex();
         // fill in first difference
         diff.$[diff._(offset)] = prev;
         // fill in remaining differences
-        for (int i=1+offset; i<to-from+offset; i++) {
-            final double curr = this.$[toff.op()]; toff.nextIndex();
+        for (int i = 1 + offset; i < to - from + offset; i++) {
+            final double curr = this.$[toff.op()];
+            toff.nextIndex();
             diff.$[diff._(i)] = curr - prev;
             prev = curr;
         }
@@ -812,22 +794,24 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public Array adjacentDifference(final BinaryDoubleOp f) {
         final int offset = addr.isFortran() ? 1 : 0;
-        return adjacentDifference(offset, size()+offset, f);
+        return adjacentDifference(offset, size() + offset, f);
     }
 
     @Override
     public Array adjacentDifference(final int from, final int to, final BinaryDoubleOp f) {
         final int offset = addr.isFortran() ? 1 : 0;
-        QL.require(from >= offset && to >= from && to <= this.size()+offset, INVALID_ARGUMENTS); // QA:[RG]::verified
+        QL.require(from >= offset && to >= from && to <= this.size() + offset, INVALID_ARGUMENTS); // QA:[RG]::verified
         final Address.ArrayAddress.ArrayOffset toff = this.addr.offset(from);
-        final Array diff = new Array(to-from, this.flags());
+        final Array diff = new Array(to - from, this.flags());
         // obtain first element and advance pointer
-        double prev = this.$[toff.op()]; toff.nextIndex();
+        double prev = this.$[toff.op()];
+        toff.nextIndex();
         // fill in first difference
         diff.$[diff._(offset)] = prev;
         // fill in remaining differences
-        for (int i=1+offset; i<to-from+offset; i++) {
-            final double curr = this.$[toff.op()]; toff.nextIndex();
+        for (int i = 1 + offset; i < to - from + offset; i++) {
+            final double curr = this.$[toff.op()];
+            toff.nextIndex();
             diff.$[diff._(i)] = f.op(curr, prev);
             prev = curr;
         }
@@ -837,25 +821,24 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public Array transform(final DoubleOp f) {
         final int offset = addr.isFortran() ? 1 : 0;
-        return transform(offset, this.size()+offset, f);
+        return transform(offset, this.size() + offset, f);
     }
 
     @Override
     public Array transform(final int from, final int to, final Ops.DoubleOp f) {
         final int offset = addr.isFortran() ? 1 : 0;
-        QL.require(from >= offset && to >= from && to <= this.size()+offset && f!=null, INVALID_ARGUMENTS); // QA:[RG]::verified
-        for (int i=from; i<to; i++) {
+        QL.require(from >= offset && to >= from && to <= this.size() + offset && f != null, INVALID_ARGUMENTS); // QA:[RG]::verified
+        for (int i = from; i < to; i++) {
             final int idx = this._(i);
             this.$[idx] = f.op(this.$[idx]);
         }
         return this;
     }
 
-
     @Override
     public int lowerBound(final double val) {
         final int offset = addr.isFortran() ? 1 : 0;
-        return lowerBound(offset, size()+offset, val, new LessThanPredicate());
+        return lowerBound(offset, size() + offset, val, new LessThanPredicate());
     }
 
     @Override
@@ -866,19 +849,19 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public int lowerBound(final double val, final Ops.BinaryDoublePredicate f) {
         final int offset = addr.isFortran() ? 1 : 0;
-        return lowerBound(offset, size()+offset, val, f);
+        return lowerBound(offset, size() + offset, val, f);
     }
 
     @Override
     public int lowerBound(int from, final int to, final double val, final Ops.BinaryDoublePredicate f) {
         final int offset = addr.isFortran() ? 1 : 0;
-        QL.require(from>=offset && from<=to && to<=size()+offset, INVALID_ARGUMENTS); // QA:[RG]::verified
+        QL.require(from >= offset && from <= to && to <= size() + offset, INVALID_ARGUMENTS); // QA:[RG]::verified
         int len = to - from;
         while (len > 0) {
             final int half = len >> 1;
-            final int middle = from-offset + half;
-            if (f.op($[addr.op(middle+offset)], val)) {
-                from = middle+offset + 1;
+            final int middle = from - offset + half;
+            if (f.op($[addr.op(middle + offset)], val)) {
+                from = middle + offset + 1;
                 len -= half + 1;
             } else {
                 len = half;
@@ -890,7 +873,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public int upperBound(final double val) {
         final int offset = addr.isFortran() ? 1 : 0;
-        return upperBound(offset, size()+offset, val);
+        return upperBound(offset, size() + offset, val);
     }
 
     @Override
@@ -901,28 +884,26 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     @Override
     public int upperBound(final double val, final Ops.BinaryDoublePredicate f) {
         final int offset = addr.isFortran() ? 1 : 0;
-        return upperBound(offset, size()+offset, val, f);
+        return upperBound(offset, size() + offset, val, f);
     }
 
     @Override
     public int upperBound(int from, final int to, final double val, final Ops.BinaryDoublePredicate f) {
         final int offset = addr.isFortran() ? 1 : 0;
-        QL.require(from>=offset && from<=to && to<=size()+offset, INVALID_ARGUMENTS); // QA:[RG]::verified
+        QL.require(from >= offset && from <= to && to <= size() + offset, INVALID_ARGUMENTS); // QA:[RG]::verified
         int len = to - from;
         while (len > 0) {
             final int half = len >> 1;
-            final int middle = from-offset + half;
-            if (f.op(val, $[addr.op(middle+offset)])) {
+            final int middle = from - offset + half;
+            if (f.op(val, $[addr.op(middle + offset)])) {
                 len = half;
             } else {
-                from = middle+offset + 1;
+                from = middle + offset + 1;
                 len -= half + 1;
             }
         }
         return from;
     }
-
-
 
 //    @Override
 //    public int upperBound(int from, final int to, final double val) {
@@ -963,8 +944,6 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
 //        }
 //        return first;
 //    }
-
-
     //
     //  Range
     //
@@ -972,83 +951,76 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
     //  ------------ ------- -------- ------
     //  range        Array            Array
     //
-
-
     public Array range(final int col0) {
         return range(col0, cols());
     }
 
     public Array range(final int col0, final int col1) {
         final int offset = addr.isFortran() ? 1 : 0;
-        QL.require(col0 >= offset && col0 < cols()+offset && col1 >= offset && col1 <= cols()+offset, Address.INVALID_COLUMN_INDEX);
+        QL.require(col0 >= offset && col0 < cols() + offset && col1 >= offset && col1 <= cols() + offset, Address.INVALID_COLUMN_INDEX);
         return new Range(offset, this.addr, $, col0, col1, rows(), cols());
     }
 
     public Array toFortran() {
         return this.addr.isFortran()
-            ?  this
-            : new Array(this.rows, this.cols, this.$, this.addr.toFortran());
+                ? this
+                : new Array(this.rows, this.cols, this.$, this.addr.toFortran());
     }
 
     public Array toJava() {
         return this.addr.isFortran()
-            ?  new Array(this.rows, this.cols, this.$, this.addr.toJava())
-            : this;
+                ? new Array(this.rows, this.cols, this.$, this.addr.toJava())
+                : this;
     }
-
-
-
-
-
 
     //TODO: better comments
     //
     // methods moved from Cells
     //
-
     public Array fill(final double scalar) {
         QL.require(addr.isContiguous(), NON_CONTIGUOUS_DATA);
         final int offset = addr.isFortran() ? 1 : 0;
-        Arrays.fill($, begin()-offset, end()-offset, scalar);
+        Arrays.fill($, begin() - offset, end() - offset, scalar);
         return this;
     }
 
     public Array fill(final Array another) {
         QL.require(addr.isContiguous(), NON_CONTIGUOUS_DATA);
         QL.require(another.addr.isContiguous(), NON_CONTIGUOUS_DATA);
-        QL.require(this.rows()==another.rows() && this.cols()==another.cols() && this.size()==another.size(), WRONG_BUFFER_LENGTH);
+        QL.require(this.rows() == another.rows() && this.cols() == another.cols() && this.size() == another.size(), WRONG_BUFFER_LENGTH);
         // copies data
         final int offsetT = this.addr.isFortran() ? 1 : 0;
         final int offsetA = another.addr.isFortran() ? 1 : 0;
-        System.arraycopy(another.$, another.begin()-offsetA, this.$, this.begin()-offsetT, another.size());
+        System.arraycopy(another.$, another.begin() - offsetA, this.$, this.begin() - offsetT, another.size());
         return this;
     }
 
     public Array swap(final Array another) {
         QL.require(addr.isContiguous(), NON_CONTIGUOUS_DATA);
         QL.require(another.addr.isContiguous(), NON_CONTIGUOUS_DATA);
-        QL.require(this.rows()==another.rows() && this.cols()==another.cols() && this.size()==another.size(), WRONG_BUFFER_LENGTH);
+        QL.require(this.rows() == another.rows() && this.cols() == another.cols() && this.size() == another.size(), WRONG_BUFFER_LENGTH);
         // swaps data
-        final double [] tdata;
+        final double[] tdata;
         final Address.ArrayAddress taddr;
-        tdata = this.$;  this.$ = another.$;  another.$ = tdata;
-        taddr = this.addr;  this.addr = another.addr;  another.addr = taddr;
+        tdata = this.$;
+        this.$ = another.$;
+        another.$ = tdata;
+        taddr = this.addr;
+        this.addr = another.addr;
+        another.addr = taddr;
         return this;
     }
 
     public Array sort() {
         QL.require(addr.isContiguous(), NON_CONTIGUOUS_DATA);
         final int offset = addr.isFortran() ? 1 : 0;
-        Arrays.sort($, begin()-offset, end()-offset);
+        Arrays.sort($, begin() - offset, end() - offset);
         return this;
     }
-
 
     //
     // Overrides Object
     //
-
-
     @Override
     public String toString() {
         final int offset = addr.isFortran() ? 1 : 0;
@@ -1056,7 +1028,7 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         sb.append("[rows=").append(rows()).append(" cols=").append(cols()).append(" addr=").append(addr).append('\n');
         sb.append("  [ ");
         sb.append(this.$[this.addr.op(offset)]);
-        for (int pos = 1+offset; pos < size()+offset; pos++) {
+        for (int pos = 1 + offset; pos < size() + offset; pos++) {
             sb.append(", ");
             sb.append($[addr.op(pos)]);
         }
@@ -1065,34 +1037,30 @@ public class Array extends Cells<Address.ArrayAddress> implements Cloneable, Ite
         return sb.toString();
     }
 
-
     //
     // implements Iterable<Double>
     //
-
     @Override
     public Iterator<Double> iterator() {
         return this.addr.offset();
     }
 
-
     //
     // private inner classes
     //
-
     private class Range extends Array {
 
         public Range(
-            final int row0,
-            final Address.ArrayAddress chain,
-            final double[] data,
-            final int col0,
-            final int col1,
-            final int rows, final int cols) {
+                final int row0,
+                final Address.ArrayAddress chain,
+                final double[] data,
+                final int col0,
+                final int col1,
+                final int rows, final int cols) {
             super(1,
-                  col1-col0,
-                  data,
-                  new DirectArrayRowAddress(data, row0, chain, col0, col1, null, true, rows, cols));
+                    col1 - col0,
+                    data,
+                    new DirectArrayRowAddress(data, row0, chain, col0, col1, null, true, rows, cols));
         }
     }
 

@@ -8,6 +8,6 @@ package com.incurrency.framework.display;
  *
  * @author psharma
  */
-public class StrategyDisplay  extends javax.swing.JFrame{
-    
+public class StrategyDisplay extends javax.swing.JFrame {
+
 }

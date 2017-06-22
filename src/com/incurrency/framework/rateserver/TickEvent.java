@@ -11,14 +11,14 @@ import java.util.EventObject;
  * @author pankaj
  */
 public class TickEvent extends EventObject {
-    
+
     private String _topic;
     private String _message;
-    
-    public TickEvent(Object o,String topic, String message){
+
+    public TickEvent(Object o, String topic, String message) {
         super(o);
-        this._topic=topic;
-        this._message=message;
+        this._topic = topic;
+        this._message = message;
     }
 
     /**

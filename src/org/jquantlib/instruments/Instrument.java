@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006, 2007 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.instruments;
 
 import java.util.HashMap;
@@ -51,33 +50,32 @@ import org.jquantlib.lang.reflect.ReflectConstants;
 import org.jquantlib.pricingengines.PricingEngine;
 import org.jquantlib.util.LazyObject;
 
-
 /**
- * This is an abstract {@link Instrument} class which is able to use a {@link PricingEngine} implemented
- * internally or externally to it.
+ * This is an abstract {@link Instrument} class which is able to use a
+ * {@link PricingEngine} implemented internally or externally to it.
  *
  * @see PricingEngine
- * @see <a href="http://quantlib.org/reference/group__instruments.html">QuantLib: Financial Instruments</a>
+ * @see
+ * <a href="http://quantlib.org/reference/group__instruments.html">QuantLib:
+ * Financial Instruments</a>
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Femi Anthony" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Femi Anthony"})
 public abstract class Instrument extends LazyObject {
 
     //
     // private static final fields
     //
-
     private static final String SHOULD_DEFINE_PRICING_ENGINE = "Should define pricing engine";
     private static final String SETUP_ARGUMENTS_NOT_IMPLEMENTED = "Instrument#setupArguments() not implemented";
-
 
     //
     // protected fields
     //
-
     /**
-     * The value of this attribute and any other that derived classes might declare must be set during calculation.
+     * The value of this attribute and any other that derived classes might
+     * declare must be set during calculation.
      *
      * @see PricingEngine
      */
@@ -92,32 +90,6 @@ public abstract class Instrument extends LazyObject {
      * Represents the error estimate on the NPV when available.
      */
     protected /*@Real*/ double errorEstimate;
-
-
-    //
-    // public abstract methods
-    //
-
-    /**
-     * @return <code>true</code> if the instrument is still tradeable.
-     */
-    public abstract boolean isExpired();
-
-    /**
-     * Passes arguments to be used by a {@link PricingEngine}.
-     * When a derived argument structure is defined for an instrument, this method should be overridden to fill it.
-     *
-     * @param arguments keeps values to be used by the external {@link PricingEngine}
-     *
-     * @see Arguments
-     * @see PricingEngine
-     */
-    protected void setupArguments(final PricingEngine.Arguments a) /* @ReadOnly */ {
-        throw new LibraryException(SETUP_ARGUMENTS_NOT_IMPLEMENTED);
-    }
-
-
-
     //
     // protected constructors
     //
@@ -127,24 +99,48 @@ public abstract class Instrument extends LazyObject {
         this.errorEstimate = 0.0;
     }
 
+    //
+    // public abstract methods
+    //
+    /**
+     * @return <code>true</code> if the instrument is still tradeable.
+     */
+    public abstract boolean isExpired();
+
+    /**
+     * Passes arguments to be used by a {@link PricingEngine}. When a derived
+     * argument structure is defined for an instrument, this method should be
+     * overridden to fill it.
+     *
+     * @param arguments keeps values to be used by the external
+     * {@link PricingEngine}
+     *
+     * @see Arguments
+     * @see PricingEngine
+     */
+    protected void setupArguments(final PricingEngine.Arguments a) /* @ReadOnly */ {
+        throw new LibraryException(SETUP_ARGUMENTS_NOT_IMPLEMENTED);
+    }
 
     //
     // public final methods
     //
-
     /**
-     * This method defines an external {@link PricingEngine} to be used for a <i>new-style</i> {@link Instrument}.
+     * This method defines an external {@link PricingEngine} to be used for a
+     * <i>new-style</i> {@link Instrument}.
      *
      * @param engine is the external {@link PricingEngine} to be used
      *
      * @see PricingEngine
      */
     public final void setPricingEngine(final PricingEngine engine) {
-        if (this.engine != null)
+        if (this.engine != null) {
             this.engine.deleteObserver(this);
+        }
         this.engine = engine;
-        if (this.engine != null)
+        if (this.engine != null) {
             this.engine.addObserver(this);
+        }
         //XXX:OBS update(this, null);
         update();
     }
@@ -152,57 +148,54 @@ public abstract class Instrument extends LazyObject {
     /**
      * returns the net present value of the instrument.
      */
-    public final/*@Real*/double NPV() /*@ReadOnly*/{
+    public final/*@Real*/ double NPV() /*@ReadOnly*/ {
         calculate();
-        QL.require(!Double.isNaN(this.NPV) , "NPV not provided");  // TODO: message
+        QL.require(!Double.isNaN(this.NPV), "NPV not provided");  // TODO: message
         return NPV;
     }
 
     /**
      * returns the error estimate on the NPV when available.
      */
-    public final/*@Real*/double errorEstimate() /*@ReadOnly*/{
+    public final/*@Real*/ double errorEstimate() /*@ReadOnly*/ {
         calculate();
-        QL.require(!Double.isNaN(this.errorEstimate) , "error estimate not provided"); // TODO: message
+        QL.require(!Double.isNaN(this.errorEstimate), "error estimate not provided"); // TODO: message
         return errorEstimate;
     }
-
 
     //
     // protected methods
     //
-
     /**
-     * Obtains the {@link Results} populated by a {@link PricingEngine}.
-     * When a derived result structure is defined for an instrument, this method should be overridden to read from it.
+     * Obtains the {@link Results} populated by a {@link PricingEngine}. When a
+     * derived result structure is defined for an instrument, this method should
+     * be overridden to read from it.
      *
-     * @param results contains the {@link Results} object populated by a {@link PricingEngine}
+     * @param results contains the {@link Results} object populated by a
+     * {@link PricingEngine}
      *
      * @see Results
      * @see PricingEngine
      */
     protected void fetchResults(final PricingEngine.Results r) /* @ReadOnly */ {
         QL.require(PricingEngine.Results.class.isAssignableFrom(r.getClass()), ReflectConstants.WRONG_ARGUMENT_TYPE); // QA:[RG]::verified
-        final Instrument.ResultsImpl results = (Instrument.ResultsImpl)r;
+        final Instrument.ResultsImpl results = (Instrument.ResultsImpl) r;
         NPV = results.value;
         errorEstimate = results.errorEstimate;
     }
 
-
     /**
-     * This method must leave the instrument in a consistent
-     * state when the expiration condition is met.
+     * This method must leave the instrument in a consistent state when the
+     * expiration condition is met.
      */
-    protected void setupExpired() /*@ReadOnly*/{
+    protected void setupExpired() /*@ReadOnly*/ {
         NPV = 0.0;
         errorEstimate = 0.0;
     }
 
-
     //
     // overrides LazyObject
     //
-
     /**
      * This method performs the actual calculations and set any needed results.
      *
@@ -223,41 +216,20 @@ public abstract class Instrument extends LazyObject {
         if (isExpired()) {
             setupExpired();
             calculated = true;
-        } else
+        } else {
             super.calculate();
+        }
     }
-
-
-    //
-    // ????? inner interfaces
-    //
-
-    /**
-     * basic instrument arguments
-     *
-     * @author Richard Gomes
-     */
-    public interface Arguments extends PricingEngine.Arguments { /* marking interface */ }
-
-    /**
-     * Results from instrument calculation
-     *
-     * @author Richard Gomes
-     */
-    public interface Results extends PricingEngine.Results { /* marking interface */ }
-
-
-
     //
     // ????? inner classes
     //
 
-
     /**
-     * Results are used by {@link PricingEngine}s in order to store results of calculations
-     * relative to <i>new-style</i> {@link Instrument}s
+     * Results are used by {@link PricingEngine}s in order to store results of
+     * calculations relative to <i>new-style</i> {@link Instrument}s
      *
-     * @note Public fields as this class works pretty much as Data Transfer Objects
+     * @note Public fields as this class works pretty much as Data Transfer
+     * Objects
      *
      * @see Instrument
      * @see PricingEngine
@@ -270,7 +242,6 @@ public abstract class Instrument extends LazyObject {
         //
         // public fields
         //
-
         /**
          * Represents the calculated value of an {@link Instrument}
          *
@@ -286,11 +257,9 @@ public abstract class Instrument extends LazyObject {
         //TODO: Code review
         private final Map<String, Object> additionalResults = new HashMap<String, Object>();
 
-
         //
         // public methods
         //
-
         /**
          * returns any additional result returned by the pricing engine.
          */
@@ -305,11 +274,9 @@ public abstract class Instrument extends LazyObject {
             return this.additionalResults;
         }
 
-
         //
         // Overrides PriceEngine.Results
         //
-
         /**
          * Clean up results of calculations
          * <p>
@@ -322,5 +289,24 @@ public abstract class Instrument extends LazyObject {
         }
 
     }
+
+    //
+    // ????? inner interfaces
+    //
+    /**
+     * basic instrument arguments
+     *
+     * @author Richard Gomes
+     */
+    public interface Arguments extends PricingEngine.Arguments {
+        /* marking interface */ }
+
+    /**
+     * Results from instrument calculation
+     *
+     * @author Richard Gomes
+     */
+    public interface Results extends PricingEngine.Results {
+        /* marking interface */ }
 
 }

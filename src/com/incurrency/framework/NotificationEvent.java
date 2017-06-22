@@ -11,14 +11,13 @@ import java.util.EventObject;
  * @author pankaj
  */
 public class NotificationEvent extends EventObject {
-    
 
     private Notification _notify;
-    public NotificationEvent(Object obj, Notification notify ){
-        super(obj);
-        this._notify=notify;
-    }
 
+    public NotificationEvent(Object obj, Notification notify) {
+        super(obj);
+        this._notify = notify;
+    }
 
     /**
      * @return the _notify

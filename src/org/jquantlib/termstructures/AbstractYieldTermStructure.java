@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2005, 2006 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures;
 
 import org.jquantlib.QL;
@@ -51,7 +50,8 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * This abstract class defines the interface of concrete rate structures which will be derived from this one.
+ * This abstract class defines the interface of concrete rate structures which
+ * will be derived from this one.
  * <p>
  * Rates are assumed to be annual continuous compounding.
  *
@@ -65,13 +65,13 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
     //
     // protected constructors
     //
-
     /**
      * See the TermStructure documentation for issues regarding constructors.
      *
      * @category constructors
      *
-     * @see TermStructure#TermStructure() documentation for issues regarding constructors.
+     * @see TermStructure#TermStructure() documentation for issues regarding
+     * constructors.
      */
     protected AbstractYieldTermStructure() {
         this(new Actual365Fixed());
@@ -80,15 +80,17 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
     /**
      * See the TermStructure documentation for issues regarding constructors.
      * <p>
-     * Initialize with a {@link DayCounter} with <b>no explicit reference date</b>.
+     * Initialize with a {@link DayCounter} with <b>no explicit reference
+     * date</b>.
      *
      * @category constructors
      *
-     * @note Term structures initialized by means of this constructor must manage
-     * their own reference date by overriding the getReferenceDate() method.
+     * @note Term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the getReferenceDate()
+     * method.
      *
      * @see TermStructure#TermStructure() documentation for issues regarding
-     *      constructors.
+     * constructors.
      */
     protected AbstractYieldTermStructure(final DayCounter dc) {
         super(dc);
@@ -101,7 +103,8 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      *
      * @category constructors
      *
-     * @note TermStructure#TermStructure() documentation for issues regarding constructors.
+     * @note TermStructure#TermStructure() documentation for issues regarding
+     * constructors.
      */
     protected AbstractYieldTermStructure(final JDate referenceDate, final Calendar cal, final DayCounter dc) {
         super(referenceDate, cal, dc);
@@ -151,7 +154,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @category constructors
      *
      * @note TermStructure#TermStructure() documentation for issues regarding
-     *      constructors.
+     * constructors.
      */
     protected AbstractYieldTermStructure(final int settlementDays, final Calendar cal, final DayCounter dc) {
         super(settlementDays, cal, dc);
@@ -195,11 +198,9 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
         super(settlementDays, new Target(), new Actual365Fixed());
     }
 
-
     //
     // abstract methods
     //
-
     /**
      * See the TermStructure documentation for issues regarding constructors.
      *
@@ -207,12 +208,9 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      */
     abstract protected /*DiscountFactor*/ double discountImpl(final /*@Time*/ double t);
 
-
     //
     // implements YieldTermStructure
     //
-
-
     // ----- public methods ::: zero yield rates -----
 
     /* (non-Javadoc)
@@ -238,10 +236,10 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
     public final InterestRate zeroRate(final JDate d, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         if (d == referenceDate()) {
             /*@Time*/ final double t = 0.0001;
-            /*@CompoundFactor*/ final double compound = 1/discount(t, extrapolate); // 1/discount(t,extrapolate)
+            /*@CompoundFactor*/ final double compound = 1 / discount(t, extrapolate); // 1/discount(t,extrapolate)
             return InterestRate.impliedRate(compound, t, dayCounter, comp, freq);
         } else {
-            /*@CompoundFactor*/ final double compound = 1/discount(d, extrapolate); // 1/discount(d,extrapolate)
+            /*@CompoundFactor*/ final double compound = 1 / discount(d, extrapolate); // 1/discount(d,extrapolate)
             return InterestRate.impliedRate(compound, referenceDate(), d, dayCounter, comp, freq);
         }
     }
@@ -250,15 +248,14 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#zeroRate(double, org.jquantlib.termstructures.Compounding, org.jquantlib.time.Frequency, boolean)
      */
     @Override
-    public InterestRate zeroRate(final /*@Time*/ double  time, final Compounding comp, final Frequency freq, final boolean extrapolate) {
+    public InterestRate zeroRate(final /*@Time*/ double time, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         /*@Time*/ double t = time;
-        if (t==0.0) {
+        if (t == 0.0) {
             t = 0.0001;
         }
-        /*@CompoundFactor*/ final double compound = 1/discount(t, extrapolate);
+        /*@CompoundFactor*/ final double compound = 1 / discount(t, extrapolate);
         return InterestRate.impliedRate(compound, t, this.dayCounter(), comp, freq);
     }
-
 
     // ----- public methods ::: forward rates -----
 
@@ -289,9 +286,9 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
     @Override
     public InterestRate forwardRate(final JDate d1, final JDate d2, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         if (d1.equals(d2)) {
-            /*@Time*/ final double  t1 = timeFromReference(d1);
-            /*@Time*/ final double  t2 = t1+0.0001;
-            /*@Time*/ final double  delta = t2-t1;
+            /*@Time*/ final double t1 = timeFromReference(d1);
+            /*@Time*/ final double t2 = t1 + 0.0001;
+            /*@Time*/ final double delta = t2 - t1;
             /*@DiscountFactor*/ final double factor1 = discount(t1, extrapolate);
             /*@DiscountFactor*/ final double factor2 = discount(t2, extrapolate);
             /*@CompoundFactor*/ final double compound = factor1 / factor2;
@@ -301,15 +298,16 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
             /*@DiscountFactor*/ final double discount2 = discount(d2, extrapolate);
             /*@CompoundFactor*/ final double compound = discount1 / discount2;
             return InterestRate.impliedRate(compound, d1, d2, dayCounter, comp, freq);
-        } else
+        } else {
             throw new LibraryException("d1 later than d2"); // TODO: message
+        }
     }
 
     /* (non-Javadoc)
      * @see org.jquantlib.termstructures.IYieldTermStructure#forwardRate(double, double, org.jquantlib.termstructures.Compounding)
      */
     @Override
-    public InterestRate forwardRate(final /*@Time*/ double  t1, final /*@Time*/ double  t2, final Compounding comp) {
+    public InterestRate forwardRate(final /*@Time*/ double t1, final /*@Time*/ double t2, final Compounding comp) {
         return forwardRate(t1, t2, comp, Frequency.Annual);
     }
 
@@ -317,7 +315,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      * @see org.jquantlib.termstructures.IYieldTermStructure#forwardRate(double, double, org.jquantlib.termstructures.Compounding, org.jquantlib.time.Frequency)
      */
     @Override
-    public InterestRate forwardRate(final /*@Time*/ double  t1, final /*@Time*/ double t2, final Compounding comp, final Frequency freq) {
+    public InterestRate forwardRate(final /*@Time*/ double t1, final /*@Time*/ double t2, final Compounding comp, final Frequency freq) {
         return forwardRate(t1, t2, comp, freq, false);
     }
 
@@ -326,17 +324,17 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      */
     // FIXME; this method is clearly buggy
     @Override
-    public InterestRate forwardRate(final /*@Time*/ double  time1, final /*@Time*/ double  time2, final Compounding comp, final Frequency freq, final boolean extrapolate) {
+    public InterestRate forwardRate(final /*@Time*/ double time1, final /*@Time*/ double time2, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         /*@Time*/ final double t1 = time1;
         /*@Time*/ double t2 = time2;
-        if (t2==t1) {
-            t2 = t1+0.0001;
+        if (t2 == t1) {
+            t2 = t1 + 0.0001;
         }
-        QL.require(t1 <= t2 , "time1 must be <= time2"); // TODO: message
+        QL.require(t1 <= t2, "time1 must be <= time2"); // TODO: message
         /*@DiscountFactor*/ final double discount1 = discount(t1, extrapolate);
         /*@DiscountFactor*/ final double discount2 = discount(t2, extrapolate);
         /*@CompoundFactor*/ final double compound = discount1 / discount2;
-        /*@Time*/ final double delta = t2-t1;
+        /*@Time*/ final double delta = t2 - t1;
         return InterestRate.impliedRate(compound, delta, this.dayCounter(), comp, freq);
     }
 
@@ -355,7 +353,6 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
     public InterestRate forwardRate(final JDate d, final Period p, final DayCounter dayCounter, final Compounding comp, final Frequency freq, final boolean extrapolate) {
         return forwardRate(d, d.add(p), dayCounter, comp, freq, extrapolate);
     }
-
 
     // ----- public methods ::: discount factors -----
 
@@ -393,7 +390,6 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
         return discountImpl(t);
     }
 
-
     // ----- public methods ::: par rates -----
 
     /* (non-Javadoc)
@@ -414,7 +410,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      */
     @Override
     public /*@Rate*/ double parRate(final JDate[] dates, final Frequency freq, final boolean extrapolate) {
-        /*@Time*/ final double [] times = new /*@Time*/ double [dates.length];
+        /*@Time*/ final double[] times = new /*@Time*/ double[dates.length];
         for (int i = 0; i < dates.length; i++) {
             times[i] = timeFromReference(dates[i]);
         }
@@ -426,7 +422,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
      */
     @Override
     public /*@Rate*/ double parRate(final /*@Time*/ double[] times, final Frequency frequency, final boolean extrapolate) {
-        QL.require(times.length >= 2 , "at least two times are required"); // TODO: message
+        QL.require(times.length >= 2, "at least two times are required"); // TODO: message
         /*@Time*/ final double last = times[times.length - 1];
         checkRange(last, extrapolate);
         /*@DiscountFactor*/ double sum = 0.0;
@@ -435,7 +431,7 @@ abstract public class AbstractYieldTermStructure extends AbstractTermStructure i
         }
         /*@Rate*/ double result = discountImpl(times[0]) - discountImpl(last);
         final int freq = frequency.toInteger();
-        result *= freq/sum;
+        result *= freq / sum;
         return result;
     }
 

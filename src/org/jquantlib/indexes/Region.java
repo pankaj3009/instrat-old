@@ -19,55 +19,52 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.indexes;
 
-
 /**
- * 
- * Region, i.e. geographical area, specification
- * used for inflation applicability
- * 
+ *
+ * Region, i.e. geographical area, specification used for inflation
+ * applicability
+ *
  * @author Tim Blackler
  */
 public abstract class Region {
 
-	protected final class Data {
-		 private final String name;
-		 private final String code;
-		 
-		 public Data(String name, String code) {
-			 this.name = name;
-			 this.code = code;
-		 }
-		 
-		 public String name() {
-			 return name;
-		 }
-		 
-		 public String code() {
-			 return code;
-		 }
-	}
-	
-	protected Data data;
-	
-	public String name() {
-		return data.name();
-	}
+    public static boolean eq(final Region r1, final Region r2) {
+        return r1.name().equals(r2.name());
+    }
 
-	public String code() {
-		return data.code();
-	}
+    public static boolean ne(final Region r1, final Region r2) {
+        return !(r1.name().equals(r2.name()));
+    }
 
-	public static boolean eq(final Region r1, final Region r2) {
-		return r1.name().equals(r2.name());
-	}
+    protected Data data;
 
+    public String name() {
+        return data.name();
+    }
 
-	public static boolean ne(final Region r1, final Region r2) {
-		return !(r1.name().equals(r2.name()));
-	}
+    public String code() {
+        return data.code();
+    }
 
-	
+    protected final class Data {
+
+        private final String name;
+        private final String code;
+
+        public Data(String name, String code) {
+            this.name = name;
+            this.code = code;
+        }
+
+        public String name() {
+            return name;
+        }
+
+        public String code() {
+            return code;
+        }
+    }
+
 }

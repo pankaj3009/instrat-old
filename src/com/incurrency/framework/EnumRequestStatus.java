@@ -8,6 +8,7 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumRequestStatus {SERVICED,CANCELLED,PENDING
-    
+public enum EnumRequestStatus {
+    SERVICED, CANCELLED, PENDING
+
 }

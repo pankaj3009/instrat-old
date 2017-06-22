@@ -8,6 +8,7 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumRequestType {CONTRACTDETAILS,SNAPSHOT,STREAMING,REALTIMEBAR,HISTORICAL,ESTIMATES,FINSTAT
-    
+public enum EnumRequestType {
+    CONTRACTDETAILS, SNAPSHOT, STREAMING, REALTIMEBAR, HISTORICAL, ESTIMATES, FINSTAT
+
 }

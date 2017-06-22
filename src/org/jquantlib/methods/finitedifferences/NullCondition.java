@@ -27,7 +27,7 @@ import org.jquantlib.math.matrixutilities.Array;
  */
 public class NullCondition<T extends Array> implements StepCondition<T> {
 
-	@Override
-	public void applyTo(T a, double t) {
-	}
+    @Override
+    public void applyTo(T a, double t) {
+    }
 }

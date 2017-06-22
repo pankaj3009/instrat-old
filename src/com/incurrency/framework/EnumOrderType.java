@@ -8,4 +8,6 @@ package com.incurrency.framework;
  *
  * @author admin
  */
-public enum EnumOrderType {MKT,LMT,STPLMT,STP,REL,CUSTOMREL,UNDEFINED}
+public enum EnumOrderType {
+    MKT, LMT, STPLMT, STP, REL, CUSTOMREL, UNDEFINED
+}

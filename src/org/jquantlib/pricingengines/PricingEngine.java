@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2007 StatPro Italia srl
@@ -39,7 +39,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2007 StatPro Italia srl
@@ -56,12 +56,10 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines;
 
 import org.jquantlib.util.Observable;
-
 
 /**
  * interface for pricing engines
@@ -72,25 +70,27 @@ public interface PricingEngine extends Observable {
 
     public final static String PRICING_ENGINE_NOT_SET = "Pricing engine not set";
 
-	public PricingEngine.Arguments getArguments();
-	public PricingEngine.Results getResults();
+    public PricingEngine.Arguments getArguments();
 
-	public abstract void reset();
-	public abstract void calculate() /* @ReadOnly */;
+    public PricingEngine.Results getResults();
 
+    public abstract void reset();
 
+    public abstract void calculate() /* @ReadOnly */;
 
-	//TODO: for the time being.
-	// This method must be removed from there and declared on extended interfaces when necessary /////
-	public abstract void update();
-	//////////////////////////////////////////////////////////////////////////////////////////////////
+    //TODO: for the time being.
+    // This method must be removed from there and declared on extended interfaces when necessary /////
+    public abstract void update();
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
-	public abstract interface Arguments {
-          public void validate();
+    public abstract interface Arguments {
+
+        public void validate();
     }
 
-	public abstract interface Results {
-	    public abstract void reset();
-	}
+    public abstract interface Results {
+
+        public abstract void reset();
+    }
 
 }

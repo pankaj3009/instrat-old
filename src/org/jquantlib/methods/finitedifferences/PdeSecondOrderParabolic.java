@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.methods.finitedifferences;
 
 import org.jquantlib.math.TransformedGrid;
@@ -27,10 +26,10 @@ import org.jquantlib.math.matrixutilities.Array;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public abstract class PdeSecondOrderParabolic implements Pde {
-    
+
     public void generateOperator(/* Time */double t, TransformedGrid tg, TridiagonalOperator L) {
         for (int i = 1; i < tg.size() - 1; i++) {
             double sigma = diffusion(t, tg.grid(i));
@@ -44,7 +43,9 @@ public abstract class PdeSecondOrderParabolic implements Pde {
             L.setMidRow(i, pd, pm, pu);
         }
     }
-    
-    public TransformedGrid applyGridType(Array a){ return null;}
-        
+
+    public TransformedGrid applyGridType(Array a) {
+        return null;
+    }
+
 }

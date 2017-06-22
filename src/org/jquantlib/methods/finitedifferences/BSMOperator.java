@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.methods.finitedifferences;
 
 import org.jquantlib.math.LogGrid;
@@ -33,21 +32,21 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
  */
 public class BSMOperator extends TridiagonalOperator {
 
-	public BSMOperator(final int size, final double dx, final double r, final double q, final double sigma) {
-		super(size);
-		final double sigma2 = sigma * sigma;
-		final double nu = r - q - sigma2 / 2;
-		final double pd = -(sigma2 / dx - nu) / (2 * dx);
-		final double pu = -(sigma2 / dx + nu) / (2 * dx);
-		final double pm = sigma2 / (dx * dx) + r;
-		setMidRows(pd, pm, pu);
-	}
+    public BSMOperator(final int size, final double dx, final double r, final double q, final double sigma) {
+        super(size);
+        final double sigma2 = sigma * sigma;
+        final double nu = r - q - sigma2 / 2;
+        final double pd = -(sigma2 / dx - nu) / (2 * dx);
+        final double pu = -(sigma2 / dx + nu) / (2 * dx);
+        final double pm = sigma2 / (dx * dx) + r;
+        setMidRows(pd, pm, pu);
+    }
 
-	public BSMOperator(final Array grid, final GeneralizedBlackScholesProcess process, final double residualTime) {
-		super(grid.size());
-		final LogGrid logGrid = new LogGrid(grid);
-		final PdeConstantCoeff<PdeBSM> cc = new PdeConstantCoeff<PdeBSM>(
-				PdeBSM.class, process, residualTime, process.stateVariable().currentLink().value());
-		cc.generateOperator(residualTime, logGrid, this);
-	}
+    public BSMOperator(final Array grid, final GeneralizedBlackScholesProcess process, final double residualTime) {
+        super(grid.size());
+        final LogGrid logGrid = new LogGrid(grid);
+        final PdeConstantCoeff<PdeBSM> cc = new PdeConstantCoeff<PdeBSM>(
+                PdeBSM.class, process, residualTime, process.stateVariable().currentLink().value());
+        cc.generateOperator(residualTime, logGrid, this);
+    }
 }

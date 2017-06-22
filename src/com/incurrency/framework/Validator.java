@@ -43,31 +43,32 @@ public class Validator {
         }
     }
 
-    public synchronized static String pnlSummary(Database<String,String>db,String account,Strategy s){
-         String out = "";
-         TreeMap<String,String>pnlSummary=new TreeMap<>();
-             for (String key : db.getKeys("pnl")) {
-                 if(key.contains(account)&& key.contains("_"+s.getStrategy())){
-                     out = TradingUtil.padRight(db.getValue("pnl", key, "todaypnl"), 25)
-                             + TradingUtil.padRight(db.getValue("pnl", key, "ytd"), 25);
-                             pnlSummary.put(key, out);
-                 }                 
+    public synchronized static String pnlSummary(Database<String, String> db, String account, Strategy s) {
+        String out = "";
+        TreeMap<String, String> pnlSummary = new TreeMap<>();
+        for (String key : db.getKeys("pnl")) {
+            if (key.contains(account) && key.contains("_" + s.getStrategy())) {
+                out = TradingUtil.padRight(db.getValue("pnl", key, "todaypnl"), 25)
+                        + TradingUtil.padRight(db.getValue("pnl", key, "ytd"), 25);
+                pnlSummary.put(key, out);
             }
-           out=TradingUtil.padRight("Date", 45)+TradingUtil.padRight("Today PNL", 25)+TradingUtil.padRight("YTD PNL", 25)+"\n";
-           for(Entry <String,String>e:pnlSummary.entrySet()){
-               out=out+TradingUtil.padRight(e.getKey(), 45)+e.getValue()+"\n";               
-           }  
-           return out;
+        }
+        out = TradingUtil.padRight("Date", 45) + TradingUtil.padRight("Today PNL", 25) + TradingUtil.padRight("YTD PNL", 25) + "\n";
+        for (Entry<String, String> e : pnlSummary.entrySet()) {
+            out = out + TradingUtil.padRight(e.getKey(), 45) + e.getValue() + "\n";
+        }
+        return out;
     }
-    public synchronized static boolean reconcile(String prefix, Database<String,String>orderDB, Database<String,String>tradeDB, String account, String email,String strategy, Boolean fix) {
+
+    public synchronized static boolean reconcile(String prefix, Database<String, String> orderDB, Database<String, String> tradeDB, String account, String email, String strategy, Boolean fix) {
         //for(BeanConnection c:Parameters.connection){
 //        String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
 //        String orderFileFullName = "logs" + File.separator + prefix + orderFile;
-        HashMap<String, ArrayList<Integer>> singleLegReconIssue = getPositionMismatch(orderDB, tradeDB, account, "SingleLeg",strategy);
-        HashMap<String, ArrayList<Integer>> comboReconIssue = getPositionMismatch(orderDB, tradeDB, account, "Combo",strategy);
-        Set<String> comboParents = returnComboParent(tradeDB,account,strategy);
-        Set<String> comboChildren = returnComboChildren(tradeDB,account,strategy);
-        HashMap<String, HashMap<String, ArrayList<Integer>>> comboChildrenReconIssue = reconComboChildren(comboParents, comboChildren, tradeDB,account);
+        HashMap<String, ArrayList<Integer>> singleLegReconIssue = getPositionMismatch(orderDB, tradeDB, account, "SingleLeg", strategy);
+        HashMap<String, ArrayList<Integer>> comboReconIssue = getPositionMismatch(orderDB, tradeDB, account, "Combo", strategy);
+        Set<String> comboParents = returnComboParent(tradeDB, account, strategy);
+        Set<String> comboChildren = returnComboChildren(tradeDB, account, strategy);
+        HashMap<String, HashMap<String, ArrayList<Integer>>> comboChildrenReconIssue = reconComboChildren(comboParents, comboChildren, tradeDB, account);
         String singleLegIssues = "";
         String comboIssues = "";
         String comboChildrenIssues = "";
@@ -121,45 +122,44 @@ public class Validator {
                     + newline + comboChildrenIssues;
         }
         if (!(singleLegIssues.equals("") && comboIssues.equals("") && comboChildrenIssues.equals(""))) {
-            if(fix){
-                Set<String> openorders=orderDB.getKeys("opentrades_"+strategy+"*"+"Order"); 
-                Set<String> opentrades=tradeDB.getKeys("opentrades_"+strategy+"*"+account);
-                Set<String> closedorders=orderDB.getKeys("closedtrades_"+strategy+"*"+"Order");
-                for(String tradekey:opentrades){
-                    String orderkey=tradekey.replace(":"+account, ":Order");
-                    if(!openorders.contains(orderkey)){//we have an opentrade with no openorder
+            if (fix) {
+                Set<String> openorders = orderDB.getKeys("opentrades_" + strategy + "*" + "Order");
+                Set<String> opentrades = tradeDB.getKeys("opentrades_" + strategy + "*" + account);
+                Set<String> closedorders = orderDB.getKeys("closedtrades_" + strategy + "*" + "Order");
+                for (String tradekey : opentrades) {
+                    String orderkey = tradekey.replace(":" + account, ":Order");
+                    if (!openorders.contains(orderkey)) {//we have an opentrade with no openorder
                         //see if the order was closed
-                        String neworderkey=orderkey.replace("opentrades", "closedtrades");
-                        if(closedorders.contains(neworderkey)){
+                        String neworderkey = orderkey.replace("opentrades", "closedtrades");
+                        if (closedorders.contains(neworderkey)) {
                             orderDB.rename(neworderkey, orderkey);
-                            String subkeyOrder=orderkey.split("_")[1];
-                            String subkeyTrade=tradekey.split("_")[1];
-                            
-                            String exitsize=tradeDB.getValue("opentrades",subkeyTrade,"exitsize");
-                            String exitprice=tradeDB.getValue("opentrades",subkeyTrade,"exitprice");
-                            String exitbrokerage=tradeDB.getValue("opentrades",subkeyTrade,"exitbrokerage");
-                            exitsize=exitsize==null?"0":exitsize;
-                            exitprice=exitprice==null?"0":exitprice;
-                            exitbrokerage=exitbrokerage==null?"0":exitbrokerage;
+                            String subkeyOrder = orderkey.split("_")[1];
+                            String subkeyTrade = tradekey.split("_")[1];
+
+                            String exitsize = tradeDB.getValue("opentrades", subkeyTrade, "exitsize");
+                            String exitprice = tradeDB.getValue("opentrades", subkeyTrade, "exitprice");
+                            String exitbrokerage = tradeDB.getValue("opentrades", subkeyTrade, "exitbrokerage");
+                            exitsize = exitsize == null ? "0" : exitsize;
+                            exitprice = exitprice == null ? "0" : exitprice;
+                            exitbrokerage = exitbrokerage == null ? "0" : exitbrokerage;
                             orderDB.setHash("opentrades", subkeyOrder, "exitsize", exitsize);
                             orderDB.setHash("opentrades", subkeyOrder, "exitprice", exitprice);
                             orderDB.setHash("opentrades", subkeyOrder, "exitbrokerage", exitbrokerage);
-                        }                    
+                        }
                     }
                 }
-            } else{
-            System.out.println(singleLegIssues + newline + comboIssues + newline + comboChildrenIssues);
-            Thread t = new Thread(new Mail(email, singleLegIssues + newline + comboIssues + newline + comboChildrenIssues, "ACTION NEEDED: Recon difference, Files : " + "TradeFile" + " , " + "OrderFile"));
-            t.start();
+            } else {
+                System.out.println(singleLegIssues + newline + comboIssues + newline + comboChildrenIssues);
+                Thread t = new Thread(new Mail(email, singleLegIssues + newline + comboIssues + newline + comboChildrenIssues, "ACTION NEEDED: Recon difference, Files : " + "TradeFile" + " , " + "OrderFile"));
+                t.start();
             }
             return reconStatus;
         } else {
-            System.out.println("Trade and Order Files Reconile for account " + account+";"+strategy + "  !");
+            System.out.println("Trade and Order Files Reconile for account " + account + ";" + strategy + "  !");
             return reconStatus;
         }
 
         //}
-
     }
 
     public synchronized static String openPositions(String account, Strategy s) {
@@ -168,71 +168,71 @@ public class Validator {
         //String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
         try {
             ArrayList<String> tradeList = new ArrayList<>();
-            for (String key : s.getDb().getKeys("opentrades_"+s.getStrategy())) {
+            for (String key : s.getDb().getKeys("opentrades_" + s.getStrategy())) {
                 tradeList.add(key);
             }
-            Set<String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account,s.getStrategy());
-            Set<String> comboTrades = returnComboParent(s.getOms().getDb(), account,s.getStrategy());
+            Set<String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account, s.getStrategy());
+            Set<String> comboTrades = returnComboParent(s.getOms().getDb(), account, s.getStrategy());
             boolean headerWritten = false;
             for (String key : singleLegTrades) {
                 if (!headerWritten) {
                     out = out + "List of OpenPositions" + newline;
-                    out = out +  TradingUtil.padRight("ID", 10)+TradingUtil.padRight("Time", 25) + TradingUtil.padRight("Symbol", 40) + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + TradingUtil.padRight("Brok", 10) + TradingUtil.padRight("MTM", 10) + TradingUtil.padRight("Position", 10) + newline;
+                    out = out + TradingUtil.padRight("ID", 10) + TradingUtil.padRight("Time", 25) + TradingUtil.padRight("Symbol", 40) + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + TradingUtil.padRight("Brok", 10) + TradingUtil.padRight("MTM", 10) + TradingUtil.padRight("Position", 10) + newline;
                     headerWritten = true;
                 }
-                int id=Trade.getEntryOrderIDInternal(s.getOms().getDb(), key);
-                int entrySize = Trade.getEntrySize(s.getOms().getDb(),key);
-                int exitSize = Trade.getExitSize(s.getOms().getDb(),key);
-                String entryTime = Trade.getEntryTime(s.getOms().getDb(),key);
-                String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(),key);
-                EnumOrderSide entrySide = Trade.getEntrySide(s.getOms().getDb(),key);
-                double entryPrice = Trade.getEntryPrice(s.getOms().getDb(),key);
-                double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(),key);
-                
+                int id = Trade.getEntryOrderIDInternal(s.getOms().getDb(), key);
+                int entrySize = Trade.getEntrySize(s.getOms().getDb(), key);
+                int exitSize = Trade.getExitSize(s.getOms().getDb(), key);
+                String entryTime = Trade.getEntryTime(s.getOms().getDb(), key);
+                String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(), key);
+                EnumOrderSide entrySide = Trade.getEntrySide(s.getOms().getDb(), key);
+                double entryPrice = Trade.getEntryPrice(s.getOms().getDb(), key);
+                double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(), key);
+
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 JDate today = new JDate(TradingUtil.getAlgoDate());
                 String todayString = sdf.format(today.isoDate());
                 JDate yesterday = today.sub(1);
                 yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
                 String yesterdayString = sdf.format(yesterday.isoDate());
-                String parentDisplayName=Trade.getParentSymbol(s.getOms().getDb(), key);
+                String parentDisplayName = Trade.getParentSymbol(s.getOms().getDb(), key);
                 double mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, todayString);
                 if (mtmToday == 0) {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
                 }
                 if (entrySize - exitSize != 0) {
-                    out = out +TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryPrice,2)), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage,2)), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(mtmToday, 0)), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
+                    out = out + TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryPrice, 2)), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage, 2)), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(mtmToday, 0)), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                 }
             }
             for (String key : comboTrades) {
                 if (!headerWritten) {
                     out = out + "List of OpenPositions" + newline;
-                    int entrySize = Trade.getEntrySize(s.getOms().getDb(),key);
-                    int exitSize = Trade.getExitSize(s.getOms().getDb(),key);
-                    out = out + TradingUtil.padRight("ID", 10)+","+TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10) + "," + TradingUtil.padRight("Position", 10) + "," + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
+                    int entrySize = Trade.getEntrySize(s.getOms().getDb(), key);
+                    int exitSize = Trade.getExitSize(s.getOms().getDb(), key);
+                    out = out + TradingUtil.padRight("ID", 10) + "," + TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10) + "," + TradingUtil.padRight("Position", 10) + "," + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                     headerWritten = true;
                 }
-                int id=Trade.getParentEntryOrderIDInternal(s.getOms().getDb(), key);
-                int entrySize = Trade.getEntrySize(s.getOms().getDb(),key);
-                int exitSize = Trade.getExitSize(s.getOms().getDb(),key);
-                String entryTime = Trade.getEntryTime(s.getOms().getDb(),key);
-                String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(),key);
-                EnumOrderSide entrySide = Trade.getEntrySide(s.getOms().getDb(),key);
-                double entryPrice = Trade.getEntryPrice(s.getOms().getDb(),key);
-                double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(),key);
+                int id = Trade.getParentEntryOrderIDInternal(s.getOms().getDb(), key);
+                int entrySize = Trade.getEntrySize(s.getOms().getDb(), key);
+                int exitSize = Trade.getExitSize(s.getOms().getDb(), key);
+                String entryTime = Trade.getEntryTime(s.getOms().getDb(), key);
+                String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(), key);
+                EnumOrderSide entrySide = Trade.getEntrySide(s.getOms().getDb(), key);
+                double entryPrice = Trade.getEntryPrice(s.getOms().getDb(), key);
+                double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(), key);
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 JDate today = new JDate(TradingUtil.getAlgoDate());
                 String todayString = sdf.format(today.isoDate());
                 JDate yesterday = today.sub(1);
                 yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
                 String yesterdayString = sdf.format(yesterday.isoDate());
-                String parentDisplayName=Trade.getParentSymbol(s.getOms().getDb(), key);
+                String parentDisplayName = Trade.getParentSymbol(s.getOms().getDb(), key);
                 double mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, todayString);
                 if (mtmToday == 0) {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
                 }
                 if (entrySize - exitSize != 0) {
-                    out = out + TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) +  TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(Utilities.formatDouble(entryPrice, new DecimalFormat("#.##")), 10) + "," + TradingUtil.padRight(Utilities.formatDouble(entryPrice, new DecimalFormat("#")), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
+                    out = out + TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(Utilities.formatDouble(entryPrice, new DecimalFormat("#.##")), 10) + "," + TradingUtil.padRight(Utilities.formatDouble(entryPrice, new DecimalFormat("#")), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
                 }
             }
         } catch (Exception e) {
@@ -280,15 +280,14 @@ public class Validator {
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_3"});
                     } else {
                         String ud = input[2] + "_" + input[4] + "_" + input[8] + "_" + input[9] + "_" + input[10];
-                        if(!uniqueDisplayName.containsKey(ud))
-                        {
+                        if (!uniqueDisplayName.containsKey(ud)) {
                             uniqueDisplayName.put(ud, input);
-                        }else{
-                        logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"DuplicateSymbols_" + ud});
-                  
+                        } else {
+                            logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"DuplicateSymbols_" + ud});
+
                         }
                     }
-                    
+
                     if (input[4] == null) {//type
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_5"});
@@ -440,22 +439,22 @@ public class Validator {
         return true;
     }
 
-    public static HashMap<String, ArrayList<Integer>> getPositionMismatch(Database<String,String>orderDB, Database<String,String>tradeDB, String account, String reconType,String strategy) {
+    public static HashMap<String, ArrayList<Integer>> getPositionMismatch(Database<String, String> orderDB, Database<String, String> tradeDB, String account, String reconType, String strategy) {
         HashMap<String, ArrayList<Integer>> out = new HashMap<>();
         Set<String> t = new HashSet<>();
         Set<String> o = new HashSet<>();
 
         switch (reconType) {
             case "SingleLeg":
-                t = returnSingleLegTrades(tradeDB,account,strategy);
-                o = returnSingleLegTrades(orderDB,"Order",strategy);
-                out = reconTrades(t, o, account, "Order",orderDB,tradeDB);
+                t = returnSingleLegTrades(tradeDB, account, strategy);
+                o = returnSingleLegTrades(orderDB, "Order", strategy);
+                out = reconTrades(t, o, account, "Order", orderDB, tradeDB);
                 break;
 
             case "Combo":
-                t = returnComboParent(tradeDB,account,strategy);
-                o = returnComboParent(orderDB,"Order",strategy);
-                out = reconTrades(t, o, account, "Order",orderDB,tradeDB);
+                t = returnComboParent(tradeDB, account, strategy);
+                o = returnComboParent(orderDB, "Order", strategy);
+                out = reconTrades(t, o, account, "Order", orderDB, tradeDB);
                 break;
             default:
                 break;
@@ -464,33 +463,33 @@ public class Validator {
         return out;
     }
 
-    private static Set<String> returnSingleLegTrades(Database<String,String>db) {
-         //Remove orders that are not in symbolist
-        Set<String> keys=db.getKeys("closedtrades");
+    private static Set<String> returnSingleLegTrades(Database<String, String> db) {
+        //Remove orders that are not in symbolist
+        Set<String> keys = db.getKeys("closedtrades");
         keys.addAll(db.getKeys("opentrades"));
-        Iterator<String> iter=keys.iterator();
-        while(iter.hasNext()){
-            String key=iter.next();
-            String childdisplayname = Trade.getEntrySymbol(db,key);
+        Iterator<String> iter = keys.iterator();
+        while (iter.hasNext()) {
+            String key = iter.next();
+            String childdisplayname = Trade.getEntrySymbol(db, key);
             if (Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname) == -1) {
                 iter.remove();
             }
         }
-        iter=keys.iterator();
-        while(iter.hasNext()){
-            String key=iter.next();
-            if(isCombo(db,key)){
+        iter = keys.iterator();
+        while (iter.hasNext()) {
+            String key = iter.next();
+            if (isCombo(db, key)) {
                 iter.remove();
             }
-        
+
         }
         return keys;
 
     }
 
-    private static Set<String> returnSingleLegTrades(Database<String, String> db,String accountName, String strategy) {
+    private static Set<String> returnSingleLegTrades(Database<String, String> db, String accountName, String strategy) {
         //Remove orders that are not in symbolist or are combos
-        Set<String> keys = db.getKeys("opentrades_"+strategy);
+        Set<String> keys = db.getKeys("opentrades_" + strategy);
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
@@ -499,8 +498,8 @@ public class Validator {
              */
             //String childdisplayname = Trade.getEntrySymbol(db, key);
             //int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-           // if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || isCombo(db, key)) {
-            if (!Trade.getAccountName(db, key).equals(accountName) || !key.contains("_"+strategy)||isCombo(db, key)) {
+            // if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || isCombo(db, key)) {
+            if (!Trade.getAccountName(db, key).equals(accountName) || !key.contains("_" + strategy) || isCombo(db, key)) {
                 iter.remove();
             }
         }
@@ -521,7 +520,7 @@ public class Validator {
         }
     }
 
-       private static boolean isComboParent(Database<String, String> db, String key) {
+    private static boolean isComboParent(Database<String, String> db, String key) {
         int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, Trade.getParentSymbol(db, key));
         String type = "";
         if (parentid >= 0) {
@@ -534,39 +533,39 @@ public class Validator {
         }
     }
 
-    private static Set<String> returnComboParent(Database<String,String>db) {
-         //Remove orders that are not in symbolist
-        Set<String> keys=db.getKeys("closedtrades");
+    private static Set<String> returnComboParent(Database<String, String> db) {
+        //Remove orders that are not in symbolist
+        Set<String> keys = db.getKeys("closedtrades");
         keys.addAll(db.getKeys("opentrades"));
-        Iterator<String> iter=keys.iterator();
-        while(iter.hasNext()){
-            String key=iter.next();
-            String childdisplayname = Trade.getEntrySymbol(db,key);
+        Iterator<String> iter = keys.iterator();
+        while (iter.hasNext()) {
+            String key = iter.next();
+            String childdisplayname = Trade.getEntrySymbol(db, key);
             if (Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname) == -1) {
                 iter.remove();
             }
         }
-        
-        iter=keys.iterator();
-        while(iter.hasNext()){
-            String key=iter.next();
-            if(!isComboParent(db,key)){
+
+        iter = keys.iterator();
+        while (iter.hasNext()) {
+            String key = iter.next();
+            if (!isComboParent(db, key)) {
                 iter.remove();
             }
-        
+
         }
         return keys;
     }
 
-    private static Set<String> returnComboParent(Database<String, String> db, String accountName,String strategy) {
+    private static Set<String> returnComboParent(Database<String, String> db, String accountName, String strategy) {
         //Remove orders that are not in symbolist or are combos
-        Set<String> keys = db.getKeys("opentrades_"+strategy);
+        Set<String> keys = db.getKeys("opentrades_" + strategy);
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || !isComboParent(db, key)) {
+            if (!Trade.getAccountName(db, key).equals(accountName) || !key.contains("_" + strategy) || childid < 0 || !isComboParent(db, key)) {
                 iter.remove();
             }
         }
@@ -574,15 +573,15 @@ public class Validator {
 
     }
 
-    private static Set<String> returnComboChildren(Database<String,String>db,String accountName,String strategy) {
+    private static Set<String> returnComboChildren(Database<String, String> db, String accountName, String strategy) {
         //Remove orders that are not in symbolist or are combos
-        Set<String> keys = db.getKeys("opentrades_"+strategy);
+        Set<String> keys = db.getKeys("opentrades_" + strategy);
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || !(isCombo(db,key)&& !isComboParent(db, key))) {
+            if (!Trade.getAccountName(db, key).equals(accountName) || !key.contains("_" + strategy) || childid < 0 || !(isCombo(db, key) && !isComboParent(db, key))) {
                 iter.remove();
             }
         }
@@ -590,7 +589,7 @@ public class Validator {
 
     }
 
-    private static HashMap<String, ArrayList<Integer>> reconTrades(Set<String> tr, Set<String> or, String tradeAccount, String orderAccount,Database<String,String>orderDB,Database<String,String>tradeDB) {
+    private static HashMap<String, ArrayList<Integer>> reconTrades(Set<String> tr, Set<String> or, String tradeAccount, String orderAccount, Database<String, String> orderDB, Database<String, String> tradeDB) {
         HashMap<String, ArrayList<Integer>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, Integer> tradePosition = new TreeMap<>();
         SortedMap<String, Integer> orderPosition = new TreeMap<>();
@@ -672,7 +671,7 @@ public class Validator {
         return out;
     }
 
-    private static HashMap<String, HashMap<String, ArrayList<Integer>>> reconComboChildren(Set<String> combos, Set<String> children,Database<String,String>tradeDB,String tradeAccount) {
+    private static HashMap<String, HashMap<String, ArrayList<Integer>>> reconComboChildren(Set<String> combos, Set<String> children, Database<String, String> tradeDB, String tradeAccount) {
         HashMap<String, HashMap<String, ArrayList<Integer>>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, HashMap<String, Integer>> comboPosition = new TreeMap<>();
         SortedMap<String, HashMap<String, Integer>> childPosition = new TreeMap<>();
@@ -819,7 +818,6 @@ public class Validator {
             out.put(s, Integer.parseInt(components[5]));
         }
         return out;
-
 
     }
 }

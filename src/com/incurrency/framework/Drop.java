@@ -13,6 +13,8 @@ import java.util.logging.Logger;
  */
 public class Drop {
 
+    private static final Logger logger = Logger.getLogger(Drop.class.getName());
+
     // Message sent from producer to consumer.
     private String message;
     // True if consumer should wait
@@ -20,8 +22,7 @@ public class Drop {
     // false if producer should wait for
     // consumer to retrieve message.
     private boolean empty = true;
-    private static final Logger logger = Logger.getLogger(Drop.class.getName());
-    
+
     public synchronized String take() {
         // Wait until message is
         // available.
@@ -39,20 +40,20 @@ public class Drop {
         notifyAll();
         return message;
     }
-    
-    public synchronized boolean empty(){
+
+    public synchronized boolean empty() {
         return empty;
-    } 
-    
-    public synchronized String value(){
+    }
+
+    public synchronized String value() {
         return message;
     }
-    
+
     public synchronized void put(String message) {
         // Wait until message has
         // been retrieved.
         while (!empty) {
-            try {                
+            try {
                 wait();
             } catch (InterruptedException e) {
                 logger.log(Level.INFO, "101", e);

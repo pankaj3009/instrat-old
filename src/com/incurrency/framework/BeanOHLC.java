@@ -14,7 +14,9 @@ import java.util.logging.Logger;
  *
  * @author jaya
  */
-public class BeanOHLC  implements PropertyChangeListener {
+public class BeanOHLC implements PropertyChangeListener {
+
+    private final static Logger logger = Logger.getLogger(BeanOHLC.class.getName());
 
     private EnumBarSize periodicity;
     private int id;
@@ -26,14 +28,13 @@ public class BeanOHLC  implements PropertyChangeListener {
     private long volume;
     public long totalvolume;
     private long oi;
-    private final static Logger logger = Logger.getLogger(BeanOHLC.class.getName());
-    private int barduration=60;
+    private int barduration = 60;
 
-    public BeanOHLC(int id,int duration){
-        this.barduration=duration;
+    public BeanOHLC(int id, int duration) {
+        this.barduration = duration;
         Parameters.symbol.get(id).addPropertyChangeListener(this);
     }
-    
+
     public BeanOHLC(BeanOHLC ohlc) {
         this.openTime = ohlc.getOpenTime();
         this.open = ohlc.getOpen();
@@ -55,7 +56,7 @@ public class BeanOHLC  implements PropertyChangeListener {
     }
 
     public BeanOHLC() {
-        
+
     }
 
     /**
@@ -163,7 +164,6 @@ public class BeanOHLC  implements PropertyChangeListener {
 
         }
     }
-    
 
     /**
      * @return the barduration

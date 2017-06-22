@@ -18,38 +18,39 @@ import java.util.logging.Logger;
  * @author pankaj
  */
 public class MarketDataForm extends javax.swing.JFrame {
-    
+
     private int rowno;
-     private static final Logger logger = Logger.getLogger(MarketDataForm.class.getName());
+    private static final Logger logger = Logger.getLogger(MarketDataForm.class.getName());
 
     /**
      * Creates new form MarketData
      */
     public MarketDataForm(int rowno) {
         initComponents();
-        this.rowno=rowno;
-        BeanSymbol s=Parameters.symbol.get(rowno);
-        String symbol=s.getBrokerSymbol()+"_"+s.getType()+"_"+s.getExchange();
-        if(s.getExpiry()!=null){
-            symbol=symbol+"_"+s.getExpiry();
+        this.rowno = rowno;
+        BeanSymbol s = Parameters.symbol.get(rowno);
+        String symbol = s.getBrokerSymbol() + "_" + s.getType() + "_" + s.getExchange();
+        if (s.getExpiry() != null) {
+            symbol = symbol + "_" + s.getExpiry();
         }
-        if(s.getRight()!=null){
-            symbol=symbol+"_"+s.getRight()+"_"+s.getOption();
+        if (s.getRight() != null) {
+            symbol = symbol + "_" + s.getRight() + "_" + s.getOption();
         }
         this.lblSymbol.setText(symbol);
-        if(globalProperties.getProperty("datasource")!=null ){
-            String dataSource=globalProperties.getProperty("datasource").toString().trim();
+        if (globalProperties.getProperty("datasource") != null) {
+            String dataSource = globalProperties.getProperty("datasource").toString().trim();
             this.lblCurrentAccount.setText(dataSource);
-        }else if(s.getConnectionidUsedForMarketData()>=0){
+        } else if (s.getConnectionidUsedForMarketData() >= 0) {
             this.lblCurrentAccount.setText(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getAccountName());
             this.lblCurrentPort.setText(Integer.toString(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getPort()));
             this.lblCurrentClientID.setText(Integer.toString(Parameters.connection.get(s.getConnectionidUsedForMarketData()).getClientID()));
         }
         this.lblLatestTime.setText(DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", s.getLastPriceTime()));
-        for(BeanConnection c: Parameters.connection){
-            this.comboNewAccount.addItem(c.getAccountName());        
+        for (BeanConnection c : Parameters.connection) {
+            this.comboNewAccount.addItem(c.getAccountName());
+        }
     }
-    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -270,20 +271,19 @@ public class MarketDataForm extends javax.swing.JFrame {
 
     private void cmdStartStreamingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdStartStreamingActionPerformed
         //first cancel data request
-        BeanSymbol s=Parameters.symbol.get(getRowno());
-        int oldconnection=s.getConnectionidUsedForMarketData();
-        int newconnection=this.comboNewAccount.getSelectedIndex();
-        if(oldconnection>=0){
-        Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
-        s.setConnectionidUsedForMarketData(newconnection);
+        BeanSymbol s = Parameters.symbol.get(getRowno());
+        int oldconnection = s.getConnectionidUsedForMarketData();
+        int newconnection = this.comboNewAccount.getSelectedIndex();
+        if (oldconnection >= 0) {
+            Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+            s.setConnectionidUsedForMarketData(newconnection);
         }
         Contract con;
-        con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
-        try{
-        Parameters.connection.get(newconnection).getWrapper().getMktData(s,false);
-        }
-        catch (Exception e){
-            logger.log(Level.SEVERE,null,e);
+        con = Parameters.connection.get(newconnection).getWrapper().createContract(s);
+        try {
+            Parameters.connection.get(newconnection).getWrapper().getMktData(s, false);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
         }
     }//GEN-LAST:event_cmdStartStreamingActionPerformed
 
@@ -293,27 +293,26 @@ public class MarketDataForm extends javax.swing.JFrame {
 
     private void cmdStartSnapshotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdStartSnapshotActionPerformed
         //first cancel data request
-        BeanSymbol s=Parameters.symbol.get(getRowno());
-        int oldconnection=s.getConnectionidUsedForMarketData();
-        int newconnection=this.comboNewAccount.getSelectedIndex();
-        if(oldconnection>=0){
-        Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+        BeanSymbol s = Parameters.symbol.get(getRowno());
+        int oldconnection = s.getConnectionidUsedForMarketData();
+        int newconnection = this.comboNewAccount.getSelectedIndex();
+        if (oldconnection >= 0) {
+            Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
         }
 //        Contract con;
 //        con=Parameters.connection.get(newconnection).getWrapper().createContract(s);
-        try{
-        Parameters.connection.get(newconnection).getWrapper().getMktData(s,true);
-        }
-        catch (Exception e){
-            logger.log(Level.SEVERE,null,e);
+        try {
+            Parameters.connection.get(newconnection).getWrapper().getMktData(s, true);
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
         }
     }//GEN-LAST:event_cmdStartSnapshotActionPerformed
 
     private void cmdStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdStopActionPerformed
-        BeanSymbol s=Parameters.symbol.get(getRowno());
-        int oldconnection=s.getConnectionidUsedForMarketData();
-        if(oldconnection>=0){
-        Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
+        BeanSymbol s = Parameters.symbol.get(getRowno());
+        int oldconnection = s.getConnectionidUsedForMarketData();
+        if (oldconnection >= 0) {
+            Parameters.connection.get(oldconnection).getWrapper().cancelMarketData(s);
         }
     }//GEN-LAST:event_cmdStopActionPerformed
 
@@ -334,7 +333,8 @@ public class MarketDataForm extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(Level.SEVERE,null,ex);        }
+            logger.log(Level.SEVERE, null, ex);
+        }
         //</editor-fold>
 
         /* Create and display the form */
@@ -345,37 +345,37 @@ public class MarketDataForm extends javax.swing.JFrame {
             }
         });
     }
-    
-    public static void stopVisible(boolean state){
+
+    public static void stopVisible(boolean state) {
         cmdStop.setVisible(state);
     }
-    
-        public static void streamingVisible(boolean state){
+
+    public static void streamingVisible(boolean state) {
         cmdStartStreaming.setVisible(state);
     }
-        
-            public static void snapShotVisible(boolean state){
+
+    public static void snapShotVisible(boolean state) {
         cmdStartSnapshot.setVisible(state);
     }
-        public static void closeVisible(boolean state){
+
+    public static void closeVisible(boolean state) {
         cmdClose.setVisible(state);
     }
 
     /**
      * @return the rowno
      */
-    public  int getRowno() {
+    public int getRowno() {
         return rowno;
     }
 
     /**
      * @param rowno the rowno to set
      */
-    public  void setRowno(int rowno) {
+    public void setRowno(int rowno) {
         this.rowno = rowno;
     }
 
-        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private static javax.swing.JButton cmdClose;
     private static javax.swing.JButton cmdStartSnapshot;

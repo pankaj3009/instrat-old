@@ -11,6 +11,18 @@ package com.incurrency.framework;
  */
 public class BeanCassandraConnection {
 
+    private String cassandraIP;
+    private int cassandraPort;
+    private String topic;
+    private boolean saveToCassandra;
+    private String tickEquityMetric;
+    private String tickFutureMetric;
+    private String tickOptionMetric;
+    private String rtEquityMetric;
+    private String rtFutureMetric;
+    private String rtOptionMetric;
+    private boolean realtime;
+
     /**
      * @return the cassandraIP
      */
@@ -164,16 +176,5 @@ public class BeanCassandraConnection {
     public void setRealtime(boolean realtime) {
         this.realtime = realtime;
     }
-    private String cassandraIP;
-    private int cassandraPort;
-    private String topic;
-    private boolean saveToCassandra;
-    private String tickEquityMetric;
-    private String tickFutureMetric;
-    private String tickOptionMetric;
-    private String rtEquityMetric;
-    private String rtFutureMetric;
-    private String rtOptionMetric;
-    private boolean realtime;
 
 }

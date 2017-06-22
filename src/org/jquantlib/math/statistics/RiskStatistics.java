@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 RiskMap srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.statistics;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -45,14 +44,14 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 
 /**
  * This class is simply an equivalence to GenericRiskStatistics
- * 
+ *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q4_UNIT, reviewers = { "Richard Gomes" }, version = Version.V097)
+@QualityAssurance(quality = Quality.Q4_UNIT, reviewers = {"Richard Gomes"}, version = Version.V097)
 public class RiskStatistics extends GenericRiskStatistics {
 
-	public RiskStatistics() {
-		super();
-	}
+    public RiskStatistics() {
+        super();
+    }
 
 }

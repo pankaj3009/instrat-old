@@ -20,7 +20,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2006 Ferdinando Ametrano
  Copyright (C) 2007, 2008 StatPro Italia srl
@@ -38,7 +38,6 @@ When applicable, the original copyright notice follows this notice.
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.instruments;
 
 import java.util.ArrayList;
@@ -57,7 +56,8 @@ import org.jquantlib.time.JDate;
 /**
  * Interest rate swap
  * <p>
- * The cash flows belonging to the first leg are paid; the ones belonging to the second leg are received.
+ * The cash flows belonging to the first leg are paid; the ones belonging to the
+ * second leg are received.
  *
  * @category instruments
  *
@@ -70,11 +70,9 @@ public class Swap extends Instrument {
     protected double[] legNPV;
     protected double[] legBPS;
 
-
     //
     // public constructors
     //
-
     public Swap(final Leg firstLeg, final Leg secondLeg) {
 
         if (System.getProperty("EXPERIMENTAL") == null) {
@@ -121,29 +119,25 @@ public class Swap extends Instrument {
         }
     }
 
-
     //
     // protected constructors
     //
-
     protected Swap(final int legs) {
         if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
         }
 
-        this.legs   = new ArrayList<Leg>();
-        this.payer  = new double[legs];
+        this.legs = new ArrayList<Leg>();
+        this.payer = new double[legs];
         this.legNPV = new double[legs];
         this.legBPS = new double[legs];
     }
 
-
     //
     // public methods
     //
-
     public JDate startDate() /* @ReadOnly */ {
-        QL.require(legs.size() > 0 , "no legs given"); // TODO: message
+        QL.require(legs.size() > 0, "no legs given"); // TODO: message
         JDate d = CashFlows.getInstance().startDate(this.legs.get(0));
         for (int j = 1; j < this.legs.size(); j++) {
             d = JDate.min(d, CashFlows.getInstance().startDate(this.legs.get(j)));
@@ -152,7 +146,7 @@ public class Swap extends Instrument {
     }
 
     public JDate maturityDate() /* @ReadOnly */ {
-        QL.require(legs.size() > 0 , "no legs given"); // TODO: message
+        QL.require(legs.size() > 0, "no legs given"); // TODO: message
         JDate d = CashFlows.getInstance().maturityDate(this.legs.get(0));
         for (int j = 1; j < this.legs.size(); j++) {
             d = JDate.max(d, CashFlows.getInstance().maturityDate(this.legs.get(j)));
@@ -160,11 +154,9 @@ public class Swap extends Instrument {
         return d;
     }
 
-
     //
     // overrides Instrument
     //
-
     @Override
     public boolean isExpired() /* @ReadOnly */ {
         final JDate today = new Settings().evaluationDate();
@@ -187,7 +179,7 @@ public class Swap extends Instrument {
 
     @Override
     public void setupArguments(final PricingEngine.Arguments arguments) /* @ReadOnly */ {
-        final Swap.ArgumentsImpl a = (Swap.ArgumentsImpl)arguments;
+        final Swap.ArgumentsImpl a = (Swap.ArgumentsImpl) arguments;
         a.legs = legs;
         a.payer = payer;
     }
@@ -196,57 +188,35 @@ public class Swap extends Instrument {
     public void fetchResults(final PricingEngine.Results results) /* @ReadOnly */ {
         super.fetchResults(results);
 
-        final Swap.ResultsImpl r = (Swap.ResultsImpl)results;
+        final Swap.ResultsImpl r = (Swap.ResultsImpl) results;
         if (r.legNPV.length > 0) {
-            QL.require(r.legNPV.length == legNPV.length , "wrong number of leg NPV returned"); // TODO: message
+            QL.require(r.legNPV.length == legNPV.length, "wrong number of leg NPV returned"); // TODO: message
             legNPV = r.legNPV;
         } else {
             Arrays.fill(legNPV, Constants.NULL_REAL);
         }
 
         if (r.legBPS.length > 0) {
-            QL.require(r.legBPS.length == legBPS.length , "wrong number of leg BPS returned"); // TODO: message
+            QL.require(r.legBPS.length == legBPS.length, "wrong number of leg BPS returned"); // TODO: message
             legBPS = r.legBPS;
         } else {
             Arrays.fill(legBPS, Constants.NULL_REAL);
         }
     }
 
-
-    //
-    // public inner interfaces
-    //
-
-    /**
-     * Basic swap arguments
-     *
-     * @author Richard Gomes
-     */
-    public interface Arguments extends Instrument.Arguments { /* marking interface */ }
-
-
-    /**
-     * Basic swap results
-     *
-     * @author Richard Gomes
-     */
-    public interface Results extends Instrument.Results { /* marking interface */ }
-
-
     //
     // public inner classes
     //
-
     static public class ArgumentsImpl implements Swap.Arguments {
+
         public List<Leg> legs;
         public double[] payer;
 
         @Override
         public void validate() /* @ReadOnly */ {
-            QL.require(legs.size() == payer.length , "number of legs and multipliers differ"); // TODO: message
+            QL.require(legs.size() == payer.length, "number of legs and multipliers differ"); // TODO: message
         }
     }
-
 
     static public class ResultsImpl extends Instrument.ResultsImpl implements Swap.Results {
 
@@ -276,5 +246,24 @@ public class Swap extends Instrument {
             // nothing
         }
     }
+    //
+    // public inner interfaces
+    //
+
+    /**
+     * Basic swap arguments
+     *
+     * @author Richard Gomes
+     */
+    public interface Arguments extends Instrument.Arguments {
+        /* marking interface */ }
+
+    /**
+     * Basic swap results
+     *
+     * @author Richard Gomes
+     */
+    public interface Results extends Instrument.Results {
+        /* marking interface */ }
 
 }

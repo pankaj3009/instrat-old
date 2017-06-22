@@ -9,5 +9,5 @@ package com.incurrency.framework;
  * @author admin
  */
 public enum EnumSource {
-    IB,CASSANDRA
+    IB, CASSANDRA
 }

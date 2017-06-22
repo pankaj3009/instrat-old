@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Allen Kuo
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,7 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.instruments;
 
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -44,29 +44,29 @@ import org.jquantlib.lang.exceptions.LibraryException;
  * @author John Martin
  */
 public enum Position {
-	Long(1),
-	Short(-1);
+    Long(1),
+    Short(-1);
 
     private static final String UNKNOWN_POSITION_TYPE = "Unknown Position Type";
 
-	private int value;
+    private int value;
 
-	private Position(final int type) {
-		this.value = type;
-	}
+    private Position(final int type) {
+        this.value = type;
+    }
 
-	public int toInteger() {
-		return value;
-	}
+    public int toInteger() {
+        return value;
+    }
 
-	@Override
-	public String toString() {
-		if (value == 1) {
-			return "Long";
-		}
-		if (value == -1) {
-			return "Short";
-		}
-		throw new LibraryException(UNKNOWN_POSITION_TYPE);
-	}
+    @Override
+    public String toString() {
+        if (value == 1) {
+            return "Long";
+        }
+        if (value == -1) {
+            return "Short";
+        }
+        throw new LibraryException(UNKNOWN_POSITION_TYPE);
+    }
 }

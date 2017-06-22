@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2006 Ferdinando Ametrano
  Copyright (C) 2006 Warren Chou
  Copyright (C) 2006, 2008 StatPro Italia srl
@@ -38,8 +38,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.instruments;
 
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -56,7 +55,6 @@ public class NullPayoff extends Payoff {
     //
     // overrides Payoff
     //
-
     @Override
     public String name() /* @ReadOnly */ {
         return "Null";
@@ -72,14 +70,12 @@ public class NullPayoff extends Payoff {
         throw new LibraryException("dummy payoff given");
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<NullPayoff> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<NullPayoff> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

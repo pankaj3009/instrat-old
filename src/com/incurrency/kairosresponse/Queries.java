@@ -21,32 +21,30 @@ import java.util.List;
 /**
  * Resulting object from a Query.
  */
-public class Queries
-{
-	private List<Results> results;
+public class Queries {
 
-	@SerializedName("sample_size")
-	private long sampleSize;
+    private List<Results> results;
 
-	public Queries(List<Results> results, long sampleSize)
-	{
-		this.results = results;
-		this.sampleSize = sampleSize;
-	}
+    @SerializedName("sample_size")
+    private long sampleSize;
 
-	public List<Results> getResults()
-	{
-		return results;
-	}
+    public Queries(List<Results> results, long sampleSize) {
+        this.results = results;
+        this.sampleSize = sampleSize;
+    }
 
-	/**
-	 * Returns the number of data points returned by the query prior to aggregation. Aggregation by reduce the number
-	 * of data points actually returned.
-	 *
-	 * @return number of data points returned by the query
-	 */
-	public long getSampleSize()
-	{
-		return sampleSize;
-	}
+    public List<Results> getResults() {
+        return results;
+    }
+
+    /**
+     * Returns the number of data points returned by the query prior to
+     * aggregation. Aggregation by reduce the number of data points actually
+     * returned.
+     *
+     * @return number of data points returned by the query
+     */
+    public long getSampleSize() {
+        return sampleSize;
+    }
 }

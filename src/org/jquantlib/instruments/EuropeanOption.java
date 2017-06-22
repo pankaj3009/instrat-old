@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.instruments;
 
 import org.jquantlib.exercise.Exercise;
@@ -51,10 +50,10 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality=Quality.Q3_DOCUMENTATION, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = "Richard Gomes")
 public class EuropeanOption extends VanillaOption {
 
-	public EuropeanOption(final Payoff payoff, final Exercise exercise) {
-		super(payoff, exercise);
-	}
+    public EuropeanOption(final Payoff payoff, final Exercise exercise) {
+        super(payoff, exercise);
+    }
 }

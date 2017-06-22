@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
  Copyright (C) 2004 Ferdinando Ametrano
@@ -36,11 +36,9 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math;
 
 import org.jquantlib.math.matrixutilities.Array;
-
 
 /**
  * @author Dominik Holenstein
@@ -48,10 +46,6 @@ import org.jquantlib.math.matrixutilities.Array;
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 // TODO: remove statics
 public final class Grid {
-
-    private Grid() {
-        // avoid creation of this class
-    }
 
     final static public Array CenteredGrid(double center, double dx, int steps) {
         final Array result = new Array(steps + 1);
@@ -80,6 +74,10 @@ public final class Grid {
             result.set(j, result.get(j - 1) * edx);
         }
         return result;
+    }
+
+    private Grid() {
+        // avoid creation of this class
     }
 
 }

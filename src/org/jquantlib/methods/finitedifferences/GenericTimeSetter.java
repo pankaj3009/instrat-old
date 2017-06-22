@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
 Copyright (C) 2005 Joseph Wang
 
 This file is part of QuantLib, a free-software/open-source library
@@ -35,7 +35,7 @@ copy of the license along with this program; if not, please email
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.methods.finitedifferences;
 
 import org.jquantlib.math.TransformedGrid;
@@ -48,6 +48,7 @@ import org.jquantlib.methods.finitedifferences.TridiagonalOperator.TimeSetter;
  * @param <T>
  */
 public class GenericTimeSetter<T extends PdeSecondOrderParabolic> implements TimeSetter {
+
     private final TransformedGrid grid;
     private final T pde;
 
@@ -55,7 +56,6 @@ public class GenericTimeSetter<T extends PdeSecondOrderParabolic> implements Tim
         this.grid = pde.applyGridType(grid);
         this.pde = pde;
     }
-
 
     @Override
     public void setTime(final double t, final TridiagonalOperator l) {

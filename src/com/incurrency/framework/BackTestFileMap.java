@@ -11,12 +11,13 @@ import java.util.ArrayList;
  * @author psharma
  */
 public class BackTestFileMap {
+
     String fileName;
-    ArrayList<BackTestParameter> peturbedParameters=new ArrayList<>();
-    
-    public BackTestFileMap(String fileName){
-        this.fileName=fileName;
-                
+    ArrayList<BackTestParameter> peturbedParameters = new ArrayList<>();
+
+    public BackTestFileMap(String fileName) {
+        this.fileName = fileName;
+
     }
-    
+
 }

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2004, 2007 StatPro Italia srl
 
@@ -38,10 +38,9 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
 
-/*! \file asianoption.hpp
+ /*! \file asianoption.hpp
  \brief Asian option on a single asset
  */
-
 package org.jquantlib.instruments;
 
 import java.util.ArrayList;
@@ -96,14 +95,12 @@ public class DiscreteAveragingAsianOption extends OneAssetOption {
         a.fixingDates = fixingDates;
     }
 
-
     //
     // public inner classes
     //
-
-
     /**
-     * Description of the terms and conditions of a discrete average out fixed strike option.
+     * Description of the terms and conditions of a discrete average out fixed
+     * strike option.
      *
      * @author <Richard Gomes>
      */
@@ -114,11 +111,9 @@ public class DiscreteAveragingAsianOption extends OneAssetOption {
         public /*@Size*/ int pastFixings;
         public List<JDate> fixingDates;
 
-
         //
         // public constructors
         //
-
         public ArgumentsImpl() {
             averageType = null;
             runningAccumulator = Constants.NULL_REAL; //FIXME is there central values?
@@ -126,43 +121,41 @@ public class DiscreteAveragingAsianOption extends OneAssetOption {
             fixingDates = new ArrayList<JDate>();
         }
 
-
         //
         // public methods
         //
-
         @Override
-        public void validate() /*@ReadOnly*/{
+        public void validate() /*@ReadOnly*/ {
             super.validate();
-            QL.require(averageType!=null , "unspecified average type"); // TODO: message
-            QL.require(pastFixings!=Constants.NULL_INTEGER, "null past-fixing number"); // TODO: message
+            QL.require(averageType != null, "unspecified average type"); // TODO: message
+            QL.require(pastFixings != Constants.NULL_INTEGER, "null past-fixing number"); // TODO: message
             QL.require(!Double.isNaN(runningAccumulator), "null running product"); // TODO: message
 
             // TODO: code review :: please verify against QL/C++ code
             switch (averageType) {
-            case Arithmetic:
-                QL.require(runningAccumulator >= 0.0 , "non negative running sum required: not allowed"); // TODO: message
-                break;
-            case Geometric:
-                QL.require(runningAccumulator > 0.0 , "positive running product required: not allowed"); // TODO: message
-                break;
-            default:
-                throw new LibraryException("invalid average type"); // TODO: message
+                case Arithmetic:
+                    QL.require(runningAccumulator >= 0.0, "non negative running sum required: not allowed"); // TODO: message
+                    break;
+                case Geometric:
+                    QL.require(runningAccumulator > 0.0, "positive running product required: not allowed"); // TODO: message
+                    break;
+                default:
+                    throw new LibraryException("invalid average type"); // TODO: message
             }
         }
 
     }
 
-
     static public class ResultsImpl
             extends OneAssetOption.ResultsImpl
-            implements DiscreteAveragingAsianOption.Results { /* marking interface */ }
-
+            implements DiscreteAveragingAsianOption.Results {
+        /* marking interface */ }
 
     /**
      * Asian option on a single asset
      * <p>
-     * Description of the terms and conditions of a discrete average out fixed strike option.
+     * Description of the terms and conditions of a discrete average out fixed
+     * strike option.
      *
      * @author <Richard Gomes>
      */
@@ -178,7 +171,5 @@ public class DiscreteAveragingAsianOption extends OneAssetOption {
         }
 
     }
-
-
 
 }

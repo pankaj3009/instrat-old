@@ -21,23 +21,24 @@
  */
 package org.jquantlib.indexes;
 
-
 import org.jquantlib.quotes.Handle;
 import org.jquantlib.termstructures.YieldTermStructure;
 
 /**
  * Overnight EUR Libor index
- * 
- * @note This is the London fixing by BBA . Use Euribor if you're interested in the rate fixed by the ECB.
+ *
+ * @note This is the London fixing by BBA . Use Euribor if you're interested in
+ * the rate fixed by the ECB.
  *
  * @author Tim Blackler
- **/
+ *
+ */
 public class DailyTenorEURLiborON extends DailyTenorEURLibor {
-    
+
     public DailyTenorEURLiborON() {
-    	this(new Handle<YieldTermStructure>());
+        this(new Handle<YieldTermStructure>());
     }
-	
+
     public DailyTenorEURLiborON(final Handle<YieldTermStructure> h) {
         super(0, h);
     }

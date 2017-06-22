@@ -19,9 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
-
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -62,13 +59,25 @@ import org.jquantlib.time.Weekday;
  * <li>Christmas, December 25th</li>
  * <li>St. Stephen, December 26th</li>
  * </ul>
+ *
  * @category calendars
  * @author Richard Gomes
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 
 public class Slovakia extends Calendar {
+
+    //
+    // public constructors
+    //
+    public Slovakia() {
+        this(Market.BSSE);
+    }
+
+    public Slovakia(final Market m) {
+        impl = new BsseImpl();
+    }
+
     public enum Market {
         /**
          * Bratislava stock exchange
@@ -77,26 +86,16 @@ public class Slovakia extends Calendar {
     }
 
     //
-    // public constructors
-    //
-
-    public Slovakia() {
-    	this(Market.BSSE);
-    }
-    public Slovakia(final Market m) {
-    	impl = new BsseImpl();
-    }
-
-
-    //
     // private final inner classes
     //
+    private final class BsseImpl extends WesternImpl {
 
-    private final class BsseImpl extends WesternImpl  {
-    	@Override
-    	public String name() { return "Bratislava stock exchange"; }
+        @Override
+        public String name() {
+            return "Bratislava stock exchange";
+        }
 
-    	@Override
+        @Override
         public boolean isBusinessDay(final JDate date) {
             final Weekday w = date.weekday();
             final int d = date.dayOfMonth(), dd = date.dayOfYear();
@@ -104,39 +103,39 @@ public class Slovakia extends Calendar {
             final int y = date.year();
             final int em = easterMonday(y);
             if (isWeekend(w)
-                // New Year's Day
-                || (d == 1 && m == January)
-                // Epiphany
-                || (d == 6 && m == January)
-                // Good Friday
-                || (dd == em-3)
-                // Easter Monday
-                || (dd == em)
-                // May Day
-                || (d == 1 && m == May)
-                // Liberation of the Republic
-                || (d == 8 && m == May)
-                // SS. Cyril and Methodius
-                || (d == 5 && m == July)
-                // Slovak National Uprising
-                || (d == 29 && m == August)
-                // Constitution of the Slovak Republic
-                || (d == 1 && m == September)
-                // Our Lady of the Seven Sorrows
-                || (d == 15 && m == September)
-                // All Saints Day
-                || (d == 1 && m == November)
-                // Freedom and Democracy of the Slovak Republic
-                || (d == 17 && m == November)
-                // Christmas Eve
-                || (d == 24 && m == December)
-                // Christmas
-                || (d == 25 && m == December)
-                // St. Stephen
-                || (d == 26 && m == December)
-                // unidentified closing days for stock exchange
-                || (d >= 24 && d <= 31 && m == December && y == 2004)
-                || (d >= 24 && d <= 31 && m == December && y == 2005)) {
+                    // New Year's Day
+                    || (d == 1 && m == January)
+                    // Epiphany
+                    || (d == 6 && m == January)
+                    // Good Friday
+                    || (dd == em - 3)
+                    // Easter Monday
+                    || (dd == em)
+                    // May Day
+                    || (d == 1 && m == May)
+                    // Liberation of the Republic
+                    || (d == 8 && m == May)
+                    // SS. Cyril and Methodius
+                    || (d == 5 && m == July)
+                    // Slovak National Uprising
+                    || (d == 29 && m == August)
+                    // Constitution of the Slovak Republic
+                    || (d == 1 && m == September)
+                    // Our Lady of the Seven Sorrows
+                    || (d == 15 && m == September)
+                    // All Saints Day
+                    || (d == 1 && m == November)
+                    // Freedom and Democracy of the Slovak Republic
+                    || (d == 17 && m == November)
+                    // Christmas Eve
+                    || (d == 24 && m == December)
+                    // Christmas
+                    || (d == 25 && m == December)
+                    // St. Stephen
+                    || (d == 26 && m == December)
+                    // unidentified closing days for stock exchange
+                    || (d >= 24 && d <= 31 && m == December && y == 2004)
+                    || (d >= 24 && d <= 31 && m == December && y == 2005)) {
                 return false;
             }
             return true;

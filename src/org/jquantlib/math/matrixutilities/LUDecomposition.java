@@ -18,7 +18,7 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
-*/
+ */
 package org.jquantlib.math.matrixutilities;
 
 import org.jquantlib.QL;
@@ -30,19 +30,21 @@ import org.jquantlib.lang.exceptions.LibraryException;
 /**
  * LU Decomposition.
  * <P>
- * For an m-by-n matrix A with m >= n, the LU decomposition is an m-by-n unit lower triangular matrix L, an n-by-n upper triangular
- * matrix U, and a permutation vector piv of length m so that A(piv,:) = L*U. If m < n, then L is m-by-m and U is m-by-n.
- * <P>
- * The LU decomposition with pivoting always exists, even if the matrix is singular, so the constructor will never fail. The primary
- * use of the LU decomposition is in the solution of square systems of simultaneous linear equations. This will fail if
- * isNonsingular() returns false.
+ * For an m-by-n matrix A with m >= n, the LU decomposition is an m-by-n unit
+ * lower triangular matrix L, an n-by-n upper triangular matrix U, and a
+ * permutation vector piv of length m so that A(piv,:) = L*U. If m < n, then L
+ * is m-by-m and U is m-by-n. <P>
+ * The LU decomposition with pivoting always exists, even if the matrix is
+ * singular, so the constructor will never fail. The primary use of the LU
+ * decomposition is in the solution of square systems of simultaneous linear
+ * equations. This will fail if isNonsingular() returns false.
  *
- * @note  This class is adapted from JAMA
+ * @note This class is adapted from JAMA
  * @see <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a>
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = {"Richard Gomes"})
 public class LUDecomposition {
 
     private final static String MATRIX_IS_SINGULAR = "Matrix is singular";
@@ -50,7 +52,6 @@ public class LUDecomposition {
     //
     // private fields
     //
-
     private final int m;
     private final int n;
     private final Matrix LU;
@@ -58,11 +59,9 @@ public class LUDecomposition {
 
     private int pivsign;
 
-
     //
     // public constructors
     //
-
     /**
      * LU Decomposition
      *
@@ -84,17 +83,14 @@ public class LUDecomposition {
         final double[] LUcolj = new double[m];
 
         // Outer loop.
-
         for (int j = 0; j < n; j++) {
 
             // Make a copy of the j-th column to localize references.
-
             for (int i = 0; i < m; i++) {
                 LUcolj[i] = LU.$[LU.addr.op(i, j)];
             }
 
             // Apply previous transformations.
-
             for (int i = 0; i < m; i++) {
                 // Most of the time is spent in the following dot product.
 
@@ -108,7 +104,6 @@ public class LUDecomposition {
             }
 
             // Find pivot and exchange if necessary.
-
             int p = j;
             for (int i = j + 1; i < m; i++) {
                 if (Math.abs(LUcolj[i]) > Math.abs(LUcolj[p])) {
@@ -128,7 +123,6 @@ public class LUDecomposition {
             }
 
             // Compute multipliers.
-
             if (j < m && LU.$[LU.addr.op(j, j)] != 0.0) { //FINDBUGS:: NS_DANGEROUS_NON_SHORT_CIRCUIT (solved)
                 for (int i = j + 1; i < m; i++) {
                     LU.$[LU.addr.op(i, j)] /= LU.$[LU.addr.op(j, j)];
@@ -140,7 +134,6 @@ public class LUDecomposition {
     //
     // public methods
     //
-
     /**
      * Is the matrix nonsingular?
      *
@@ -148,8 +141,9 @@ public class LUDecomposition {
      */
     public boolean isNonSingular() {
         for (int j = 0; j < n; j++) {
-            if (LU.$[LU.addr.op(j, j)] == 0)
+            if (LU.$[LU.addr.op(j, j)] == 0) {
                 return false;
+            }
         }
         return true;
     }
@@ -224,7 +218,6 @@ public class LUDecomposition {
 //        }
 //        return vals;
 //    }
-
     /**
      * Determinant
      *
@@ -251,8 +244,9 @@ public class LUDecomposition {
      */
     public Matrix solve(final Matrix B) {
         QL.require(B.rows() == this.m, Matrix.MATRIX_IS_INCOMPATIBLE); // QA:[RG]::verified
-        if (!this.isNonSingular())
+        if (!this.isNonSingular()) {
             throw new LibraryException(MATRIX_IS_SINGULAR);
+        }
 
         // Copy right hand side with pivoting
         final Matrix X = B.range(piv, 0, B.cols());

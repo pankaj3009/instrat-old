@@ -6,6 +6,7 @@
 package com.incurrency.framework;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -154,6 +155,14 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
 
     public double getCurrentFillPrice() {
         return Utilities.getDouble("CurrentFillPrice", 0);
+    }
+    
+    public double getStopLoss(){
+        return Utilities.getDouble("StopLoss", Double.NaN);
+    }
+    
+    public double getTakeProfit(){
+        return Utilities.getDouble("TakeProfit", Double.NaN);
     }
 
     public boolean isScale() {
@@ -328,6 +337,15 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public void setOrderType(EnumOrderType orderType) {
         this.put("OrderType", String.valueOf(orderType));
     }
+    
+    public void setStopLoss(double stoploss){
+        this.put("StopLoss", String.valueOf(stoploss));
+    }
+    
+    public void setTakeProfit(double takeProfit){
+        this.put("TakeProfit", String.valueOf(takeProfit));
+    }
+
 
     //Order Attributes
     public int getOrdersPerMinute() {
@@ -404,6 +422,18 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public int getDisplaySize() {
         String displaySize = this.get("DisplaySize");
         return Utilities.getInt(displaySize, 0);
+    }
+
+    public void setOrderAttributes(HashMap<String, Object> orderAttributes) {
+        this.setDisplaySize(Utilities.getInt(orderAttributes.get("displaysize"), 0));
+        this.setValue(Utilities.getInt(orderAttributes.get("value"), 0));
+        this.setMaxPermissibleImpactCost(Utilities.getDouble(orderAttributes.get("thresholdimpactcost"), 0));
+        this.setLinkDelay(Utilities.getInt(orderAttributes.get("delay"), 1));
+        this.setImproveProbability(Utilities.getDouble(orderAttributes.get("improveprob"), 1));
+        this.setOrdersPerMinute(Utilities.getInt(orderAttributes.get("orderspermin"), 1));
+        this.setImproveAmount(Utilities.getInt(orderAttributes.get("improveamt"), 1));
+        this.setStickyPeriod(Utilities.getInt(orderAttributes.get("stickyperiod"), 0));
+        this.setFatFingerWindow(Utilities.getInt(orderAttributes.get("fatfingerwindow"), 120));
     }
 
 }

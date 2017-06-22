@@ -35,50 +35,7 @@ public class Rounding {
     private int digit_;
 
     /**
-     * The rounding methods follow the OMG specification available at ftp://ftp.omg.org/pub/docs/formal/00-06-29.pdf
-     *<p>
-     * Warning the names of the Floor and Ceiling methods might be misleading. Check the provided reference.
-     */
-    public enum Type {
-        /**
-         * Do not round: return the number unmodified
-         */
-        None,
-
-        /**
-         * The first decimal place past the precision will be rounded up. This differs from the OMG rule which rounds up only
-         * if the decimal to be rounded is greater than or equal to the rounding digit
-         */
-        Up,
-
-        /**
-         *  All decimal places past the precision will be truncated
-         */
-        Down,
-
-        /**
-         * The first decimal place past the precision will be rounded up if greater than or equal to the rounding digit;
-         * this corresponds to the OMG round-up rule. When the rounding digit is 5, the result will be the one closest to
-         * the original number, hence the name.
-         */
-        Closest,
-
-        /**
-         * Positive numbers will be rounded up and negative numbers will be rounded down using the OMG round up and round
-         * down rules
-         */
-        Floor,
-
-        /**
-         * Positive numbers will be rounded down and negative numbers will be rounded up using the OMG round up and round down
-         * rules
-         */
-        Ceiling
-    };
-
-
-    /**
-     *  Instances built through this constructor don't perform any rounding.
+     * Instances built through this constructor don't perform any rounding.
      */
     public Rounding() {
         this.type_ = Type.None;
@@ -107,55 +64,52 @@ public class Rounding {
         return digit_;
     }
 
+    final public /*Decimal*/ double operator(/*Decimal*/final double value) {
 
-    final public /*Decimal*/ double operator(/*Decimal*/final double value)  {
-
-        if (type_ == Rounding.Type.None)
+        if (type_ == Rounding.Type.None) {
             return value;
+        }
 
-        /*Real*/ final double mult = Math.pow(10.0,precision_);
+        /*Real*/ final double mult = Math.pow(10.0, precision_);
         final boolean neg = (value < 0.0);
-        /*Real*/ double lvalue = Math.abs(value)*mult;
-        /*Real*/ final double integral = ((int)lvalue);
-        /*Real*/ final double modVal = (lvalue-(int)lvalue );
+        /*Real*/ double lvalue = Math.abs(value) * mult;
+        /*Real*/ final double integral = ((int) lvalue);
+        /*Real*/ final double modVal = (lvalue - (int) lvalue);
         lvalue -= modVal;
         switch (type_) {
-          case Down:
-            break;
-          case Up:
-            lvalue += 1.0;
-            break;
-          case Closest:
-            if (modVal >= (digit_/10.0)){
+            case Down:
+                break;
+            case Up:
                 lvalue += 1.0;
-            }
-            break;
-          case Floor:
-            if (!neg) {
-                if (modVal >= (digit_/10.0)){
+                break;
+            case Closest:
+                if (modVal >= (digit_ / 10.0)) {
                     lvalue += 1.0;
                 }
-            }
-            break;
-          case Ceiling:
-            if (neg) {
-                if (modVal >= (digit_/10.0)) {
-                    lvalue += 1.0;
+                break;
+            case Floor:
+                if (!neg) {
+                    if (modVal >= (digit_ / 10.0)) {
+                        lvalue += 1.0;
+                    }
                 }
-            }
-            break;
-          default:
-            throw new LibraryException("unknown rounding method"); // TODO: message
+                break;
+            case Ceiling:
+                if (neg) {
+                    if (modVal >= (digit_ / 10.0)) {
+                        lvalue += 1.0;
+                    }
+                }
+                break;
+            default:
+                throw new LibraryException("unknown rounding method"); // TODO: message
         }
-        return (neg) ? -(lvalue/mult) : lvalue/mult;
+        return (neg) ? -(lvalue / mult) : lvalue / mult;
     }
-
-
-
-
 
     // Up-rounding.
     public static class UpRounding extends Rounding {
+
         public UpRounding(final int precision) {
             this(precision, 5);
         }
@@ -167,6 +121,7 @@ public class Rounding {
 
     // Down-rounding.
     public static class DownRounding extends Rounding {
+
         public DownRounding(final int precision) {
             this(precision, 5);
         }
@@ -178,6 +133,7 @@ public class Rounding {
 
     // Closest rounding.
     public static class ClosestRounding extends Rounding {
+
         public ClosestRounding(final int precision) {
             this(precision, 5);
         }
@@ -189,6 +145,7 @@ public class Rounding {
 
     // Ceiling truncation.
     public static class CeilingTruncation extends Rounding {
+
         public CeilingTruncation(final int precision) {
             this(precision, 5);
         }
@@ -198,9 +155,9 @@ public class Rounding {
         }
     };
 
-
     // Floor truncation.
     public static class FloorTruncation extends Rounding {
+
         public FloorTruncation(final int precision) {
             this(precision, 5);
         }
@@ -210,5 +167,45 @@ public class Rounding {
         }
     };
 
-}
+    /**
+     * The rounding methods follow the OMG specification available at
+     * ftp://ftp.omg.org/pub/docs/formal/00-06-29.pdf
+     * <p>
+     * Warning the names of the Floor and Ceiling methods might be misleading.
+     * Check the provided reference.
+     */
+    public enum Type {
+        /**
+         * Do not round: return the number unmodified
+         */
+        None,
+        /**
+         * The first decimal place past the precision will be rounded up. This
+         * differs from the OMG rule which rounds up only if the decimal to be
+         * rounded is greater than or equal to the rounding digit
+         */
+        Up,
+        /**
+         * All decimal places past the precision will be truncated
+         */
+        Down,
+        /**
+         * The first decimal place past the precision will be rounded up if
+         * greater than or equal to the rounding digit; this corresponds to the
+         * OMG round-up rule. When the rounding digit is 5, the result will be
+         * the one closest to the original number, hence the name.
+         */
+        Closest,
+        /**
+         * Positive numbers will be rounded up and negative numbers will be
+         * rounded down using the OMG round up and round down rules
+         */
+        Floor,
+        /**
+         * Positive numbers will be rounded down and negative numbers will be
+         * rounded up using the OMG round up and round down rules
+         */
+        Ceiling
+    }
 
+}

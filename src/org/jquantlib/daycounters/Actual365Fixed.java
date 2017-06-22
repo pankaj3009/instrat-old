@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.daycounters;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -46,47 +45,42 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.time.JDate;
 
 /**
- * "Actual/365 (Fixed)" day count convention, also know as
- * "Act/365 (Fixed)", "A/365 (Fixed)", or "A/365F".
+ * "Actual/365 (Fixed)" day count convention, also know as "Act/365 (Fixed)",
+ * "A/365 (Fixed)", or "A/365F".
  *
- * @note According to ISDA, "Actual/365" (without "Fixed") is
- * an alias for "Actual/Actual (ISDA)"DayCounter (see
- * ActualActual.)  If Actual/365 is not explicitly
- * specified as fixed in an instrument specification,
- * you might want to double-check its meaning.
+ * @note According to ISDA, "Actual/365" (without "Fixed") is an alias for
+ * "Actual/Actual (ISDA)"DayCounter (see ActualActual.) If Actual/365 is not
+ * explicitly specified as fixed in an instrument specification, you might want
+ * to double-check its meaning.
  *
  * @author Srinivas Hasti
  * @author Richard Gomes
  */
-@QualityAssurance(quality=Quality.Q4_UNIT, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q4_UNIT, version = Version.V097, reviewers = "Richard Gomes")
 public class Actual365Fixed extends DayCounter {
-
 
     public Actual365Fixed() {
         super.impl = new Impl();
     }
 
-
     //
     // private inner classes
     //
-
     final private class Impl extends DayCounter.Impl {
 
         //
         // implements DayCounter
         //
-
         @Override
-        public final String name() /* @ReadOnly */{
+        public final String name() /* @ReadOnly */ {
             return "Actual/365 (fixed)";
         }
 
         @Override
         public /*@Time*/ final double yearFraction(
                 final JDate dateStart, final JDate dateEnd,
-                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
-            return /*@Time*/ dayCount(dateStart, dateEnd)/365.0;
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */ {
+            return /*@Time*/ dayCount(dateStart, dateEnd) / 365.0;
         }
 
     }

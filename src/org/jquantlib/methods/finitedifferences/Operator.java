@@ -30,17 +30,18 @@ import org.jquantlib.math.matrixutilities.Array;
 // CODE REVIEW: Do we really need this interface. Helps to easily replaces Tridiaginal implementations
 public interface Operator {
 
-	public int size();
+    public int size();
 
-	public boolean isTimeDependent();
+    public boolean isTimeDependent();
 
-	public void setTime(double t);
+    public void setTime(double t);
 
-	public <T extends Operator> T identity(int size);
+    public <T extends Operator> T identity(int size);
 
-	public Array applyTo(Array a);
+    public Array applyTo(Array a);
 
-	public Array solveFor(Array a);
+    public Array solveFor(Array a);
+
     public double[] solveFor(double[] a);
 
     public <T extends Operator> void swap(T from);
@@ -50,7 +51,6 @@ public interface Operator {
     public <T extends Operator> T subtract(T d);
 
     public <T extends Operator> T multiply(double a);
-
 
 //
 // methods not called, not tested
@@ -62,5 +62,4 @@ public interface Operator {
 //	<T extends Operator> T multiply(double a, final T d);
 //	<T extends Operator> T multiply(T d, double a);
 //	<T extends Operator> T divide(T d, double a);
-
 }

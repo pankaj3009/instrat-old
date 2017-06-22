@@ -11,21 +11,20 @@ import java.util.EventObject;
  * @author admin
  */
 public class TWSErrorEvent extends EventObject {
-    
+
     //Variables for Event
     private int _id;
     private int _errorCode;
     private String _errorMessage;
     private BeanConnection _connection;
 
-    
-    TWSErrorEvent (Object obj,int id, int errorCode, String message,BeanConnection c){
+    TWSErrorEvent(Object obj, int id, int errorCode, String message, BeanConnection c) {
         super(obj);
-        this._id=id;
-        this._errorCode=errorCode;
-        this._errorMessage=message;
-        this._connection=c;
-        
+        this._id = id;
+        this._errorCode = errorCode;
+        this._errorMessage = message;
+        this._connection = c;
+
     }
 
     /**
@@ -84,7 +83,4 @@ public class TWSErrorEvent extends EventObject {
         this._connection = connection;
     }
 
-   
-    
-    
 }

@@ -21,7 +21,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
 Copyright (C) 2005, 2006, 2007 StatPro Italia srl
 
 This file is part of QuantLib, a free-software/open-source library
@@ -37,7 +37,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import java.util.Arrays;
@@ -74,7 +73,7 @@ public class Discount implements Traits {
 
     @Override
     public double guess(final YieldTermStructure c, final JDate d) {
-        return c.discount(d,true);
+        return c.discount(d, true);
     }
 
     @Override
@@ -90,14 +89,13 @@ public class Discount implements Traits {
             return 3.0;
         }
         // discounts cannot decrease
-        return data[i-1];
+        return data[i - 1];
     }
 
     @Override
     public void updateGuess(final double[] data, final double value, final int i) {
         Arrays.fill(data, value);
     }
-
 
     @Override
     public boolean dummyInitialValue() {

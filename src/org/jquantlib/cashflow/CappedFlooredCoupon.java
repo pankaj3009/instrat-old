@@ -20,7 +20,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.QL;
@@ -31,22 +30,32 @@ import org.jquantlib.util.Visitor;
 /**
  * Capped and/or floored floating-rate coupon
  * <p>
- * The payoff {@latex$ P } of a capped floating-rate coupon is:
- * {@latex[ P = N \times T \times \min(a L + b, C) }
+ * The payoff {
+ *
+ * @latex$ P } of a capped floating-rate coupon is: {
+ * @latex[ P = N \times T \times \min(a L + b, C) }
  * <p>
- * The payoff of a floored floating-rate coupon is:
- * {@latex[ P = N \times T \times \max(a L + b, F) }
+ * The payoff of a floored floating-rate coupon is: {
+ * @latex[ P = N \times T \times \max(a L + b, F) }
  * <p>
- * The payoff of a collared floating-rate coupon is:
- * {@latex[ P = N \times T \times \min(\max(a L + b, F), C) } where
+ * The payoff of a collared floating-rate coupon is: {
+ * @latex[ P = N \times T \times \min(\max(a L + b, F), C) } where
  * <p>
- * {@latex$ N } is the notional, {@latex$ T }is the accrual time, {@latex$ L } is the floating rate, {@latex$ a } is its gearing,
- * {@latex$ b } is the spread, and {@latex$ C } and {@latex$ F } are the strikes.
+ * {
+ * @latex$ N } is the notional, {
+ * @latex$ T }is the accrual time, {
+ * @latex$ L } is the floating rate, {
+ * @latex$ a } is its gearing, {
+ * @latex$ b } is the spread, and {
+ * @latex$ C } and {
+ * @latex$ F } are the strikes.
  * <p>
- * They can be decomposed in the following manner. Decomposition of a capped floating rate coupon:
- * {@latex[ R = \min(a L + b, C) = (a L + b) + \min(C - b - \xi |a| L, 0) } where
- * {@latex$ \xi = sgn(a) }. Then:
- * {@latex[ R = (a L + b) + |a| \min(\frac{C - b}{|a|} - \xi L, 0) }
+ * They can be decomposed in the following manner. Decomposition of a capped
+ * floating rate coupon: {
+ * @latex[ R = \min(a L + b, C) = (a L + b) + \min(C - b - \xi |a| L, 0) } where
+ * {
+ * @latex$ \xi = sgn(a) }. Then: {
+ * @latex[ R = (a L + b) + |a| \min(\frac{C - b}{|a|} - \xi L, 0) }
  *
  * @author Ueli Hofstetter
  * @author John Martin
@@ -72,8 +81,7 @@ import org.jquantlib.util.Visitor;
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 /**
  * Coupon paying a variable index-based rate
  *
@@ -88,11 +96,9 @@ public class CappedFlooredCoupon extends FloatingRateCoupon {
     protected boolean isCapped_, isFloored_;
     protected /* @Rate */ double cap_, floor_;
 
-
     //
     // public constructors
     //
-
     public CappedFlooredCoupon(final FloatingRateCoupon underlying) {
         this(underlying, Constants.NULL_REAL, Constants.NULL_REAL);
     }
@@ -116,9 +122,7 @@ public class CappedFlooredCoupon extends FloatingRateCoupon {
                 floor_ = floor;
                 isFloored_ = true;
             }
-        }
-
-        // FIXME :: this comment does not belong to C++ code :: evaluate and eventually remove
+        } // FIXME :: this comment does not belong to C++ code :: evaluate and eventually remove
         //
         // note subtle difference, caps become floors and floors become caps
         // if gearing is < 0.
@@ -126,7 +130,6 @@ public class CappedFlooredCoupon extends FloatingRateCoupon {
         // functions defined below. if we swap the caps and floors at construction, for
         // a negative gearing, we will undo this change when we access the negative
         // gearing again through the floor and cap functions.
-
         else {
             if (!Double.isNaN(cap)) {
                 floor_ = cap;
@@ -139,7 +142,7 @@ public class CappedFlooredCoupon extends FloatingRateCoupon {
         }
 
         if (isCapped_ && isFloored_) {
-            QL.require(cap >= floor , "cap level less than floor level"); // TODO: message
+            QL.require(cap >= floor, "cap level less than floor level"); // TODO: message
         }
 
         this.underlying_.addObserver(this);
@@ -151,19 +154,19 @@ public class CappedFlooredCoupon extends FloatingRateCoupon {
     public void setPricer(final FloatingRateCouponPricer pricer) {
 
         if (this.pricer_ != null) {
-            this.pricer_.deleteObserver (this);
+            this.pricer_.deleteObserver(this);
         }
         this.pricer_ = pricer;
         if (this.pricer_ != null) {
-            this.pricer_.addObserver (this);
+            this.pricer_.addObserver(this);
         }
         update();
-        underlying_.setPricer (pricer);
+        underlying_.setPricer(pricer);
     }
 
     @Override
     public /*@Rate*/ double rate() /* @ReadOnly */ {
-        QL.require (underlying_.pricer_ != null, "pricer not set");
+        QL.require(underlying_.pricer_ != null, "pricer not set");
         final double swapletRate = underlying_.rate();
         double floorRate = 0.0;
         double capRate = 0.0;
@@ -171,7 +174,7 @@ public class CappedFlooredCoupon extends FloatingRateCoupon {
             floorRate = underlying_.pricer_.floorletRate(effectiveFloor());
         }
         if (isCapped_) {
-            capRate = underlying_.pricer_.capletRate (effectiveCap());
+            capRate = underlying_.pricer_.capletRate(effectiveCap());
         }
         return swapletRate + floorRate - capRate;
     }
@@ -181,11 +184,11 @@ public class CappedFlooredCoupon extends FloatingRateCoupon {
         return underlying_.convexityAdjustment();
     }
 
-    public boolean isCapped() /* @ReadOnly */{
+    public boolean isCapped() /* @ReadOnly */ {
         return isCapped_;
     }
 
-    public boolean isFloored() /* @ReadOnly */{
+    public boolean isFloored() /* @ReadOnly */ {
         return isFloored_;
     }
 
@@ -217,30 +220,25 @@ public class CappedFlooredCoupon extends FloatingRateCoupon {
         return (floor_ - spread()) / gearing();
     }
 
-
     //
     // implements Observer
     //
-
     @Override
     public void update() {
         notifyObservers();
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<CappedFlooredCoupon> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<CappedFlooredCoupon> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {
             super.accept(pv);
         }
     }
-
 
 }

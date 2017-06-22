@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -62,59 +61,58 @@ import org.jquantlib.time.Weekday;
  * @author Renjith Nair
  * @author Richard Gomes
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 
 public class Poland extends Calendar {
 
     //
     // public constructors
     //
-
-	public Poland() {
-		impl = new Impl();
-	}
-
+    public Poland() {
+        impl = new Impl();
+    }
 
     //
     // private final inner classes
     //
+    private final class Impl extends WesternImpl {
 
-	private final class Impl extends WesternImpl {
         @Override
-		public String name() { return "Poland"; }
+        public String name() {
+            return "Poland";
+        }
 
         @Override
         public boolean isBusinessDay(final JDate date) {
-	        final Weekday w = date.weekday();
-	        final int d = date.dayOfMonth(), dd = date.dayOfYear();
-	        final Month m = date.month();
-	        final int y = date.year();
-	        final int em = easterMonday(y);
-	        if (isWeekend(w)
-	            // Easter Monday
-	            || (dd == em)
-	            // Corpus Christi
-	            || (dd == em+59)
-	            // New Year's Day
-	            || (d == 1  && m == January)
-	            // May Day
-	            || (d == 1  && m == May)
-	            // Constitution Day
-	            || (d == 3  && m == May)
-	            // Assumption of the Blessed Virgin Mary
-	            || (d == 15  && m == August)
-	            // All Saints Day
-	            || (d == 1  && m == November)
-	            // Independence Day
-	            || (d ==11  && m == November)
-	            // Christmas
-	            || (d == 25 && m == December)
-	            // 2nd Day of Christmas
-	            || (d == 26 && m == December)) {
+            final Weekday w = date.weekday();
+            final int d = date.dayOfMonth(), dd = date.dayOfYear();
+            final Month m = date.month();
+            final int y = date.year();
+            final int em = easterMonday(y);
+            if (isWeekend(w)
+                    // Easter Monday
+                    || (dd == em)
+                    // Corpus Christi
+                    || (dd == em + 59)
+                    // New Year's Day
+                    || (d == 1 && m == January)
+                    // May Day
+                    || (d == 1 && m == May)
+                    // Constitution Day
+                    || (d == 3 && m == May)
+                    // Assumption of the Blessed Virgin Mary
+                    || (d == 15 && m == August)
+                    // All Saints Day
+                    || (d == 1 && m == November)
+                    // Independence Day
+                    || (d == 11 && m == November)
+                    // Christmas
+                    || (d == 25 && m == December)
+                    // 2nd Day of Christmas
+                    || (d == 26 && m == December)) {
                 return false;
             }
-	        return true;
+            return true;
         }
-	}
+    }
 }

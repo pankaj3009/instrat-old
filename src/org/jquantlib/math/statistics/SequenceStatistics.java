@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2004, 2005, 2006, 2007 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.statistics;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -45,18 +44,18 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 
 /**
  * This class is simply an equivalence to GenericSequenceStatistics
- * 
+ *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q4_UNIT, reviewers = { "Richard Gomes" }, version = Version.V097)
+@QualityAssurance(quality = Quality.Q4_UNIT, reviewers = {"Richard Gomes"}, version = Version.V097)
 public class SequenceStatistics extends GenericSequenceStatistics {
 
-	public SequenceStatistics() {
-		super();
-	}
+    public SequenceStatistics() {
+        super();
+    }
 
-	public SequenceStatistics(int dimension) {
-		super(dimension);
-	}
+    public SequenceStatistics(int dimension) {
+        super(dimension);
+    }
 
 }

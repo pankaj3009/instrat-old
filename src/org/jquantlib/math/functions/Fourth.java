@@ -30,14 +30,13 @@ import org.jquantlib.math.Ops;
  */
 public final class Fourth implements Ops.DoubleOp {
 
-	//
+    //
     // implements Ops.DoubleOp
     //
-
-	@Override
-	public double op(final double a) {
-	    final double sqr = a*a;
-		return sqr*sqr;
-	}
+    @Override
+    public double op(final double a) {
+        final double sqr = a * a;
+        return sqr * sqr;
+    }
 
 }

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2004 Walter Penschke
@@ -38,7 +38,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.randomnumbers;
 
 import java.lang.reflect.Constructor;
@@ -51,12 +50,11 @@ import org.jquantlib.lang.exceptions.LibraryException;
  *
  * @author Richard Gomes
  */
-public abstract class GenericPseudoRandom <RNG extends RandomNumberGenerator, IC extends InverseCumulative> {
+public abstract class GenericPseudoRandom<RNG extends RandomNumberGenerator, IC extends InverseCumulative> {
 
     //
     // static private fields
     //
-
     //
     // FIXME:: code review :: it's not clear how should this variable be used.
     // Declared as private final till we discover what's the trick with it.
@@ -76,23 +74,17 @@ public abstract class GenericPseudoRandom <RNG extends RandomNumberGenerator, IC
     //
     static final private GenericPseudoRandom icInstance = null;
 
-
-
-    private final Class<? extends UniformRandomSequenceGenerator>	classRNG;
-    private final Class<? extends InverseCumulative>		classIC;
-    
-    
+    private final Class<? extends UniformRandomSequenceGenerator> classRNG;
+    private final Class<? extends InverseCumulative> classIC;
 
     protected GenericPseudoRandom(final Class<? extends UniformRandomSequenceGenerator> classRNG, final Class<? extends InverseCumulative> classIC) {
-    	QL.validateExperimentalMode();
-    	this.classRNG = classRNG;
-    	this.classIC = classIC;
+        QL.validateExperimentalMode();
+        this.classRNG = classRNG;
+        this.classIC = classIC;
     }
 
-    
-
     protected InverseCumulativeRsg<RandomSequenceGenerator<RNG>, IC> makeSequenceGenerator(
-            final /*@NonNegative*/ int dimension, 
+            final /*@NonNegative*/ int dimension,
             final /*@NonNegative*/ long seed) {
 
         // instantiate a RandomNumberGenerator given its generic type (first generic parameter)
@@ -109,17 +101,12 @@ public abstract class GenericPseudoRandom <RNG extends RandomNumberGenerator, IC
         final RandomSequenceGenerator<RNG> rsg;
         try {
             // obtain Class from previously created RNG variable
-        	
-        	
+
             //FIXME:
-        	// "looks like" we need to add a method to RNG interface in order to obtain a RSG from a RNG
-        	//
-        	
-        	final Class<RandomSequenceGenerator<RNG>> rsgClass = null;
-            
-            
-            
-            
+            // "looks like" we need to add a method to RNG interface in order to obtain a RSG from a RNG
+            //
+            final Class<RandomSequenceGenerator<RNG>> rsgClass = null;
+
             final Constructor<RandomSequenceGenerator<RNG>> c = rsgClass.getConstructor(int.class, rng.getClass());
             rsg = c.newInstance(dimension, rng);
         } catch (final Exception e) {
@@ -131,7 +118,7 @@ public abstract class GenericPseudoRandom <RNG extends RandomNumberGenerator, IC
         try {
             // obtain IC Class from second generic parameter
             final Constructor<IC> c;
-            if (icInstance!=null) {
+            if (icInstance != null) {
                 c = (Constructor<IC>) classIC.getConstructor(rsg.getClass(), classIC.getClass());
                 ic = c.newInstance(rsg, icInstance);
             } else {

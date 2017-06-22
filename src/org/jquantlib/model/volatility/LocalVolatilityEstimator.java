@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.model.volatility;
 
 import org.jquantlib.time.TimeSeries;
@@ -50,5 +49,5 @@ import org.jquantlib.time.TimeSeries;
  */
 public interface LocalVolatilityEstimator<V> {
 
-    TimeSeries<Double> calculate(final TimeSeries<V> quoteSeries) ;
+    TimeSeries<Double> calculate(final TimeSeries<V> quoteSeries);
 }

@@ -22,16 +22,16 @@
 package org.jquantlib.indexes;
 
 /**
- * 
- * European Union as geographical/economic region
- * used for inflation applicability
- * 
+ *
+ * European Union as geographical/economic region used for inflation
+ * applicability
+ *
  * @author Tim Blackler
  */
 public class EURegion extends Region {
-	
-	public EURegion() {
-		this.data = new Region.Data("EU","EU");	
-	}
+
+    public EURegion() {
+        this.data = new Region.Data("EU", "EU");
+    }
 
 }

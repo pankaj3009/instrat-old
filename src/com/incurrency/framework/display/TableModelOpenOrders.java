@@ -22,11 +22,12 @@ import javax.swing.table.AbstractTableModel;
  */
 public class TableModelOpenOrders extends AbstractTableModel {
 
+    private static final Logger logger = Logger.getLogger(TableModelOpenOrders.class.getName());
+
     private String[] headers = {"Strategy", "Symbol", "OrderID", "Side", "Size", "OrderPrice", "Market"};
     int delay = 1000; //milliseconds
     MainAlgorithm m;
     int display;
-    private static final Logger logger = Logger.getLogger(TableModelOpenOrders.class.getName());
     private HashMap<Integer, OrderBean> openOrders = new HashMap<>();
     private boolean comboDisplay;
     ArrayList<OrderBean> orders;

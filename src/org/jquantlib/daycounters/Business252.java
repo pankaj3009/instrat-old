@@ -21,7 +21,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.daycounters;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -34,15 +33,15 @@ import org.jquantlib.time.calendars.Brazil;
 /**
  * Business/252 day count convention
  *
- * @see <a href="http://en.wikipedia.org/wiki/Day_count_convention">Day count Convention</a>
+ * @see <a href="http://en.wikipedia.org/wiki/Day_count_convention">Day count
+ * Convention</a>
  *
  * @author Daniel Kong
  * @author Richard Gomes
  * @author John Nichol
  */
-@QualityAssurance(quality=Quality.Q4_UNIT, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q4_UNIT, version = Version.V097, reviewers = "Richard Gomes")
 public class Business252 extends DayCounter {
-
 
     public Business252() {
         this(new Brazil());
@@ -52,11 +51,9 @@ public class Business252 extends DayCounter {
         super.impl = new Impl(calendar);
     }
 
-
     //
     // private inner classes
     //
-
     final private class Impl extends DayCounter.Impl {
 
         private final Calendar calendar;
@@ -64,25 +61,24 @@ public class Business252 extends DayCounter {
         //
         // implements DayCounter
         //
-
         private Impl(final Calendar calendar) {
             this.calendar = calendar;
         }
 
         @Override
-        public final String name() /* @ReadOnly */{
+        public final String name() /* @ReadOnly */ {
             return "Business/252(" + calendar.name() + ")";
         }
 
         @Override
         public long dayCount(final JDate d1, final JDate d2) {
-        	return calendar.businessDaysBetween(d1, d2);
+            return calendar.businessDaysBetween(d1, d2);
         }
 
         @Override
         public /*@Time*/ final double yearFraction(
                 final JDate dateStart, final JDate dateEnd,
-                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */ {
             return /*@Time*/ dayCount(dateStart, dateEnd) / 252.0;
         }
 

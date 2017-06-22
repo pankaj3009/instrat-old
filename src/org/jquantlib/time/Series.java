@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time;
 
 import java.util.Collection;
@@ -36,275 +35,232 @@ import org.jquantlib.QL;
 /**
  * Container for historical data
  * <p>
- * This class acts as a generic repository for a set of historical data.
- * Any single datum can be accessed through its date, while
- * sets of consecutive data can be accessed through iterators.
+ * This class acts as a generic repository for a set of historical data. Any
+ * single datum can be accessed through its date, while sets of consecutive data
+ * can be accessed through iterators.
  *
  * @see TimeSeriesDouble
  *
  * @author Srinivas Hasti
  * @author Richard Gomes
  */
-public class Series<K,V> implements NavigableMap<K,V> {
+public class Series<K, V> implements NavigableMap<K, V> {
 
-    private static final String UNSUPPORTED_KEY_OBJECT   = "only Long and Date are acceptable as key objects";
+    private static final String UNSUPPORTED_KEY_OBJECT = "only Long and Date are acceptable as key objects";
     private static final String UNSUPPORTED_VALUE_OBJECT = "only Double and IntervalPrice are acceptable as value objects";
 
     //
     // private fields
     //
-
-    private final NavigableMap<K,V> delegate;
+    private final NavigableMap<K, V> delegate;
 
     private final Class<K> classK;
     private final Class<V> classV;
 
-
     //
     // public constructors
     //
-
     public Series(final Class<K> classK, final Class<V> classV) {
-		QL.require(classK!=null, "Generic type <K> is null");
-		QL.require(classV!=null, "Generic type <V> is null");
+        QL.require(classK != null, "Generic type <K> is null");
+        QL.require(classV != null, "Generic type <V> is null");
 
-		this.classK = classK;
-		this.classV = classV;
-		
-        this.delegate = new TreeMap<K,V>();
+        this.classK = classK;
+        this.classV = classV;
+
+        this.delegate = new TreeMap<K, V>();
     }
 
-    
     //
     // implements NavigableMap<K,V>
     //
-
     @Override
-	public java.util.Map.Entry<K, V> ceilingEntry(final K key) {
+    public java.util.Map.Entry<K, V> ceilingEntry(final K key) {
         return delegate.ceilingEntry(key);
     }
 
-
     @Override
-	public K ceilingKey(final K key) {
+    public K ceilingKey(final K key) {
         return delegate.ceilingKey(key);
     }
 
-
     @Override
-	public void clear() {
+    public void clear() {
         delegate.clear();
     }
 
-
     @Override
-	public Comparator<? super K> comparator() {
+    public Comparator<? super K> comparator() {
         return delegate.comparator();
     }
 
-
     @Override
-	public boolean containsKey(final Object key) {
+    public boolean containsKey(final Object key) {
         return delegate.containsKey(key);
     }
 
-
     @Override
-	public boolean containsValue(final Object value) {
+    public boolean containsValue(final Object value) {
         return delegate.containsValue(value);
     }
 
-
     @Override
-	public NavigableSet<K> descendingKeySet() {
+    public NavigableSet<K> descendingKeySet() {
         return delegate.descendingKeySet();
     }
 
-
     @Override
-	public NavigableMap<K, V> descendingMap() {
+    public NavigableMap<K, V> descendingMap() {
         return delegate.descendingMap();
     }
 
-
     @Override
-	public Set<java.util.Map.Entry<K, V>> entrySet() {
+    public Set<java.util.Map.Entry<K, V>> entrySet() {
         return delegate.entrySet();
     }
-
 
     @Override
     public boolean equals(final Object o) {
         return delegate.equals(o);
     }
 
-
     @Override
-	public java.util.Map.Entry<K, V> firstEntry() {
+    public java.util.Map.Entry<K, V> firstEntry() {
         return delegate.firstEntry();
     }
 
-
     @Override
-	public K firstKey() {
+    public K firstKey() {
         return delegate.firstKey();
     }
 
-
     @Override
-	public java.util.Map.Entry<K, V> floorEntry(final K key) {
+    public java.util.Map.Entry<K, V> floorEntry(final K key) {
         return delegate.floorEntry(key);
     }
 
-
     @Override
-	public K floorKey(final K key) {
+    public K floorKey(final K key) {
         return delegate.floorKey(key);
     }
 
-
     @Override
-	public V get(final Object key) {
+    public V get(final Object key) {
         return delegate.get(key);
     }
-
 
     @Override
     public int hashCode() {
         return delegate.hashCode();
     }
 
-
     @Override
-	public NavigableMap<K, V> headMap(final K toKey, final boolean inclusive) {
+    public NavigableMap<K, V> headMap(final K toKey, final boolean inclusive) {
         return delegate.headMap(toKey, inclusive);
     }
 
-
     @Override
-	public SortedMap<K, V> headMap(final K toKey) {
+    public SortedMap<K, V> headMap(final K toKey) {
         return delegate.headMap(toKey);
     }
 
-
     @Override
-	public java.util.Map.Entry<K, V> higherEntry(final K key) {
+    public java.util.Map.Entry<K, V> higherEntry(final K key) {
         return delegate.higherEntry(key);
     }
 
-
     @Override
-	public K higherKey(final K key) {
+    public K higherKey(final K key) {
         return delegate.higherKey(key);
     }
 
-
     @Override
-	public boolean isEmpty() {
+    public boolean isEmpty() {
         return delegate.isEmpty();
     }
 
-
     @Override
-	public Set<K> keySet() {
+    public Set<K> keySet() {
         return delegate.keySet();
     }
 
-
     @Override
-	public java.util.Map.Entry<K, V> lastEntry() {
+    public java.util.Map.Entry<K, V> lastEntry() {
         return delegate.lastEntry();
     }
 
-
     @Override
-	public K lastKey() {
+    public K lastKey() {
         return delegate.lastKey();
     }
 
-
     @Override
-	public java.util.Map.Entry<K, V> lowerEntry(final K key) {
+    public java.util.Map.Entry<K, V> lowerEntry(final K key) {
         return delegate.lowerEntry(key);
     }
 
-
     @Override
-	public K lowerKey(final K key) {
+    public K lowerKey(final K key) {
         return delegate.lowerKey(key);
     }
 
-
     @Override
-	public NavigableSet<K> navigableKeySet() {
+    public NavigableSet<K> navigableKeySet() {
         return delegate.navigableKeySet();
     }
 
-
     @Override
-	public java.util.Map.Entry<K, V> pollFirstEntry() {
+    public java.util.Map.Entry<K, V> pollFirstEntry() {
         return delegate.pollFirstEntry();
     }
 
-
     @Override
-	public java.util.Map.Entry<K, V> pollLastEntry() {
+    public java.util.Map.Entry<K, V> pollLastEntry() {
         return delegate.pollLastEntry();
     }
 
-
     @Override
-	public V put(final K key, final V value) {
+    public V put(final K key, final V value) {
         return delegate.put(key, value);
     }
 
-
     @Override
-	public void putAll(final Map<? extends K, ? extends V> m) {
+    public void putAll(final Map<? extends K, ? extends V> m) {
         delegate.putAll(m);
     }
 
-
     @Override
-	public V remove(final Object key) {
+    public V remove(final Object key) {
         return delegate.remove(key);
     }
 
-
     @Override
-	public int size() {
+    public int size() {
         return delegate.size();
     }
 
-
     @Override
-	public NavigableMap<K, V> subMap(final K fromKey, final boolean fromInclusive, final K toKey, final boolean toInclusive) {
+    public NavigableMap<K, V> subMap(final K fromKey, final boolean fromInclusive, final K toKey, final boolean toInclusive) {
         return delegate.subMap(fromKey, fromInclusive, toKey, toInclusive);
     }
 
-
     @Override
-	public SortedMap<K, V> subMap(final K fromKey, final K toKey) {
+    public SortedMap<K, V> subMap(final K fromKey, final K toKey) {
         return delegate.subMap(fromKey, toKey);
     }
 
-
     @Override
-	public NavigableMap<K, V> tailMap(final K fromKey, final boolean inclusive) {
+    public NavigableMap<K, V> tailMap(final K fromKey, final boolean inclusive) {
         return delegate.tailMap(fromKey, inclusive);
     }
 
-
     @Override
-	public SortedMap<K, V> tailMap(final K fromKey) {
+    public SortedMap<K, V> tailMap(final K fromKey) {
         return delegate.tailMap(fromKey);
     }
 
-
     @Override
-	public Collection<V> values() {
+    public Collection<V> values() {
         return delegate.values();
     }
-
 
 }

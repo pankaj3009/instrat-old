@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.solvers1D;
 
 import org.jquantlib.math.AbstractSolver1D;
@@ -29,20 +28,20 @@ import org.jquantlib.math.Ops;
  * Bisection 1-D solver<br/>
  * <p>
  * The implementation of the algorithm was inspired by
- * <i>Press, Teukolsky, Vetterling, and Flannery, "Numerical Recipes
- * in C", 2nd edition, Cambridge University Press</i>
- * 
+ * <i>Press, Teukolsky, Vetterling, and Flannery, "Numerical Recipes in C", 2nd
+ * edition, Cambridge University Press</i>
+ *
  * @author Dominik Holenstein
  */
-public class Bisection extends AbstractSolver1D<Ops.DoubleOp>  {
+public class Bisection extends AbstractSolver1D<Ops.DoubleOp> {
 
     /**
      * Computes the roots of a function by using the Bisection method.
+     *
      * @param f the function
      * @param xAccuracy the provided accuracy
      * @returns <code>root_</code>
      */
-
     @Override
     protected double solveImpl(final Ops.DoubleOp f, final double xAccuracy) {
         double dx, xMid, fMid;
@@ -61,10 +60,12 @@ public class Bisection extends AbstractSolver1D<Ops.DoubleOp>  {
             xMid = root + dx;
             fMid = f.op(xMid);
             evaluationNumber++;
-            if (fMid <= 0.0)
+            if (fMid <= 0.0) {
                 root = xMid;
-            if (Math.abs(dx) < xAccuracy || fMid == 0.0)
+            }
+            if (Math.abs(dx) < xAccuracy || fMid == 0.0) {
                 return root;
+            }
         }
         throw new ArithmeticException("maximum number of function evaluations exceeded"); // TODO: message
     }

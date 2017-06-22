@@ -33,18 +33,18 @@ import org.jquantlib.time.calendars.Target;
 /**
  * Actual/365 Euribor index
  * <p>
- * Euribor rate adjusted for the mismatch between the actual/360
- * convention used for Euribor and the actual/365 convention
- * previously used by a few pre-EUR currencies.
+ * Euribor rate adjusted for the mismatch between the actual/360 convention used
+ * for Euribor and the actual/365 convention previously used by a few pre-EUR
+ * currencies.
  *
  * @author Srinivas Hasti
  */
 public class Euribor365 extends IborIndex {
 
     public Euribor365(final Period tenor) {
-    	this(tenor, new Handle<YieldTermStructure>());
+        this(tenor, new Handle<YieldTermStructure>());
     }
-    
+
     public Euribor365(final Period tenor, final Handle<YieldTermStructure> h) {
         super("Euribor365", tenor,
                 2, // settlement days
@@ -54,7 +54,7 @@ public class Euribor365 extends IborIndex {
                 euriborEOM(tenor),
                 new Actual365Fixed(),
                 h);
-        QL.require(this.tenor().units() != TimeUnit.Days , "for daily tenors dedicated DailyTenor constructor must be used"); // TODO: message
+        QL.require(this.tenor().units() != TimeUnit.Days, "for daily tenors dedicated DailyTenor constructor must be used"); // TODO: message
     }
 
 }

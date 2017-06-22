@@ -31,37 +31,36 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * 
+ *
  * Fake year-on-year UK RPI (i.e. a ratio of UK RPI)
- * 
+ *
  * @author Tim Blackler
  *
  */
-
 public class YYUKRPIr extends YoYInflationIndex {
 
-	public YYUKRPIr(final Frequency frequency,
-   	      final boolean revised,
-   	      final boolean interpolated) {
-			
-	this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>());
-	   
- }
-	
     public YYUKRPIr(final Frequency frequency,
-            	  final boolean revised,
-            	  final boolean interpolated,
-            	  final Handle<YoYInflationTermStructure> termStructure) {
-    	
-    	super("YYR_RPI",
-              new UKRegion(),
-              revised,
-              interpolated,
-              true,
-              frequency,
-              new Period(2, TimeUnit.Months),
-              new GBPCurrency(),
-              termStructure);
-    	
-    }    
+            final boolean revised,
+            final boolean interpolated) {
+
+        this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>());
+
+    }
+
+    public YYUKRPIr(final Frequency frequency,
+            final boolean revised,
+            final boolean interpolated,
+            final Handle<YoYInflationTermStructure> termStructure) {
+
+        super("YYR_RPI",
+                new UKRegion(),
+                revised,
+                interpolated,
+                true,
+                frequency,
+                new Period(2, TimeUnit.Months),
+                new GBPCurrency(),
+                termStructure);
+
+    }
 }

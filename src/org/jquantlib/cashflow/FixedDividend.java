@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.time.JDate;
@@ -31,34 +30,29 @@ import org.jquantlib.time.JDate;
  *
  * @author Daniel Kong
  */
-
 public class FixedDividend extends Dividend {
 
-	protected double amount;
+    protected double amount;
 
-	public FixedDividend(final double amount, final JDate date) {
-		super(date);
-		this.amount = amount;
-	}
+    public FixedDividend(final double amount, final JDate date) {
+        super(date);
+        this.amount = amount;
+    }
 
+    //
+    // Overrides Dividend
+    //
+    @Override
+    public double amount(final double underlying) {
+        return amount;
+    }
 
-	//
-	// Overrides Dividend
-	//
-
-	@Override
-	public double amount(final double underlying) {
-		return amount;
-	}
-
-
-	//
-	// Overrides Cashflow
-	//
-
-	@Override
-	public double amount() {
-		return amount;
-	}
+    //
+    // Overrides Cashflow
+    //
+    @Override
+    public double amount() {
+        return amount;
+    }
 
 }

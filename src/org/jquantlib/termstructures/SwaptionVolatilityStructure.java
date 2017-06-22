@@ -29,7 +29,6 @@ public abstract class SwaptionVolatilityStructure extends AbstractTermStructure 
     }
 
     // ! returns the volatility for a given option time and swapLength
-
     public double volatility(final double optionTime, final double swapLength, final double strike) {
         return volatility(optionTime, swapLength, strike, false);
     }
@@ -49,14 +48,12 @@ public abstract class SwaptionVolatilityStructure extends AbstractTermStructure 
      *
      * } Pair<Double, Double> p = null;//convertDates(optionDate, swapTenor); return smileSectionImpl(p.first, p.second); }
      */
-
     // ! returns the volatility for a given option tenor and swap tenor
     public double volatility(final Period optionTenor, final Period swapTenor, final double strike) {
         return volatility(optionTenor, swapTenor, strike, false);
     }
 
     // ! returns the Black variance for a given option tenor and swap tenor
-
     public double blackVariance(final Period optionTenor, final Period swapTenor, final double strike) {
         return blackVariance(optionTenor, swapTenor, strike, false);
     }
@@ -75,13 +72,11 @@ public abstract class SwaptionVolatilityStructure extends AbstractTermStructure 
     public abstract double maxStrike();
 
     // @}
-
     // ! the business day convention used for option date calculation
     public abstract BusinessDayConvention businessDayConvention();
 
     // ! implements the conversion between optionTenors and optionDates
     // public abstract Date optionDateFromTenor( Period optionTenor);
-
     // ! return smile section
     protected abstract SmileSection smileSectionImpl(double optionTime, double swapLength);
 
@@ -160,7 +155,7 @@ public abstract class SwaptionVolatilityStructure extends AbstractTermStructure 
     public Pair<Double, Double> convertDates(final JDate optionDate, final Period swapTenor) {
         final JDate end = optionDate.add(swapTenor);
         // TODO: code review :: please verify against QL/C++ code
-        QL.require(end.gt(optionDate) , "negative swap tenorgiven"); // TODO: message
+        QL.require(end.gt(optionDate), "negative swap tenorgiven"); // TODO: message
         final double optionTime = timeFromReference(optionDate);
         final double timeLength = dayCounter().yearFraction(optionDate, end);
         return new Pair<Double, Double>(optionTime, timeLength);

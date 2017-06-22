@@ -1,4 +1,3 @@
-
 package com.incurrency.kairosresponse;
 
 import com.google.gson.annotations.Expose;
@@ -24,72 +23,64 @@ public class Tags {
     private List<String> symbol = new ArrayList<String>();
 
     /**
-     * 
-     * @return
-     *     The expiry
+     *
+     * @return The expiry
      */
     public List<String> getExpiry() {
         return expiry;
     }
 
     /**
-     * 
-     * @param expiry
-     *     The expiry
+     *
+     * @param expiry The expiry
      */
     public void setExpiry(List<String> expiry) {
         this.expiry = expiry;
     }
 
     /**
-     * 
-     * @return
-     *     The option
+     *
+     * @return The option
      */
     public List<String> getOption() {
         return option;
     }
 
     /**
-     * 
-     * @param option
-     *     The option
+     *
+     * @param option The option
      */
     public void setOption(List<String> option) {
         this.option = option;
     }
 
     /**
-     * 
-     * @return
-     *     The strike
+     *
+     * @return The strike
      */
     public List<String> getStrike() {
         return strike;
     }
 
     /**
-     * 
-     * @param strike
-     *     The strike
+     *
+     * @param strike The strike
      */
     public void setStrike(List<String> strike) {
         this.strike = strike;
     }
 
     /**
-     * 
-     * @return
-     *     The symbol
+     *
+     * @return The symbol
      */
     public List<String> getSymbol() {
         return symbol;
     }
 
     /**
-     * 
-     * @param symbol
-     *     The symbol
+     *
+     * @param symbol The symbol
      */
     public void setSymbol(List<String> symbol) {
         this.symbol = symbol;

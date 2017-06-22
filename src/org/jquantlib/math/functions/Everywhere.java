@@ -33,14 +33,13 @@ public final class Everywhere implements Ops.DoublePredicate {
     //
     // implements Ops.DoublePredicate
     //
-
     /**
      * @param a is always discarded
      * @return true
      */
-	@Override
-	public boolean op(final double a) {
-		return true;
-	}
+    @Override
+    public boolean op(final double a) {
+        return true;
+    }
 
 }

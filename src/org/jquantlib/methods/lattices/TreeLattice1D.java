@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.lattices;
 
 import org.jquantlib.math.matrixutilities.Array;
@@ -51,31 +50,28 @@ import org.jquantlib.time.TimeGrid;
  */
 public abstract class TreeLattice1D extends TreeLattice {
 
-	//
+    //
     // public constructors
     //
-
     public TreeLattice1D(final TimeGrid timeGrid, final int n) {
-		super(timeGrid, n);
-	}
+        super(timeGrid, n);
+    }
 
-	//
+    //
     // overrides Lattice
     //
-
     @Override
     public Array grid(final double t) {
-		final int i = timeGrid().index(t);
-		final Array grid = new Array(size(i));
-		for (int j = 0; j < grid.size(); j++)
+        final int i = timeGrid().index(t);
+        final Array grid = new Array(size(i));
+        for (int j = 0; j < grid.size(); j++) {
             grid.set(j, underlying(i, j));
-		return grid;
-	}
+        }
+        return grid;
+    }
 
-
-	//
-	// abstract methods
-	//
-
-	public abstract double underlying(int i, int index);
+    //
+    // abstract methods
+    //
+    public abstract double underlying(int i, int index);
 }

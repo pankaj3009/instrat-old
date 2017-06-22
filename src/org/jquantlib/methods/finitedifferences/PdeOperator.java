@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.finitedifferences;
 
 import org.jquantlib.math.matrixutilities.Array;
@@ -50,19 +49,19 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
  * @param <T>
  */
 public abstract class PdeOperator<T extends PdeSecondOrderParabolic> extends TridiagonalOperator {
-	
-	private final Class<? extends PdeSecondOrderParabolic> classT;
-	
-	public PdeOperator(
-			final Class<? extends PdeSecondOrderParabolic> classT,
-			final Array grid, 
-			final GeneralizedBlackScholesProcess process, 
-			final double residualTime) {
-		super(grid.size());
-		this.classT = classT;
-		final PdeSecondOrderParabolic pde = PdeTypeUtil.getPdeInstance(classT, process);
-		timeSetter = new GenericTimeSetter<PdeSecondOrderParabolic>(grid, pde);
-		setTime(residualTime);
-	}
+
+    private final Class<? extends PdeSecondOrderParabolic> classT;
+
+    public PdeOperator(
+            final Class<? extends PdeSecondOrderParabolic> classT,
+            final Array grid,
+            final GeneralizedBlackScholesProcess process,
+            final double residualTime) {
+        super(grid.size());
+        this.classT = classT;
+        final PdeSecondOrderParabolic pde = PdeTypeUtil.getPdeInstance(classT, process);
+        timeSetter = new GenericTimeSetter<PdeSecondOrderParabolic>(grid, pde);
+        setTime(residualTime);
+    }
 
 }

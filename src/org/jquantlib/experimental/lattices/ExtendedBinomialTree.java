@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2005 StatPro Italia srl
@@ -38,8 +38,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.experimental.lattices;
 
 import org.jquantlib.methods.lattices.Tree;
@@ -61,31 +60,28 @@ public abstract class ExtendedBinomialTree extends Tree /* <T> */ {
     //
     // protected fields
     //
-
     protected double x0;
     protected double driftPerStep;
     protected /* @Time */ double dt;
     protected StochasticProcess1D treeProcess;
 
-
     //
     // public methods
     //
-
     public ExtendedBinomialTree(
             final StochasticProcess1D process,
             final /* @Time */ double end,
             final int steps) {
-        super(steps+1);
+        super(steps + 1);
         this.treeProcess = process;
         this.x0 = process.x0();
-        this.dt = end/steps;
+        this.dt = end / steps;
         this.driftPerStep = process.drift(0.0, x0) * dt;
     }
 
     @Override
     public int size(final int i) /* @ReadOnly */ {
-        return i+1;
+        return i + 1;
     }
 
     @Override
@@ -93,13 +89,10 @@ public abstract class ExtendedBinomialTree extends Tree /* <T> */ {
         return index + branch;
     }
 
-
-
     //
     // protected methods
     //
-
-    protected double driftStep(/* @Time */ final double driftTime) /* @ReadOnly */ {
+    protected double driftStep(/* @Time */final double driftTime) /* @ReadOnly */ {
         return treeProcess.drift(driftTime, x0) * dt;
     }
 

@@ -19,11 +19,9 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time;
 
 import org.jquantlib.QL;
-
 
 /**
  * Helper class to parse Strings to Date
@@ -31,7 +29,8 @@ import org.jquantlib.QL;
  * @author Srinivas Hasti
  * @author Zahid Hussain
  *
- * @Changes: Sep 2009: Used correct method to parse date and format strings in parse method.
+ * @Changes: Sep 2009: Used correct method to parse date and format strings in
+ * parse method.
  *
  */
 // TODO: OSGi :: remove statics

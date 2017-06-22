@@ -21,7 +21,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Mario Pucci
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.termstructures.volatilities;
 
 import java.util.List;
@@ -65,83 +64,91 @@ public abstract class SmileSection implements Observer, Observable {
     private final boolean isFloating_;
 
     protected double exerciseTime_;
+    //
+    // implements Observable
+    //
 
+    /**
+     * Implements multiple inheritance via delegate pattern to an inner class
+     *
+     * @see Observable
+     * @see DefaultObservable
+     */
+    private final DefaultObservable delegatedObservable = new DefaultObservable(this);
 
     //
     // public constructors
     //
-
     public SmileSection(
             final JDate d,
             final DayCounter dc,
             final JDate referenceDate) {
-    	exerciseDate_ = d;
-    	dc_ = dc;
-    	isFloating_ = referenceDate.isNull();
-    	if (isFloating_) {
-    		final Settings settings = new Settings();
-    		settings.evaluationDate().addObserver(this);
-    		reference_ = settings.evaluationDate();
-    	} else
+        exerciseDate_ = d;
+        dc_ = dc;
+        isFloating_ = referenceDate.isNull();
+        if (isFloating_) {
+            final Settings settings = new Settings();
+            settings.evaluationDate().addObserver(this);
+            reference_ = settings.evaluationDate();
+        } else {
             reference_ = referenceDate;
-    	initializeExerciseTime();
+        }
+        initializeExerciseTime();
     }
 
     public SmileSection(
             final /* @Time */ double exerciseTime,
             final DayCounter dc) {
-    	isFloating_ = false;
-    	dc_ = dc;
-    	exerciseTime_ = exerciseTime;
-    	QL.require(exerciseTime_>=0.0,
-    			"expiry time must be positive: " +
-    			exerciseTime_ + " not allowed");
+        isFloating_ = false;
+        dc_ = dc;
+        exerciseTime_ = exerciseTime;
+        QL.require(exerciseTime_ >= 0.0,
+                "expiry time must be positive: "
+                + exerciseTime_ + " not allowed");
     }
-
 
     //
     // abstract methods
     //
-
     public abstract double minStrike();
 
     public abstract double maxStrike();
 
     public abstract double atmLevel();
 
-    protected abstract /* @Real */ double volatilityImpl(/* @Rate */ double strike);
-
+    protected abstract /* @Real */ double volatilityImpl(/* @Rate */double strike);
 
     //
     // public methods
     //
-
     public double variance() {
-    	return variance(Constants.NULL_REAL);
+        return variance(Constants.NULL_REAL);
     }
 
     public double volatility() {
-    	return volatility(Constants.NULL_REAL);
+        return volatility(Constants.NULL_REAL);
     }
 
     public void initializeExerciseTime() {
         QL.require(exerciseDate_.ge(reference_),
-                "expiry date (" + exerciseDate_ +
-                ") must be greater than reference date (" +
-                reference_ + ")");
-     exerciseTime_ = dc_.yearFraction(reference_, exerciseDate_);
+                "expiry date (" + exerciseDate_
+                + ") must be greater than reference date ("
+                + reference_ + ")");
+        exerciseTime_ = dc_.yearFraction(reference_, exerciseDate_);
 
     }
 
     public double variance(double strike) {
-        if (Double.isNaN(strike))
+        if (Double.isNaN(strike)) {
             strike = atmLevel();
+        }
         return varianceImpl(strike);
     }
 
     public double volatility(double strike) {
-        if (Double.isNaN(strike))
+        if (Double.isNaN(strike)) {
             strike = atmLevel();
+        }
         return volatilityImpl(strike);
     }
 
@@ -160,18 +167,15 @@ public abstract class SmileSection implements Observer, Observable {
     //
     // protected methods
     //
-
-    protected /* @Real */ double varianceImpl(/* @Rate */ final double strike) {
-    	/* @Volatility */ final double v = volatilityImpl(strike);
-        return v*v*exerciseTime();
+    protected /* @Real */ double varianceImpl(/* @Rate */final double strike) {
+        /* @Volatility */ final double v = volatilityImpl(strike);
+        return v * v * exerciseTime();
 
     }
-
 
     //
     // implements Observer
     //
-
     @Override
     public void update() {
         if (isFloating_) {
@@ -181,18 +185,6 @@ public abstract class SmileSection implements Observer, Observable {
         }
 
     }
-
-    //
-    // implements Observable
-    //
-
-    /**
-     * Implements multiple inheritance via delegate pattern to an inner class
-     *
-     * @see Observable
-     * @see DefaultObservable
-     */
-    private final DefaultObservable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public void addObserver(final Observer observer) {

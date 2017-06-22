@@ -13,6 +13,8 @@ import java.util.logging.Logger;
  */
 public class Fundamental {
 
+    private static final Logger logger = Logger.getLogger(Fundamental.class.getName());
+
     public String TTMEPSCHG;
     public String QBVPS;
     public String TTMREVPS;
@@ -68,8 +70,7 @@ public class Fundamental {
     public boolean FundamentalSnapshotReceived = false;
     private int snapshotRequestID = 0;
     boolean empty = true;
-    private static final Logger logger = Logger.getLogger(Fundamental.class.getName());
-    
+
     public synchronized boolean takeSummary() {
         // Wait until message is
         // available.
@@ -84,16 +85,16 @@ public class Fundamental {
         empty = true;
         // Notify producer that
         // status has changed.
-        
+
         notifyAll();
         return true;
     }
-    
+
     public synchronized void putSummary(String message) {
         // Wait until message has
         // been retrieved.
         while (!empty) {
-            try {                
+            try {
                 wait();
             } catch (InterruptedException e) {
                 logger.log(Level.SEVERE, null, e);
@@ -103,12 +104,11 @@ public class Fundamental {
         empty = false;
         // Store Summary
 
-
         // Notify consumer that status
         // has changed.
         notifyAll();
     }
-    
+
     public void addIBFundamentalRatios(String s) {
         //this function adds fundamental ratios from IB TickType=258
         String[] arr = s.split(";");
@@ -248,7 +248,7 @@ public class Fundamental {
                     PRICE2BK = temp[1];
                     break;
                 default:
-                    break;                
+                    break;
             }
             this.FundamentalRatiosReceived = true;
         }

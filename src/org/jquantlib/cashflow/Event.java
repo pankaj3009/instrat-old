@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import java.util.List;
@@ -39,30 +38,36 @@ import org.jquantlib.util.Visitor;
  * @author Richard Gomes
  */
 public abstract class Event implements Observable, PolymorphicVisitable {
+    //
+    // implements Observable
+    //
+
+    /**
+     * Implements multiple inheritance via delegate pattern to an inner class
+     *
+     * @see Observable
+     * @see DefaultObservable
+     */
+    private final DefaultObservable delegatedObservable = new DefaultObservable(this);
 
     //
     // protected constructors
     //
-
     protected Event() {
         // only descendent classes can instantiate
     }
 
-
     //
     // public abstract methods
     //
-
     /**
      * Keeps the date at which the event occurs
      */
     public abstract JDate date();
 
-
     //
     // public methods
     //
-
     /**
      * Returns true if an event has already occurred before a date where the
      * current date may or may not be considered accordingly to defaults taken
@@ -74,17 +79,15 @@ public abstract class Event implements Observable, PolymorphicVisitable {
      * @see Settings.todaysPayments
      * @see todaysPayments
      */
-
-
     /**
      * Returns true if an event has already occurred before a date
      * <p>
-     * If {@link Settings#isTodaysPayments()} is true, then a payment event has not
-     * occurred if the input date is the same as the event date,
-     * and so includeToday should be defaulted to true.
+     * If {@link Settings#isTodaysPayments()} is true, then a payment event has
+     * not occurred if the input date is the same as the event date, and so
+     * includeToday should be defaulted to true.
      * <p>
-     * This should be the only place in the code that is affected
-     * directly by {@link Settings#isTodaysPayments()}
+     * This should be the only place in the code that is affected directly by
+     * {@link Settings#isTodaysPayments()}
      */
     public boolean hasOccurred(final JDate d) /* @ReadOnly */ {
         return hasOccurred(d, new Settings().isTodaysPayments());
@@ -97,26 +100,13 @@ public abstract class Event implements Observable, PolymorphicVisitable {
      * @param d is a Date
      * @return true if an event has already occurred before a date
      */
-    public boolean hasOccurred(final JDate d, final boolean includeToday) /* @ReadOnly */{
+    public boolean hasOccurred(final JDate d, final boolean includeToday) /* @ReadOnly */ {
         if (includeToday) {
             return date().compareTo(d) < 0;
         } else {
             return date().compareTo(d) <= 0;
         }
     }
-
-
-    //
-    // implements Observable
-    //
-
-    /**
-     * Implements multiple inheritance via delegate pattern to an inner class
-     *
-     * @see Observable
-     * @see DefaultObservable
-     */
-    private final DefaultObservable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public void addObserver(final Observer observer) {
@@ -153,14 +143,12 @@ public abstract class Event implements Observable, PolymorphicVisitable {
         return delegatedObservable.getObservers();
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<Event> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<Event> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

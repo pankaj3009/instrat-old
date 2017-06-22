@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003 Ferdinando Ametrano
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -64,13 +63,11 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
     //
     // See the TermStructure documentation for issues regarding constructors.
     //
-
     /**
      * 'default constructor'
      * <p>
-     * @warning term structures initialized by means of this
-     *          constructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public BlackVolatilityTermStructure() {
         super(new Calendar(), BusinessDayConvention.Following, new DayCounter());
@@ -79,9 +76,8 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
     /**
      * 'default constructor'
      * <p>
-     * @warning term structures initialized by means of this
-     *          constructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public BlackVolatilityTermStructure(final Calendar cal) {
         super(cal, BusinessDayConvention.Following, new DayCounter());
@@ -90,9 +86,8 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
     /**
      * 'default constructor'
      * <p>
-     * @warning term structures initialized by means of this
-     *          constructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public BlackVolatilityTermStructure(final Calendar cal, final BusinessDayConvention bdc) {
         super(cal, bdc, new DayCounter());
@@ -101,15 +96,12 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
     /**
      * 'default constructor'
      * <p>
-     * @warning term structures initialized by means of this
-     *          constructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public BlackVolatilityTermStructure(final Calendar cal, final BusinessDayConvention bdc, final DayCounter dc) {
         super(cal, bdc, dc);
     }
-
-
 
     /**
      * Initialize with a fixed reference date
@@ -148,13 +140,11 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
         super(referenceDate, cal, bdc, dc);
     }
 
-
-
     /**
      * Calculate the reference date based on the global evaluation date
      */
     public BlackVolatilityTermStructure(
-            /*@Natural*/ final int settlementDays,
+            /*@Natural*/final int settlementDays,
             final Calendar cal) {
         super(settlementDays, cal, BusinessDayConvention.Following, new DayCounter());
     }
@@ -163,7 +153,7 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
      * Calculate the reference date based on the global evaluation date
      */
     public BlackVolatilityTermStructure(
-            /*@Natural*/ final int settlementDays,
+            /*@Natural*/final int settlementDays,
             final Calendar cal,
             final BusinessDayConvention bdc) {
         super(settlementDays, cal, bdc, new DayCounter());
@@ -173,43 +163,38 @@ abstract public class BlackVolatilityTermStructure extends BlackVolTermStructure
      * Calculate the reference date based on the global evaluation date
      */
     public BlackVolatilityTermStructure(
-            /*@Natural*/ final int settlementDays,
+            /*@Natural*/final int settlementDays,
             final Calendar cal,
             final BusinessDayConvention bdc,
             final DayCounter dc) {
         super(settlementDays, cal, bdc, dc);
     }
 
+    //
+    // Overrides BlackVolTermStructure
+    //
+    /**
+     * Returns the variance for the given strike and date calculating it from
+     * the volatility.
+     */
+    @Override
+    protected final /*@Variance*/ double blackVarianceImpl(final /*@Time*/ double maturity, final /*@Real*/ double strike) {
+        /*@Volatility*/ final double vol = blackVolImpl(maturity, strike);
+        /*@Variance*/ final double variance = vol * vol * maturity;
+        return variance;
+    }
 
-
-	//
-	// Overrides BlackVolTermStructure
-	//
-
-	/**
-	 * Returns the variance for the given strike and date calculating it from
-	 * the volatility.
-	 */
-	@Override
-	protected final /*@Variance*/ double blackVarianceImpl(final /*@Time*/ double maturity, final /*@Real*/ double strike) {
-		/*@Volatility*/ final double vol = blackVolImpl(maturity, strike);
-		/*@Variance*/ final double variance = vol*vol*maturity;
-		return variance;
-	}
-
-
-	//
-	// implements PolymorphicVisitable
-	//
-
-	@Override
-	public void accept(final PolymorphicVisitor pv) {
-		final Visitor<BlackVolatilityTermStructure> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+    //
+    // implements PolymorphicVisitable
+    //
+    @Override
+    public void accept(final PolymorphicVisitor pv) {
+        final Visitor<BlackVolatilityTermStructure> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {
             super.accept(pv);
         }
-	}
+    }
 
 }

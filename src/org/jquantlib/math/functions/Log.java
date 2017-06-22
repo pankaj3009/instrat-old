@@ -25,18 +25,17 @@ import org.jquantlib.math.Ops;
 
 /**
  * A log(n) function
- * 
+ *
  * @author Srinivas Hasti
  */
 public final class Log implements Ops.DoubleOp {
 
-	//
+    //
     // implements Ops.DoubleOp
     //
-    
-	@Override
-	public double op(final double a) {
-		return Math.log(a);
-	}
+    @Override
+    public double op(final double a) {
+        return Math.log(a);
+    }
 
 }

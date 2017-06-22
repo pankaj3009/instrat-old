@@ -25,12 +25,10 @@ import java.lang.reflect.Method;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 //TODO: add comments and explain what this class is about
-
 // FIXME: Remove code which employs reflection [ Richard Gomes ]
-
 public class DynamicProxyInvocationHandler<T> implements java.lang.reflect.InvocationHandler {
 
     private final T delegate;
@@ -41,8 +39,8 @@ public class DynamicProxyInvocationHandler<T> implements java.lang.reflect.Invoc
 
     @Override
     public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-        return  delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
-       
+        return delegate.getClass().getMethod(method.getName(), method.getParameterTypes()).invoke(delegate, args);
+
     }
 
 }

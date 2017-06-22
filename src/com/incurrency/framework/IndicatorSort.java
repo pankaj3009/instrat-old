@@ -14,7 +14,7 @@ public class IndicatorSort implements Comparator<Indicator> {
 
     @Override
     public int compare(Indicator o1, Indicator o2) {
-        return o1.timeStamp>o2.timeStamp?1:(o1.timeStamp<o2.timeStamp)?-1:0;
+        return o1.timeStamp > o2.timeStamp ? 1 : (o1.timeStamp < o2.timeStamp) ? -1 : 0;
     }
-    
+
 }

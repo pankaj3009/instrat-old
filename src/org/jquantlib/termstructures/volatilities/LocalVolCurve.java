@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.volatilities;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -57,17 +56,15 @@ public class LocalVolCurve extends LocalVolTermStructure {
 
     public LocalVolCurve(final Handle<BlackVarianceCurve> curve) {
         super(curve.currentLink().calendar(),
-              curve.currentLink().businessDayConvention(),
-              curve.currentLink().dayCounter());
+                curve.currentLink().businessDayConvention(),
+                curve.currentLink().dayCounter());
         blackVarianceCurve = curve.currentLink();
         this.blackVarianceCurve.addObserver(this);
     }
 
-
     //
     // Overrides TermStructure
     //
-
     @Override
     public final JDate referenceDate() {
         return blackVarianceCurve.referenceDate();
@@ -83,11 +80,9 @@ public class LocalVolCurve extends LocalVolTermStructure {
         return blackVarianceCurve.maxDate();
     }
 
-
     //
     // Overrides LocalVolTermStructure
     //
-
     @Override
     public final /*@Real*/ double minStrike() {
         return Double.NEGATIVE_INFINITY;
@@ -99,37 +94,36 @@ public class LocalVolCurve extends LocalVolTermStructure {
     }
 
     /**
-     * The relation
-     * {@latex[ \int_0^T \sigma_L^2(t)dt = \sigma_B^2 T }
-     * holds, where
-     * {@latex$ \sigma_L(t) }
-     * is the local volatility at time {@latex$ t } and {@latex$ \sigma_B(T) }
-     * is the Black volatility for maturity {@latex$ T }.
+     * The relation {
+     *
+     * @latex[ \int_0^T \sigma_L^2(t)dt = \sigma_B^2 T } holds, where {
+     * @latex$ \sigma_L(t) } is the local volatility at time {
+     * @latex$ t } and {
+     * @latex$ \sigma_B(T) } is the Black volatility for maturity {
+     * @latex$ T }.
      * <p>
-     * From the above, the formula
-     * {@latex[ \sigma_L(t) = \sqrt{\frac{\mathrm{d}}{\mathrm{d}t}\sigma_B^2(t)t} }
-     * can be deduced which is here implemented.
+     * From the above, the formula {
+     * @latex[ \sigma_L(t) = \sqrt{\frac{\mathrm{d}}{\mathrm{d}t}\sigma_B^2(t)t}
+     * } can be deduced which is here implemented.
      */
     @Override
     protected final /*@Volatility*/ double localVolImpl(
-            final /*@Time*/ double maturity,
-            final /*@Real*/ double strike) {
+                    final /*@Time*/ double maturity,
+                    final /*@Real*/ double strike) {
         /*@Time*/ final double m = maturity;
         /*@Time*/ final double dt = 1.0 / 365.0;
-        /*@Variance*/ final double var1 = blackVarianceCurve.blackVariance(/*@Time*/ maturity, strike, true);
-        /*@Variance*/ final double var2 = blackVarianceCurve.blackVariance(/*@Time*/ m + dt, strike, true);
+        /*@Variance*/ final double var1 = blackVarianceCurve.blackVariance(/*@Time*/maturity, strike, true);
+        /*@Variance*/ final double var2 = blackVarianceCurve.blackVariance(/*@Time*/m + dt, strike, true);
         final double derivative = (var2 - var1) / dt;
         return Math.sqrt(derivative);
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<LocalVolCurve> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<LocalVolCurve> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

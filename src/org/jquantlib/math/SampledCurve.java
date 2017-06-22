@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2004 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math;
 
 import org.jquantlib.QL;
@@ -59,22 +58,20 @@ public class SampledCurve implements Cloneable {
     //
     // private fields
     //
-
     private Array grid;
     private Array values;
 
     //
     // Constructors
     //
-
     public SampledCurve(final int gridSize) {
-        this.grid   = new Array(gridSize);
+        this.grid = new Array(gridSize);
         this.values = new Array(gridSize);
     }
 
     public SampledCurve(final Array grid) {
         // TODO: code review :: use of clone()
-        this.grid   = grid;
+        this.grid = grid;
         this.values = new Array(this.grid.size());
     }
 
@@ -85,15 +82,13 @@ public class SampledCurve implements Cloneable {
      */
     public SampledCurve(final SampledCurve that) {
         // TODO: code review :: use of clone()
-        this.grid   = that.grid.clone();
+        this.grid = that.grid.clone();
         this.values = that.values.clone();
     }
-
 
     //
     // public methods
     //
-
     @Override
     public SampledCurve clone() {
         //XXX final SampledCurve result = new SampledCurve(this);
@@ -114,11 +109,11 @@ public class SampledCurve implements Cloneable {
         return this;
     }
 
-    public Array grid() /* @Readonly */{
+    public Array grid() /* @Readonly */ {
         return grid;
     }
 
-    public Array values() /* @Readonly */{
+    public Array values() /* @Readonly */ {
         return values;
     }
 
@@ -130,7 +125,7 @@ public class SampledCurve implements Cloneable {
         return values.get(i);
     }
 
-    private boolean empty() /* @Readonly */{
+    private boolean empty() /* @Readonly */ {
         return this.grid.empty();
     }
 
@@ -163,27 +158,28 @@ public class SampledCurve implements Cloneable {
         this.grid.mulAssign(s);
     }
 
-
-    public double valueAtCenter() /* @Readonly */{
-        QL.require(!empty() , "empty sampled curve"); // TODO: message
+    public double valueAtCenter() /* @Readonly */ {
+        QL.require(!empty(), "empty sampled curve"); // TODO: message
         final int jmid = size() / 2;
-        if (size() % 2 != 0)
+        if (size() % 2 != 0) {
             return values.get(jmid);
-        else
+        } else {
             return (values.get(jmid) + values.get(jmid - 1)) / 2.0;
+        }
     }
 
-    public double firstDerivativeAtCenter() /* @Readonly */{
-        QL.require(size() >= 3 , "the size of the curve must be at least 3"); // TODO: message
+    public double firstDerivativeAtCenter() /* @Readonly */ {
+        QL.require(size() >= 3, "the size of the curve must be at least 3"); // TODO: message
         final int jmid = size() / 2;
-        if (size() % 2 != 0)
+        if (size() % 2 != 0) {
             return (values.get(jmid + 1) - values.get(jmid - 1)) / (grid.get(jmid + 1) - grid.get(jmid - 1));
-        else
+        } else {
             return (values.get(jmid) - values.get(jmid - 1)) / (grid.get(jmid) - grid.get(jmid - 1));
+        }
     }
 
-    public double secondDerivativeAtCenter() /* @Readonly */{
-        QL.require(size() >= 4 , "the size of the curve must be at least 4"); // TODO: message
+    public double secondDerivativeAtCenter() /* @Readonly */ {
+        QL.require(size() >= 4, "the size of the curve must be at least 4"); // TODO: message
         final int jmid = size() / 2;
         if (size() % 2 != 0) {
             final double deltaPlus = (values.get(jmid + 1) - values.get(jmid)) / ((grid.get(jmid + 1) - grid.get(jmid)));
@@ -222,8 +218,8 @@ public class SampledCurve implements Cloneable {
         final CubicInterpolation priceSpline = new NaturalCubicInterpolation(transformed, values);
 
         priceSpline.update();
-        for (int i=0; i<newValues.size(); i++) {
-            newValues.set(i, priceSpline.op(newValues.get(i), true) );
+        for (int i = 0; i < newValues.size(); i++) {
+            newValues.set(i, priceSpline.op(newValues.get(i), true));
         }
 
         this.grid.swap(newGrid);

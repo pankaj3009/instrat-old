@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2004, 2007 StatPro Italia srl
 
@@ -36,25 +36,23 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 
-/*! \file asianoption.hpp
+ /*! \file asianoption.hpp
     \brief Asian option on a single asset
-*/
-
-
+ */
 package org.jquantlib.instruments;
 
 /**
- * 
+ *
  * Average/Asian option type.
- * 
+ *
  * Port from ql/instruments/asianoption.hpp
- * 
+ *
  * @author <Richard Gomes>
  *
  */
 public enum AverageType {
-    Arithmetic, 
-    Geometric 
+    Arithmetic,
+    Geometric
 }

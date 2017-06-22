@@ -19,6 +19,9 @@ import java.util.logging.Logger;
  */
 public class HistoricalBarsAll implements Runnable {
 
+    public static int connectionnumber = -1;
+    private static final Logger logger = Logger.getLogger(HistoricalBarsAll.class.getName());
+
     public String barSize;
     public Date startDate;
     public Date endDate;
@@ -30,8 +33,6 @@ public class HistoricalBarsAll implements Runnable {
     int tradeOpenHour;
     int tradeOpenMinute;
     List<String> holidays;
-    public static int connectionnumber=-1;
-    private static final Logger logger = Logger.getLogger(HistoricalBarsAll.class.getName());
 
     public HistoricalBarsAll(String barSize, Date startDate, Date endDate, BeanSymbol s, int tradingMinutes, String openTime, String endTime, TimeZone timeZone, List<String> holidays) {
         this.barSize = barSize;
@@ -77,7 +78,7 @@ public class HistoricalBarsAll implements Runnable {
             case "1min":
                 iterations = (int) (days * 5) + 1;
                 duration = MainAlgorithm.globalProperties.getProperty("1min", "5 D").toString();
- //               duration = "5 D";
+                //               duration = "5 D";
                 ibBarSize = "1 min";
                 break;
             case "1day":
@@ -126,7 +127,7 @@ public class HistoricalBarsAll implements Runnable {
             case "1min":
                 iterations = (int) (days * 10) + 1;
                 duration = MainAlgorithm.globalProperties.getProperty("1min", "5 D").toString();
- //             duration = "10 D";
+                //             duration = "10 D";
                 ibBarSize = "1 min";
                 break;
             case "1day":
@@ -140,7 +141,7 @@ public class HistoricalBarsAll implements Runnable {
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
         sdf.setTimeZone(timeZone);
-        System.out.println("Processing:" + s.getDisplayname()+",Progress:"+s.getSerialno()+"/"+Parameters.symbol.size());
+        System.out.println("Processing:" + s.getDisplayname() + ",Progress:" + s.getSerialno() + "/" + Parameters.symbol.size());
         ArrayList<BeanConnection> useConnection = new ArrayList<>();
         int connectionsInUse = 0;
         for (BeanConnection c : Parameters.connection) {
@@ -150,19 +151,19 @@ public class HistoricalBarsAll implements Runnable {
             }
         }
         boolean completed = false;
-        TWSConnection.skipsymbol=false;
-        while(!completed) {
-            int i=connectionnumber+1;
-            connectionnumber=i;
-            if(i==0){
-                
+        TWSConnection.skipsymbol = false;
+        while (!completed) {
+            int i = connectionnumber + 1;
+            connectionnumber = i;
+            if (i == 0) {
+
             }
-            if(TWSConnection.skipsymbol==true){
+            if (TWSConnection.skipsymbol == true) {
                 completed = true;
             }
-            if(i>0 && i%(connectionsInUse)==0 && !TWSConnection.skipsymbol){
+            if (i > 0 && i % (connectionsInUse) == 0 && !TWSConnection.skipsymbol) {
                 try {
-                     Thread.sleep(useConnection.get(0).getHistMessageLimit() * 1000);
+                    Thread.sleep(useConnection.get(0).getHistMessageLimit() * 1000);
                 } catch (InterruptedException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
@@ -207,7 +208,7 @@ public class HistoricalBarsAll implements Runnable {
                  break;
                  }
                  */
-                Date tempDate = startDate.after(endDate)?endDate:startDate;
+                Date tempDate = startDate.after(endDate) ? endDate : startDate;
 
                 String tempDateString = sdf.format(tempDate);
                 if (!oldStartDate.after(endDate)) {
@@ -222,12 +223,12 @@ public class HistoricalBarsAll implements Runnable {
                             logger.log(Level.SEVERE, null, ex);
                         }
                     }
-                    */
+                     */
                 } else {
                     try {
                         //if (i > 0) {
-                            connectionnumber=connectionnumber-1;
-                            //Thread.sleep(useConnection.get(0).getHistMessageLimit() * 1000);
+                        connectionnumber = connectionnumber - 1;
+                        //Thread.sleep(useConnection.get(0).getHistMessageLimit() * 1000);
                         //}
                     } catch (Exception ex) {
                         Logger.getLogger(HistoricalBarsAll.class.getName()).log(Level.SEVERE, null, ex);
@@ -277,7 +278,7 @@ public class HistoricalBarsAll implements Runnable {
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         String exitCalString = sdf.format(exitCal.getTime());
-        while (exitCal.get(Calendar.DAY_OF_WEEK) == 7 || exitCal.get(Calendar.DAY_OF_WEEK) == 1 || (holidays!=null && holidays.contains(exitCalString))) {
+        while (exitCal.get(Calendar.DAY_OF_WEEK) == 7 || exitCal.get(Calendar.DAY_OF_WEEK) == 1 || (holidays != null && holidays.contains(exitCalString))) {
             exitCal.add(Calendar.DATE, 1);
             exitCalString = sdf.format(exitCal.getTime());
         }
@@ -292,7 +293,6 @@ public class HistoricalBarsAll implements Runnable {
 //            exitCal.add(Calendar.MINUTE, minuteAdjust);
         }
         return exitCal.getTime();
-
 
     }
 }

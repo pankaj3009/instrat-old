@@ -19,9 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
-
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2006 StatPro Italia srl
@@ -38,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.exercise;
 
 import org.jquantlib.QL;
@@ -53,18 +50,18 @@ import org.jquantlib.time.JDate;
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Richard Gomes"})
 public class EuropeanExercise extends Exercise {
 
-	/**
-	 * Defines the exercise date for an European Option.
-	 *
-	 * @param date is the exercise date
-	 */
+    /**
+     * Defines the exercise date for an European Option.
+     *
+     * @param date is the exercise date
+     */
     public EuropeanExercise(final JDate date) {
-		super(Exercise.Type.European);
-		QL.require(date!=null , "empty exercise date");  // TODO: message
-		super.dates.add(date.clone());
-	}
+        super(Exercise.Type.European);
+        QL.require(date != null, "empty exercise date");  // TODO: message
+        super.dates.add(date.clone());
+    }
 
 }

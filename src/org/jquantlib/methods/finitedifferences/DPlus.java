@@ -23,15 +23,15 @@ package org.jquantlib.methods.finitedifferences;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public class DPlus extends TridiagonalOperator {
 
-    public DPlus(int gridPoints, /* Real */double h) {
+    public DPlus(int gridPoints, /* Real */ double h) {
         super(gridPoints);
         setFirstRow(-1 / h, 1 / h);
         setMidRows(0.0, -1 / h, 1 / h);
-        setLastRow(-1 / h, 1 / h); 
+        setLastRow(-1 / h, 1 / h);
         // linear extrapolation
     }
 }

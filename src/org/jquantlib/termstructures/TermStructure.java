@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2005, 2006 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.termstructures;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -66,7 +65,6 @@ public abstract interface TermStructure extends Extrapolator, Observer, Observab
      */
     public abstract Calendar calendar() /* @ReadOnly */;
 
-
     /**
      * Returns the settlementDays used for reference date calculation
      *
@@ -75,10 +73,10 @@ public abstract interface TermStructure extends Extrapolator, Observer, Observab
      */
     public /*@Natural*/ int settlementDays() /* @ReadOnly */;
 
-
     /**
-     * This method performs a date to double conversion which represents
-     * the fraction of the year between the reference date and the date passed as parameter.
+     * This method performs a date to double conversion which represents the
+     * fraction of the year between the reference date and the date passed as
+     * parameter.
      *
      * @category Dates and Time
      * @param date
@@ -105,9 +103,9 @@ public abstract interface TermStructure extends Extrapolator, Observer, Observab
     /**
      * Returns the Date at which discount = 1.0 and/or variance = 0.0
      *
-     * @note Term structures initialized by means of this
-     * constructor must manage their own reference date
-     * by overriding the getReferenceDate() method.
+     * @note Term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the getReferenceDate()
+     * method.
      *
      * @category Dates and Time
      * @returns the Date at which discount = 1.0 and/or variance = 0.0

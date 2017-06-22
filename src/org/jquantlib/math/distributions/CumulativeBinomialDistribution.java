@@ -19,14 +19,11 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 /**
  * @author Richard Gomes
  * @author Dominik Holenstein
  */
-
 package org.jquantlib.math.distributions;
-
 
 import org.jquantlib.QL;
 import org.jquantlib.math.Beta;
@@ -48,28 +45,26 @@ public class CumulativeBinomialDistribution implements Ops.IntToDouble {
     //
     // static private final fields
     //
-
     private static final double accuracy = 1e-16;
     private static final int maxIteration = 100;
 
     //
     // private final fields
     //
-
     private final int n;
     private final double p;
 
     //
     // public constructors
     //
-
     /**
      * This constructor initializes p and n
+     *
      * @param p is the probability of success of a single trial
      * @param n is the total number of trials
      */
-    public CumulativeBinomialDistribution(final double p, final int n){
-        QL.require(p >= 0.0 && p <= 1.0 , INVALID_PROBABILITY); // TODO: message
+    public CumulativeBinomialDistribution(final double p, final int n) {
+        QL.require(p >= 0.0 && p <= 1.0, INVALID_PROBABILITY); // TODO: message
         this.n = n; // total number of trials
         this.p = p; // probability of success on a single trial
     }
@@ -77,21 +72,22 @@ public class CumulativeBinomialDistribution implements Ops.IntToDouble {
     //
     // implements UnaryFunctionInteger
     //
-
     /**
      * {@inheritDoc}
      * <p>
      * Computes the Cumulative Binomial Distribution.
      *
      * @param k
-     * @return 1.0 - Beta.incompleteBetaFunction(k+1, n_-k, p_, accuracy, maxIteration)
+     * @return 1.0 - Beta.incompleteBetaFunction(k+1, n_-k, p_, accuracy,
+     * maxIteration)
      */
     @Override
     public double op(final int k) {
-        if (k >= n)
+        if (k >= n) {
             return 1.0;
-        else
+        } else {
             return 1.0 - Beta.incompleteBetaFunction(k + 1, n - k, p, accuracy, maxIteration);
+        }
     }
 
 }

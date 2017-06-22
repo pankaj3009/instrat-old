@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006, 2007 Ferdinando Ametrano
  Copyright (C) 2001, 2002, 2003 Nicolas Di Cesare
  Copyright (C) 2007 Francois du Vignaud
@@ -37,11 +37,10 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.math.optimization;
 
-
 public abstract class OptimizationMethod {
-    
+
     public abstract EndCriteria.Type minimize(Problem P, EndCriteria endCriteria);
 }

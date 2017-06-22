@@ -2,14 +2,16 @@ package org.jquantlib.model.marketmodels;
 
 import org.jquantlib.QL;
 
-
 /**
  * Curve state for market-model simulations
  * <p>
- * This class stores the state of the yield curve associated to the fixed calendar times within the simulation. This is the
- * workhorse discounting object associated to the rate times of the simulation. It's important to pass the rates via an object like
- * this to the product rather than directly to make it easier to switch to other engines such as a coterminal swap rate engine. Many
- * products will not need expired rates and others will only require the first rate.
+ * This class stores the state of the yield curve associated to the fixed
+ * calendar times within the simulation. This is the workhorse discounting
+ * object associated to the rate times of the simulation. It's important to pass
+ * the rates via an object like this to the product rather than directly to make
+ * it easier to switch to other engines such as a coterminal swap rate engine.
+ * Many products will not need expired rates and others will only require the
+ * first rate.
  *
  * @author Ueli Hofstetter
  */
@@ -17,7 +19,7 @@ import org.jquantlib.QL;
 public class CurveState {
 
     protected int numberOfRates_;
-    protected /*@Time*/double [] rateTimes_, rateTaus_;
+    protected /*@Time*/ double[] rateTimes_, rateTaus_;
 
     // There will n+1 rate times expressing payment and reset times of forward rates.
     //
@@ -27,21 +29,21 @@ public class CurveState {
     //            d0    d1    d2    d3    d4    d5     discountBonds
     //            d0/d0 d1/d0 d2/d0 d3/d0 d4/d0 d5/d0  discountRatios
     //            sr0   sr1   sr2   sr3   sr4          cotSwaps
+    public CurveState(final /*@Time*/ double[] rateTimes) {
 
-    public CurveState(final  /*@Time*/ double []  rateTimes){
-
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
-        numberOfRates_ = rateTimes==null || rateTimes.length == 0 ? 0 : rateTimes.length-1;
+        numberOfRates_ = rateTimes == null || rateTimes.length == 0 ? 0 : rateTimes.length - 1;
         rateTimes_ = (rateTimes); // TODO: clone() ?
         rateTaus_ = new double[numberOfRates_];
         //checkIncreasingTimesAndCalculateTaus(rateTimes_, rateTaus_);
     }
 
-    public /*@Rate*/ double swapRate(final int begin, final int end)  {
-        QL.require(end > begin , "empty range specified"); // TODO: message
-        QL.require(end <= numberOfRates_ , "taus/end mismatch"); // TODO: message
+    public /*@Rate*/ double swapRate(final int begin, final int end) {
+        QL.require(end > begin, "empty range specified"); // TODO: message
+        QL.require(end <= numberOfRates_, "taus/end mismatch"); // TODO: message
 
         final double sum = 0.0;
 
@@ -132,5 +134,4 @@ public class CurveState {
 //            oldLastIndex = lastIndex;
 //        }
 //    }
-
 }

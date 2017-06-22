@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2007 StatPro Italia srl
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines;
 
 import org.jquantlib.math.randomnumbers.RandomNumberGenerator;
@@ -47,8 +46,8 @@ import org.jquantlib.methods.montecarlo.Variate;
  *
  * Base class for Monte Carlo engines
  * <p>
- * Eventually this class might offer greeks methods. Deriving a class from McSimulation gives an easy way to write a Monte Carlo
- * engine.
+ * Eventually this class might offer greeks methods. Deriving a class from
+ * McSimulation gives an easy way to write a Monte Carlo engine.
  *
  * @ee McVanillaEngine
  *
@@ -61,8 +60,6 @@ public class MCSimulation<MC extends Variate, RNG extends RandomNumberGenerator,
     }
 
 }
-
-
 
 //template <template <class> class MC, class RNG, class S = Statistics>
 //class McSimulation {

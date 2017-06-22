@@ -12,17 +12,16 @@ public class ComposedFunction implements Ops.DoubleOp {
         this.g = g;
     }
 
-
     //
     // implements Ops.DoubleOp
     //
-
     /**
-     * @return {@latex$ f(g(x)) }
+     * @return {
+     * @latex$ f(g(x)) }
      */
-	@Override
-	public double op(final double x) {
-		return f.op(g.op(x));
-	}
-	
+    @Override
+    public double op(final double x) {
+        return f.op(g.op(x));
+    }
+
 }

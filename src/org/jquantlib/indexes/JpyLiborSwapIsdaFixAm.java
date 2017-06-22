@@ -32,34 +32,31 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * 
- * JpyLiborSwapIsdaFixAm index base class
- * JPY Libor Swap indexes fixed by ISDA in cooperation with
- * Reuters and Intercapital Brokers at 10am Tokyo.
- * Semiannual Act/365 vs 6M Libor. 
- * Reuters page ISDAFIX1 or JPYSFIXA=
- * Further info can be found at <http://www.isda.org/fix/isdafix.html> or
- * Reuters page ISDAFIX.
- * 
+ *
+ * JpyLiborSwapIsdaFixAm index base class JPY Libor Swap indexes fixed by ISDA
+ * in cooperation with Reuters and Intercapital Brokers at 10am Tokyo.
+ * Semiannual Act/365 vs 6M Libor. Reuters page ISDAFIX1 or JPYSFIXA= Further
+ * info can be found at <http://www.isda.org/fix/isdafix.html> or Reuters page
+ * ISDAFIX.
+ *
  * @author Tim Blackler
  */
 public class JpyLiborSwapIsdaFixAm extends SwapIndex {
 
     public JpyLiborSwapIsdaFixAm(final Period tenor) {
-    	this(tenor, new Handle<YieldTermStructure>());
+        this(tenor, new Handle<YieldTermStructure>());
     }
-	
+
     public JpyLiborSwapIsdaFixAm(final Period tenor, final Handle<YieldTermStructure> h) {
-        super( "JpyLiborSwapIsdaFixAm",
+        super("JpyLiborSwapIsdaFixAm",
                 tenor,
                 2, // settlement days
                 new JPYCurrency(),
                 new Target(),
-                new Period(6,TimeUnit.Months),
+                new Period(6, TimeUnit.Months),
                 BusinessDayConvention.ModifiedFollowing,
                 new ActualActual(ActualActual.Convention.ISDA),
-                new JPYLibor(new Period(6,TimeUnit.Months), h)
-                		
-                );
-        }
+                new JPYLibor(new Period(6, TimeUnit.Months), h)
+        );
+    }
 }

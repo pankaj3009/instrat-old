@@ -10,13 +10,13 @@ import java.util.EventObject;
  *
  * @author admin
  */
-public class BidAskEvent extends EventObject{
+public class BidAskEvent extends EventObject {
+
     private int _symbolID;
 
-            
-    public BidAskEvent( Object source, int id){
+    public BidAskEvent(Object source, int id) {
         super(source);
-        _symbolID=id;
+        _symbolID = id;
 
     }
 

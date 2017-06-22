@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2004 Jeff Yu
  Copyright (C) 2004 M-Dimension Consulting Inc.
  Copyright (C) 2005, 2006, 2007 StatPro Italia srl
@@ -40,7 +40,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.instruments;
 
 import java.util.ArrayList;
@@ -87,9 +86,9 @@ import org.jquantlib.util.Observer;
  *
  * @category instruments
  *
- *           Tests: @see ...... //FIXME: where are the testcases?!?! -
- *           price/yield calculations are cross-checked for consistency. -
- *           price/yield calculations are checked against known good values.
+ * Tests: @see ...... //FIXME: where are the testcases?!?! - price/yield
+ * calculations are cross-checked for consistency. - price/yield calculations
+ * are checked against known good values.
  *
  * @author Srinivas Hasti
  * @author Daniel Kong
@@ -99,6 +98,90 @@ import org.jquantlib.util.Observer;
  */
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public class Bond extends Instrument {
+
+    public static /* @Real */ double dirtyPriceFromYield(final /*Real*/ double faceAmount,
+                    final Leg cashflows,
+                    final /* @Rate */ double yield,
+                    final DayCounter dayCounter,
+                    final Compounding compounding,
+                    Frequency frequency,
+                    final JDate settlement) {
+        if (frequency == Frequency.NoFrequency || frequency == Frequency.Once) {
+            frequency = Frequency.Annual;
+        }
+
+        final InterestRate y = new InterestRate(yield, dayCounter, compounding, frequency);
+
+        /* @Real */
+        double price = 0.0;
+        /* @DiscountFactor */
+        double discount = 1.0;
+        JDate lastDate = new JDate();
+
+        for (int i = 0; i < cashflows.size(); ++i) {
+            if (cashflows.get(i).hasOccurred(settlement)) {
+                continue;
+            }
+
+            final JDate couponDate = cashflows.get(i).date();
+            /* @Real */
+            final double amount = cashflows.get(i).amount();
+
+            if (lastDate.isNull()) {
+                // first not-expired coupon
+                if (i > 0) {
+                    lastDate = cashflows.get(i - 1).date().clone();
+                } else {
+                    final Object cpnObj = cashflows.get(i);
+                    final Coupon coupon = Coupon.class.isAssignableFrom(cpnObj.getClass()) ? (Coupon) cpnObj : null;
+                    if (coupon != null) {
+                        lastDate = coupon.accrualStartDate().clone();
+                    } else {
+                        lastDate = couponDate.sub(new Period(1, TimeUnit.Years));
+                    }
+                }
+                discount *= y.discountFactor(settlement, couponDate, lastDate, couponDate);
+            } else {
+                discount *= y.discountFactor(lastDate, couponDate);
+            }
+            lastDate = couponDate.clone();
+
+            price += amount * discount;
+        }
+        return price / faceAmount * 100.0;
+    }
+
+    static/* @Real */ double dirtyPriceFromZSpreadFunction(
+                    final /* @Real */ double faceAmount,
+                    final Leg cashflows,
+                    final /* @Spread */ double zSpread,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    final JDate settlement,
+                    final Handle<YieldTermStructure> discountCurve) {
+
+        assert (freq != Frequency.NoFrequency && freq != Frequency.Once) : "invalid frequency:" + freq.toString();
+
+        final Handle<Quote> zSpreadQuoteHandle = new Handle<Quote>(new SimpleQuote(
+                zSpread));
+
+        final ZeroSpreadedTermStructure spreadedCurve = new ZeroSpreadedTermStructure(
+                discountCurve, zSpreadQuoteHandle, comp, freq, dc);
+        /* @Real */
+        double price = 0.0;
+        for (int i = 0; i < cashflows.size(); ++i) {
+            if (cashflows.get(i).hasOccurred(settlement)) {
+                continue;
+            }
+            final JDate couponDate = cashflows.get(i).date();
+            /* @Real */
+            final double amount = cashflows.get(i).amount();
+            price += amount * spreadedCurve.discount(couponDate);
+        }
+        price /= spreadedCurve.discount(settlement);
+        return price / faceAmount * 100.0;
+    }
 
     protected /*Natural*/ int settlementDays_;
     protected Calendar calendar_;
@@ -111,8 +194,6 @@ public class Bond extends Instrument {
     protected JDate issueDate_;
     protected /*Real*/ double settlementValue_;
 
-    
-
     /**
      * Constructor for amortizing or non-amortizing bonds. Redemptions and
      * maturity are calculated from the coupon data, if available. Therefore,
@@ -123,10 +204,10 @@ public class Bond extends Instrument {
      * @param issueDate
      * @param coupons
      */
-    protected Bond(final /* @Natural */int settlementDays,
-            	   final Calendar calendar,
-            	   final JDate issueDate,
-            	   final Leg coupons) {
+    protected Bond(final /* @Natural */ int settlementDays,
+            final Calendar calendar,
+            final JDate issueDate,
+            final Leg coupons) {
 
         this.settlementDays_ = settlementDays;
         this.calendar_ = calendar;
@@ -148,14 +229,14 @@ public class Bond extends Instrument {
         evaluationDate.addObserver(this);
     }
 
-    protected Bond(final /* @Natural */int settlementDays,
-            	   final Calendar calendar) {
+    protected Bond(final /* @Natural */ int settlementDays,
+            final Calendar calendar) {
         this(settlementDays, calendar, new JDate(), new Leg());
     }
 
-    protected Bond(final /* @Natural */int settlementDays,
-            	   final Calendar calendar,
-            	   final JDate issueDate) {
+    protected Bond(final /* @Natural */ int settlementDays,
+            final Calendar calendar,
+            final JDate issueDate) {
         this(settlementDays, calendar, issueDate, new Leg());
     }
 
@@ -170,20 +251,20 @@ public class Bond extends Instrument {
      * @param maturityDate
      * @param issueDate
      * @param cashflows
-     */    
-    public Bond(final /* @Natural */int settlementDays,
-            	final Calendar calendar,
-            	final /* @Real */double faceAmount,
-            	final JDate maturityDate,
-            	final JDate issueDate,
-            	final Leg cashflows) {
+     */
+    public Bond(final /* @Natural */ int settlementDays,
+            final Calendar calendar,
+            final /* @Real */ double faceAmount,
+            final JDate maturityDate,
+            final JDate issueDate,
+            final Leg cashflows) {
 
         this.settlementDays_ = settlementDays;
         this.calendar_ = calendar;
         this.cashflows_ = cashflows;
         this.maturityDate_ = maturityDate.clone();
         this.issueDate_ = issueDate.clone();
-        
+
         this.notionalSchedule_ = new ArrayList<JDate>();
         this.notionals_ = new ArrayList<Double>();
         this.redemptions_ = new Leg();
@@ -210,24 +291,23 @@ public class Bond extends Instrument {
         evaluationDate.addObserver(this);
     }
 
-    protected Bond(final /* @Natural */int settlementDays,
-            	   final Calendar calendar,
-            	   final /* @Real */double faceAmount,
-            	   final JDate maturityDate) {
+    protected Bond(final /* @Natural */ int settlementDays,
+            final Calendar calendar,
+            final /* @Real */ double faceAmount,
+            final JDate maturityDate) {
         this(settlementDays, calendar, faceAmount, maturityDate, new JDate(), new Leg());
     }
 
-    protected Bond(final /* @Natural */int settlementDays,
-            	   final Calendar calendar,
-            	   final /* @Real */double faceAmount,
-            	   final JDate maturityDate,
-            	   final JDate issueDate) {
+    protected Bond(final /* @Natural */ int settlementDays,
+            final Calendar calendar,
+            final /* @Real */ double faceAmount,
+            final JDate maturityDate,
+            final JDate issueDate) {
         this(settlementDays, calendar, faceAmount, maturityDate, issueDate, new Leg());
     }
 
     // inline definitions
-
-    public  /*Natural*/ int settlementDays() {
+    public /*Natural*/ int settlementDays() {
         return settlementDays_;
     }
 
@@ -252,8 +332,8 @@ public class Bond extends Instrument {
     }
 
     public JDate maturityDate() {
-    	return !maturityDate_.isNull() ? maturityDate_ : cashflows_.last().date();
-    	
+        return !maturityDate_.isNull() ? maturityDate_ : cashflows_.last().date();
+
 //        if (!maturityDate_.isNull() )
 //            return maturityDate_;
 //        else
@@ -264,53 +344,56 @@ public class Bond extends Instrument {
         return issueDate_;
     }
 
-    /** Note: new Date() as default argument. */
-    public /* @Real */double notional(){
-         return notional(new JDate());
+    /**
+     * Note: new Date() as default argument.
+     */
+    public /* @Real */ double notional() {
+        return notional(new JDate());
     }
 
-    public/* @Real */double notional(JDate date){
-        if (date.isNull()){
+    public/* @Real */ double notional(JDate date) {
+        if (date.isNull()) {
             date = settlementDate();
         }
-        if (date.gt(notionalSchedule_.get(notionalSchedule_.size()-1)))
-            // after maturity
+        if (date.gt(notionalSchedule_.get(notionalSchedule_.size() - 1))) // after maturity
+        {
             return 0.0;
+        }
 
         // After the check above, d is between the schedule
         // boundaries.  We search starting from the second notional
         // date, since the first is null.  After the call to
         // lower_bound, *i is the earliest date which is greater or
         // equal than d.  Its index is greater or equal to 1.
-
         // FIXME:: code review !!!
         //int i = StdUtils.lowerBound(notionalSchedule_, 1, notionalSchedule_.size()-1, date);
         //int index = StdUtils.distance(notionalSchedule_,0, i);
         //TODO: get reviewed by Richard
         int index = Collections.binarySearch(notionalSchedule_, date);
         if (index < 0) {
-            index = - (index + 1);
+            index = -(index + 1);
         }
 
-        if (date.le(notionalSchedule_.get(index)))
-            // no doubt about what to return
-            return notionals_.get(index-1);
-        else {
-        	// d is equal to a redemption date.
-            if (new Settings().isTodaysPayments())
-                // We consider today's payment as pending; the bond still
-                // has the previous notional
-                return notionals_.get(index-1);
-            else
-                // today's payment has occurred; the bond already changed
-                // notional.
-            	return notionals_.get(index);
+        if (date.le(notionalSchedule_.get(index))) // no doubt about what to return
+        {
+            return notionals_.get(index - 1);
+        } else {
+            // d is equal to a redemption date.
+            if (new Settings().isTodaysPayments()) // We consider today's payment as pending; the bond still
+            // has the previous notional
+            {
+                return notionals_.get(index - 1);
+            } else // today's payment has occurred; the bond already changed
+            // notional.
+            {
+                return notionals_.get(index);
+            }
         }
     }
-    
+
     public CashFlow redemption() {
         QL.require(redemptions_.size() == 1,
-                   "multiple redemption cash flows given");
+                "multiple redemption cash flows given");
         return redemptions_.last();
     }
 
@@ -323,16 +406,14 @@ public class Bond extends Instrument {
 
         // usually, the settlement is at T+n...
         final JDate settlement = calendar_.advance(d, settlementDays_, TimeUnit.Days);
-        
+
         // ...but the bond won't be traded until the issue date (if given.)
         return issueDate_.isNull() ? settlement : JDate.max(settlement, issueDate_.clone());
     }
 
-
     /**
-     * Theoretical clean price.
-     * The default bond settlement is used for calculation. 
-     * Warning: the theoretical price calculated from a flat term
+     * Theoretical clean price. The default bond settlement is used for
+     * calculation. Warning: the theoretical price calculated from a flat term
      * structure might differ slightly from the price calculated from the
      * corresponding yield by means of the other overload of this function. If
      * the price from a constant yield is desired, it is advisable to use such
@@ -345,9 +426,8 @@ public class Bond extends Instrument {
     }
 
     /**
-     * Theoretical dirty price.
-     * The default bond settlement is used for calculation. 
-     * Warning: the theoretical price calculated from a flat term
+     * Theoretical dirty price. The default bond settlement is used for
+     * calculation. Warning: the theoretical price calculated from a flat term
      * structure might differ slightly from the price calculated from the
      * corresponding yield by means of the other overload of this function. If
      * the price from a constant yield is desired, it is advisable to use such
@@ -356,22 +436,22 @@ public class Bond extends Instrument {
      * @return The dirty price of this bond.
      */
     public double dirtyPrice() {
-        return settlementValue()/notional(settlementDate())*100.0;
+        return settlementValue() / notional(settlementDate()) * 100.0;
     }
 
     /**
-     * Theoretical settlement value.
-     * The default bond settlement date is used for
-     * calculation.
+     * Theoretical settlement value. The default bond settlement date is used
+     * for calculation.
      *
      * @return The theoretical settlement value.
      */
-    public /* @Real */double settlementValue() {
+    public /* @Real */ double settlementValue() {
         calculate();
         QL.require(settlementValue_ != Constants.NULL_REAL,
-        	                   "settlement value not provided");
+                "settlement value not provided");
         return settlementValue_;
     }
+
     /**
      * Settlement value as a function of the clean price.The default bond
      * settlement date is used for calculation.
@@ -379,10 +459,10 @@ public class Bond extends Instrument {
      * @param cleanPrice
      * @return settlementValue
      */
-    public/* @Real */double settlementValue(final /* @Real */double cleanPrice) {
-    	
+    public/* @Real */ double settlementValue(final /* @Real */ double cleanPrice) {
+
         final double dirtyPrice = cleanPrice + accruedAmount(settlementDate());
-        return dirtyPrice/100.0 * notional(settlementDate());
+        return dirtyPrice / 100.0 * notional(settlementDate());
     }
 
     /**
@@ -393,12 +473,12 @@ public class Bond extends Instrument {
      * @param comp
      * @param freq
      */
-    public/* @Rate */double yield(final DayCounter dc, 
-    		                      final Compounding comp,
-    		                      final Frequency freq,
-    		                      final /* Real */double accuracy,
-    		                      final /* Size */int maxEvaluations) {
-    	
+    public/* @Rate */ double yield(final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    final /* Real */ double accuracy,
+                    final /* Size */ int maxEvaluations) {
+
         final Brent solver = new Brent();
         solver.setMaxEvaluations(maxEvaluations);
         final YieldFinder objective = new YieldFinder(notional(settlementDate()), cashflows_,
@@ -408,16 +488,16 @@ public class Bond extends Instrument {
         return solver.solve(objective, accuracy, 0.02, 0.0, 1.0);
     }
 
-    public/* @Rate */double yield(final DayCounter dc, 
-    							  final Compounding comp,
-    							  final Frequency freq) {
-    	
+    public/* @Rate */ double yield(final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq) {
+
         return yield(dc, comp, freq, 1.0e-8, 100);
     }
-    
+
     /**
-     * Clean price given a yield and settlement date
-     * The default bond settlement is used if no date is given.
+     * Clean price given a yield and settlement date The default bond settlement
+     * is used if no date is given.
      *
      * @param yield
      * @param dc
@@ -426,27 +506,27 @@ public class Bond extends Instrument {
      * @param settlementDate
      * @return clean price
      */
-    public/* @Real */double cleanPrice(final /* @Rate */double yield,
-            						   final DayCounter dc, 
-            						   final Compounding comp, 
-            						   final Frequency freq,
-            						   JDate settlementDate) {
+    public/* @Real */ double cleanPrice(final /* @Rate */ double yield,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    JDate settlementDate) {
         if (settlementDate.isNull()) {
             settlementDate = settlementDate();
         }
         return dirtyPrice(yield, dc, comp, freq, settlementDate) - accruedAmount(settlementDate);
     }
 
-    public/* @Real */double cleanPrice(final /* @Rate */double yield,
-            						   final DayCounter dc, 
-            						   final Compounding comp, 
-            						   final Frequency freq) {
+    public/* @Real */ double cleanPrice(final /* @Rate */ double yield,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq) {
         return cleanPrice(yield, dc, comp, freq, new JDate());
     }
-    
+
     /**
-     * Dirty price given a yield and settlement date 
-     * The default bond settlement is used if no date is given.
+     * Dirty price given a yield and settlement date The default bond settlement
+     * is used if no date is given.
      *
      * @param yield
      * @param dc
@@ -454,18 +534,18 @@ public class Bond extends Instrument {
      * @param freq
      * @param settlementDate
      * @return dirty price
-     */    
-    public/* @Real */double dirtyPrice(final /* @Rate */double yield,
-            						   final DayCounter dc, 
-            						   final Compounding comp, 
-            						   final Frequency freq,
-            						   JDate settlementDate) {
-        if (settlementDate.isNull()){
+     */
+    public/* @Real */ double dirtyPrice(final /* @Rate */ double yield,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    JDate settlementDate) {
+        if (settlementDate.isNull()) {
             settlementDate = settlementDate();
         }
-        return dirtyPriceFromYield(notional(settlementDate), 
-        							this.cashflows_, yield,	dc, comp, 
-        							freq, settlementDate);
+        return dirtyPriceFromYield(notional(settlementDate),
+                this.cashflows_, yield, dc, comp,
+                freq, settlementDate);
     }
 
     /**
@@ -477,16 +557,16 @@ public class Bond extends Instrument {
      * @param freq
      * @return dirty price
      */
-    public/* @Real */double dirtyPrice(final /* @Rate */double yield,
-            						   final DayCounter dc, 
-            						   final Compounding comp, 
-            						   final Frequency freq) {
+    public/* @Real */ double dirtyPrice(final /* @Rate */ double yield,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq) {
         return dirtyPrice(yield, dc, comp, freq, new JDate());
     }
 
     /**
-     * Yield given a (clean) price and settlement date
-     * The default bond settlement is used if no date is given.
+     * Yield given a (clean) price and settlement date The default bond
+     * settlement is used if no date is given.
      *
      * @param cleanPrice
      * @param dc
@@ -497,13 +577,13 @@ public class Bond extends Instrument {
      * @param maxEvaluations
      * @return
      */
-    public/* @Real */double yield(final /* @Real */ double cleanPrice,
-            					  final DayCounter dc,
-            					  final Compounding comp,
-            					  final Frequency freq,
-            					  JDate settlementDate,
-            					  final /* @Real */ double accuracy,
-            					  final /* @Size */ int maxEvaluations) {
+    public/* @Real */ double yield(final /* @Real */ double cleanPrice,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    JDate settlementDate,
+                    final /* @Real */ double accuracy,
+                    final /* @Size */ int maxEvaluations) {
         if (settlementDate.isNull()) {
             settlementDate = settlementDate();
         }
@@ -512,32 +592,32 @@ public class Bond extends Instrument {
         solver.setMaxEvaluations(maxEvaluations);
         final double dirtyPrice = cleanPrice + accruedAmount(settlementDate);
         final YieldFinder objective = new YieldFinder(notional(settlementDate),
-                							this.cashflows_,dirtyPrice,
-                							dc, comp, freq,	settlementDate);
+                this.cashflows_, dirtyPrice,
+                dc, comp, freq, settlementDate);
         return solver.solve(objective, accuracy, 0.02, 0.0, 1.0);
     }
 
     /**
      * @see #yield(double, DayCounter, Compounding, Frequency, Date, double,
-     *      int) using settlementDate = today, accuracy = 1.0e-8 and
-     *      maxEvaluation = 100.
+     * int) using settlementDate = today, accuracy = 1.0e-8 and maxEvaluation =
+     * 100.
      * @param cleanPrice
      * @param dc
      * @param comp
      * @param freq
      * @return
      */
-    public/* @Real */double yield(final /* @Real */double cleanPrice,
-            					  final DayCounter dc, 
-            					  final Compounding comp, 
-            					  final Frequency freq) {
-    	
+    public/* @Real */ double yield(final /* @Real */ double cleanPrice,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq) {
+
         return yield(cleanPrice, dc, comp, freq, new JDate(), 1.0e-8, 100);
     }
 
     /**
      * @see #yield(double, DayCounter, Compounding, Frequency, Date, double,
-     *      int) using accuracy = 1.0e-8 and maxEvaluation = 100.
+     * int) using accuracy = 1.0e-8 and maxEvaluation = 100.
      * @param cleanPrice
      * @param dc
      * @param comp
@@ -545,18 +625,18 @@ public class Bond extends Instrument {
      * @param settlementDate
      * @return
      */
-    public/* @Real */double yield(final /* @Real */double cleanPrice,
-            					  final DayCounter dc, 
-            					  final Compounding comp, 
-            					  final Frequency freq,
-            					  final JDate settlementDate) {
-    	
+    public/* @Real */ double yield(final /* @Real */ double cleanPrice,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    final JDate settlementDate) {
+
         return yield(cleanPrice, dc, comp, freq, settlementDate, 1.0e-8, 100);
     }
 
     /**
      * @see #yield(double, DayCounter, Compounding, Frequency, Date, double,
-     *      int) using maxEvaluation = 100.
+     * int) using maxEvaluation = 100.
      * @param cleanPrice
      * @param dc
      * @param comp
@@ -565,21 +645,20 @@ public class Bond extends Instrument {
      * @param accuracy
      * @return
      */
-    public/* @Real */double yield(final /* @Real */double cleanPrice,
-            					  final DayCounter dc, 
-            					  final Compounding comp, 
-            					  final Frequency freq,
-            					  final JDate settlementDate,
-            					  final /* @Real */double accuracy) {
-    	
+    public/* @Real */ double yield(final /* @Real */ double cleanPrice,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    final JDate settlementDate,
+                    final /* @Real */ double accuracy) {
+
         return yield(cleanPrice, dc, comp, freq, settlementDate, accuracy, 100);
     }
 
     /**
-     * Clean price given Z-spread 
-     * Z-spread compounding, frequency, daycount are taken into account 
-     * The default bond settlement is used if no date is given. 
-     * For details on Z-spread refer to: "Credit Spreads Explained",
+     * Clean price given Z-spread Z-spread compounding, frequency, daycount are
+     * taken into account The default bond settlement is used if no date is
+     * given. For details on Z-spread refer to: "Credit Spreads Explained",
      * Lehman Brothers European Fixed Income Research - March 2004, D. O'Kane
      *
      * @param zSpread
@@ -589,30 +668,29 @@ public class Bond extends Instrument {
      * @param settlementDate
      * @return
      */
+    public/* @Real */ double cleanPriceFromZSpread(final /* @Spread */ double zSpread,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    final JDate settlementDate) {
 
-    public/* @Real */double cleanPriceFromZSpread(final /* @Spread */double zSpread,
-            									  final DayCounter dc, 
-            									  final Compounding comp, 
-            									  final Frequency freq,
-            									  final JDate settlementDate) {
-    	
-        final /*@Real*/double p = dirtyPriceFromZSpread(zSpread, dc, comp, freq, settlementDate);
+        final /*@Real*/ double p = dirtyPriceFromZSpread(zSpread, dc, comp, freq, settlementDate);
         return p - accruedAmount(settlementDate);
     }
 
     /**
      * @see Bond#cleanPriceFromZSpread(double, DayCounter, Compounding,
-     *      Frequency, Date) using default(null) settlement date.
+     * Frequency, Date) using default(null) settlement date.
      * @param zSpread
      * @param dc
      * @param comp
      * @param freq
      * @return
      */
-    public/* @Real */double cleanPriceFromZSpread(final /* @Spread */double zSpread,
-            									  final DayCounter dc, 
-            									  final Compounding comp, 
-            									  final Frequency freq) {
+    public/* @Real */ double cleanPriceFromZSpread(final /* @Spread */ double zSpread,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq) {
         return cleanPriceFromZSpread(zSpread, dc, comp, freq, new JDate());
     }
 
@@ -629,21 +707,21 @@ public class Bond extends Instrument {
      * @param settlementDate
      * @return
      */
-    public/* @Real */double dirtyPriceFromZSpread(
-            	final /* @Spread */double zSpread,
-            	final DayCounter dc,
-            	final Compounding comp,
-            	final Frequency freq,
-            	JDate settlement) {
-    	
-        if (settlement.isNull()){
+    public/* @Real */ double dirtyPriceFromZSpread(
+                    final /* @Spread */ double zSpread,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq,
+                    JDate settlement) {
+
+        if (settlement.isNull()) {
             settlement = settlementDate();
         }
         QL.require(engine != null, "null pricing engine");
 
         //FIXME: DiscontingBondEngine
         QL.require(DiscountingBondEngine.class.isAssignableFrom(engine.getClass()), ReflectConstants.WRONG_ARGUMENT_TYPE); // QA:[RG]::verified
-        final DiscountingBondEngine discountingBondEngine = (DiscountingBondEngine)engine;
+        final DiscountingBondEngine discountingBondEngine = (DiscountingBondEngine) engine;
 
         return dirtyPriceFromZSpreadFunction(notional(settlement), cashflows_,
                 zSpread, dc, comp, freq, settlement,
@@ -652,20 +730,19 @@ public class Bond extends Instrument {
 
     /**
      * @see Bond#dirtyPriceFromZSpread(double, DayCounter, Compounding,
-     *      Frequency, Date) using today's date as settlement date.
+     * Frequency, Date) using today's date as settlement date.
      * @param zSpread
      * @param dc
      * @param comp
      * @param freq
      * @return
      */
-    public/* @Real */double dirtyPriceFromZSpread(final /* @Spread */double zSpread,
-            									  final DayCounter dc, 
-            									  final Compounding comp, 
-            									  final Frequency freq) {
+    public/* @Real */ double dirtyPriceFromZSpread(final /* @Spread */ double zSpread,
+                    final DayCounter dc,
+                    final Compounding comp,
+                    final Frequency freq) {
         return dirtyPriceFromZSpread(zSpread, dc, comp, freq, new JDate());
     }
-
 
     /**
      * Accrued amount at a given date /* The default bond settlement is used if
@@ -678,21 +755,25 @@ public class Bond extends Instrument {
     }
 
     public double accruedAmount(JDate settlement) {
-        if (settlement.isNull()){
+        if (settlement.isNull()) {
             settlement = settlementDate();
         }
         final CashFlow cf = CashFlows.getInstance().nextCashFlow(cashflows_, settlement);
 
-        if (cf==null)
+        if (cf == null) {
             return 0.0;
+        }
 
         final JDate paymentDate = cf.date();
         boolean firstCouponFound = false;
-        /*@Real*/double nominal = Constants.NULL_REAL;
-        /*@Time*/double accrualPeriod = Constants.NULL_REAL;
+        /*@Real*/
+        double nominal = Constants.NULL_REAL;
+        /*@Time*/
+        double accrualPeriod = Constants.NULL_REAL;
         DayCounter dc = null;
 
-        /*@Rate*/double result = 0.0;
+        /*@Rate*/
+        double result = 0.0;
 
         // QL starts at the next cashflow and only continues to the one after to
         // check that it isn't the same date. Also stop at the penultimate flow. The last flow
@@ -703,14 +784,14 @@ public class Bond extends Instrument {
                 //TODO: Check with Richard, with break, code does not handle multiple CFs on paymentDate.
                 continue; //break; 
             }
-            final Coupon cp = Coupon.class.isAssignableFrom(flow.getClass()) ? (Coupon)flow : null;
+            final Coupon cp = Coupon.class.isAssignableFrom(flow.getClass()) ? (Coupon) flow : null;
             if (cp != null) {
                 if (firstCouponFound) {
-                    QL.require(nominal == cp.nominal() &&
-                            accrualPeriod == cp.accrualPeriod() &&
-                            dc.equals(cp.dayCounter()),
-                                "cannot aggregate accrued amount of two " +
-                                "different coupons on " + paymentDate.toString());
+                    QL.require(nominal == cp.nominal()
+                            && accrualPeriod == cp.accrualPeriod()
+                            && dc.equals(cp.dayCounter()),
+                            "cannot aggregate accrued amount of two "
+                            + "different coupons on " + paymentDate.toString());
                 } else {
                     firstCouponFound = true;
                     nominal = cp.nominal();
@@ -720,11 +801,11 @@ public class Bond extends Instrument {
                 result += cp.accruedAmount(settlement);
             }
         }
-        return result/notional(settlement)*100.0;
+        return result / notional(settlement) * 100.0;
     }
 
     @Override
-	public boolean isExpired() {
+    public boolean isExpired() {
         return cashflows_.last().hasOccurred(settlementDate());
     }
 
@@ -737,17 +818,16 @@ public class Bond extends Instrument {
      *
      * @return
      */
-    public /* @Rate */double nextCoupon(JDate settlement){
-        if (settlement.isNull()){
+    public /* @Rate */ double nextCoupon(JDate settlement) {
+        if (settlement.isNull()) {
             settlement = settlementDate();
         }
         return CashFlows.getInstance().nextCouponRate(cashflows_, settlement);
     }
-    
-    public  /* @Rate */double nextCoupon(){
+
+    public /* @Rate */ double nextCoupon() {
         return nextCoupon(new JDate());
     }
-
 
     /**
      * Previous coupon already paid at a given date /* Expected previous coupon:
@@ -758,16 +838,16 @@ public class Bond extends Instrument {
      *
      * @return
      */
-    public /* @Rate */double previousCoupon(JDate settlement){
-        if (settlement.isNull()){
+    public /* @Rate */ double previousCoupon(JDate settlement) {
+        if (settlement.isNull()) {
             settlement = settlementDate();
         }
         return CashFlows.getInstance().previousCouponRate(cashflows_, settlement);
     }
-    public /* @Rate */double previousCoupon(){
+
+    public /* @Rate */ double previousCoupon() {
         return previousCoupon(new JDate());
     }
-
 
     @Override
     protected void setupExpired() {
@@ -777,23 +857,23 @@ public class Bond extends Instrument {
 
     @Override
     protected void setupArguments(final PricingEngine.Arguments args) {
-    	QL.require(args != null, "Null arguments passed");
+        QL.require(args != null, "Null arguments passed");
         QL.require(Bond.ArgumentsImpl.class.isAssignableFrom(args.getClass()), ReflectConstants.WRONG_ARGUMENT_TYPE);
-        final Bond.ArgumentsImpl arguments = (Bond.ArgumentsImpl)args;
+        final Bond.ArgumentsImpl arguments = (Bond.ArgumentsImpl) args;
 
         arguments.settlementDate = settlementDate();
-        arguments.cashflows = (Leg)cashflows_.clone();
+        arguments.cashflows = (Leg) cashflows_.clone();
         arguments.calendar = calendar_;
     }
-    
+
     @Override
     protected void fetchResults(final PricingEngine.Results r) {
-    	QL.require(r != null, "Null arguments passed");
+        QL.require(r != null, "Null arguments passed");
         super.fetchResults(r);
 
-        QL.require(Bond.ResultsImpl.class.isAssignableFrom(r.getClass()), ReflectConstants.WRONG_ARGUMENT_TYPE); 
-        final Bond.ResultsImpl results = (Bond.ResultsImpl)r;
-        
+        QL.require(Bond.ResultsImpl.class.isAssignableFrom(r.getClass()), ReflectConstants.WRONG_ARGUMENT_TYPE);
+        final Bond.ResultsImpl results = (Bond.ResultsImpl) r;
+
         settlementValue_ = results.settlementValue;
     }
 
@@ -816,11 +896,11 @@ public class Bond extends Instrument {
         // information and we add them to the cashflows vector after
         // the coupons.
         redemptions_.clear();
-        for (int i=1; i<notionalSchedule_.size(); ++i) {
-            final double R = i < redemptions.size() ? redemptions.get(i) :
-            			!redemptions.isEmpty() ? redemptions.get(redemptions.size()-1) : 100.0;
-            final double amount = (R/100.0)*(notionals_.get(i-1)-notionals_.get(i));
-            final CashFlow  redemption = new SimpleCashFlow(amount, notionalSchedule_.get(i));
+        for (int i = 1; i < notionalSchedule_.size(); ++i) {
+            final double R = i < redemptions.size() ? redemptions.get(i)
+                    : !redemptions.isEmpty() ? redemptions.get(redemptions.size() - 1) : 100.0;
+            final double amount = (R / 100.0) * (notionals_.get(i - 1) - notionals_.get(i));
+            final CashFlow redemption = new SimpleCashFlow(amount, notionalSchedule_.get(i));
             cashflows_.add(redemption);
             redemptions_.add(redemption);
         }
@@ -830,21 +910,24 @@ public class Bond extends Instrument {
         //It has to be checked whether this is similar to std::stable_sort
         Collections.sort(cashflows_, new EarlierThanCashFlowComparator());
     }
+
     /*
      * Util methods
       @deprecated
      */
     protected void addRedemptionsToCashflows(final double redemption) {
-		final List<Double> redemptions = new ArrayList<Double>();
-		redemptions.add(redemption);
-		addRedemptionsToCashflows(redemptions);
+        final List<Double> redemptions = new ArrayList<Double>();
+        redemptions.add(redemption);
+        addRedemptionsToCashflows(redemptions);
     }
+
     protected void addRedemptionsToCashflows(final double[] redemptionsArr) {
-		final List<Double> redemptions = new ArrayList<Double>();
-		for ( final double d : redemptionsArr)
-			redemptions.add(new Double(d));
-		
-		addRedemptionsToCashflows(redemptions);
+        final List<Double> redemptions = new ArrayList<Double>();
+        for (final double d : redemptionsArr) {
+            redemptions.add(new Double(d));
+        }
+
+        addRedemptionsToCashflows(redemptions);
     }
 
     protected void addRedemptionsToCashflows() {
@@ -856,10 +939,10 @@ public class Bond extends Instrument {
         notionals_.clear();
         JDate lastPaymentDate = new JDate();
         notionalSchedule_.add(new JDate());
-        for (int i=0; i<cashflows_.size(); ++i) {
-        	final Object cfObj = cashflows_.get(i);
-        	final Coupon coupon = Coupon.class.isAssignableFrom(cfObj.getClass()) ? (Coupon)cfObj : null;
-            if (coupon==null){
+        for (int i = 0; i < cashflows_.size(); ++i) {
+            final Object cfObj = cashflows_.get(i);
+            final Coupon coupon = Coupon.class.isAssignableFrom(cfObj.getClass()) ? (Coupon) cfObj : null;
+            if (coupon == null) {
                 continue;
             }
             final double notional = coupon.nominal();
@@ -867,9 +950,9 @@ public class Bond extends Instrument {
             if (notionals_.isEmpty()) {
                 notionals_.add(coupon.nominal());
                 lastPaymentDate = coupon.date().clone();
-            } else if (!Closeness.isClose(notional, notionals_.get(notionals_.size() -1 ))) {
+            } else if (!Closeness.isClose(notional, notionals_.get(notionals_.size() - 1))) {
                 // ...or if it has changed.
-                QL.require(notional < notionals_.get(notionals_.size()-1), "increasing coupon notionals");
+                QL.require(notional < notionals_.get(notionals_.size() - 1), "increasing coupon notionals");
                 notionals_.add(coupon.nominal());
                 // in this case, we also add the last valid date for
                 // the previous one...
@@ -896,70 +979,20 @@ public class Bond extends Instrument {
      * @param redemption
      * @param date
      */
-    protected void setSingleRedemption(final /*Real */double notional,
-            						   final /*Real */double redemption, 
-            						   final JDate date) {
+    protected void setSingleRedemption(final /*Real */ double notional,
+            final /*Real */ double redemption,
+            final JDate date) {
         redemptions_.clear();
 
         notionalSchedule_.add(new JDate());
-        notionals_.add( notional);
+        notionals_.add(notional);
 
         notionalSchedule_.add(date);
         notionals_.add(0.0);
 
-        final CashFlow redemptionCashflow =  new SimpleCashFlow(notional*redemption/100.0, date);
+        final CashFlow redemptionCashflow = new SimpleCashFlow(notional * redemption / 100.0, date);
         cashflows_.add(redemptionCashflow);
         redemptions_.add(redemptionCashflow);
-    }
-
-
-    public static /* @Real */double dirtyPriceFromYield(final /*Real*/ double faceAmount, 
-            											final Leg cashflows,
-            											final /* @Rate */ double yield, 
-            											final DayCounter dayCounter,
-            											final Compounding compounding, 
-            											Frequency frequency, 
-            											final JDate settlement) {
-        if (frequency == Frequency.NoFrequency || frequency == Frequency.Once) {
-            frequency = Frequency.Annual;
-        }
-
-        final InterestRate y = new InterestRate(yield, dayCounter, compounding, frequency);
-
-        /* @Real */double price = 0.0;
-        /* @DiscountFactor */double discount = 1.0;
-        JDate lastDate = new JDate();
-
-        for (int i = 0; i < cashflows.size(); ++i) {
-            if (cashflows.get(i).hasOccurred(settlement)) {
-                continue;
-            }
-
-            final JDate couponDate = cashflows.get(i).date();
-            /* @Real */final double amount = cashflows.get(i).amount();
-
-            if (lastDate.isNull()) {
-                // first not-expired coupon
-                if (i > 0) {
-                    lastDate = cashflows.get(i - 1).date().clone();
-                } else {
-                    final Object cpnObj = cashflows.get(i);
-                	final Coupon coupon = Coupon.class.isAssignableFrom(cpnObj.getClass()) ? (Coupon)cpnObj : null;
-                    if (coupon != null) {
-                        lastDate = coupon.accrualStartDate().clone();
-                    } else {
-                        lastDate = couponDate.sub(new Period(1, TimeUnit.Years));
-                    }
-                }
-                discount *= y.discountFactor(settlement, couponDate, lastDate, couponDate);
-            } else {
-                discount *= y.discountFactor(lastDate, couponDate);
-            }
-            lastDate = couponDate.clone();
-
-            price += amount * discount;
-        }
-        return price / faceAmount * 100.0;
     }
 
     /*
@@ -998,20 +1031,21 @@ public class Bond extends Instrument {
 
      */
     public static class YieldFinder implements DoubleOp {
-        private final/* @Real */double faceAmount_;
+
+        private final/* @Real */ double faceAmount_;
         private final Leg cashflows_;
-        private final/* @Real */double dirtyPrice_;
+        private final/* @Real */ double dirtyPrice_;
         private final Compounding compounding_;
         private final DayCounter dayCounter_;
         private final Frequency frequency_;
         private final JDate settlement_;
 
         public YieldFinder(
-                final /* @Real */ double faceAmount, 
+                final /* @Real */ double faceAmount,
                 final Leg cashflows,
-                final /* @Real */ double dirtyPrice, 
+                final /* @Real */ double dirtyPrice,
                 final DayCounter dayCounter,
-                final Compounding compounding, 
+                final Compounding compounding,
                 final Frequency frequency,
                 final JDate settlement) {
             this.faceAmount_ = faceAmount;
@@ -1024,82 +1058,22 @@ public class Bond extends Instrument {
         }
 
         /**
-         * This is equivalent to C++ assignment operator:
-         *   double operator()(double yield)
+         * This is equivalent to C++ assignment operator: double
+         * operator()(double yield)
          */
         @Override
         public double op(final double yield) {
             return dirtyPrice_
-            - dirtyPriceFromYield(faceAmount_, 
-            					  cashflows_, 
-            					  yield,
-            					  dayCounter_, 
-            					  compounding_, 
-            					  frequency_, 
-            					  settlement_);
+                    - dirtyPriceFromYield(faceAmount_,
+                            cashflows_,
+                            yield,
+                            dayCounter_,
+                            compounding_,
+                            frequency_,
+                            settlement_);
         }
 
     }
-
-    static/* @Real */double dirtyPriceFromZSpreadFunction(
-            final /* @Real */double faceAmount, 
-            final Leg cashflows,
-            final /* @Spread */ double zSpread, 
-            final DayCounter dc, 
-            final Compounding comp,
-            final Frequency freq, 
-            final JDate settlement,
-            final Handle<YieldTermStructure> discountCurve) {
-
-        assert(freq!=Frequency.NoFrequency && freq != Frequency.Once):"invalid frequency:" + freq.toString();
-
-        final Handle<Quote> zSpreadQuoteHandle = new Handle<Quote>(new SimpleQuote(
-                zSpread));
-
-        final ZeroSpreadedTermStructure spreadedCurve = new ZeroSpreadedTermStructure(
-                discountCurve, zSpreadQuoteHandle, comp, freq, dc);
-        /* @Real */double price = 0.0;
-        for (int i = 0; i < cashflows.size(); ++i) {
-            if (cashflows.get(i).hasOccurred(settlement)) {
-                continue;
-            }
-            final JDate couponDate = cashflows.get(i).date();
-            /* @Real */final double amount = cashflows.get(i).amount();
-            price += amount * spreadedCurve.discount(couponDate);
-        }
-        price /= spreadedCurve.discount(settlement);
-        return price / faceAmount * 100.0;
-    }
-
-
-
-    //
-    // inner interfaces
-    //
-
-    /**
-     * basic bond arguments
-     *
-     * @author Richard Gomes
-     */
-    public interface Arguments extends Instrument.Arguments { /* marking interface */ }
-
-
-    /**
-     * basic bond results
-     *
-     * @author Richard Gomes
-     */
-    public interface Results extends Instrument.Results { /* marking interface */ }
-
-
-    /**
-     * basic bond price engine
-     *
-     * @author Richard Gomes
-     */
-    public interface Engine extends PricingEngine, Observer { /* marking interface */ }
-
 
     //
     // inner classes
@@ -1114,7 +1088,7 @@ public class Bond extends Instrument {
         public void validate() {
             QL.require(!settlementDate.isNull(), "no settlement date provided"); // QA:[RG]::verified 
             QL.require(!cashflows.isEmpty(), "no cash flow provided");
-            for (final CashFlow cf: cashflows) {
+            for (final CashFlow cf : cashflows) {
                 QL.require(cf != null, "null cash flow provided");
             }
         }
@@ -1122,7 +1096,7 @@ public class Bond extends Instrument {
 
     static public class ResultsImpl extends Instrument.ResultsImpl implements Bond.Results {
 
-        public /*@Real*/double settlementValue;
+        public /*@Real*/ double settlementValue;
 
         @Override
         public void reset() {
@@ -1145,5 +1119,32 @@ public class Bond extends Instrument {
         }
 
     }
+    //
+    // inner interfaces
+    //
+
+    /**
+     * basic bond arguments
+     *
+     * @author Richard Gomes
+     */
+    public interface Arguments extends Instrument.Arguments {
+        /* marking interface */ }
+
+    /**
+     * basic bond results
+     *
+     * @author Richard Gomes
+     */
+    public interface Results extends Instrument.Results {
+        /* marking interface */ }
+
+    /**
+     * basic bond price engine
+     *
+     * @author Richard Gomes
+     */
+    public interface Engine extends PricingEngine, Observer {
+        /* marking interface */ }
 
 }

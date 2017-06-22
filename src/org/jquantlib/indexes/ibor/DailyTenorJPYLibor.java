@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
 
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.indexes.ibor;
 
 import org.jquantlib.currencies.Asia.JPYCurrency;
@@ -52,31 +51,33 @@ import org.jquantlib.time.calendars.Japan;
  * <p>
  * LIBOR fixed by BBA.
  *
- * @see <a href="http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1414">http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1414</a>
+ * @see
+ * <a href="http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1414">http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1414</a>
  */
 public class DailyTenorJPYLibor extends DailyTenorLibor {
 
-	public DailyTenorJPYLibor(final int settlementDays) {
-		this(settlementDays, new Handle<YieldTermStructure>(
-						new AbstractYieldTermStructure() {
-							@Override
-							protected double discountImpl(final double t) {
-								throw new UnsupportedOperationException();
-							}
-							@Override
-							public JDate maxDate() {
-								throw new UnsupportedOperationException();
-							}
-						}
-				));
-	}
+    public DailyTenorJPYLibor(final int settlementDays) {
+        this(settlementDays, new Handle<YieldTermStructure>(
+                new AbstractYieldTermStructure() {
+            @Override
+            protected double discountImpl(final double t) {
+                throw new UnsupportedOperationException();
+            }
 
-	public DailyTenorJPYLibor(final int settlementDays,
-			final Handle<YieldTermStructure> h) {
-		super("JPYLibor", settlementDays,
-				new JPYCurrency(),
-				new Japan(),
-				new Actual360(), h);
-	}
+            @Override
+            public JDate maxDate() {
+                throw new UnsupportedOperationException();
+            }
+        }
+        ));
+    }
+
+    public DailyTenorJPYLibor(final int settlementDays,
+            final Handle<YieldTermStructure> h) {
+        super("JPYLibor", settlementDays,
+                new JPYCurrency(),
+                new Japan(),
+                new Actual360(), h);
+    }
 
 }

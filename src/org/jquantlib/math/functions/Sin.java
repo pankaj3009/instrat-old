@@ -30,13 +30,12 @@ import org.jquantlib.math.Ops;
  */
 public final class Sin implements Ops.DoubleOp {
 
-	//
+    //
     // implements Ops.DoubleOp
     //
-
-	@Override
-	public double op(final double a) {
-		return Math.sin(a);
-	}
+    @Override
+    public double op(final double a) {
+        return Math.sin(a);
+    }
 
 }

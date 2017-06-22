@@ -20,7 +20,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005, 2006, 2007, 2008 StatPro Italia srl
  Copyright (C) 2007 Ferdinando Ametrano
 
@@ -37,7 +37,6 @@ When applicable, the original copyright notice follows this notice.
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures;
 
 import java.util.List;
@@ -57,18 +56,30 @@ import org.jquantlib.util.Visitor;
 /**
  * Base helper class for bootstrapping
  * <p>
- * This class provides an abstraction for the instruments used to bootstrap a term structure.
+ * This class provides an abstraction for the instruments used to bootstrap a
+ * term structure.
  * <p>
- * It is advised that a bootstrap helper for an instrument contains an instance of the actual
- * instrument class to ensure consistancy between the algorithms used during bootstrapping and later
- * instrument pricing. This is not yet fully enforced in the available rate helpers.
+ * It is advised that a bootstrap helper for an instrument contains an instance
+ * of the actual instrument class to ensure consistancy between the algorithms
+ * used during bootstrapping and later instrument pricing. This is not yet fully
+ * enforced in the available rate helpers.
  */
-public abstract class BootstrapHelper <TS extends TermStructure> implements Observer, Observable, PolymorphicVisitable {
+public abstract class BootstrapHelper<TS extends TermStructure> implements Observer, Observable, PolymorphicVisitable {
 
-    protected Handle <Quote> quote;
+    protected Handle<Quote> quote;
     protected TS termStructure;
     protected JDate earliestDate;
     protected JDate latestDate;
+    //
+    // implements Observable
+    //
+
+    /**
+     * Implements multiple inheritance via delegate pattern to an inner class
+     *
+     * @see Observable
+     */
+    private final Observable delegatedObservable = new DefaultObservable(this);
 
     public BootstrapHelper(final Handle<Quote> quote) {
         this.quote = quote;
@@ -102,26 +113,12 @@ public abstract class BootstrapHelper <TS extends TermStructure> implements Obse
         return this.latestDate;
     }
 
-
     //
     // implements Observer
     //
-
     public void update() {
         this.notifyObservers();
     }
-
-
-    //
-    // implements Observable
-    //
-
-    /**
-     * Implements multiple inheritance via delegate pattern to an inner class
-     *
-     * @see Observable
-     */
-    private final Observable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public final void addObserver(final Observer observer) {
@@ -158,14 +155,12 @@ public abstract class BootstrapHelper <TS extends TermStructure> implements Obse
         return delegatedObservable.getObservers();
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<BootstrapHelper> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<BootstrapHelper> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

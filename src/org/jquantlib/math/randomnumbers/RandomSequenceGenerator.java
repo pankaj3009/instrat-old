@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.randomnumbers;
 
 import org.jquantlib.QL;
@@ -58,27 +57,26 @@ public class RandomSequenceGenerator<RNG extends RandomNumberGenerator> implemen
     //
     // private fields
     //
+    private final /*@NonNegative*/ int dimension;
+    private final RNG rng;
+    private final double[] sequence;
+    private final long[] int32Sequence;
 
-    private final /*@NonNegative*/ int  dimension;
-    private final RNG                   rng;
-    private final double[]              sequence;
-    private final long[]                int32Sequence;
-    
-    private final Class<? extends RandomNumberGenerator>	classRNG;
-
+    private final Class<? extends RandomNumberGenerator> classRNG;
 
     //
     // public constructors
     //
-
     public RandomSequenceGenerator(
-    		final Class<? extends RandomNumberGenerator> classRNG,
-    		final /*@NonNegative*/ int dimensionality, 
-    		final RNG rng) {
+            final Class<? extends RandomNumberGenerator> classRNG,
+            final /*@NonNegative*/ int dimensionality,
+            final RNG rng) {
 
-        if (System.getProperty("EXPERIMENTAL")==null) throw new UnsupportedOperationException("Work in progress");
+        if (System.getProperty("EXPERIMENTAL") == null) {
+            throw new UnsupportedOperationException("Work in progress");
+        }
 
-        QL.require(dimensionality >= 1 , "dimensionality must be greater than 0"); // TODO: message
+        QL.require(dimensionality >= 1, "dimensionality must be greater than 0"); // TODO: message
         this.classRNG = classRNG;
         this.dimension = dimensionality;
         this.rng = rng;
@@ -87,21 +85,25 @@ public class RandomSequenceGenerator<RNG extends RandomNumberGenerator> implemen
     }
 
     public RandomSequenceGenerator(
-    		final Class<? extends RandomNumberGenerator> classRNG,
-    		final /*@NonNegative*/ int dimensionality) {
+            final Class<? extends RandomNumberGenerator> classRNG,
+            final /*@NonNegative*/ int dimensionality) {
         this(classRNG, dimensionality, 0);
     }
 
     public RandomSequenceGenerator(
-    		final Class<? extends RandomNumberGenerator> classRNG,
-    		final /*@NonNegative*/ int dimensionality, 
-    		final long seed) {
+            final Class<? extends RandomNumberGenerator> classRNG,
+            final /*@NonNegative*/ int dimensionality,
+            final long seed) {
 
-        if (System.getProperty("EXPERIMENTAL")==null) throw new UnsupportedOperationException("Work in progress");
+        if (System.getProperty("EXPERIMENTAL") == null) {
+            throw new UnsupportedOperationException("Work in progress");
+        }
 
         this.classRNG = classRNG;
-        
-        if (dimensionality < 1) throw new IllegalArgumentException("dimensionality must be greater than 0");
+
+        if (dimensionality < 1) {
+            throw new IllegalArgumentException("dimensionality must be greater than 0");
+        }
         this.dimension = dimensionality;
         this.sequence = new double[this.dimension];
         this.int32Sequence = new long[this.dimension];
@@ -114,23 +116,21 @@ public class RandomSequenceGenerator<RNG extends RandomNumberGenerator> implemen
         }
     }
 
-
     //
     // implements UniformRandomSequenceGenerator
     //
-
     @Override
-    public /*@NonNegative*/ int dimension() /* @ReadOnly */{
+    public /*@NonNegative*/ int dimension() /* @ReadOnly */ {
         return this.dimension;
     }
 
     @Override
-    public final Sample<double[]> lastSequence() /* @ReadOnly */{
+    public final Sample<double[]> lastSequence() /* @ReadOnly */ {
         return new Sample<double[]>(sequence, 1.0);
     }
 
     @Override
-    public final Sample<double[]> nextSequence() /* @ReadOnly */{
+    public final Sample<double[]> nextSequence() /* @ReadOnly */ {
         double weight = 1.0;
         for (int i = 0; i < this.dimension; i++) {
             final Sample<Double> sample = this.rng.next();
@@ -141,9 +141,10 @@ public class RandomSequenceGenerator<RNG extends RandomNumberGenerator> implemen
     }
 
     @Override
-    public long[] nextInt32Sequence() /* @ReadOnly */{
-        for (int i = 0; i < this.dimension; i++)
+    public long[] nextInt32Sequence() /* @ReadOnly */ {
+        for (int i = 0; i < this.dimension; i++) {
             this.int32Sequence[i] = this.rng.nextInt32();
+        }
         return this.int32Sequence;
     }
 }

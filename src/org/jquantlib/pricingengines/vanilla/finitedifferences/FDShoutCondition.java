@@ -28,9 +28,9 @@ import org.jquantlib.time.Frequency;
 /**
  * This class conditionally extends other classes
  * <p>
- * <pre>
- * FDDividendEngine------------|
- * FDDividendEngineMerton73----|
+ * <
+ * pre>
+ * FDDividendEngine------------| FDDividendEngineMerton73----|
  * FDDividenEngineShiftScale---|
  * FDStepConditionEngine-------|o---FDShoutCondition
  * </pre>
@@ -41,8 +41,7 @@ import org.jquantlib.time.Frequency;
  * @author Richard Gomes
  */
 //TODO: http://bugs.jquantlib.org/view.php?id=425
-public class FDShoutCondition
-        <T                            /* TODO: should be:: T extends FDDividendEngineBase & FDStepConditionEngine */ >
+public class FDShoutCondition<T /* TODO: should be:: T extends FDDividendEngineBase & FDStepConditionEngine */>
         extends FDStepConditionEngine /* TODO: should be:: implements FDDividendEngineBase, FDStepConditionEngine */ {
 
     public FDShoutCondition(final GeneralizedBlackScholesProcess process) {

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2003, 2004 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.volatilities;
 
 import org.jquantlib.QL;
@@ -65,15 +64,9 @@ import org.jquantlib.util.Visitor;
 // TODO: check time extrapolation
 public class BlackVarianceSurface extends BlackVarianceTermStructure {
 
-    public enum Extrapolation {
-        ConstantExtrapolation, InterpolatorDefaultExtrapolation
-    };
-
-
     //
     // private fields
     //
-
     private final DayCounter dayCounter;
     private final JDate maxDate;
     private final /* @Time */ Array times;
@@ -84,11 +77,9 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
     private final Extrapolation upperExtrapolation;
     private final Interpolation2D.Interpolator2D factory;
 
-
     //
     // public constructors
     //
-
     public BlackVarianceSurface(final JDate referenceDate, final JDate[] dates,
             final/* @Real */ Array strikes, final/* @Volatility */ Matrix blackVolMatrix, final DayCounter dayCounter) {
 
@@ -107,45 +98,42 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
             final Extrapolation upperExtrapolation) {
 
         super(referenceDate);
-        QL.require(dates.length == blackVolMatrix.columns() , "mismatch between date vector and vol matrix colums"); // TODO: message
-        QL.require(strikes.size() == blackVolMatrix.rows() , "mismatch between money-strike vector and vol matrix rows"); // TODO: message
-        QL.require(dates[0].gt(referenceDate) , "cannot have dates[0] <= referenceDate"); // TODO: message
+        QL.require(dates.length == blackVolMatrix.columns(), "mismatch between date vector and vol matrix colums"); // TODO: message
+        QL.require(strikes.size() == blackVolMatrix.rows(), "mismatch between money-strike vector and vol matrix rows"); // TODO: message
+        QL.require(dates[0].gt(referenceDate), "cannot have dates[0] <= referenceDate"); // TODO: message
 
         this.dayCounter = dayCounter;
-        this.maxDate = dates[dates.length-1]; // TODO: code review: index seems to be wrong
+        this.maxDate = dates[dates.length - 1]; // TODO: code review: index seems to be wrong
         // TODO: code review :: use of clone()
         this.strikes = strikes.clone();
         this.lowerExtrapolation = lowerExtrapolation;
         this.upperExtrapolation = upperExtrapolation;
 
+        this.times = new Array(dates.length + 1); // TODO: verify if length is correct
+        this.variances = new Matrix(strikes.size(), dates.length + 1); // TODO: verify if length is correct
+        this.strikes = new Array(strikes.size() + 1); // TODO: verify if length is correct
 
-        this.times = new Array(dates.length+1); // TODO: verify if length is correct
-        this.variances = new Matrix(strikes.size(), dates.length+1); // TODO: verify if length is correct
-        this.strikes = new Array(strikes.size()+1); // TODO: verify if length is correct
-
-        for(int i = 1; i < strikes.size()+1; i++) {
-            this.strikes.set(i, strikes.get(i-1));
+        for (int i = 1; i < strikes.size() + 1; i++) {
+            this.strikes.set(i, strikes.get(i - 1));
         }
 
         for (int j = 1; j <= blackVolMatrix.columns(); j++) {
-            times.set(j, timeFromReference(dates[j-1]));
-            QL.require(times.get(j) > times.get(j-1) , "dates must be sorted unique!"); // TODO: message
+            times.set(j, timeFromReference(dates[j - 1]));
+            QL.require(times.get(j) > times.get(j - 1), "dates must be sorted unique!"); // TODO: message
             for (int i = 0; i < blackVolMatrix.rows(); i++) {
-                final double elem = blackVolMatrix.get(i, j-1);
+                final double elem = blackVolMatrix.get(i, j - 1);
                 final double ijvar = times.get(j) * elem * elem;
                 variances.set(i, j, ijvar);
-                QL.require(ijvar >= variances.get(i, j-1) , "variance must be non-decreasing"); // TODO: message
+                QL.require(ijvar >= variances.get(i, j - 1), "variance must be non-decreasing"); // TODO: message
             }
         }
         // default: bilinear interpolation
         factory = new Bilinear();
     }
 
-
     //
     // public methods
     //
-
     public void setInterpolation(final Interpolator i) {
         varianceSurface = factory.interpolate(times, strikes, variances);
         varianceSurface.enableExtrapolation();
@@ -153,11 +141,9 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
         notifyObservers();
     }
 
-
     //
     // Overrides TermStructure
     //
-
     @Override
     public final DayCounter dayCounter() {
         return dayCounter;
@@ -168,11 +154,9 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
         return maxDate;
     }
 
-
     //
     // Overrides BlackVolTermStructure
     //
-
     @Override
     public final /* @Real */ double minStrike() {
         return strikes.first();
@@ -184,7 +168,7 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
     }
 
     @Override
-    protected final/* @Variance */double blackVarianceImpl(/* @Time */final double t, /* @Real */double strike) /* @ReadOnly */{
+    protected final/* @Variance */ double blackVarianceImpl(/* @Time */final double t, /* @Real */ double strike) /* @ReadOnly */ {
 
         if (t == 0.0) {
             return 0.0;
@@ -194,7 +178,7 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
         if (strike < strikes.first() && lowerExtrapolation == Extrapolation.ConstantExtrapolation) {
             strike = strikes.first();
         }
-        if (strike > strikes.last()  && upperExtrapolation == Extrapolation.ConstantExtrapolation) {
+        if (strike > strikes.last() && upperExtrapolation == Extrapolation.ConstantExtrapolation) {
             strike = strikes.last();
         }
 
@@ -203,24 +187,27 @@ public class BlackVarianceSurface extends BlackVarianceTermStructure {
         } else {
             // TODO: code review :: please verify against QL/C++ code
             // t>times_.back() || extrapolate
-            /* @Time */final double lastTime = times.last();
+            /* @Time */
+            final double lastTime = times.last();
             return varianceSurface.op(lastTime, strike) * t / lastTime;
         }
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<BlackVarianceSurface> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<BlackVarianceSurface> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {
             super.accept(pv);
         }
+    }
+
+    public enum Extrapolation {
+        ConstantExtrapolation, InterpolatorDefaultExtrapolation
     }
 
 }

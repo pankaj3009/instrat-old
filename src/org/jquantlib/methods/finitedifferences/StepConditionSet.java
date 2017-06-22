@@ -24,19 +24,19 @@ import java.util.List;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public class StepConditionSet<T> {
 
-	private List<StepCondition<T>> stepConditions = new ArrayList<StepCondition<T>>();
+    private List<StepCondition<T>> stepConditions = new ArrayList<StepCondition<T>>();
 
-	public void applyTo(List<T> a, /* Time */double t) {
-		for (int i = 0; i < stepConditions.size(); i++) {
-			stepConditions.get(i).applyTo(a.get(i), t);
-		}
-	}
+    public void applyTo(List<T> a, /* Time */ double t) {
+        for (int i = 0; i < stepConditions.size(); i++) {
+            stepConditions.get(i).applyTo(a.get(i), t);
+        }
+    }
 
-	public void push_back(StepCondition<T> a) {
-		stepConditions.add(a);
-	}
+    public void push_back(StepCondition<T> a) {
+        stepConditions.add(a);
+    }
 }

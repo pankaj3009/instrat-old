@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
@@ -37,8 +37,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.montecarlo;
 
 import org.jquantlib.math.randomnumbers.RandomNumberGenerator;
@@ -49,8 +48,9 @@ import org.jquantlib.time.TimeGrid;
 /**
  * Generates random paths using a sequence generator
  * <p>
- * Generates random paths with drift(S,t) and variance(S,t) using a gaussian sequence generator
- * 
+ * Generates random paths with drift(S,t) and variance(S,t) using a gaussian
+ * sequence generator
+ *
  * @category mcarlo
  *
  * @author Richard Gomes
@@ -68,14 +68,13 @@ public class PathGenerator<RNG extends RandomNumberGenerator, GSG extends Random
     private double[] temp_;
     private BrownianBridge bb_;
 
-    
     public PathGenerator(
-                          final StochasticProcess1D process, // QuantLib/C++ :: StochasticProcess
-                          final /*@Time*/ double  length,
-                          final /*@NonNegative*/ int timeSteps,
-                          final GSG generator,
-                          final boolean brownianBridge) {
-        if (System.getProperty("EXPERIMENTAL")==null) {
+            final StochasticProcess1D process, // QuantLib/C++ :: StochasticProcess
+            final /*@Time*/ double length,
+            final /*@NonNegative*/ int timeSteps,
+            final GSG generator,
+            final boolean brownianBridge) {
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
         }
         this.brownianBridge_ = brownianBridge;
@@ -86,18 +85,19 @@ public class PathGenerator<RNG extends RandomNumberGenerator, GSG extends Random
         //XXX this.next_ = new Sample<Path>( new Path(this.timeGrid_), 1.0 );
         this.temp_ = new double[this.dimension_];
         this.bb_ = new BrownianBridge(this.timeGrid_);
-        
-        if (dimension_!= timeSteps){
+
+        if (dimension_ != timeSteps) {
             throw new IllegalArgumentException(
-                    "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + timeSteps + ")");}
+                    "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + timeSteps + ")");
+        }
     }
 
     public PathGenerator(
-                        final StochasticProcess1D process, // QuantLib/C++ :: StochasticProcess
-                        final TimeGrid timeGrid,
-                        final GSG generator,
-                        final boolean brownianBridge) {
-        if (System.getProperty("EXPERIMENTAL")==null) {
+            final StochasticProcess1D process, // QuantLib/C++ :: StochasticProcess
+            final TimeGrid timeGrid,
+            final GSG generator,
+            final boolean brownianBridge) {
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
         }
         this.brownianBridge_ = brownianBridge;
@@ -109,9 +109,10 @@ public class PathGenerator<RNG extends RandomNumberGenerator, GSG extends Random
         this.temp_ = new double[this.dimension_];
         this.bb_ = new BrownianBridge(this.timeGrid_);
 
-        if (dimension_ != timeGrid_.size()-1){
+        if (dimension_ != timeGrid_.size() - 1) {
             throw new IllegalArgumentException(
-                    "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + (timeGrid_.size()-1) + ")");}
+                    "sequence generator dimensionality (" + dimension_ + ") != timeSteps (" + (timeGrid_.size() - 1) + ")");
+        }
     }
 
     private final Sample<Path> next() /* @ReadOnly */ {
@@ -153,8 +154,7 @@ public class PathGenerator<RNG extends RandomNumberGenerator, GSG extends Random
 //        }
 //
 //        return next_;
-        
-        return null;  
+        return null;
     }
 
 }

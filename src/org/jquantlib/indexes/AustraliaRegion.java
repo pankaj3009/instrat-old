@@ -22,16 +22,15 @@
 package org.jquantlib.indexes;
 
 /**
- * 
- * Australia as geographical/economic region
- * used for inflation applicability
- * 
+ *
+ * Australia as geographical/economic region used for inflation applicability
+ *
  * @author Tim Blackler
  */
 public class AustraliaRegion extends Region {
-	
-	public AustraliaRegion() {
-		this.data = new Region.Data("Australia","AU");	
-	}
+
+    public AustraliaRegion() {
+        this.data = new Region.Data("Australia", "AU");
+    }
 
 }

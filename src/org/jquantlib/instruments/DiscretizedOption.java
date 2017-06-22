@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2004, 2005, 2006 StatPro Italia srl
 
@@ -35,7 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.instruments;
 
 import java.util.List;
@@ -72,7 +72,7 @@ public class DiscretizedOption extends DiscretizedAsset {
 
     @Override
     public void reset(final int size) {
-        QL.require(method().equals(underlying.method()) , "option and underlying were initialized on different methods");
+        QL.require(method().equals(underlying.method()), "option and underlying were initialized on different methods");
         values_ = new Array(size);
         adjustValues();
     }
@@ -84,7 +84,7 @@ public class DiscretizedOption extends DiscretizedAsset {
         // discard negative times...
         final Array array = new FindIf(exerciseTimes, new Bind2ndPredicate(new GreaterEqualPredicate(), 0.0)).op();
         // and add the positive ones
-        for (int i=0; i< array.size(); i++) {
+        for (int i = 0; i < array.size(); i++) {
             times.add(array.get(i));
         }
         return times;
@@ -108,22 +108,22 @@ public class DiscretizedOption extends DiscretizedAsset {
         underlying.preAdjustValues();
         int i;
         switch (exerciseType) {
-        case American:
-            if (time >= exerciseTimes.get(0) && time <= exerciseTimes.get(1)) {
-                applyExerciseCondition();
-            }
-            break;
-        case Bermudan:
-        case European:
-            for (i = 0; i < exerciseTimes.size(); i++) {
-                final /* @Time */ double t = exerciseTimes.get(i);
-                if (t >= 0.0 && isOnTime(t)) {
+            case American:
+                if (time >= exerciseTimes.get(0) && time <= exerciseTimes.get(1)) {
                     applyExerciseCondition();
                 }
-            }
-            break;
-        default:
-            throw new LibraryException("invalid exercise type"); // TODO: message
+                break;
+            case Bermudan:
+            case European:
+                for (i = 0; i < exerciseTimes.size(); i++) {
+                    final /* @Time */ double t = exerciseTimes.get(i);
+                    if (t >= 0.0 && isOnTime(t)) {
+                        applyExerciseCondition();
+                    }
+                }
+                break;
+            default:
+                throw new LibraryException("invalid exercise type"); // TODO: message
         }
         underlying.postAdjustValues();
     }

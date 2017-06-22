@@ -26,28 +26,28 @@ import redis.clients.jedis.ScanResult;
  */
 public class RedisConnect<K, V> implements Database<K, V> {
 
+    private static final Logger logger = Logger.getLogger(RedisConnect.class.getName());
+
+    private static final Object blpop_lock = new Object();
+    private static final Object lpush_lock = new Object();
     public JedisPool pool;
     String uri;
     int port;
-    private static final Logger logger = Logger.getLogger(RedisConnect.class.getName());
-    
-    private static final Object blpop_lock=new Object();
-    private static final Object lpush_lock=new Object();
-    
+
     public RedisConnect(String uri, int port, int database) {
         this.uri = uri;
         this.port = port;
-        pool = new JedisPool(new JedisPoolConfig(),uri, port,2000,null,database);
+        pool = new JedisPool(new JedisPoolConfig(), uri, port, 2000, null, database);
     }
 
     @Override
     public Long delKey(String storeName, String key) {
         try (Jedis jedis = pool.getResource()) {
-           if( key.contains("_")){
-            return jedis.del(key.toString());
-        }else{
-               return jedis.del(storeName + "_" + key);
-           }
+            if (key.contains("_")) {
+                return jedis.del(key.toString());
+            } else {
+                return jedis.del(storeName + "_" + key);
+            }
         }
     }
 
@@ -74,12 +74,13 @@ public class RedisConnect<K, V> implements Database<K, V> {
             }
         }
     }
-    
-      public Long setHash(String key, K field, V value) {
+
+    public Long setHash(String key, K field, V value) {
         try (Jedis jedis = pool.getResource()) {
-                return jedis.hset(key, field.toString(), value.toString());
-            }
+            return jedis.hset(key, field.toString(), value.toString());
+        }
     }
+
     /*
     /*
      @Override
@@ -89,7 +90,6 @@ public class RedisConnect<K, V> implements Database<K, V> {
      }}
      }
      */
-
     @Override
     public V getValue(String storeName, String key, K field) {
         try (Jedis jedis = pool.getResource()) {
@@ -128,61 +128,61 @@ public class RedisConnect<K, V> implements Database<K, V> {
     }
 
     @Override
-    public  List<String> blpop(String storeName,String key,int duration) {
+    public List<String> blpop(String storeName, String key, int duration) {
         //synchronized(blpop_lock){
         try (Jedis jedis = pool.getResource()) {
-            return jedis.blpop(duration, storeName+key);
+            return jedis.blpop(duration, storeName + key);
         }
         //}
     }
 
     @Override
     public List<String> brpop(String storeName, String key, int duration) {
-                try (Jedis jedis = pool.getResource()) {
-            return jedis.brpop(duration, storeName+key);
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.brpop(duration, storeName + key);
         }
     }
 
     @Override
     public List<String> lrange(String storeName, String key, int start, int end) {
-                try (Jedis jedis = pool.getResource()) {
-            return jedis.lrange(storeName+key,start,end);  
-                }
+        try (Jedis jedis = pool.getResource()) {
+            return jedis.lrange(storeName + key, start, end);
+        }
     }
 
     @Override
     public void rename(String storeName, String newStoreName) {
-         try (Jedis jedis = pool.getResource()) {
-             jedis.rename(storeName, newStoreName);
-         }
+        try (Jedis jedis = pool.getResource()) {
+            jedis.rename(storeName, newStoreName);
+        }
     }
 
     @Override
     public void lpush(String key, String value) {
         //synchronized (lpush_lock) {
-            try (Jedis jedis = pool.getResource()) {
-                jedis.lpush(key, value);
-            }
+        try (Jedis jedis = pool.getResource()) {
+            jedis.lpush(key, value);
         }
+    }
     //}
 
     @Override
-    public Set<String> getKeys(String storeName,String searchString) {
-        Set<String>shortlist=new HashSet<>();
-           String cursor = "";
-           while (!cursor.equals("0")) {
-                cursor = cursor.equals("") ? "0" : cursor;
-                try (Jedis jedis = pool.getResource()) {
-                    ScanResult s = jedis.scan(cursor);
-                    cursor = s.getCursor();
-                    for (Object key : s.getResult()) {
-                        if (key.toString().contains(searchString)) {
-                            shortlist.addAll(jedis.smembers(key.toString()));
-                        }
+    public Set<String> getKeys(String storeName, String searchString) {
+        Set<String> shortlist = new HashSet<>();
+        String cursor = "";
+        while (!cursor.equals("0")) {
+            cursor = cursor.equals("") ? "0" : cursor;
+            try (Jedis jedis = pool.getResource()) {
+                ScanResult s = jedis.scan(cursor);
+                cursor = s.getCursor();
+                for (Object key : s.getResult()) {
+                    if (key.toString().contains(searchString)) {
+                        shortlist.addAll(jedis.smembers(key.toString()));
                     }
                 }
             }
-           return shortlist;
+        }
+        return shortlist;
     }
 
     @Override
@@ -205,8 +205,8 @@ public class RedisConnect<K, V> implements Database<K, V> {
     @Override
     public void insertOrder(String key, OrderBean ob) {
         try (Jedis jedis = pool.getResource()) {
-             Gson gson = new GsonBuilder().create();
-             String string=gson.toJson(ob);
+            Gson gson = new GsonBuilder().create();
+            String string = gson.toJson(ob);
             jedis.lpush(key, string);
         }
     }
@@ -227,6 +227,5 @@ public class RedisConnect<K, V> implements Database<K, V> {
         }
         return ob;
     }
-    
-    
+
 }

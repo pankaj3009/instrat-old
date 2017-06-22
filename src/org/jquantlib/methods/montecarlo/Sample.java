@@ -19,32 +19,27 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.methods.montecarlo;
 
 /**
  * Weighted sample
- * 
+ *
  * @author Dominik Holenstein
  * @author Richard Gomes
- * 
+ *
  * @param <T>
  */
-
 //TODO: Add JavaDocs
 //TODO: Code review
-
 // Sample<Double>
 // Sample<Array>
 // Sample<Path>
 // Sample<MultiPath>
-
 public final class Sample<T> {
-    
+
     //
     // private fields
     //
-
     /**
      * This field represents the value held by this Sample.
      */
@@ -56,23 +51,21 @@ public final class Sample<T> {
      */
     //XXX This field has public read access via getter but can be written by friend classes (same package)
     private double weight;
-    
 
     //
     // public constructors
     //
-    
     public Sample(final T value, double weight) {
-        if (System.getProperty("EXPERIMENTAL")==null) throw new UnsupportedOperationException("Work in progress");
-        this.value=value;
-        this.weight=weight;
+        if (System.getProperty("EXPERIMENTAL") == null) {
+            throw new UnsupportedOperationException("Work in progress");
+        }
+        this.value = value;
+        this.weight = weight;
     }
 
-    
     //
     // public getters
     //
-    
     public T value() {
         return value;
     }
@@ -81,12 +74,10 @@ public final class Sample<T> {
         return weight;
     }
 
-    
+
     //
     // package private setters
     //
-    
-    
     /*@PackagePrivate*/ void setValue(T value) {
         this.value = value;
     }

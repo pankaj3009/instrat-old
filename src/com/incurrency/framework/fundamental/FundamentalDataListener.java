@@ -9,6 +9,6 @@ package com.incurrency.framework.fundamental;
  * @author jaya
  */
 public interface FundamentalDataListener {
-    
-        public void fundamentalDataStatus( FundamentalDataEvent event );
+
+    public void fundamentalDataStatus(FundamentalDataEvent event);
 }

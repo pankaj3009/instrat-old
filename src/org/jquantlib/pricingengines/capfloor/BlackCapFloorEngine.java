@@ -20,8 +20,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
-
 package org.jquantlib.pricingengines.capfloor;
 
 import org.jquantlib.QL;
@@ -34,7 +32,6 @@ import org.jquantlib.termstructures.volatilities.optionlet.OptionletVolatilitySt
 
 // TODO implementation
 //FIXME - JM
-
 public class BlackCapFloorEngine //TODO:: extends CapFloor.Engine
 {
 //TODO:
@@ -42,12 +39,9 @@ public class BlackCapFloorEngine //TODO:: extends CapFloor.Engine
 //
 //    private Handle <OptionletVolatilityStructure> volatility;
 
-
-    public BlackCapFloorEngine (final Handle <YieldTermStructure> termStructureHandle,
-                                final Volatility v,
-                                final DayCounter dc)
-
-    {
+    public BlackCapFloorEngine(final Handle<YieldTermStructure> termStructureHandle,
+            final Volatility v,
+            final DayCounter dc) {
         QL.validateExperimentalMode();
 //
 //        this.termStructure = termStructureHandle;
@@ -57,11 +51,9 @@ public class BlackCapFloorEngine //TODO:: extends CapFloor.Engine
 //        this.termStructure.addObserver (this);
     }
 
-
-    public BlackCapFloorEngine (final Handle <YieldTermStructure> termStructureHandle,
-                                final Handle <Quote> v,
-                                final DayCounter dc)
-    {
+    public BlackCapFloorEngine(final Handle<YieldTermStructure> termStructureHandle,
+            final Handle<Quote> v,
+            final DayCounter dc) {
         QL.validateExperimentalMode();
 //        this.termStructure = termStructureHandle;
 //        this.volatility = new OptionletVolatilityStructure
@@ -72,11 +64,8 @@ public class BlackCapFloorEngine //TODO:: extends CapFloor.Engine
 //        this.volatility.addObserver (this);
     }
 
-
-    public BlackCapFloorEngine (final Handle <YieldTermStructure> termStructureHandle,
-                                final Handle <OptionletVolatilityStructure> vol)
-
-    {
+    public BlackCapFloorEngine(final Handle<YieldTermStructure> termStructureHandle,
+            final Handle<OptionletVolatilityStructure> vol) {
         QL.validateExperimentalMode();
 //        this.termStructure = termStructureHandle;
 //        this.volatility = vol;
@@ -85,8 +74,7 @@ public class BlackCapFloorEngine //TODO:: extends CapFloor.Engine
 //        this.volatility.addObserver (this);
     }
 
-    public void calculate()
-    {
+    public void calculate() {
         QL.validateExperimentalMode();
 //        double value = 0.0;
 //        double vega = 0.0;

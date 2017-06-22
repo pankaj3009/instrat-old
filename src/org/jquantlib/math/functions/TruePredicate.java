@@ -30,13 +30,12 @@ import org.jquantlib.math.Ops;
  */
 public final class TruePredicate implements Ops.DoublePredicate {
 
-	//
+    //
     // implements DoublePredicate
     //
-
-	@Override
-	public boolean op(final double a) {
-		return true;
-	}
+    @Override
+    public boolean op(final double a) {
+        return true;
+    }
 
 }

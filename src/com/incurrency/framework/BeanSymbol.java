@@ -64,6 +64,13 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     //DisplayName=exchangeSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option
     private final static Logger logger = Logger.getLogger(BeanSymbol.class.getName());
+    public static ConcurrentHashMap<EnumBarSize, List<Long>> columnLabels = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<EnumBarSize, List<String>> rowLabels = new ConcurrentHashMap<>();
+    public static final String PROP_LASTPRICE = "lastPrice";
+    public static final String PROP_BIDPRICE = "bidPrice";
+    public static final String PROP_ASKPRICE = "askPrice";
+    public static final String PROP_VOLUME = "volume";
+    private static final Object lockTimeSeries = new Object();
     private String longName;
     private int serialno;
     private String brokerSymbol;
@@ -101,7 +108,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private long lastPriceTime;
     private int reqID;
     private DataBars OneMinuteBarFromRealTimeBars;
-    private DataBars intraDayBarsFromTick; /*contains intraday bars, created from tick data. Built automatically. */
+    private DataBars intraDayBarsFromTick;
+    /*contains intraday bars, created from tick data. Built automatically. */
     private DataBars dailyBar = new DataBars(this, EnumBarSize.UNDEFINED); //contains daily bars. Set
     private DataBars supplementalBars1;
     private DataBars supplementalBars2;
@@ -115,107 +123,50 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private long firstTimeStamp;
     private int connectionidUsedForMarketData;
     private boolean comboSetupFailed = false;
-    private double strikeDistance=0;
+    private double strikeDistance = 0;
     private ConcurrentHashMap<EnumBarSize, DoubleMatrix> timeSeries = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<EnumBarSize, List<Long>> columnLabels = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<EnumBarSize, List<String>> rowLabels = new ConcurrentHashMap<>();
     private boolean active;
     public TreeMap<String, String[]> initData = new TreeMap<>();
     //properties
     private PropertyChangeSupport propertySupport;
-    public static final String PROP_LASTPRICE = "lastPrice";
-    public static final String PROP_BIDPRICE = "bidPrice";
-    public static final String PROP_ASKPRICE = "askPrice";
-    public static final String PROP_VOLUME = "volume";
     //locks
     private final String delimiter = "_";
     private final Object lockLastPrice = new Object();
     private final Object lockBidPrice = new Object();
     private final Object lockAskPrice = new Object();
     private final Object lockVolume = new Object();
-    private final Object lockHighPrice=new Object();
-    private final Object lockLowPrice=new Object();
+    private final Object lockHighPrice = new Object();
+    private final Object lockLowPrice = new Object();
     private final Object lockLastPriceTime = new Object();
     private final Object lockLastSize = new Object();
-    private final Object lockTradedValue =new Object();
+    private final Object lockTradedValue = new Object();
     private final Object lockOpenPrice = new Object();
     private final Object lockClosePrice = new Object();
     private final Object lockTradedPrices = new Object();
     private final Object lockTradedVolumes = new Object();
     private final Object lockTradedTime = new Object();
-    private final Object lockOptionProcess=new Object();
-    private final Object lockCloseVol=new Object();
-    private final Object lockUnderlying=new Object();
+    private final Object lockOptionProcess = new Object();
+    private final Object lockCloseVol = new Object();
+    private final Object lockUnderlying = new Object();
     private final Object lockPrevLastPrice = new Object();
-    private static final Object lockTimeSeries = new Object();
-    private int openHour = Utilities.getInt(Algorithm.globalProperties.getProperty("openhour", "9").toString().trim(),9);
-    private int openMinute = Utilities.getInt(Algorithm.globalProperties.getProperty("openminute","15").toString().trim(),15);
-    private int closeHour = Utilities.getInt(Algorithm.globalProperties.getProperty("closehour","15").toString().trim(),15);
-    private int closeMinute = Utilities.getInt(Algorithm.globalProperties.getProperty("closeminute","30").toString().trim(),30);
+    private int openHour = Utilities.getInt(Algorithm.globalProperties.getProperty("openhour", "9").toString().trim(), 9);
+    private int openMinute = Utilities.getInt(Algorithm.globalProperties.getProperty("openminute", "15").toString().trim(), 15);
+    private int closeHour = Utilities.getInt(Algorithm.globalProperties.getProperty("closehour", "15").toString().trim(), 15);
+    private int closeMinute = Utilities.getInt(Algorithm.globalProperties.getProperty("closeminute", "30").toString().trim(), 30);
     private String timeZone = Algorithm.globalProperties.get("timezone").toString().trim();
     private LimitedQueue<Double> tradedPrices;
     private LimitedQueue<Integer> tradedVolumes;
     private LimitedQueue<Long> tradedDateTime;
     private HashMap<BeanSymbol, Integer> combo = new HashMap<>(); //holds brokerSymbol and corresponding size
     private Fundamental fundamental = new Fundamental();
-    private AtomicBoolean addedToSymbols=new AtomicBoolean();
-    private EuropeanOption optionProcess=null;
-    private SimpleQuote underlying=new SimpleQuote();
+    private AtomicBoolean addedToSymbols = new AtomicBoolean();
+    private EuropeanOption optionProcess = null;
+    private SimpleQuote underlying = new SimpleQuote();
     private double mtmPrice;
-    private int bdte=-1;
-    private long cdte=-1;
-    private AtomicInteger underlyingID=new AtomicInteger(-1);
-    
-    public void SetOptionProcess(){//expiry,right,strike
-        if(getCloseVol()==0){
-            double optionlastprice = Utilities.getSettlePrice(this);
-            int futureid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.getSerialno()-1, expiry);
-            double underlyingpriorclose = Utilities.getSettlePrice(Parameters.symbol.get(futureid));
+    private int bdte = -1;
+    private long cdte = -1;
+    private AtomicInteger underlyingID = new AtomicInteger(-1);
 
-            if (optionlastprice != 0) {
-                String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd",1);
-                Date settleDate=DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", timeZone);
-                double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, settleDate);
-                this.setCloseVol(vol);
-            }
-            logger.log(Level.INFO,"500,BeanSymbol.Option vol set,{0}:{1}:{2}:{3}:{4},Vol={5}",
-                    new Object[]{"Unknown","Unknown",this.getDisplayname(),-1,-1,this.getCloseVol()});
-        }
-        
-        Date date=DateUtil.getFormattedDate(expiry, "yyyyMMdd", MainAlgorithm.timeZone);
-        EuropeanExercise exercise=new EuropeanExercise(new org.jquantlib.time.JDate(date));
-        PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(this.getOption(), 0) );
-        switch(right){
-            case "PUT":
-                  payoff =new PlainVanillaPayoff(Option.Type.Put,Utilities.getDouble(this.getOption(), 0) );
-                break;
-            case "CALL":
-                  payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(this.getOption(), 0) );
-                break;
-            default:
-                break;
-                
-        }
-       // PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
-        setOptionProcess(new EuropeanOption(payoff,exercise));
-        if(underlyingID.get()>=0){
-            getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());
-        }else{
-            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry()));
-            getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());   
-            Thread.yield();
-        }
-        Handle<Quote> S = new Handle<Quote>(getUnderlying());
-        org.jquantlib.time.Calendar india=new India();
-        Handle<YieldTermStructure> rate=new Handle<YieldTermStructure>(new FlatForward(0,india,0.07,new Actual365Fixed()));
-        Handle<YieldTermStructure>  yield=new Handle<YieldTermStructure>(new FlatForward(0,india,0.015,new Actual365Fixed()));
-        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, getCloseVol(), new Actual365Fixed()));
-        BlackScholesMertonProcess process = new BlackScholesMertonProcess(S,yield,rate,sigma);
-        AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
-        getOptionProcess().setPricingEngine(engine);
-    }
-   
-    
     public BeanSymbol() {
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
@@ -228,7 +179,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.type = "COMBO";
         this.setSerialno(Parameters.symbol.size() + 1);
         this.setBrokerSymbol(comboString);
-        this.happyName=happyName;
+        this.happyName = happyName;
         this.setDisplayname(happyName);
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
@@ -242,7 +193,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         for (int i = 0; i < symbols.length; i++) {
             String[] parameters = symbols[i].split("_");
-            int id = Utilities.getIDFromExchangeSymbol(Parameters.symbol,parameters[0], parameters[1], parameters[2], parameters[3], parameters[4]);
+            int id = Utilities.getIDFromExchangeSymbol(Parameters.symbol, parameters[0], parameters[1], parameters[2], parameters[3], parameters[4]);
             if (id >= 0) {
                 this.combo.put(Parameters.symbol.get(id), Integer.parseInt(parameters[5]));
             } else {
@@ -269,45 +220,45 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param right
      * @param minsize
      */
-    public BeanSymbol(String symbol, String displayName, String type, String exchange, String currency, String expiry, String right,String option,  int minsize) {
+    public BeanSymbol(String symbol, String displayName, String type, String exchange, String currency, String expiry, String right, String option, int minsize) {
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
-        if(symbol.equals("NSENIFTY")){
-        this.brokerSymbol = "NIFTY50";
-        }else{
+        if (symbol.equals("NSENIFTY")) {
+            this.brokerSymbol = "NIFTY50";
+        } else {
             String tempbrokerSymbol = symbol.replaceAll("[^A-Za-z0-9\\-]", "").toUpperCase().trim();
-            this.brokerSymbol=tempbrokerSymbol.length()>9?tempbrokerSymbol.substring(0, 9):tempbrokerSymbol;
-                
+            this.brokerSymbol = tempbrokerSymbol.length() > 9 ? tempbrokerSymbol.substring(0, 9) : tempbrokerSymbol;
+
         }
-        this.exchangeSymbol=symbol;        
+        this.exchangeSymbol = symbol;
         this.happyName = displayName;
-        this.displayName=displayName;
+        this.displayName = displayName;
         this.type = type;
         this.exchange = exchange;
         this.currency = currency;
-        this.expiry = expiry.equals("")?null:expiry;
-        this.option = option.equals("")?null:option;
-        this.right = right.equals("")?null:right;
+        this.expiry = expiry.equals("") ? null : expiry;
+        this.option = option.equals("") ? null : option;
+        this.right = right.equals("") ? null : right;
         this.minsize = minsize;
-        this.strategy="";
+        this.strategy = "";
     }
 
-    public BeanSymbol(String displayName){
-        this(displayName.split("_",-1)[0],displayName,displayName.split("_",-1)[1],null,null,displayName.split("_",-1)[2],displayName.split("_",-1)[3],displayName.split("_",-1)[4],0);
+    public BeanSymbol(String displayName) {
+        this(displayName.split("_", -1)[0], displayName, displayName.split("_", -1)[1], null, null, displayName.split("_", -1)[2], displayName.split("_", -1)[3], displayName.split("_", -1)[4], 0);
     }
-    
-    public BeanSymbol(String brokerSymbol,String exchangeSymbol, String type, String expiry, String right,String option) {
+
+    public BeanSymbol(String brokerSymbol, String exchangeSymbol, String type, String expiry, String right, String option) {
         tradedPrices = new LimitedQueue(10);
         tradedVolumes = new LimitedQueue(10);
         tradedDateTime = new LimitedQueue(10);
         this.brokerSymbol = brokerSymbol;
-        this.exchangeSymbol=exchangeSymbol;
+        this.exchangeSymbol = exchangeSymbol;
         this.type = type;
-        this.expiry = expiry.equals("")?null:expiry;
-        this.option = option.equals("")?null:option;
-        this.right = right.equals("")?null:right;
-       // this.displayName=brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option;
+        this.expiry = expiry.equals("") ? null : expiry;
+        this.option = option.equals("") ? null : option;
+        this.right = right.equals("") ? null : right;
+        // this.displayName=brokerSymbol+"_"+type+"_"+expiry+"_"+right+"_"+option;
     }
 
     public BeanSymbol(String[] input) {
@@ -326,13 +277,13 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             this.expiry = input[8].equals("") || type.equals("COMBO") ? null : input[8].trim().toUpperCase();
             this.option = input[9].equals("") || type.equals("COMBO") ? null : input[9].trim().toUpperCase();
             this.right = input[10].equals("") || type.equals("COMBO") ? null : input[10].trim().toUpperCase();
-            this.happyName = input[3].equals("") ?null: input[3].trim().toUpperCase();
-            this.displayName=happyName==null?exchangeSymbol+"_"+type+"_"+(expiry==null?"":expiry)+"_"+(right==null?"":right)+"_"+(option==null?"":option):this.happyName ;
+            this.happyName = input[3].equals("") ? null : input[3].trim().toUpperCase();
+            this.displayName = happyName == null ? exchangeSymbol + "_" + type + "_" + (expiry == null ? "" : expiry) + "_" + (right == null ? "" : right) + "_" + (option == null ? "" : option) : this.happyName;
             this.minsize = input[11].equals("") ? 1 : Integer.parseInt(input[11]);;
             this.barsstarttime = input[12].equals("") ? null : input[12].trim().toUpperCase();
             this.streamingpriority = input[13].equals("") ? 1 : Integer.parseInt(input[13].trim().toUpperCase());
             this.streamingpriority = input[13].equals("") ? 1 : Integer.parseInt(input[13].trim().toUpperCase());
-            this.strikeDistance=input[14].equals("")?0:Double.parseDouble(input[14].trim().toUpperCase());
+            this.strikeDistance = input[14].equals("") ? 0 : Double.parseDouble(input[14].trim().toUpperCase());
             if (input.length <= 15) {
                 this.strategy = "";
             } else {
@@ -350,20 +301,70 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
     }
 
-     public BeanSymbol(String[] input, int count) {
-        switch(count){
+    public BeanSymbol(String[] input, int count) {
+        switch (count) {
             case 7: //used for eodmaintenance to push in STK data
-                this.longName=input[0];
-                this.brokerSymbol=input[1];
-                this.exchangeSymbol=input[2];
-                this.currency=input[3];
-                this.exchange=input[5];
-                this.type=input[6];
+                this.longName = input[0];
+                this.brokerSymbol = input[1];
+                this.exchangeSymbol = input[2];
+                this.currency = input[3];
+                this.exchange = input[5];
+                this.type = input[6];
                 break;
             default:
                 break;
         }
-     }
+    }
+
+    public void SetOptionProcess() {//expiry,right,strike
+        if (getCloseVol() == 0) {
+            double optionlastprice = Utilities.getSettlePrice(this);
+            int futureid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.getSerialno() - 1, expiry);
+            double underlyingpriorclose = Utilities.getSettlePrice(Parameters.symbol.get(futureid));
+
+            if (optionlastprice != 0) {
+                String priorBusinessDay = DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd", 1);
+                Date settleDate = DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", timeZone);
+                double vol = Utilities.getImpliedVol(this, underlyingpriorclose, optionlastprice, settleDate);
+                this.setCloseVol(vol);
+            }
+            logger.log(Level.INFO, "500,BeanSymbol.Option vol set,{0}:{1}:{2}:{3}:{4},Vol={5}",
+                    new Object[]{"Unknown", "Unknown", this.getDisplayname(), -1, -1, this.getCloseVol()});
+        }
+
+        Date date = DateUtil.getFormattedDate(expiry, "yyyyMMdd", MainAlgorithm.timeZone);
+        EuropeanExercise exercise = new EuropeanExercise(new org.jquantlib.time.JDate(date));
+        PlainVanillaPayoff payoff = new PlainVanillaPayoff(Option.Type.Call, Utilities.getDouble(this.getOption(), 0));
+        switch (right) {
+            case "PUT":
+                payoff = new PlainVanillaPayoff(Option.Type.Put, Utilities.getDouble(this.getOption(), 0));
+                break;
+            case "CALL":
+                payoff = new PlainVanillaPayoff(Option.Type.Call, Utilities.getDouble(this.getOption(), 0));
+                break;
+            default:
+                break;
+
+        }
+        // PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
+        setOptionProcess(new EuropeanOption(payoff, exercise));
+        if (underlyingID.get() >= 0) {
+            getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());
+        } else {
+            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno - 1, this.getExpiry()));
+            getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());
+            Thread.yield();
+        }
+        Handle<Quote> S = new Handle<Quote>(getUnderlying());
+        org.jquantlib.time.Calendar india = new India();
+        Handle<YieldTermStructure> rate = new Handle<YieldTermStructure>(new FlatForward(0, india, 0.07, new Actual365Fixed()));
+        Handle<YieldTermStructure> yield = new Handle<YieldTermStructure>(new FlatForward(0, india, 0.015, new Actual365Fixed()));
+        Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, getCloseVol(), new Actual365Fixed()));
+        BlackScholesMertonProcess process = new BlackScholesMertonProcess(S, yield, rate, sigma);
+        AnalyticEuropeanEngine engine = new AnalyticEuropeanEngine(process);
+        getOptionProcess().setPricingEngine(engine);
+    }
+
     /**
      * synchronizes timeseries matrix with columnLabels, across all symbols for
      * all barsizes.
@@ -590,9 +591,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     public BeanSymbol clone(BeanSymbol orig) {
         BeanSymbol b = new BeanSymbol();
-        b.longName=orig.longName;
+        b.longName = orig.longName;
         b.brokerSymbol = orig.brokerSymbol;
-        b.exchangeSymbol=orig.exchangeSymbol;
+        b.exchangeSymbol = orig.exchangeSymbol;
         b.displayName = orig.displayName;
         b.type = orig.type;
         b.exchange = orig.exchange;
@@ -609,7 +610,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         b.preopen = orig.preopen;
         b.streamingpriority = orig.streamingpriority;
         b.strategy = orig.strategy;
-        b.strikeDistance=orig.strikeDistance;
+        b.strikeDistance = orig.strikeDistance;
         return b;
     }
 
@@ -685,9 +686,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         return out;
     }
 
-    public double getBarData(EnumBarSize size, String timeSeriesLabel,int indexFromEnd) {
+    public double getBarData(EnumBarSize size, String timeSeriesLabel, int indexFromEnd) {
         DoubleMatrix m = new DoubleMatrix(0, 0);
-        Double out=0D;
+        Double out = 0D;
         if (this.getRowLabels().get(size) == null) {
             return 0;
         } else {
@@ -696,9 +697,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 m = this.getTimeSeries().get(size).getRow(row);
             }
         }
-        if(m.length>indexFromEnd){
-            return m.data[m.length-1-indexFromEnd];
-        }else{
+        if (m.length > indexFromEnd) {
+            return m.data[m.length - 1 - indexFromEnd];
+        } else {
             return 0;
         }
     }
@@ -717,12 +718,12 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             return getColumnLabels().get(barSize).size();
         }
     }
-    
-    public int getDataLength(EnumBarSize barSize,String timeSeriesLabel){
-        int out=0;
-        DoubleMatrix timeSeries=this.getTimeSeries(barSize, timeSeriesLabel);
-        if(timeSeries!=null && timeSeries.length>0){
-            out=timeSeries.ne(ReservedValues.EMPTY).findIndices().length;
+
+    public int getDataLength(EnumBarSize barSize, String timeSeriesLabel) {
+        int out = 0;
+        DoubleMatrix timeSeries = this.getTimeSeries(barSize, timeSeriesLabel);
+        if (timeSeries != null && timeSeries.length > 0) {
+            out = timeSeries.ne(ReservedValues.EMPTY).findIndices().length;
         }
         return out;
     }
@@ -731,26 +732,27 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
         int column = this.getColumnLabels().get(size).indexOf(Long.valueOf(time));
-        if (row >= 0 && column>=0) {
+        if (row >= 0 && column >= 0) {
             out = this.getTimeSeries().get(size).get(row, column);
         }
         return out;
     }
 
     /**
-     * Returns the value of the label.If boolean is set to before,the value just before the time specified 
-     * in the method is returned.
+     * Returns the value of the label.If boolean is set to before,the value just
+     * before the time specified in the method is returned.
+     *
      * @param size
      * @param time
      * @param timeSeriesLabel
      * @param before
-     * @return 
+     * @return
      */
     public double getTimeSeriesValue(EnumBarSize size, long time, String timeSeriesLabel, boolean before) {
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
         int column = this.getColumnLabels().get(size).indexOf(Long.valueOf(time));
-        if (row >= 0 && column>=0) {
+        if (row >= 0 && column >= 0) {
             DoubleMatrix m = this.getTimeSeries(size, timeSeriesLabel);
             if (before) {
                 m = m.get(Utilities.range(0, 1, column)).reshape(1, column);
@@ -773,10 +775,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     /**
      * Returns value specified at the timeIndex
+     *
      * @param size
      * @param timeIndex
      * @param timeSeriesLabel
-     * @return 
+     * @return
      */
     public double getTimeSeriesValue(EnumBarSize size, int timeIndex, String timeSeriesLabel) {
         double out = ReservedValues.EMPTY;
@@ -786,60 +789,62 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         return out;
     }
-    
+
     /**
-     * Returns the floor from a timeSeriesLabel, given any time.If time is not present in the corresponding
-     * columnlabels, returns the prior low value.
+     * Returns the floor from a timeSeriesLabel, given any time.If time is not
+     * present in the corresponding columnlabels, returns the prior low value.
+     *
      * @param size
      * @param time
      * @param timeSeriesLabel
-     * @return 
+     * @return
      */
-   public double getTimeSeriesValueFloor(EnumBarSize size, long time, String timeSeriesLabel) {
+    public double getTimeSeriesValueFloor(EnumBarSize size, long time, String timeSeriesLabel) {
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
-        TreeSet<Long> tempSet=new TreeSet<>(this.getColumnLabels().get(size));
-        long priorTime=tempSet.floor(time);
+        TreeSet<Long> tempSet = new TreeSet<>(this.getColumnLabels().get(size));
+        long priorTime = tempSet.floor(time);
         if (row >= 0) {
             out = this.getTimeSeriesValue(size, priorTime, timeSeriesLabel);
         }
         return out;
     }
 
-       /**
-     * Returns the ceiling from a timeSeriesLabel, given any time.If time is not present in the corresponding
-     * columnlabels, returns the next high value.
+    /**
+     * Returns the ceiling from a timeSeriesLabel, given any time.If time is not
+     * present in the corresponding columnlabels, returns the next high value.
+     *
      * @param size
      * @param time
      * @param timeSeriesLabel
-     * @return 
+     * @return
      */
-
-      public double getTimeSeriesValueCeil(EnumBarSize size, long time, String timeSeriesLabel) {
+    public double getTimeSeriesValueCeil(EnumBarSize size, long time, String timeSeriesLabel) {
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
-        TreeSet<Long> tempSet=new TreeSet<>(this.getColumnLabels().get(size));
-        long priorTime=tempSet.ceiling(time);
-        boolean datafound=false;
+        TreeSet<Long> tempSet = new TreeSet<>(this.getColumnLabels().get(size));
+        long priorTime = tempSet.ceiling(time);
+        boolean datafound = false;
         while (row >= 0 && !datafound) {
             out = this.getTimeSeriesValue(size, priorTime, timeSeriesLabel);
-            if(out!=ReservedValues.EMPTY){
-                datafound=Boolean.TRUE;
-            }else{
-               priorTime=tempSet.ceiling(priorTime+1);
+            if (out != ReservedValues.EMPTY) {
+                datafound = Boolean.TRUE;
+            } else {
+                priorTime = tempSet.ceiling(priorTime + 1);
 
             }
         }
         return out;
     }
 
-   /**
-    * Returns the floor of the time passed to the method.
-    * @param size
-    * @param time
-    * @param timeSeriesLabel
-    * @return 
-    */
+    /**
+     * Returns the floor of the time passed to the method.
+     *
+     * @param size
+     * @param time
+     * @param timeSeriesLabel
+     * @return
+     */
     public long getTimeFloor(EnumBarSize size, long time, String timeSeriesLabel) {
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
@@ -847,8 +852,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         long priorTime = tempSet.floor(time);
         return priorTime;
     }
-   
-   public double getTimeSeriesValue(EnumBarSize size, int timeIndex, String timeSeriesLabel, boolean ignoreEmptyValues) {
+
+    public double getTimeSeriesValue(EnumBarSize size, int timeIndex, String timeSeriesLabel, boolean ignoreEmptyValues) {
         double out = ReservedValues.EMPTY;
         int row = this.getRowLabels().get(size).indexOf(timeSeriesLabel);
         if (row >= 0) {
@@ -858,7 +863,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         return out;
     }
 
-    
     public int getTimeStampIndex(EnumBarSize size, long time) {
         if (this.getColumnLabels().get(size) != null) {
             return this.getColumnLabels().get(size).indexOf(time);
@@ -875,22 +879,23 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         return out;
     }
-    
+
     /**
      * Returns 0, if no bar found.
+     *
      * @param size
-     * @return 
+     * @return
      */
-     public long getLastBarStartTime(EnumBarSize size) {
+    public long getLastBarStartTime(EnumBarSize size) {
         List<Long> out = new ArrayList<>();
         List<Long> row = this.getColumnLabels().get(size);
-        if (row!=null && row.size() >= 0) {
+        if (row != null && row.size() >= 0) {
             out = row;
         }
-        if(out.size()>0){
-        return out.get(out.size()-1);
-        }else{
-            Calendar c=Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+        if (out.size() > 0) {
+            return out.get(out.size() - 1);
+        } else {
+            Calendar c = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
             c.setTime(TradingUtil.getAlgoDate());
             c.set(Calendar.HOUR_OF_DAY, Algorithm.openHour);
             c.set(Calendar.MINUTE, Algorithm.openMinute);
@@ -899,13 +904,14 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             return c.getTimeInMillis();
         }
     }
-     
+
     /**
      * Returns the next bar start time.
+     *
      * @param size
-     * @return 
+     * @return
      */
-     public long getLastBarEndTime(EnumBarSize size) {
+    public long getLastBarEndTime(EnumBarSize size) {
         long out = 0;
         long startTime = getLastBarStartTime(size);
         if (startTime > 0) {
@@ -913,7 +919,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                 case ONEMINUTE:
                     out = DateUtil.addSeconds(new Date(startTime), 60).getTime();
                     out = Utilities.nextGoodDay(new Date(out), 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true).getTime();
-                    
+
                     break;
                 case FIVEMINUTE:
                     out = DateUtil.addSeconds(new Date(startTime), 300).getTime();
@@ -930,7 +936,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         } else {
             //return 0;
             //return BOD
-            Calendar c=Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+            Calendar c = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
             c.setTime(TradingUtil.getAlgoDate());
             c.set(Calendar.HOUR_OF_DAY, Algorithm.openHour);
             c.set(Calendar.MINUTE, Algorithm.openMinute);
@@ -939,7 +945,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             return c.getTimeInMillis();
         }
     }
-     
+
     @Override
     public int hashCode() {
         int hashCode = 0;
@@ -1108,7 +1114,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                             MainAlgorithm.tes.fireTradeEvent(serialno - 1, com.ib.client.TickType.LAST);
                         }
                         if (MainAlgorithm.getCollectTicks()) {
-                            TradingUtil.writeToFile("tick_" + this.getDisplayname()+ ".csv", "Trade," + lastPrice);
+                            TradingUtil.writeToFile("tick_" + this.getDisplayname() + ".csv", "Trade," + lastPrice);
                         }
                     }
 
@@ -1245,18 +1251,18 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         propertySupport.removePropertyChangeListener(listener);
     }
 
-    
-
     /**
-     * Saves the beansymbol timeseries values to an external file. If append is false, existing file is deleted and headers
-     * are inserted.Else no headers are inserted and data is appended to any existing file.
+     * Saves the beansymbol timeseries values to an external file. If append is
+     * false, existing file is deleted and headers are inserted.Else no headers
+     * are inserted and data is appended to any existing file.
+     *
      * @param barSize
      * @param labels
      * @param startTime
      * @param endTime
      * @param filename
      * @param dateFormat
-     * @param append 
+     * @param append
      */
     public void saveToExternalFile(EnumBarSize barSize, String[] labels, long startTime, long endTime, String filename, String dateFormat, boolean append) {
         if (!append) {
@@ -1284,7 +1290,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
         }
     }
-        
+
     /**
      * Sets timeseries for specified labels and time value.Effectively sets
      * multiple rows for a specified time.
@@ -1324,7 +1330,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         double[] values = new double[stringValues.length - 1];
         for (int i = 0; i < values.length; i++) {
-            values[i] = Utilities.getDouble(stringValues[i + 1],0);
+            values[i] = Utilities.getDouble(stringValues[i + 1], 0);
         }
         long time = Long.valueOf(stringValues[0]);
         /*
@@ -1345,29 +1351,29 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         initTimeSeries(size, labels, time);
         addTimeSeries(size, labels, time, values);
     }
-    
-   public void setTimeSeries(EnumBarSize size, long time, String label, double value) {
-            int colid = getColumnLabels().get(size).indexOf(Long.valueOf(time));
-            int rowid = getRowLabels().get(size).indexOf(label);
-            //logger.log(Level.INFO,"Method:{0},time:{1},label:{2},colid:{3},rowid:{4}",new Object[]{"SetTimeSeries",time,label,colid,rowid});
-            getTimeSeries().get(size).put(rowid, colid, value);
-        }
+
+    public void setTimeSeries(EnumBarSize size, long time, String label, double value) {
+        int colid = getColumnLabels().get(size).indexOf(Long.valueOf(time));
+        int rowid = getRowLabels().get(size).indexOf(label);
+        //logger.log(Level.INFO,"Method:{0},time:{1},label:{2},colid:{3},rowid:{4}",new Object[]{"SetTimeSeries",time,label,colid,rowid});
+        getTimeSeries().get(size).put(rowid, colid, value);
+    }
 
     @Override
     public void writer(String fileName) {
-                File f = new File("logs",fileName);
+        File f = new File("logs", fileName);
         try {
             if (!f.exists() || f.isDirectory()) {
                 String header = "Long Name" + ",IB Symbol" + ",Exchange Symbol" + ",Currency" + ",Contract ID" + ",Exchange" + ",Type";
                 PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)));
                 out.println(header);
                 out.close();
-            } 
-                String data = this.getLongName() + "," + this.getBrokerSymbol() + "," + this.getExchangeSymbol() + "," + this.getCurrency() + "," + this.contractID + "," + this.getExchange() + "," + this.getType();
-                PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));
-                out.println(data);
-                out.close();
-            
+            }
+            String data = this.getLongName() + "," + this.getBrokerSymbol() + "," + this.getExchangeSymbol() + "," + this.getCurrency() + "," + this.contractID + "," + this.getExchange() + "," + this.getType();
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(f, true)));
+            out.println(data);
+            out.close();
+
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
@@ -1604,12 +1610,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                         for (int r : itemsToRemove) {
                             pairs.remove(r);
                         }
-                        double out = Utilities.getDouble(pairs.size()>0?pairs.get(0).getValue():0, 0);
+                        double out = Utilities.getDouble(pairs.size() > 0 ? pairs.get(0).getValue() : 0, 0);
                         setOpenPrice(out);
                     }
                 }
             }
-
 
             if (propertySupport != null) {
                 propertySupport.firePropertyChange(PROP_LASTPRICE, oldValue, lastPrice);
@@ -1679,8 +1684,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @param volume the volume to set
      */
-
-    
     public void setVolume(int volume, boolean override) {
         synchronized (lockVolume) {
             if (override) {
@@ -1786,8 +1789,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void setLastSize(int lastSize) {
         synchronized (lockLastSize) {
             this.lastSize = lastSize;
-            if(this.getTradedValue()!=0){
-            this.setTradedValue(this.getTradedValue() + this.lastSize*this.lastPrice);
+            if (this.getTradedValue() != 0) {
+                this.setTradedValue(this.getTradedValue() + this.lastSize * this.lastPrice);
             }
         }
     }
@@ -1886,8 +1889,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public void setOpenPrice(double openPrice) {
         synchronized (lockOpenPrice) {
-            if(openPrice!=0){
-            this.openPrice = openPrice;
+            if (openPrice != 0) {
+                this.openPrice = openPrice;
             }
         }
     }
@@ -2009,7 +2012,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @param lowPrice the lowPrice to set
      */
-
     public void setLowPrice(double lowPrice, boolean override) {
         synchronized (lockLowPrice) {
             if (override) {
@@ -2021,6 +2023,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             }
         }
     }
+
     /**
      * @return the highPrice
      */
@@ -2031,7 +2034,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @param highPrice the highPrice to set
      */
-  
     public void setHighPrice(double highPrice, boolean override) {
         synchronized (lockHighPrice) {
             if (override) {
@@ -2414,16 +2416,17 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         this.intraDayBarsFromTick = intraDayBarsFromTick;
     }
 
-
     /**
-     * @return the exchangeSymbol as the identifier used by the exchange to refer to the symbol
+     * @return the exchangeSymbol as the identifier used by the exchange to
+     * refer to the symbol
      */
     public String getExchangeSymbol() {
         return exchangeSymbol;
     }
 
     /**
-     * @param exchangeSymbol the exchangeSymbol to set to the identifer used by the exchange to refer to the symbol
+     * @param exchangeSymbol the exchangeSymbol to set to the identifer used by
+     * the exchange to refer to the symbol
      */
     public void setExchangeSymbol(String exchangeSymbol) {
         this.exchangeSymbol = exchangeSymbol;
@@ -2437,17 +2440,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     }
 
     /**
-     * @param longName the longName to set to the full name provided by the exchange
+     * @param longName the longName to set to the full name provided by the
+     * exchange
      */
     public void setLongName(String longName) {
         this.longName = longName;
     }
 
     /**
-     * @return the tradedValue contains the total volume weighted price for the day
+     * @return the tradedValue contains the total volume weighted price for the
+     * day
      */
     public double getTradedValue() {
-        synchronized(lockTradedValue){
+        synchronized (lockTradedValue) {
             return tradedValue;
         }
     }
@@ -2456,7 +2461,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param tradedValue contains the total volume weighted price for the day
      */
     public void setTradedValue(double tradedValue) {
-        synchronized(lockTradedValue){
+        synchronized (lockTradedValue) {
             this.tradedValue = tradedValue;
         }
     }
@@ -2502,7 +2507,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param closeVol the closeVol to set
      */
     public void setCloseVol(double closeVol) {
-        synchronized(lockCloseVol){
+        synchronized (lockCloseVol) {
             this.closeVol = closeVol;
         }
 
@@ -2512,13 +2517,13 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the optionProcess
      */
     public EuropeanOption getOptionProcess() {
-        synchronized(lockOptionProcess){
-        if(optionProcess==null){
-            this.SetOptionProcess();
-            return optionProcess;
-        }else{
-            return optionProcess;                        
-        }
+        synchronized (lockOptionProcess) {
+            if (optionProcess == null) {
+                this.SetOptionProcess();
+                return optionProcess;
+            } else {
+                return optionProcess;
+            }
         }
     }
 
@@ -2526,8 +2531,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param optionProcess the optionProcess to set
      */
     public void setOptionProcess(EuropeanOption optionProcess) {
-        synchronized(lockOptionProcess){
-        this.optionProcess = optionProcess;
+        synchronized (lockOptionProcess) {
+            this.optionProcess = optionProcess;
         }
     }
 
@@ -2535,7 +2540,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the underlying
      */
     public SimpleQuote getUnderlying() {
-        synchronized(lockUnderlying){
+        synchronized (lockUnderlying) {
             return underlying;
         }
     }
@@ -2544,7 +2549,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param underlying the underlying to set
      */
     public void setUnderlying(SimpleQuote underlying) {
-        synchronized(lockUnderlying){
+        synchronized (lockUnderlying) {
             this.underlying = underlying;
         }
     }
@@ -2581,29 +2586,29 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      */
     public int getUnderlyingID() {
 
-        if(underlyingID.get()>=0){
+        if (underlyingID.get() >= 0) {
             return underlyingID.get();
-        }else{
-            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno-1, this.getExpiry()));
+        } else {
+            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno - 1, this.getExpiry()));
             return underlyingID.get();
         }
-        
+
     }
 
     /**
      * @param underlyingID the underlyingID to set
      */
     public void setUnderlyingID(int underlyingID) {
-        
+
         this.underlyingID.set(underlyingID);
-        
+
     }
 
     /**
      * @return the cdte
      */
     public long getCdte() {
-        if (cdte >0) {
+        if (cdte > 0) {
             return cdte;
         } else {
             try {

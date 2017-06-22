@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
  Copyright (C) 2004 Jeff Yu
@@ -37,52 +37,42 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.time;
 
 /**
  * Business Day conventions
  *
- * These conventions specify the algorithm used to adjust a date in case
- * it is not a valid business day.
+ * These conventions specify the algorithm used to adjust a date in case it is
+ * not a valid business day.
  *
  * @author Richard Gomes
  */
 public enum BusinessDayConvention {
-	// ISDA
-	/**
-	 * Choose the first business day after the given holiday.
-	 */
-	Following,
-
-	/**
-	 * Choose the first business day after
-	 * the given holiday unless it belongs
-	 * to a different month, in which case
-	 * choose the first business day before
-	 * the holiday.
-	 */
-	ModifiedFollowing,
-
-	/**
-	 * Choose the first business day before
-	 * the given holiday.
-	 */
-	Preceding,
-
-	// NON ISDA
-	/**
-	 * Choose the first business day before
-	 * the given holiday unless it belongs
-	 * to a different month, in which case
-	 * choose the first business day after
-	 * the holiday.
-	 */
-	ModifiedPreceding,
-
-	/**
-	 * Do not adjust.
-	 */
-	Unadjusted;
+    // ISDA
+    /**
+     * Choose the first business day after the given holiday.
+     */
+    Following,
+    /**
+     * Choose the first business day after the given holiday unless it belongs
+     * to a different month, in which case choose the first business day before
+     * the holiday.
+     */
+    ModifiedFollowing,
+    /**
+     * Choose the first business day before the given holiday.
+     */
+    Preceding,
+    // NON ISDA
+    /**
+     * Choose the first business day before the given holiday unless it belongs
+     * to a different month, in which case choose the first business day after
+     * the holiday.
+     */
+    ModifiedPreceding,
+    /**
+     * Do not adjust.
+     */
+    Unadjusted;
 }

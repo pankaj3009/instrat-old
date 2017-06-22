@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2004, 2005 StatPro Italia srl
@@ -38,7 +38,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.processes;
 
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -59,17 +58,14 @@ public class Merton76Process extends StochasticProcess1D {
     //
     // private fields
     //
-
     private final GeneralizedBlackScholesProcess blackProcess;
     private final Handle<? extends Quote> jumpIntensity, logMeanJump, logJumpVolatility;
-
 
     //
     // public constructors
     //
-
     public Merton76Process(
-            final Handle< ? extends Quote > stateVariable,
+            final Handle< ? extends Quote> stateVariable,
             final Handle<YieldTermStructure> dividendTS,
             final Handle<YieldTermStructure> riskFreeTS,
             final Handle<BlackVolTermStructure> blackVolTS,
@@ -88,11 +84,9 @@ public class Merton76Process extends StochasticProcess1D {
         this.logMeanJump.addObserver(this);
     }
 
-
     //
     // public methods
     //
-
     public Handle<? extends Quote> stateVariable() {
         return blackProcess.stateVariable();
     }
@@ -121,40 +115,35 @@ public class Merton76Process extends StochasticProcess1D {
         return this.logJumpVolatility;
     }
 
-
     //
     // Overrides StochasticProcess1D
     //
-
     @Override
-    public double /* @Real */x0() {
+    public double /* @Real */ x0() {
         return blackProcess.x0();
     }
 
     // TODO: code review :: please verify against QL/C++ code
-
     @Override
-    public double /* @Real */drift(final double /* @Time */t, final double /* @Real */x) {
+    public double /* @Real */ drift(final double /* @Time */ t, final double /* @Real */ x) {
         throw new LibraryException("not implemented"); // TODO: message
     }
 
     @Override
-    public double /* @Real */diffusion(final double /* @Time */t, final double /* @Real */x) {
+    public double /* @Real */ diffusion(final double /* @Time */ t, final double /* @Real */ x) {
         throw new LibraryException("not implemented"); // TODO: message
     }
 
     @Override
-    public double /* @Real */apply(final double /* @Real */x, final double /* @Real */y) {
+    public double /* @Real */ apply(final double /* @Real */ x, final double /* @Real */ y) {
         throw new LibraryException("not implemented"); // TODO: message
     }
-
 
     //
     // Overrides StochasticProcess1D
     //
-
     @Override
-    public double /* @Time */time(final JDate d) {
+    public double /* @Time */ time(final JDate d) {
         return blackProcess.time(d);
     }
 

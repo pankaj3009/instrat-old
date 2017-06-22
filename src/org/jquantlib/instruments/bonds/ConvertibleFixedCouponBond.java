@@ -35,61 +35,60 @@ import org.jquantlib.time.Schedule;
 /**
  * Convertible fixed-coupon bond
  *
- * @warning Most methods inherited from Bond (such as yield or
- * the yield-based dirtyPrice and cleanPrice) refer to
- * the underlying plain-vanilla bond and do not take
- * convertibility and callability into account.
+ * @warning Most methods inherited from Bond (such as yield or the yield-based
+ * dirtyPrice and cleanPrice) refer to the underlying plain-vanilla bond and do
+ * not take convertibility and callability into account.
  *
  * @author Daniel Kong
  */
 //TODO: Work in progress
 public class ConvertibleFixedCouponBond extends ConvertibleBond {
 
-	public ConvertibleFixedCouponBond(
-	          final Exercise exercise,
-	          final double conversionRatio,
-	          final DividendSchedule dividends,
-	          final CallabilitySchedule callability,
-	          final Handle<Quote> creditSpread,
-	          final JDate issueDate,
-	          final int settlementDays,
-	          /*@Rate*/final double[] coupons,
-	          final DayCounter dayCounter,
-	          final Schedule schedule){
-		this(exercise, conversionRatio, dividends, callability, creditSpread,
-		     issueDate, settlementDays, coupons, dayCounter, schedule, 100);
-	}
+    public ConvertibleFixedCouponBond(
+            final Exercise exercise,
+            final double conversionRatio,
+            final DividendSchedule dividends,
+            final CallabilitySchedule callability,
+            final Handle<Quote> creditSpread,
+            final JDate issueDate,
+            final int settlementDays,
+            /*@Rate*/ final double[] coupons,
+            final DayCounter dayCounter,
+            final Schedule schedule) {
+        this(exercise, conversionRatio, dividends, callability, creditSpread,
+                issueDate, settlementDays, coupons, dayCounter, schedule, 100);
+    }
 
-	public ConvertibleFixedCouponBond(
-			final Exercise exercise,
-			final double conversionRatio,
-	        final DividendSchedule dividends,
-	        final CallabilitySchedule callability,
-			final Handle<Quote> creditSpread,
-			final JDate issueDate,
-			final int settlementDays,
-			/*Rate*/final double[] coupons,
-			final DayCounter dayCounter,
-			final Schedule schedule,
-			final double redemption) {
-		super(exercise, conversionRatio, dividends, callability, creditSpread,
-		      issueDate, settlementDays, dayCounter, schedule, redemption);
+    public ConvertibleFixedCouponBond(
+            final Exercise exercise,
+            final double conversionRatio,
+            final DividendSchedule dividends,
+            final CallabilitySchedule callability,
+            final Handle<Quote> creditSpread,
+            final JDate issueDate,
+            final int settlementDays,
+            /*Rate*/ final double[] coupons,
+            final DayCounter dayCounter,
+            final Schedule schedule,
+            final double redemption) {
+        super(exercise, conversionRatio, dividends, callability, creditSpread,
+                issueDate, settlementDays, dayCounter, schedule, redemption);
 
-		// notional forcibly set to 100
-        this.cashflows_ = new FixedRateLeg(schedule,dayCounter)
-            .withNotionals(100.0)
-            .withCouponRates(coupons)
-            .withPaymentAdjustment(schedule.businessDayConvention())
-            .Leg();
+        // notional forcibly set to 100
+        this.cashflows_ = new FixedRateLeg(schedule, dayCounter)
+                .withNotionals(100.0)
+                .withCouponRates(coupons)
+                .withPaymentAdjustment(schedule.businessDayConvention())
+                .Leg();
 
-        addRedemptionsToCashflows(new double[] { redemption });
+        addRedemptionsToCashflows(new double[]{redemption});
 
         QL.ensure(redemptions_.size() == 1, "multiple redemptions created");
 
         this.option = new ConvertibleBondOption(this, exercise, conversionRatio,
-                                      dividends, callability, creditSpread,
-                                      cashflows_, dayCounter, schedule,
-                                      issueDate, settlementDays, redemption);
-	}
+                dividends, callability, creditSpread,
+                cashflows_, dayCounter, schedule,
+                issueDate, settlementDays, redemption);
+    }
 
 }

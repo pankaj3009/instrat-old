@@ -9,6 +9,7 @@ package com.incurrency.framework;
  * @author Pankaj
  */
 public class BackTestParameter {
+
     String parameter;
     String startRange;
     String endRange;
@@ -20,13 +21,12 @@ public class BackTestParameter {
         this.endRange = endRange;
         this.increment = increment;
     }
-    
-    public BackTestParameter(String parameter, String value){
+
+    public BackTestParameter(String parameter, String value) {
         this.parameter = parameter;
         this.startRange = value;
         this.endRange = value;
         this.increment = value;
     }
-    
-    
+
 }

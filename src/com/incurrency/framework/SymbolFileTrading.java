@@ -27,13 +27,18 @@ import redis.clients.jedis.ScanResult;
  */
 public class SymbolFileTrading {
 
+    private static final Logger logger = Logger.getLogger(SymbolFileTrading.class.getName());
+
+    public static JedisPool RedisConnect(String uri, Integer port, Integer database) {
+        return new JedisPool(new JedisPoolConfig(), uri, port, 2000, null, database);
+    }
+
     private JedisPool jPool;
     private String currentDay;
     private List<BeanSymbol> nifty50 = new ArrayList<>();
     private List<BeanSymbol> symbols = new ArrayList<>();
     private List<BeanSymbol> fno = new ArrayList<>();
     private String symbolFileName;
-    private static final Logger logger = Logger.getLogger(SymbolFileTrading.class.getName());
 
     public SymbolFileTrading(String redisurl, String symbolFileName) {
         this.symbolFileName = symbolFileName;
@@ -45,14 +50,10 @@ public class SymbolFileTrading {
         swing();
     }
 
-    public static JedisPool RedisConnect(String uri, Integer port, Integer database) {
-        return new JedisPool(new JedisPoolConfig(), uri, port, 2000, null, database);
-    }
-
     public void swing() {
         try {
             ArrayList<BeanSymbol> out = new ArrayList<>();
-            String expiry = Utilities.getLastThursday(currentDay,"yyyyMMdd",0);
+            String expiry = Utilities.getLastThursday(currentDay, "yyyyMMdd", 0);
             BeanSymbol s = new BeanSymbol("NIFTY50", "NSENIFTY", "IND", "", "", "");
             s.setCurrency("INR");
             s.setExchange("NSE");
@@ -67,7 +68,7 @@ public class SymbolFileTrading {
             s.setMinsize(40);
             s.setStrikeDistance(100);
             out.add(s);
-            
+
             s = new BeanSymbol("NIFTY50", "NSENIFTY", "FUT", expiry, "", "");
             s.setCurrency("INR");
             s.setExchange("NSE");
@@ -76,10 +77,10 @@ public class SymbolFileTrading {
             s.setMinsize(75);
             s.setStrikeDistance(100);
             out.add(s);
-            Date dtExpiry=new SimpleDateFormat("yyyyMMdd").parse(expiry);
-            String expiryplus=DateUtil.getFormatedDate("yyyyMMdd", DateUtil.addDays(dtExpiry, 1).getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-           
-            s = new BeanSymbol("NIFTY50", "NSENIFTY", "FUT", Utilities.getLastThursday(expiryplus,"yyyyMMdd",0), "", "");
+            Date dtExpiry = new SimpleDateFormat("yyyyMMdd").parse(expiry);
+            String expiryplus = DateUtil.getFormatedDate("yyyyMMdd", DateUtil.addDays(dtExpiry, 1).getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+
+            s = new BeanSymbol("NIFTY50", "NSENIFTY", "FUT", Utilities.getLastThursday(expiryplus, "yyyyMMdd", 0), "", "");
             s.setCurrency("INR");
             s.setExchange("NSE");
             s.setStreamingpriority(1);
@@ -107,12 +108,12 @@ public class SymbolFileTrading {
                     out2.add(s1);
                 }
             }
-            ArrayList<BeanSymbol> fwdout = loadFutures(Utilities.getLastThursday(expiryplus,"yyyyMMdd",0));            
+            ArrayList<BeanSymbol> fwdout = loadFutures(Utilities.getLastThursday(expiryplus, "yyyyMMdd", 0));
             for (int i = 0; i < fno.size(); i++) {
                 String exchangesymbol = fno.get(i).getExchangeSymbol();
                 int id = Utilities.getIDFromExchangeSymbol(nifty50, exchangesymbol, "STK", "", "", "");
                 if (id >= 0) {
-                    id = Utilities.getIDFromExchangeSymbol(fwdout, exchangesymbol, "FUT", Utilities.getLastThursday(expiryplus,"yyyyMMdd",0), "", "");
+                    id = Utilities.getIDFromExchangeSymbol(fwdout, exchangesymbol, "FUT", Utilities.getLastThursday(expiryplus, "yyyyMMdd", 0), "", "");
                     s = fwdout.get(id);
                     BeanSymbol s1 = s.clone(s);
                     s1.setStreamingpriority(2);
@@ -121,15 +122,15 @@ public class SymbolFileTrading {
                 }
             }
             out.addAll(out2);
-            Utilities.printSymbolsToFile(out, symbolFileName,false);
+            Utilities.printSymbolsToFile(out, symbolFileName, false);
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
     }
 
     public void loadAllSymbols() {
-String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-        String shortlistedkey=Utilities.getShorlistedKey(jPool, "ibsymbols", today);
+        String today = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+        String shortlistedkey = Utilities.getShorlistedKey(jPool, "ibsymbols", today);
         Map<String, String> ibsymbols = new HashMap<>();
         try (Jedis jedis = jPool.getResource()) {
             ibsymbols = jedis.hgetAll(shortlistedkey);
@@ -142,7 +143,7 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
                 tempContract.setType("STK");
                 tempContract.setExchangeSymbol(exchangeSymbol);
                 tempContract.setBrokerSymbol(brokerSymbol);
-                tempContract.setSerialno(symbols.size()+1);
+                tempContract.setSerialno(symbols.size() + 1);
                 symbols.add(tempContract);
             }
 
@@ -153,8 +154,8 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
     public ArrayList<BeanSymbol> loadNifty50Stocks() {
         ArrayList<BeanSymbol> out = new ArrayList<>();
         try {
-        String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-        String shortlistedkey=Utilities.getShorlistedKey(jPool, "nifty50", today);
+            String today = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+            String shortlistedkey = Utilities.getShorlistedKey(jPool, "nifty50", today);
             Set<String> niftySymbols = new HashSet<>();
             try (Jedis jedis = jPool.getResource()) {
                 niftySymbols = jedis.smembers(shortlistedkey);
@@ -166,9 +167,9 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
                         BeanSymbol s = symbols.get(id);
                         BeanSymbol s1 = s.clone(s);
                         out.add(s1);
-                    }else{
-                        logger.log(Level.SEVERE,"500,NIFTY50 symbol not found in ibsymbols,{0}:{1}:{2}:{3}:{4},SymbolNotFound={5}",
-                                new Object[]{"Unknown","Unknown","Unknown",-1,-1,exchangeSymbol});
+                    } else {
+                        logger.log(Level.SEVERE, "500,NIFTY50 symbol not found in ibsymbols,{0}:{1}:{2}:{3}:{4},SymbolNotFound={5}",
+                                new Object[]{"Unknown", "Unknown", "Unknown", -1, -1, exchangeSymbol});
                     }
                 }
             }
@@ -177,9 +178,9 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
             }
 
             //Capture Strike levels
-            String expiry=Utilities.getLastThursday(currentDay, "yyyyMMdd",0);;
-           shortlistedkey=Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
-             Map<String, String> strikeLevels = new HashMap<>();
+            String expiry = Utilities.getLastThursday(currentDay, "yyyyMMdd", 0);;
+            shortlistedkey = Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
+            Map<String, String> strikeLevels = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 strikeLevels = jedis.hgetAll(shortlistedkey);
                 for (Map.Entry<String, String> entry : strikeLevels.entrySet()) {
@@ -202,11 +203,11 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
     public ArrayList<BeanSymbol> loadForeverNifty50Stocks() {
         ArrayList<BeanSymbol> out = new ArrayList<>();
         try {
-             String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-        
-                        String cursor = "";
-         int date=0;
-         Set<String>foreverNifty50=new HashSet<>();
+            String today = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+
+            String cursor = "";
+            int date = 0;
+            Set<String> foreverNifty50 = new HashSet<>();
             while (!cursor.equals("0")) {
                 cursor = cursor.equals("") ? "0" : cursor;
                 try (Jedis jedis = jPool.getResource()) {
@@ -220,35 +221,35 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
                 }
             }
             //select stocks that are in fno
-            String fnokey=Utilities.getShorlistedKey(jPool, "contractsize", today);
-        Map<String, String> contractSizes = new HashMap<>();
-        try (Jedis jedis = jPool.getResource()) {
-            contractSizes = jedis.hgetAll(fnokey);
-        }
-        //select intersection of ForeverNifty50 & contractSizes("key")
+            String fnokey = Utilities.getShorlistedKey(jPool, "contractsize", today);
+            Map<String, String> contractSizes = new HashMap<>();
+            try (Jedis jedis = jPool.getResource()) {
+                contractSizes = jedis.hgetAll(fnokey);
+            }
+            //select intersection of ForeverNifty50 & contractSizes("key")
             foreverNifty50.retainAll(contractSizes.keySet());
-                Iterator iterator = foreverNifty50.iterator();
-                while (iterator.hasNext()) {
-                    String exchangeSymbol = iterator.next().toString().toUpperCase();
-                    int id = Utilities.getIDFromExchangeSymbol(symbols, exchangeSymbol, "STK", "", "", "");
-                    if (id >= 0) {
-                        BeanSymbol s = symbols.get(id);
-                        BeanSymbol s1 = s.clone(s);
-                        out.add(s1);
-                    }else{
-                        logger.log(Level.SEVERE,"500,NIFTY50 symbol not found in ibsymbols,{0}:{1}:{2}:{3}:{4},SymbolNotFound={5}",
-                                new Object[]{"Unknown","Unknown","Unknown",-1,-1,exchangeSymbol});
-                    }
+            Iterator iterator = foreverNifty50.iterator();
+            while (iterator.hasNext()) {
+                String exchangeSymbol = iterator.next().toString().toUpperCase();
+                int id = Utilities.getIDFromExchangeSymbol(symbols, exchangeSymbol, "STK", "", "", "");
+                if (id >= 0) {
+                    BeanSymbol s = symbols.get(id);
+                    BeanSymbol s1 = s.clone(s);
+                    out.add(s1);
+                } else {
+                    logger.log(Level.SEVERE, "500,NIFTY50 symbol not found in ibsymbols,{0}:{1}:{2}:{3}:{4},SymbolNotFound={5}",
+                            new Object[]{"Unknown", "Unknown", "Unknown", -1, -1, exchangeSymbol});
                 }
-            
+            }
+
             for (int i = 0; i < out.size(); i++) {
                 out.get(i).setSerialno(i + 1);
             }
 
             //Capture Strike levels
-            String expiry=Utilities.getLastThursday(currentDay, "yyyyMMdd",0);;
-           String shortlistedkey=Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
-           Map<String, String> strikeLevels = new HashMap<>();
+            String expiry = Utilities.getLastThursday(currentDay, "yyyyMMdd", 0);;
+            String shortlistedkey = Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
+            Map<String, String> strikeLevels = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 strikeLevels = jedis.hgetAll(shortlistedkey);
                 for (Map.Entry<String, String> entry : strikeLevels.entrySet()) {
@@ -272,7 +273,7 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
         ArrayList<BeanSymbol> out = new ArrayList<>();
         ArrayList<BeanSymbol> interimout = new ArrayList<>();
         try {
-        String shortlistedkey=Utilities.getShorlistedKey(jPool, "contractsize", expiry);
+            String shortlistedkey = Utilities.getShorlistedKey(jPool, "contractsize", expiry);
             Map<String, String> contractSizes = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 contractSizes = jedis.hgetAll(shortlistedkey);
@@ -304,7 +305,7 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
             }
 
             //Capture Strike levels
-            shortlistedkey=Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
+            shortlistedkey = Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
             Map<String, String> strikeLevels = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 strikeLevels = jedis.hgetAll(shortlistedkey);
@@ -333,8 +334,8 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
     public ArrayList<BeanSymbol> loadCNX500Stocks() {
         ArrayList<BeanSymbol> out = new ArrayList<>();
         try {
-        String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-        String shortlistedkey=Utilities.getShorlistedKey(jPool, "cnx500", today);
+            String today = DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+            String shortlistedkey = Utilities.getShorlistedKey(jPool, "cnx500", today);
             Set<String> niftySymbols = new HashSet<>();
             try (Jedis jedis = jPool.getResource()) {
                 niftySymbols = jedis.smembers(shortlistedkey);
@@ -354,8 +355,8 @@ String today=DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone
             }
 
             //Capture Strike levels
-            String expiry=Utilities.getLastThursday(currentDay, "yyyyMMdd",0);;
-           shortlistedkey=Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
+            String expiry = Utilities.getLastThursday(currentDay, "yyyyMMdd", 0);;
+            shortlistedkey = Utilities.getShorlistedKey(jPool, "strikedistance", expiry);
             Map<String, String> strikeLevels = new HashMap<>();
             try (Jedis jedis = jPool.getResource()) {
                 strikeLevels = jedis.hgetAll(shortlistedkey);

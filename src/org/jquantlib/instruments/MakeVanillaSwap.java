@@ -20,7 +20,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006, 2007 Ferdinando Ametrano
  Copyright (C) 2006 Katiuscia Manzoni
  Copyright (C) 2006 StatPro Italia srl
@@ -58,7 +58,8 @@ import org.jquantlib.time.Schedule;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * This class provides a more comfortable way to instantiate standard market swap.
+ * This class provides a more comfortable way to instantiate standard market
+ * swap.
  *
  * @author John Martin
  */
@@ -71,77 +72,76 @@ public class MakeVanillaSwap {
 
     private JDate effectiveDate;
     private Calendar fixedCalendar;
-	private Calendar floatCalendar;
+    private Calendar floatCalendar;
 
     private VanillaSwap.Type type;
     private /*@Real*/ double nominal;
     private Period fixedTenor;
-	private Period floatTenor;
+    private Period floatTenor;
     private BusinessDayConvention fixedConvention;
-	private BusinessDayConvention fixedTerminationDateConvention;
+    private BusinessDayConvention fixedTerminationDateConvention;
     private BusinessDayConvention floatConvention;
-	private BusinessDayConvention floatTerminationDateConvention;
+    private BusinessDayConvention floatTerminationDateConvention;
     private DateGeneration.Rule fixedRule;
-	private DateGeneration.Rule floatRule;
+    private DateGeneration.Rule floatRule;
     private boolean fixedEndOfMonth;
-	private boolean floatEndOfMonth;
+    private boolean floatEndOfMonth;
     private JDate fixedFirstDate;
-	private JDate fixedNextToLastDate;
+    private JDate fixedNextToLastDate;
     private JDate floatFirstDate;
-	private JDate floatNextToLastDate;
+    private JDate floatNextToLastDate;
     private /*@Spread*/ double floatSpread;
     private DayCounter fixedDayCount;
-	private DayCounter floatDayCount;
+    private DayCounter floatDayCount;
     private JDate terminationDate;
     private PricingEngine engine;
 
-    
-    
-    public MakeVanillaSwap (
+    public MakeVanillaSwap(
             final Period swapTenor,
             final IborIndex index) {
-        this(swapTenor, index, 0.0, new Period(0,TimeUnit.Days));
+        this(swapTenor, index, 0.0, new Period(0, TimeUnit.Days));
     }
-    public MakeVanillaSwap (
+
+    public MakeVanillaSwap(
             final Period swapTenor,
             final IborIndex index,
             final /*Rate*/ double fixedRate) {
-        this(swapTenor, index, fixedRate, new Period(0,TimeUnit.Days));
+        this(swapTenor, index, fixedRate, new Period(0, TimeUnit.Days));
     }
+
     public MakeVanillaSwap(
             final Period swapTenor,
             final IborIndex index,
             final /*@Rate*/ double fixedRate,
             final Period forwardStart) {
-        this.swapTenor 	= swapTenor;
-        this.iborIndex 	= index;
-        this.fixedRate 	= fixedRate;
-        this.forwardStart 	= forwardStart;
+        this.swapTenor = swapTenor;
+        this.iborIndex = index;
+        this.fixedRate = fixedRate;
+        this.forwardStart = forwardStart;
         this.effectiveDate = new JDate();
         this.fixedCalendar = index.fixingCalendar();
         this.floatCalendar = index.fixingCalendar();
-        this.type 					= VanillaSwap.Type.Payer;
-        this.nominal 				= 1.0;
-        this.fixedTenor 			= new Period(1, TimeUnit.Years);
-        this.floatTenor 			= index.tenor();
-        this.fixedConvention 					= BusinessDayConvention.ModifiedFollowing;
-        this.fixedTerminationDateConvention 	= BusinessDayConvention.ModifiedFollowing;
-        this.floatConvention 					= index.businessDayConvention();
-        this.floatTerminationDateConvention 	= index.businessDayConvention();
-        this.fixedRule 			= DateGeneration.Rule.Backward;
-        this.floatRule 			= DateGeneration.Rule.Backward;
-        this.fixedEndOfMonth 		= false;
-        this.floatEndOfMonth 		= false;
-        this.fixedFirstDate      	= new JDate();
-        this.fixedNextToLastDate 	= new JDate();
-        this.floatFirstDate      	= new JDate();
-        this.floatNextToLastDate 	= new JDate();
-        this.floatSpread 			= 0.0;
-        this.fixedDayCount 		= new Thirty360();
-        this.floatDayCount 		= index.dayCounter();
-        this.engine 				= new DiscountingSwapEngine(index.termStructure());
+        this.type = VanillaSwap.Type.Payer;
+        this.nominal = 1.0;
+        this.fixedTenor = new Period(1, TimeUnit.Years);
+        this.floatTenor = index.tenor();
+        this.fixedConvention = BusinessDayConvention.ModifiedFollowing;
+        this.fixedTerminationDateConvention = BusinessDayConvention.ModifiedFollowing;
+        this.floatConvention = index.businessDayConvention();
+        this.floatTerminationDateConvention = index.businessDayConvention();
+        this.fixedRule = DateGeneration.Rule.Backward;
+        this.floatRule = DateGeneration.Rule.Backward;
+        this.fixedEndOfMonth = false;
+        this.floatEndOfMonth = false;
+        this.fixedFirstDate = new JDate();
+        this.fixedNextToLastDate = new JDate();
+        this.floatFirstDate = new JDate();
+        this.floatNextToLastDate = new JDate();
+        this.floatSpread = 0.0;
+        this.fixedDayCount = new Thirty360();
+        this.floatDayCount = index.dayCounter();
+        this.engine = new DiscountingSwapEngine(index.termStructure());
     }
-
 
     public VanillaSwap value() /* @ReadOnly */ {
         QL.validateExperimentalMode();
@@ -160,7 +160,7 @@ public class MakeVanillaSwap {
         if (terminationDate != null && !terminationDate.isNull()) {
             endDate = terminationDate;
         } else {
-            endDate = startDate.add (swapTenor);
+            endDate = startDate.add(swapTenor);
         }
 
         final Schedule fixedSchedule = new Schedule(startDate, endDate,
@@ -174,12 +174,12 @@ public class MakeVanillaSwap {
                 floatTenor, floatCalendar,
                 floatConvention,
                 floatTerminationDateConvention,
-                floatRule , floatEndOfMonth,
+                floatRule, floatEndOfMonth,
                 floatFirstDate, floatNextToLastDate);
 
         double usedFixedRate = fixedRate;
 
-        if (Double.isNaN (fixedRate)) {
+        if (Double.isNaN(fixedRate)) {
             QL.require(!iborIndex.termStructure().empty(), "no forecasting term structure set to " + iborIndex.name()); // TODO: message
 
             final VanillaSwap temp = new VanillaSwap(
@@ -199,7 +199,7 @@ public class MakeVanillaSwap {
             usedFixedRate = temp.fairRate();
         }
 
-        final VanillaSwap swap = new VanillaSwap (
+        final VanillaSwap swap = new VanillaSwap(
                 type,
                 nominal,
                 fixedSchedule,
@@ -210,11 +210,9 @@ public class MakeVanillaSwap {
                 floatSpread,
                 floatDayCount,
                 BusinessDayConvention.Following);
-        swap.setPricingEngine (engine);
+        swap.setPricingEngine(engine);
         return swap;
     }
-
-
 
     public MakeVanillaSwap receiveFixed(final boolean flag) {
         this.type = flag ? VanillaSwap.Type.Receiver : VanillaSwap.Type.Payer;
@@ -222,12 +220,12 @@ public class MakeVanillaSwap {
     }
 
     public MakeVanillaSwap withType(final VanillaSwap.Type type) {
-    	this.type = type;
+        this.type = type;
         return this;
     }
 
     public MakeVanillaSwap withNominal(/* Real */final double n) {
-    	this.nominal = n;
+        this.nominal = n;
         return this;
     }
 
@@ -237,113 +235,113 @@ public class MakeVanillaSwap {
     }
 
     public MakeVanillaSwap withTerminationDate(final JDate terminationDate) {
-    	this.terminationDate = terminationDate;
+        this.terminationDate = terminationDate;
         return this;
     }
 
     public MakeVanillaSwap withRule(final DateGeneration.Rule r) {
-    	this.fixedRule = r;
-    	this.floatRule = r;
+        this.fixedRule = r;
+        this.floatRule = r;
         return this;
     }
 
     public MakeVanillaSwap withDiscountingTermStructure(final Handle<YieldTermStructure> discountingTermStructure) {
-    	this.engine = (new DiscountingSwapEngine(discountingTermStructure));
+        this.engine = (new DiscountingSwapEngine(discountingTermStructure));
         return this;
     }
 
     public MakeVanillaSwap withFixedLegTenor(final Period t) {
-    	this.fixedTenor = t;
+        this.fixedTenor = t;
         return this;
     }
 
     public MakeVanillaSwap withFixedLegCalendar(final Calendar cal) {
-    	this.fixedCalendar = cal;
+        this.fixedCalendar = cal;
         return this;
     }
 
     public MakeVanillaSwap withFixedLegConvention(final BusinessDayConvention bdc) {
-    	this.fixedConvention = bdc;
+        this.fixedConvention = bdc;
         return this;
     }
 
     public MakeVanillaSwap withFixedLegTerminationDateConvention(final BusinessDayConvention bdc) {
-    	this.fixedTerminationDateConvention = bdc;
+        this.fixedTerminationDateConvention = bdc;
         return this;
     }
 
     public MakeVanillaSwap withFixedLegRule(final DateGeneration.Rule r) {
-    	this.fixedRule = r;
+        this.fixedRule = r;
         return this;
     }
 
     public MakeVanillaSwap withFixedLegEndOfMonth(final boolean flag) {
-    	this.fixedEndOfMonth = flag;
+        this.fixedEndOfMonth = flag;
         return this;
     }
 
     public MakeVanillaSwap withFixedLegFirstDate(final JDate d) {
-    	this.fixedFirstDate = d;
+        this.fixedFirstDate = d;
         return this;
     }
 
     public MakeVanillaSwap withFixedLegNextToLastDate(final JDate d) {
-    	this.fixedNextToLastDate = d;
+        this.fixedNextToLastDate = d;
         return this;
     }
 
     public MakeVanillaSwap withFixedLegDayCount(final DayCounter dc) {
-    	this.fixedDayCount = dc;
+        this.fixedDayCount = dc;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegTenor(final Period t) {
-    	this.floatTenor = t;
+        this.floatTenor = t;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegCalendar(final Calendar cal) {
-    	this.floatCalendar = cal;
+        this.floatCalendar = cal;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegConvention(final BusinessDayConvention bdc) {
-    	this.floatConvention = bdc;
+        this.floatConvention = bdc;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegTerminationDateConvention(final BusinessDayConvention bdc) {
-    	this.floatTerminationDateConvention = bdc;
+        this.floatTerminationDateConvention = bdc;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegRule(final DateGeneration.Rule r) {
-    	this.floatRule = r;
+        this.floatRule = r;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegEndOfMonth(final boolean flag) {
-    	this.floatEndOfMonth = flag;
+        this.floatEndOfMonth = flag;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegFirstDate(final JDate d) {
-    	this.floatFirstDate = d;
+        this.floatFirstDate = d;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegNextToLastDate(final JDate d) {
-    	this.floatNextToLastDate = d;
+        this.floatNextToLastDate = d;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegDayCount(final DayCounter dc) {
-    	this.floatDayCount = dc;
+        this.floatDayCount = dc;
         return this;
     }
 
     public MakeVanillaSwap withFloatingLegSpread(/* Spread */final double sp) {
-    	this.floatSpread = sp;
+        this.floatSpread = sp;
         return this;
     }
 

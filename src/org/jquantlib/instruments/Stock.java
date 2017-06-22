@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.instruments;
 
 import org.jquantlib.QL;
@@ -52,43 +51,35 @@ public class Stock extends Instrument {
 
     private static final String NULL_QUOTE = "null quote";
 
-
     //
     // private final fields
     //
-
     private final Handle<Quote> quote;
-
 
     //
     // public constructors
     //
-
     public Stock(final Handle<Quote> quote) {
-        QL.require(quote != null , NULL_QUOTE); // QA:[RG]::verified
+        QL.require(quote != null, NULL_QUOTE); // QA:[RG]::verified
         this.quote = quote;
 
         this.quote.addObserver(this);
     }
 
-
     //
     // overrides Instrument
     //
-
     @Override
     public boolean isExpired() /* @ReadOnly */ {
         return false;
     }
 
-
     //
     // overrides LazyObject
     //
-
     @Override
     protected void performCalculations() /* @ReadOnly */ {
-        QL.require(!quote.empty() , NULL_QUOTE); // QA:[RG]::verified
+        QL.require(!quote.empty(), NULL_QUOTE); // QA:[RG]::verified
         NPV = quote.currentLink().value();
     }
 

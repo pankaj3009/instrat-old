@@ -21,7 +21,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
 Copyright (C) 2005, 2006, 2007 StatPro Italia srl
 
 This file is part of QuantLib, a free-software/open-source library
@@ -37,7 +37,6 @@ This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import org.jquantlib.QL;

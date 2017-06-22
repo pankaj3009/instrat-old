@@ -20,7 +20,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2004, 2008 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2001, 2002, 2003 Nicolas Di C�sar�
@@ -37,8 +37,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.interpolations;
 
 import org.jquantlib.math.interpolations.factories.ForwardFlat;
@@ -57,55 +56,47 @@ public class ForwardFlatInterpolation extends AbstractInterpolation {
     //
     // public constructors
     //
-
     public ForwardFlatInterpolation(final Array vx, final Array vy) {
         super.impl = new ForwardFlatInterpolationImpl(vx, vy);
         super.impl.update();
     }
 
-
     //
     // protected inner classes
     //
-
     private class ForwardFlatInterpolationImpl extends AbstractInterpolation.Impl {
 
         //
         // private fields
         //
-
         private final Array vp;
         private final int n;
-
 
         //
         // protected constructors
         //
-
         protected ForwardFlatInterpolationImpl(final Array vx, final Array vy) {
             super(vx, vy);
-            this.n  = vx.size();
+            this.n = vx.size();
             this.vp = new Array(n);
         }
-
 
         //
         // overrides AbstractInterpolation.Impl
         //
-
         @Override
         public void update() {
             vp.set(0, 0.0);
-            for (int i=1; i<vx.size(); i++) {
-                final double dx = vx.get(i) - vx.get(i-1);
-                vp.set(i, vp.get(i-1) + dx * vy.get(i-1));
+            for (int i = 1; i < vx.size(); i++) {
+                final double dx = vx.get(i) - vx.get(i - 1);
+                vp.set(i, vp.get(i - 1) + dx * vy.get(i - 1));
             }
         }
 
         @Override
         public double op(final double x) {
-            if (x >= vx.get(n-1)) {
-                return vy.get(n-1);
+            if (x >= vx.get(n - 1)) {
+                return vy.get(n - 1);
             }
             final int i = locate(x);
             return vy.get(i);

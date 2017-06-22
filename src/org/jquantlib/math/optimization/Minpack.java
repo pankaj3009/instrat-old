@@ -16,9 +16,9 @@
 
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
-*/
+ */
 
-/*
+ /*
 The original Fortran version is Copyright (C) 1999 University of Chicago.
 All rights reserved.
 <p>
@@ -78,35 +78,35 @@ C translation Copyright (C) Steve Moshier
 <p>
 What you see here may be used freely but it comes with no support
 or guarantee.
-*/
-
+ */
 package org.jquantlib.math.optimization;
 
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
 import org.jquantlib.math.matrixutilities.internal.Address;
 
-
 /**
  * This class provides linear algebra optimization algorithms.
  * <p>
- * The original Fortran version is Copyright (C) 1999 University of Chicago. All rights reserved.<br/>
+ * The original Fortran version is Copyright (C) 1999 University of Chicago. All
+ * rights reserved.<br/>
  * C translation :: Copyright (C) Steve Moshier<br/>
  * Adapted to JQuantLib :: Copyright (C) 2010 Richard Gomes
  * <p>
  * Brief history:<br/>
  * Original sources were developed in FORTRAN language.<br/>
  * Later sources were translated to C language.<br>
- * Finally we made this very crude (and certainly insufficient) adaptation to work with JQuantLib/Java.
+ * Finally we made this very crude (and certainly insufficient) adaptation to
+ * work with JQuantLib/Java.
  * <p>
- * Ideally, these sources should be ready to smoothly work with classes {@link Matrix} and {@link Array}.
- * At the moment, we require that underlying data structures are accessed directly, which is clearly very
- * far from ideal because it breaks the paradigm offered by interface {@link Address}.
+ * Ideally, these sources should be ready to smoothly work with classes
+ * {@link Matrix} and {@link Array}. At the moment, we require that underlying
+ * data structures are accessed directly, which is clearly very far from ideal
+ * because it breaks the paradigm offered by interface {@link Address}.
  *
  * @author Richard Gomes
  */
 public class Minpack {
-
 
     public static void qrfac(
             final int m,
@@ -118,9 +118,8 @@ public class Minpack {
             final Array acnorm,
             final Array wa) {
 
-        MinpackC.qrfac(m, n, a.$, pivot?1:0, ipvt, rdiag.$, acnorm.$, wa.$);
+        MinpackC.qrfac(m, n, a.$, pivot ? 1 : 0, ipvt, rdiag.$, acnorm.$, wa.$);
     }
-
 
     private static class MinpackC {
 
@@ -134,10 +133,8 @@ public class Minpack {
         private static final double p05 = 0.05;
         private static final double p25 = 0.25;
 
-
-        private static double enorm(final int n, final double[] x, final int offset)
-        {
-        /*
+        private static double enorm(final int n, final double[] x, final int offset) {
+            /*
         *     **********
         *
         *     function enorm
@@ -175,95 +172,80 @@ public class Minpack {
         *     burton s. garbow, kenneth e. hillstrom, jorge j. more
         *
         *     **********
-        */
+             */
 
-        int i;
-        double agiant,floatn,s1,s2,s3;
-        double xabs;
-        double x1max, x3max;
-        double ans, temp;
+            int i;
+            double agiant, floatn, s1, s2, s3;
+            double xabs;
+            double x1max, x3max;
+            double ans, temp;
 
-        s1 = zero;
-        s2 = zero;
-        s3 = zero;
-        x1max = zero;
-        x3max = zero;
-        floatn = n;
-        agiant = rgiant/floatn;
+            s1 = zero;
+            s2 = zero;
+            s3 = zero;
+            x1max = zero;
+            x3max = zero;
+            floatn = n;
+            agiant = rgiant / floatn;
 
-        for( i=0; i<n; i++ )
-        {
-        xabs = Math.abs(x[offset+i]);
-        if( (xabs > rdwarf) && (xabs < agiant) )
-            {
-        /*
+            for (i = 0; i < n; i++) {
+                xabs = Math.abs(x[offset + i]);
+                if ((xabs > rdwarf) && (xabs < agiant)) {
+                    /*
         *       sum for intermediate components.
-        */
-            s2 += xabs*xabs;
-            continue;
-            }
+                     */
+                    s2 += xabs * xabs;
+                    continue;
+                }
 
-        if(xabs > rdwarf)
-            {
-        /*
+                if (xabs > rdwarf) {
+                    /*
         *          sum for large components.
-        */
-            if(xabs > x1max)
-                {
-                temp = x1max/xabs;
-                s1 = one + s1*temp*temp;
-                x1max = xabs;
+                     */
+                    if (xabs > x1max) {
+                        temp = x1max / xabs;
+                        s1 = one + s1 * temp * temp;
+                        x1max = xabs;
+                    } else {
+                        temp = xabs / x1max;
+                        s1 += temp * temp;
+                    }
+                    continue;
                 }
-            else
-                {
-                temp = xabs/x1max;
-                s1 += temp*temp;
-                }
-            continue;
-            }
-        /*
+                /*
         *          sum for small components.
-        */
-        if(xabs > x3max)
-            {
-            temp = x3max/xabs;
-            s3 = one + s3*temp*temp;
-            x3max = xabs;
-            }
-        else
-            {
-            if(xabs != zero)
-                {
-                temp = xabs/x3max;
-                s3 += temp*temp;
+                 */
+                if (xabs > x3max) {
+                    temp = x3max / xabs;
+                    s3 = one + s3 * temp * temp;
+                    x3max = xabs;
+                } else {
+                    if (xabs != zero) {
+                        temp = xabs / x3max;
+                        s3 += temp * temp;
+                    }
                 }
             }
-        }
-        /*
+            /*
         *     calculation of norm.
-        */
-        if(s1 != zero)
-            {
-            temp = s1 + (s2/x1max)/x1max;
-            ans = x1max*Math.sqrt(temp);
-            return(ans);
+             */
+            if (s1 != zero) {
+                temp = s1 + (s2 / x1max) / x1max;
+                ans = x1max * Math.sqrt(temp);
+                return (ans);
             }
-        if(s2 != zero)
-            {
-            if(s2 >= x3max) {
-                temp = s2*(one+(x3max/s2)*(x3max*s3));
+            if (s2 != zero) {
+                if (s2 >= x3max) {
+                    temp = s2 * (one + (x3max / s2) * (x3max * s3));
+                } else {
+                    temp = x3max * ((s2 / x3max) + (x3max * s3));
+                }
+                ans = Math.sqrt(temp);
             } else {
-                temp = x3max*((s2/x3max)+(x3max*s3));
+                ans = x3max * Math.sqrt(s3);
             }
-            ans = Math.sqrt(temp);
-            }
-        else
-            {
-            ans = x3max*Math.sqrt(s3);
-            }
-        return(ans);
+            return (ans);
         }
-
 
 //        void
 //        fdjac2(final int m,final int n,double* x,double* fvec,double* fjac,int,
@@ -350,8 +332,8 @@ public class Minpack {
 //        int i,j,ij;
 //        double eps,h,temp;
 //        static double zero = 0.0;
-    //
-    //
+        //
+        //
 //        temp = dmax1(final epsfcn,MACHEP);
 //        eps = Math.sqrt(temp);
 //        ij = 0;
@@ -376,9 +358,6 @@ public class Minpack {
 //        *     last card of subroutine fdjac2.
 //        */
 //        }
-
-
-
         public static void qrfac(
                 final int m,
                 final int n,
@@ -387,9 +366,8 @@ public class Minpack {
                 final int[] ipvt,
                 final double[] rdiag,
                 final double[] acnorm,
-                final double[] wa)
-        {
-        /*
+                final double[] wa) {
+            /*
         *     **********
         *
         *     subroutine qrfac
@@ -465,124 +443,119 @@ public class Minpack {
         *     burton s. garbow, kenneth e. hillstrom, jorge j. more
         *
         *     **********
-        */
-        int i,ij,jj,j,jp1,k,kmax,minmn;
-        double ajnorm,sum,temp;
-
-        /*
-        *     compute the initial column norms and initialize several arrays.
-        */
-        ij = 0;
-        for( j=0; j<n; j++ )
-            {
-            acnorm[j] = enorm(m, a, ij);
-            rdiag[j] = acnorm[j];
-            wa[j] = rdiag[j];
-            if(pivot != 0) {
-                ipvt[j] = j;
-            }
-            ij += m; /* m*j */
-            }
-        /*
-        *     reduce a to r with householder transformations.
-        */
-        minmn = min0(m,n);
-        for( j=0; j<minmn; j++ )
-        {
-        if(pivot != 0) {
-            /*
-             *    bring the column of largest norm into the pivot position.
              */
-             kmax = j;
-             for( k=j; k<n; k++ )
-                 {
-                 if(rdiag[k] > rdiag[kmax]) {
-                     kmax = k;
-                 }
-                 }
-             if(kmax != j) {
-                 ij = m * j;
-                 jj = m * kmax;
-                 for( i=0; i<m; i++ )
-                     {
-                     temp = a[ij]; /* [i+m*j] */
-                     a[ij] = a[jj]; /* [i+m*kmax] */
-                     a[jj] = temp;
-                     ij += 1;
-                     jj += 1;
-                     }
-                 rdiag[kmax] = rdiag[j];
-                 wa[kmax] = wa[j];
-                 k = ipvt[j];
-                 ipvt[j] = ipvt[kmax];
-                 ipvt[kmax] = k;
-             }
-        }
+            int i, ij, jj, j, jp1, k, kmax, minmn;
+            double ajnorm, sum, temp;
 
-        /*
+            /*
+        *     compute the initial column norms and initialize several arrays.
+             */
+            ij = 0;
+            for (j = 0; j < n; j++) {
+                acnorm[j] = enorm(m, a, ij);
+                rdiag[j] = acnorm[j];
+                wa[j] = rdiag[j];
+                if (pivot != 0) {
+                    ipvt[j] = j;
+                }
+                ij += m;
+                /* m*j */
+            }
+            /*
+        *     reduce a to r with householder transformations.
+             */
+            minmn = min0(m, n);
+            for (j = 0; j < minmn; j++) {
+                if (pivot != 0) {
+                    /*
+             *    bring the column of largest norm into the pivot position.
+                     */
+                    kmax = j;
+                    for (k = j; k < n; k++) {
+                        if (rdiag[k] > rdiag[kmax]) {
+                            kmax = k;
+                        }
+                    }
+                    if (kmax != j) {
+                        ij = m * j;
+                        jj = m * kmax;
+                        for (i = 0; i < m; i++) {
+                            temp = a[ij];
+                            /* [i+m*j] */
+                            a[ij] = a[jj];
+                            /* [i+m*kmax] */
+                            a[jj] = temp;
+                            ij += 1;
+                            jj += 1;
+                        }
+                        rdiag[kmax] = rdiag[j];
+                        wa[kmax] = wa[j];
+                        k = ipvt[j];
+                        ipvt[j] = ipvt[kmax];
+                        ipvt[kmax] = k;
+                    }
+                }
+
+                /*
         *    compute the householder transformation to reduce the
         *    j-th column of a to a multiple of the j-th unit vector.
-        */
-        jj = j + m*j;
-        ajnorm = enorm(m-j, a, jj);
-        if(ajnorm != zero) {
-            if(a[jj] < zero) {
-                ajnorm = -ajnorm;
-            }
-            ij = jj;
-            for( i=j; i<m; i++ )
-                {
-                a[ij] /= ajnorm;
-                ij += 1; /* [i+m*j] */
-                }
-            a[jj] += one;
-            /*
+                 */
+                jj = j + m * j;
+                ajnorm = enorm(m - j, a, jj);
+                if (ajnorm != zero) {
+                    if (a[jj] < zero) {
+                        ajnorm = -ajnorm;
+                    }
+                    ij = jj;
+                    for (i = j; i < m; i++) {
+                        a[ij] /= ajnorm;
+                        ij += 1;
+                        /* [i+m*j] */
+                    }
+                    a[jj] += one;
+                    /*
             *    apply the transformation to the remaining columns
             *    and update the norms.
-            */
-            jp1 = j + 1;
-            if(jp1 < n )
-            {
-            for( k=jp1; k<n; k++ )
-                {
-                sum = zero;
-                ij = j + m*k;
-                jj = j + m*j;
-                for( i=j; i<m; i++ )
-                    {
-                    sum += a[jj]*a[ij];
-                    ij += 1; /* [i+m*k] */
-                    jj += 1; /* [i+m*j] */
-                    }
-                temp = sum/a[j+m*j];
-                ij = j + m*k;
-                jj = j + m*j;
-                for( i=j; i<m; i++ )
-                    {
-                    a[ij] -= temp*a[jj];
-                    ij += 1; /* [i+m*k] */
-                    jj += 1; /* [i+m*j] */
-                    }
-                if( (pivot != 0) && (rdiag[k] != zero) )
-                    {
-                    temp = a[j+m*k]/rdiag[k];
-                    temp = dmax1( zero, one-temp*temp );
-                    rdiag[k] *= Math.sqrt(temp);
-                    temp = rdiag[k]/wa[k];
-                    if( (p05*temp*temp) <= MACHEP)
-                        {
-                        rdiag[k] = enorm(m-j-1, a, jp1+m*k);
-                        wa[k] = rdiag[k];
+                     */
+                    jp1 = j + 1;
+                    if (jp1 < n) {
+                        for (k = jp1; k < n; k++) {
+                            sum = zero;
+                            ij = j + m * k;
+                            jj = j + m * j;
+                            for (i = j; i < m; i++) {
+                                sum += a[jj] * a[ij];
+                                ij += 1;
+                                /* [i+m*k] */
+                                jj += 1;
+                                /* [i+m*j] */
+                            }
+                            temp = sum / a[j + m * j];
+                            ij = j + m * k;
+                            jj = j + m * j;
+                            for (i = j; i < m; i++) {
+                                a[ij] -= temp * a[jj];
+                                ij += 1;
+                                /* [i+m*k] */
+                                jj += 1;
+                                /* [i+m*j] */
+                            }
+                            if ((pivot != 0) && (rdiag[k] != zero)) {
+                                temp = a[j + m * k] / rdiag[k];
+                                temp = dmax1(zero, one - temp * temp);
+                                rdiag[k] *= Math.sqrt(temp);
+                                temp = rdiag[k] / wa[k];
+                                if ((p05 * temp * temp) <= MACHEP) {
+                                    rdiag[k] = enorm(m - j - 1, a, jp1 + m * k);
+                                    wa[k] = rdiag[k];
+                                }
+                            }
                         }
                     }
                 }
+                rdiag[j] = -ajnorm;
             }
         }
-        rdiag[j] = -ajnorm;
-        }
-        }
-
-
 
         public static void qrsolv(
                 final int n,
@@ -593,9 +566,8 @@ public class Minpack {
                 final double[] qtb,
                 final double[] x,
                 final double[] sdiag,
-                final double[] wa)
-        {
-        /*
+                final double[] wa) {
+            /*
         *     **********
         *
         *     subroutine qrsolv
@@ -673,162 +645,152 @@ public class Minpack {
         *     burton s. garbow, kenneth e. hillstrom, jorge j. more
         *
         *     **********
-        */
-        int i,ij,ik,kk,j;
-        int jp1;
-        int k;
-        int kp1;
-        int l;
-        int nsing;
-        double cos;
-        double cotan, qtbpj;
-        double sin, sum, tan, temp;
+             */
+            int i, ij, ik, kk, j;
+            int jp1;
+            int k;
+            int kp1;
+            int l;
+            int nsing;
+            double cos;
+            double cotan, qtbpj;
+            double sin, sum, tan, temp;
 
-        /*
+            /*
         *     copy r and (q transpose)*b to preserve input and initialize s.
         *     in particular, save the diagonal elements of r in x.
-        */
-        kk = 0;
-        for( j=0; j<n; j++ )
-            {
-            ij = kk;
-            ik = kk;
-            for( i=j; i<n; i++ )
-                {
-                r[ij] = r[ik];
-                ij += 1;   /* [i+ldr*j] */
-                ik += ldr; /* [j+ldr*i] */
+             */
+            kk = 0;
+            for (j = 0; j < n; j++) {
+                ij = kk;
+                ik = kk;
+                for (i = j; i < n; i++) {
+                    r[ij] = r[ik];
+                    ij += 1;
+                    /* [i+ldr*j] */
+                    ik += ldr;
+                    /* [j+ldr*i] */
                 }
-            x[j] = r[kk];
-            wa[j] = qtb[j];
-            kk += ldr+1; /* j+ldr*j */
+                x[j] = r[kk];
+                wa[j] = qtb[j];
+                kk += ldr + 1;
+                /* j+ldr*j */
             }
-        /*
+            /*
         *     eliminate the diagonal matrix d using a givens rotation.
-        */
-        for( j=0; j<n; j++ )
-        {
-        /*
+             */
+            for (j = 0; j < n; j++) {
+                /*
         *    prepare the row of d to be eliminated, locating the
         *    diagonal element using p from the qr factorization.
-        */
-        l = ipvt[j];
-        if(diag[l] != zero) {
-            for( k=j; k<n; k++ ) {
-                sdiag[k] = zero;
-            }
-            sdiag[j] = diag[l];
-            /*
+                 */
+                l = ipvt[j];
+                if (diag[l] != zero) {
+                    for (k = j; k < n; k++) {
+                        sdiag[k] = zero;
+                    }
+                    sdiag[j] = diag[l];
+                    /*
             *    the transformations to eliminate the row of d
             *    modify only a single element of (q transpose)*b
             *    beyond the first n, which is initially zero.
-            */
-            qtbpj = zero;
-            for( k=j; k<n; k++ )
-                {
-            /*
+                     */
+                    qtbpj = zero;
+                    for (k = j; k < n; k++) {
+                        /*
             *       determine a givens rotation which eliminates the
             *       appropriate element in the current row of d.
-            */
-                if(sdiag[k] == zero) {
-                    continue;
-                }
-                kk = k + ldr * k;
-                if(Math.abs(r[kk]) < Math.abs(sdiag[k]))
-                    {
-                    cotan = r[kk]/sdiag[k];
-                    sin = p5/Math.sqrt(p25+p25*cotan*cotan);
-                    cos = sin*cotan;
-                    }
-                else
-                    {
-                    tan = sdiag[k]/r[kk];
-                    cos = p5/Math.sqrt(p25+p25*tan*tan);
-                    sin = cos*tan;
-                    }
-            /*
+                         */
+                        if (sdiag[k] == zero) {
+                            continue;
+                        }
+                        kk = k + ldr * k;
+                        if (Math.abs(r[kk]) < Math.abs(sdiag[k])) {
+                            cotan = r[kk] / sdiag[k];
+                            sin = p5 / Math.sqrt(p25 + p25 * cotan * cotan);
+                            cos = sin * cotan;
+                        } else {
+                            tan = sdiag[k] / r[kk];
+                            cos = p5 / Math.sqrt(p25 + p25 * tan * tan);
+                            sin = cos * tan;
+                        }
+                        /*
             *       compute the modified diagonal element of r and
             *       the modified element of ((q transpose)*b,0).
-            */
-                r[kk] = cos*r[kk] + sin*sdiag[k];
-                temp = cos*wa[k] + sin*qtbpj;
-                qtbpj = -sin*wa[k] + cos*qtbpj;
-                wa[k] = temp;
-            /*
+                         */
+                        r[kk] = cos * r[kk] + sin * sdiag[k];
+                        temp = cos * wa[k] + sin * qtbpj;
+                        qtbpj = -sin * wa[k] + cos * qtbpj;
+                        wa[k] = temp;
+                        /*
             *       accumulate the tranformation in the row of s.
-            */
-                kp1 = k + 1;
-                if( n > kp1 )
-                    {
-                    ik = kk + 1;
-                    for( i=kp1; i<n; i++ )
-                        {
-                        temp = cos*r[ik] + sin*sdiag[i];
-                        sdiag[i] = -sin*r[ik] + cos*sdiag[i];
-                        r[ik] = temp;
-                        ik += 1; /* [i+ldr*k] */
+                         */
+                        kp1 = k + 1;
+                        if (n > kp1) {
+                            ik = kk + 1;
+                            for (i = kp1; i < n; i++) {
+                                temp = cos * r[ik] + sin * sdiag[i];
+                                sdiag[i] = -sin * r[ik] + cos * sdiag[i];
+                                r[ik] = temp;
+                                ik += 1;
+                                /* [i+ldr*k] */
+                            }
                         }
                     }
                 }
-        }
 
-        /*
+                /*
         *    store the diagonal element of s and restore
         *    the corresponding diagonal element of r.
-        */
-            kk = j + ldr*j;
-            sdiag[j] = r[kk];
-            r[kk] = x[j];
-        }
-        /*
+                 */
+                kk = j + ldr * j;
+                sdiag[j] = r[kk];
+                r[kk] = x[j];
+            }
+            /*
         *     solve the triangular system for z. if the system is
         *     singular, then obtain a least squares solution.
-        */
-        nsing = n;
-        for( j=0; j<n; j++ )
-            {
-            if( (sdiag[j] == zero) && (nsing == n) ) {
-                nsing = j;
-            }
-            if(nsing < n) {
-                wa[j] = zero;
-            }
-            }
-        if(nsing >= 1) {
-            for( k=0; k<nsing; k++ )
-            {
-            j = nsing - k - 1;
-            sum = zero;
-            jp1 = j + 1;
-            if(nsing > jp1)
-                {
-                ij = jp1 + ldr * j;
-                for( i=jp1; i<nsing; i++ )
-                    {
-                    sum += r[ij]*wa[i];
-                    ij += 1; /* [i+ldr*j] */
-                    }
+             */
+            nsing = n;
+            for (j = 0; j < n; j++) {
+                if ((sdiag[j] == zero) && (nsing == n)) {
+                    nsing = j;
                 }
-            wa[j] = (wa[j] - sum)/sdiag[j];
+                if (nsing < n) {
+                    wa[j] = zero;
+                }
             }
-        }
+            if (nsing >= 1) {
+                for (k = 0; k < nsing; k++) {
+                    j = nsing - k - 1;
+                    sum = zero;
+                    jp1 = j + 1;
+                    if (nsing > jp1) {
+                        ij = jp1 + ldr * j;
+                        for (i = jp1; i < nsing; i++) {
+                            sum += r[ij] * wa[i];
+                            ij += 1;
+                            /* [i+ldr*j] */
+                        }
+                    }
+                    wa[j] = (wa[j] - sum) / sdiag[j];
+                }
+            }
 
-        /*
+            /*
         *     permute the components of z back to components of x.
-        */
-        for( j=0; j<n; j++ )
-            {
-            l = ipvt[j];
-            x[l] = wa[j];
+             */
+            for (j = 0; j < n; j++) {
+                l = ipvt[j];
+                x[l] = wa[j];
             }
-        /*
+            /*
         *     last card of subroutine qrsolv.
-        */
+             */
         }
 
-
-    //
-    //
+        //
+        //
 //        void
 //        lmpar(final int n,double* r,int ldr,int* ipvt,double* diag,
 //              double* qtb,double delta,double* par,double* x,double* sdiag,
@@ -940,9 +902,9 @@ public class Minpack {
 //        static double zero = 0.0;
 //        static double p1 = 0.1;
 //        static double p001 = 0.001;
-    //
+        //
 //        extern double DWARF;
-    //
+        //
 //        /*
 //        *     compute and store in x the gauss-newton direction. if the
 //        *     jacobian is rank-deficient, obtain a least squares solution.
@@ -979,7 +941,7 @@ public class Minpack {
 //                    }
 //                }
 //            }
-    //
+        //
 //        for( j=0; j<n; j++ )
 //            {
 //            l = ipvt[j];
@@ -1131,7 +1093,7 @@ public class Minpack {
 //        *    end of an iteration.
 //        */
 //        goto L150;
-    //
+        //
 //        L220:
 //        /*
 //        *     termination.
@@ -1142,14 +1104,11 @@ public class Minpack {
 //        *     last card of subroutine lmpar.
 //        */
 //        }
-    //
-
-
-
-    //
-    //
-    //
-    //
+        //
+        //
+        //
+        //
+        //
 //        void lmdif(final int m,final int n,double* x,double* fvec,double ftol,
 //              double xtol,double gtol,int maxfev,double epsfcn,
 //              double* diag, int mode, double factor,
@@ -1351,7 +1310,7 @@ public class Minpack {
 //        static double p75 = 0.75;
 //        static double p0001 = 1.0e-4;
 //        static double zero = 0.0;
-    //
+        //
 //        *info = 0;
 //        iflag = 0;
 //        *nfev = 0;
@@ -1362,7 +1321,7 @@ public class Minpack {
 //            || (xtol < zero) || (gtol < zero) || (maxfev <= 0)
 //            || (factor <= zero) )
 //            goto L300;
-    //
+        //
 //        if( mode == 2 )
 //            { /* scaling by diag[] */
 //            for( j=0; j<n; j++ )
@@ -1389,9 +1348,9 @@ public class Minpack {
 //        /*
 //        *     beginning of the outer loop.
 //        */
-    //
+        //
 //        L30:
-    //
+        //
 //        /*
 //        *    calculate the jacobian matrix.
 //        */
@@ -1432,20 +1391,20 @@ public class Minpack {
 //                        diag[j] = one;
 //                    }
 //                }
-    //
+        //
 //        /*
 //        *    on the first iteration, calculate the norm of the scaled x
 //        *    and initialize the step bound delta.
 //        */
 //            for( j=0; j<n; j++ )
 //                wa3[j] = diag[j] * x[j];
-    //
+        //
 //            xnorm = enorm(n,wa3);
 //            delta = factor*xnorm;
 //            if(delta == zero)
 //                delta = factor;
 //            }
-    //
+        //
 //        /*
 //        *    form (q transpose)*fvec and store the first n components in
 //        *    qtf.
@@ -1477,7 +1436,7 @@ public class Minpack {
 //            jj += m+1;  /* fjac[j+m*j] */
 //            qtf[j] = wa4[j];
 //            }
-    //
+        //
 //        /*
 //        *    compute the norm of the scaled gradient.
 //        */
@@ -1502,7 +1461,7 @@ public class Minpack {
 //                jj += m;
 //                }
 //            }
-    //
+        //
 //        /*
 //        *    test for convergence of the gradient norm.
 //        */
@@ -1518,7 +1477,7 @@ public class Minpack {
 //            for( j=0; j<n; j++ )
 //                diag[j] = dmax1(diag[j],wa2[j]);
 //            }
-    //
+        //
 //        /*
 //        *    beginning of the inner loop.
 //        */
@@ -1671,7 +1630,7 @@ public class Minpack {
 //        *    end of the outer loop.
 //        */
 //        goto L30;
-    //
+        //
 //        L300:
 //        /*
 //        *     termination, either normal or user imposed.
@@ -1685,51 +1644,43 @@ public class Minpack {
 //              last card of subroutine lmdif.
 //        */
 //    }
-
-
-
-        private static double dmax1(final double a,final double b)
-        {
-        if( a >= b )
-            return(a);
-        else
-            return(b);
+        private static double dmax1(final double a, final double b) {
+            if (a >= b) {
+                return (a);
+            } else {
+                return (b);
+            }
         }
 
-        private double dmin1(final double a,final double b)
-        {
-        if( a <= b )
-            return(a);
-        else
-            return(b);
+        private static int min0(final int a, final int b) {
+            if (a <= b) {
+                return (a);
+            } else {
+                return (b);
+            }
         }
 
-        private static int min0(final int a,final int b)
-        {
-        if( a <= b )
-            return(a);
-        else
-            return(b);
+        private double dmin1(final double a, final double b) {
+            if (a <= b) {
+                return (a);
+            } else {
+                return (b);
+            }
         }
 
-        private int mod( final int k, final int m )
-        {
-        return( k % m );
+        private int mod(final int k, final int m) {
+            return (k % m);
         }
 
-
-        /***********Sample of user supplied function****************
-         * m = number of functions
-         * n = number of variables
-         * x = vector of function arguments
-         * fvec = vector of function values
-         * iflag = error return variable
+        /**
+         * *********Sample of user supplied function**************** m = number
+         * of functions n = number of variables x = vector of function arguments
+         * fvec = vector of function values iflag = error return variable
          */
         //void fcn(int m,int n, double* x, double* fvec,int *iflag)
         //{
         //  QuantLib::LevenbergMarquardt::fcn(m, n, x, fvec, iflag);
         //}
-
     } // private static class MinpackC
 
 }

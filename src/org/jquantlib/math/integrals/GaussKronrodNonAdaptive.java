@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2007 Francois du Vignaud
  Copyright (C) 2003 Niels Elken Sonderby
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.integrals;
 
 import org.jquantlib.QL;
@@ -47,26 +46,48 @@ import org.jquantlib.math.Ops;
 /**
  * Integral of a 1-dimensional function using the Gauss-Kronrod methods
  * <p>
- * This class provide a non-adaptive integration procedure which
- uses fixed Gauss-Kronrod abscissae to sample the integrand at
- a maximum of 87 points.  It is provided for fast integration
- of smooth functions.
-<p>
- This function applies the Gauss-Kronrod 10-point, 21-point, 43-point
- and 87-point integration rules in succession until an estimate of the
- integral of f over (a, b) is achieved within the desired absolute and
- relative error limits, epsabs and epsrel. The function returns the
- final approximation, result, an estimate of the absolute error,
- abserr and the number of function evaluations used, neval. The
- Gauss-Kronrod rules are designed in such a way that each rule uses
- all the results of its predecessors, in order to minimize the total
- number of function evaluations.
-
+ * This class provide a non-adaptive integration procedure which uses fixed
+ * Gauss-Kronrod abscissae to sample the integrand at a maximum of 87 points. It
+ * is provided for fast integration of smooth functions.
+ * <p>
+ * This function applies the Gauss-Kronrod 10-point, 21-point, 43-point and
+ * 87-point integration rules in succession until an estimate of the integral of
+ * f over (a, b) is achieved within the desired absolute and relative error
+ * limits, epsabs and epsrel. The function returns the final approximation,
+ * result, an estimate of the absolute error, abserr and the number of function
+ * evaluations used, neval. The Gauss-Kronrod rules are designed in such a way
+ * that each rule uses all the results of its predecessors, in order to minimize
+ * the total number of function evaluations.
+ *
  * @author Ueli Hofstetter
  */
 public class GaussKronrodNonAdaptive extends KronrodIntegral {
 
+    static double rescaleError(double err, final double resultAbs, final double resultAsc) {
+        err = Math.abs(err);
+        if (resultAsc != 0 && err != 0) {
+            final double scale = Math.pow((200 * err / resultAsc), 1.5);
+            if (scale < 1) {
+                err = resultAsc * scale;
+            } else {
+                err = resultAsc;
+            }
+        }
+        if (resultAbs > Constants.QL_MIN_POSITIVE_REAL / (50 * Constants.QL_EPSILON)) {
+            final double min_err = 50 * Constants.QL_EPSILON * resultAbs;
+            if (min_err > err) {
+                err = min_err;
+            }
+        }
+        return err;
+    }
+
     private double relativeAccuracy_;
+
+    public GaussKronrodNonAdaptive(final double absoluteAccuracy, final int maxEvaluations, final double relativeAccuracy) {
+        super(absoluteAccuracy, maxEvaluations);
+        this.relativeAccuracy_ = relativeAccuracy;
+    }
 
     public double relativeAccuracy() {
         return relativeAccuracy_;
@@ -76,33 +97,31 @@ public class GaussKronrodNonAdaptive extends KronrodIntegral {
         this.relativeAccuracy_ = relativeAccuracy;
     }
 
-    public GaussKronrodNonAdaptive(final double absoluteAccuracy, final int maxEvaluations, final double relativeAccuracy) {
-        super(absoluteAccuracy, maxEvaluations);
-        this.relativeAccuracy_ = relativeAccuracy;
-    }
-
     @Override
     public double integrate(final Ops.DoubleOp f, final double a, final double b) {
         final double fv1[] = new double[5];
         final double fv2[] = new double[5];
         final double fv3[] = new double[5];
         final double fv4[] = new double[5];
-        final double savfun[] = new double[21]; /* array of function values which have been computed */
-        double res10, res21, res43, res87; /* 10, 21, 43 and 87 point results */
+        final double savfun[] = new double[21];
+        /* array of function values which have been computed */
+        double res10, res21, res43, res87;
+        /* 10, 21, 43 and 87 point results */
         double err;
-        double resAbs; /* approximation to the integral of abs(f) */
-        double resasc; /* approximation to the integral of abs(f-i/(b-a)) */
+        double resAbs;
+        /* approximation to the integral of abs(f) */
+        double resasc;
+        /* approximation to the integral of abs(f-i/(b-a)) */
         double result;
         int k;
 
-        QL.require(a < b , "b must be greater than a"); // TODO: message
+        QL.require(a < b, "b must be greater than a"); // TODO: message
 
         final double halfLength = 0.5 * (b - a);
         final double center = 0.5 * (b + a);
         final double fCenter = f.op(center);
 
         // Compute the integral using the 10- and 21-point formula.
-
         res10 = 0;
         res21 = w21b[5] * fCenter;
         resAbs = w21b[5] * Math.abs(fCenter);
@@ -139,7 +158,7 @@ public class GaussKronrodNonAdaptive extends KronrodIntegral {
 
         for (k = 0; k < 5; k++) {
             resasc += w21a[k] * (Math.abs(fv1[k] - mean) + Math.abs(fv2[k] - mean))
-            + w21b[k] * (Math.abs(fv3[k] - mean) + Math.abs(fv4[k] - mean));
+                    + w21b[k] * (Math.abs(fv3[k] - mean) + Math.abs(fv4[k] - mean));
         }
 
         err = rescaleError((res21 - res10) * halfLength, resAbs, resasc);
@@ -153,7 +172,6 @@ public class GaussKronrodNonAdaptive extends KronrodIntegral {
         }
 
         /* compute the integral using the 43-point formula. */
-
         res43 = w43b[11] * fCenter;
 
         for (k = 0; k < 10; k++) {
@@ -168,7 +186,6 @@ public class GaussKronrodNonAdaptive extends KronrodIntegral {
         }
 
         // test for convergence.
-
         result = res43 * halfLength;
         err = rescaleError((res43 - res21) * halfLength, resAbs, resasc);
 
@@ -179,7 +196,6 @@ public class GaussKronrodNonAdaptive extends KronrodIntegral {
         }
 
         /* compute the integral using the 87-point formula. */
-
         res87 = w87b[22] * fCenter;
 
         for (k = 0; k < 21; k++) {
@@ -198,25 +214,6 @@ public class GaussKronrodNonAdaptive extends KronrodIntegral {
         setAbsoluteError(err);
         setNumberOfEvaluations(87);
         return result;
-    }
-
-    static double rescaleError(double err, final double resultAbs, final double resultAsc) {
-        err = Math.abs(err);
-        if (resultAsc != 0 && err != 0) {
-            final double scale = Math.pow((200 * err / resultAsc), 1.5);
-            if (scale < 1) {
-                err = resultAsc * scale;
-            } else {
-                err = resultAsc;
-            }
-        }
-        if (resultAbs > Constants.QL_MIN_POSITIVE_REAL / (50 * Constants.QL_EPSILON)) {
-            final double min_err = 50 * Constants.QL_EPSILON * resultAbs;
-            if (min_err > err) {
-                err = min_err;
-            }
-        }
-        return err;
     }
 
 }

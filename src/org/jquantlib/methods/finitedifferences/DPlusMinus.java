@@ -23,7 +23,7 @@ package org.jquantlib.methods.finitedifferences;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 // ! \f$ D_{+}D_{-} \f$ matricial representation
 /*
@@ -36,7 +36,7 @@ package org.jquantlib.methods.finitedifferences;
  */
 public class DPlusMinus extends TridiagonalOperator {
 
-    public DPlusMinus(int gridPoints, /*Real*/double h) {
+    public DPlusMinus(int gridPoints, /*Real*/ double h) {
         super(gridPoints);
         setFirstRow(0.0, 0.0); // linear extrapolation
         setMidRows(1 / (h * h), -2 / (h * h), 1 / (h * h));

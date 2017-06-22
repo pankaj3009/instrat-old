@@ -52,51 +52,48 @@ public class DashBoardNew extends javax.swing.JFrame {
     private TableModelMissedOrders tblModelMissedOrders = new TableModelMissedOrders();
     private TableModelOpenOrders tblModelOpenOrders = new TableModelOpenOrders();
 
-
-    
     public DashBoardNew() {
         initComponents();
         initComponents2();
 
         List<String> inputList = new ArrayList();
-        for(String s: MainAlgorithm.getStrategies()){
+        for (String s : MainAlgorithm.getStrategies()) {
             inputList.add(s.toUpperCase());
         }
-        
+
         String[] str = inputList.toArray(new String[inputList.size()]);
         comboStrategy.setModel(new javax.swing.DefaultComboBoxModel(str));
         comboStrategy.setSelectedIndex(0);
-        
+
         beanConnection = Parameters.connection;
         for (BeanConnection c : Parameters.connection) {
             comboDisplay.addItem(c.getAccountName());
         }
- //Not maximizing ..        
+        //Not maximizing ..        
 //        this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-  //but setting to 80% of screen size
+        //but setting to 80% of screen size
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            int height = screenSize.height;
-            int width = screenSize.width;
-            screenSize.setSize(width*(0.80), height*(0.80));
-            this.setSize(screenSize);
+        int height = screenSize.height;
+        int width = screenSize.width;
+        screenSize.setSize(width * (0.80), height * (0.80));
+        this.setSize(screenSize);
         this.setVisible(true);
-        
+
         //Populate tblQuotes       
         tblQuotes.setModel(tblModelQuotes);
-        if(!comboStrategy.getSelectedItem().toString().equals("NOSTRATEGY")){
+        if (!comboStrategy.getSelectedItem().toString().equals("NOSTRATEGY")) {
 
-        
-        //Populate tblPositions
-        tblPositions.setModel(tblModelPositions);
+            //Populate tblPositions
+            tblPositions.setModel(tblModelPositions);
 
-        //populate missedorders
-        tblMissedOrders.setModel(tblModelMissedOrders);
+            //populate missedorders
+            tblMissedOrders.setModel(tblModelMissedOrders);
 
-        //populate open orders
-        tblOpenOrders.setModel(tblModelOpenOrders);
+            //populate open orders
+            tblOpenOrders.setModel(tblModelOpenOrders);
 
-        //populate p&L
-        tblPNL.setModel(new TableModelPNL());
+            //populate p&L
+            tblPNL.setModel(new TableModelPNL());
         }
     }
 
@@ -165,7 +162,7 @@ public class DashBoardNew extends javax.swing.JFrame {
                     public void run() {
                         if (selectedRowTableMissedOrders >= 0) {
                             tblMissedOrders.addRowSelectionInterval(selectedRowTableMissedOrders, selectedRowTableMissedOrders);
-                            selectedRowTableMissedOrders=-1;
+                            selectedRowTableMissedOrders = -1;
                         }
                     }
                 });
@@ -190,7 +187,7 @@ public class DashBoardNew extends javax.swing.JFrame {
                         //logger.log(Level.INFO,"selectedRowTableOpenOrders : {0}",new Object[]{selectedRowTableOpenOrders});
                         if (selectedRowTableOpenOrders >= 0 && selectedRowTableOpenOrders < tblOpenOrders.getRowCount()) {
                             tblOpenOrders.addRowSelectionInterval(selectedRowTableOpenOrders, selectedRowTableOpenOrders);
-                            selectedRowTableOpenOrders=-1;
+                            selectedRowTableOpenOrders = -1;
                         }
                     }
                 });
@@ -237,7 +234,7 @@ public class DashBoardNew extends javax.swing.JFrame {
                 strategy = tblPositions.getValueAt(tblPositions.getSelectedRow(), 6).toString();
                 connectionForPositions = comboDisplay.getSelectedIndex();
                 side = position > 0 ? EnumOrderSide.SELL : EnumOrderSide.COVER;
-                ibOrderID=0;
+                ibOrderID = 0;
             }
         });
 
@@ -260,10 +257,9 @@ public class DashBoardNew extends javax.swing.JFrame {
                 position = side.equals(EnumOrderSide.BUY) || side.equals(EnumOrderSide.COVER) ? position : -position;
                 strategy = tblMissedOrders.getValueAt(tblMissedOrders.getSelectedRow(), 0).toString();
                 connectionForPositions = comboDisplay.getSelectedIndex();
-                ibOrderID=(Integer)tblMissedOrders.getValueAt(tblMissedOrders.getSelectedRow(),2);
+                ibOrderID = (Integer) tblMissedOrders.getValueAt(tblMissedOrders.getSelectedRow(), 2);
             }
         });
-
 
         //attach popup to open orders
         this.popProgress = new JPopupMenu();
@@ -286,7 +282,7 @@ public class DashBoardNew extends javax.swing.JFrame {
                 position = side.equals(EnumOrderSide.BUY) || side.equals(EnumOrderSide.COVER) ? position : -position;
                 strategy = tblOpenOrders.getValueAt(tblOpenOrders.getSelectedRow(), 0).toString();
                 connectionForPositions = comboDisplay.getSelectedIndex();
-                ibOrderID=(Integer)tblOpenOrders.getValueAt(tblOpenOrders.getSelectedRow(),2);
+                ibOrderID = (Integer) tblOpenOrders.getValueAt(tblOpenOrders.getSelectedRow(), 2);
             }
         });
 
@@ -315,8 +311,8 @@ public class DashBoardNew extends javax.swing.JFrame {
                 }
             }
         });
-        
-                menuItemUpdatePrices.addActionListener(new ActionListener() {
+
+        menuItemUpdatePrices.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JMenuItem menu = (JMenuItem) e.getSource();
@@ -332,7 +328,7 @@ public class DashBoardNew extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 JMenuItem menu = (JMenuItem) e.getSource();
                 if (menu == menuItemPositionsSquareOff) {
-                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side,0,EnumOrderReason.REGULAREXIT);
+                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side, 0, EnumOrderReason.REGULAREXIT);
                     form.setVisibleCancelOrder(false);
                     form.setVisible(true);
                 }
@@ -343,7 +339,7 @@ public class DashBoardNew extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 JMenuItem menu = (JMenuItem) e.getSource();
                 if (menu == menuItemPositionsCancelOrders) {
-                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side,0,EnumOrderReason.UNDEFINED);
+                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side, 0, EnumOrderReason.UNDEFINED);
                     form.setVisiblePlaceOrder(false);
                     form.setVisible(true);
                 }
@@ -355,7 +351,7 @@ public class DashBoardNew extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 JMenuItem menu = (JMenuItem) e.getSource();
                 if (menu == menuItemPlaceMissedOrders) {
-                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side,ibOrderID,EnumOrderReason.REGULARENTRY);
+                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side, ibOrderID, EnumOrderReason.REGULARENTRY);
                     form.setVisibleCancelOrder(false);
                     form.setVisible(true);
                 }
@@ -367,20 +363,20 @@ public class DashBoardNew extends javax.swing.JFrame {
                 JMenuItem menu = (JMenuItem) e.getSource();
                 EnumOrderReason notify;
                 if (menu == menuItemAmendOpenOrders) {
-                    switch(side){
+                    switch (side) {
                         case BUY:
                         case SHORT:
-                            notify=EnumOrderReason.REGULARENTRY;
+                            notify = EnumOrderReason.REGULARENTRY;
                             break;
                         case SELL:
                         case COVER:
-                            notify=EnumOrderReason.REGULAREXIT;
+                            notify = EnumOrderReason.REGULAREXIT;
                             break;
                         default:
-                            notify=EnumOrderReason.UNDEFINED;
-                            
+                            notify = EnumOrderReason.UNDEFINED;
+
                     }
-                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side,ibOrderID,notify);
+                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side, ibOrderID, notify);
                     form.setVisibleCancelOrder(false);
                     form.setVisible(true);
                 }
@@ -392,7 +388,7 @@ public class DashBoardNew extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
                 JMenuItem menu = (JMenuItem) e.getSource();
                 if (menu == MenuItemCancelOpenOrders) {
-                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side,ibOrderID,EnumOrderReason.UNDEFINED);
+                    OrderForm form = new OrderForm(symbolForPositions, position, strategy, connectionForPositions, side, ibOrderID, EnumOrderReason.UNDEFINED);
                     form.setVisiblePlaceOrder(false);
                     form.setVisible(true);
                 }
@@ -1119,29 +1115,29 @@ public class DashBoardNew extends javax.swing.JFrame {
     private void comboStrategyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboStrategyActionPerformed
         JComboBox comboBox = (JComboBox) evt.getSource();
         int strategyIndex = comboBox.getSelectedIndex();
-        MainAlgorithm.selectedStrategy=strategyIndex;
-        if(!comboBox.getSelectedItem().toString().equals("NOSTRATEGY")){
-        Strategy strat = MainAlgorithm.strategyInstances.get(strategyIndex);
-        Boolean l = strat != null ? strat.getLongOnly() : true;
-        Boolean s = strat != null ? strat.getShortOnly() : true;
-        if (l && s) {
-            btnLongShort.setSelected(true);
-        } else if (!l && !s) {
-            btnPause.setSelected(true);
-        } else if (l) {
-            btnLongOnly.setSelected(true);
-        } else if (s) {
-            btnShortOnly.setSelected(true);
-        }
-        Boolean dynamic = strat != null ? strat.getAggression() : true;
-        if (dynamic) {
-            btnDynamicOn.setSelected(true);
-        } else {
-            btnDynamicOff.setSelected(true);
-        }
-        txtClawProfitTarget.setText(Double.toString(strat.getClawProfitTarget()));
-        txtDayStopLoss.setText(Double.toString(strat.getDayStopLoss()));
-        txtDayProfitTarget.setText(Double.toString(strat.getDayProfitTarget()));
+        MainAlgorithm.selectedStrategy = strategyIndex;
+        if (!comboBox.getSelectedItem().toString().equals("NOSTRATEGY")) {
+            Strategy strat = MainAlgorithm.strategyInstances.get(strategyIndex);
+            Boolean l = strat != null ? strat.getLongOnly() : true;
+            Boolean s = strat != null ? strat.getShortOnly() : true;
+            if (l && s) {
+                btnLongShort.setSelected(true);
+            } else if (!l && !s) {
+                btnPause.setSelected(true);
+            } else if (l) {
+                btnLongOnly.setSelected(true);
+            } else if (s) {
+                btnShortOnly.setSelected(true);
+            }
+            Boolean dynamic = strat != null ? strat.getAggression() : true;
+            if (dynamic) {
+                btnDynamicOn.setSelected(true);
+            } else {
+                btnDynamicOff.setSelected(true);
+            }
+            txtClawProfitTarget.setText(Double.toString(strat.getClawProfitTarget()));
+            txtDayStopLoss.setText(Double.toString(strat.getDayStopLoss()));
+            txtDayProfitTarget.setText(Double.toString(strat.getDayProfitTarget()));
         }
     }//GEN-LAST:event_comboStrategyActionPerformed
 
@@ -1245,9 +1241,9 @@ public class DashBoardNew extends javax.swing.JFrame {
     }//GEN-LAST:event_cndReloadActionPerformed
 
     private void cmdResetOrdersActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdResetOrdersActionPerformed
-                int connectionIndex = comboDisplay.getSelectedIndex();
-                int strategyIndex = comboStrategy.getSelectedIndex();
-                BeanConnection c=Parameters.connection.get(connectionIndex);
+        int connectionIndex = comboDisplay.getSelectedIndex();
+        int strategyIndex = comboStrategy.getSelectedIndex();
+        BeanConnection c = Parameters.connection.get(connectionIndex);
 //                if(c.getWrapper().getRecentOrders()!=null){
 //                c.getWrapper().getRecentOrders().clear();
 //                }
@@ -1257,9 +1253,9 @@ public class DashBoardNew extends javax.swing.JFrame {
 //                c.getOrdersToBeFastTracked().clear();
 //                c.getOrdersToBeRetried().clear();
 //                c.getOrdersSymbols().clear();
-                Strategy s=MainAlgorithm.strategyInstances.get(strategyIndex);
-                Validator.reconcile("", s.getDb(), Algorithm.db, c.getAccountName(), c.getOwnerEmail(), s.getStrategy(), Boolean.TRUE);
-                s.updatePositions();
+        Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
+        Validator.reconcile("", s.getDb(), Algorithm.db, c.getAccountName(), c.getOwnerEmail(), s.getStrategy(), Boolean.TRUE);
+        s.updatePositions();
 //                c.getActiveOrders().clear();
 //                for(int i=0;i<Parameters.connection.size();i++){
 //                s.getOms().getOpenPositionCount().set(i, 0);
@@ -1269,8 +1265,8 @@ public class DashBoardNew extends javax.swing.JFrame {
 
     private void cmdReconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdReconnectActionPerformed
         int connectionIndex = comboDisplay.getSelectedIndex();
-        if(!Parameters.connection.get(connectionIndex).getWrapper().isConnected()){
-            BeanConnection c=Parameters.connection.get(connectionIndex);
+        if (!Parameters.connection.get(connectionIndex).getWrapper().isConnected()) {
+            BeanConnection c = Parameters.connection.get(connectionIndex);
             //c.setWrapper(new TWSConnection(c));
             c.getWrapper().connect();
         }

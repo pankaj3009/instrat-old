@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005 StatPro Italia srl
 
@@ -34,37 +34,29 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.montecarlo;
 
 import org.jquantlib.math.randomnumbers.InverseCumulative;
 import org.jquantlib.math.randomnumbers.RandomNumberGenerator;
 
-
 /**
  * Default Monte Carlo traits for single-variate models
- * 
+ *
  * @author Richard Gomes
  */
 public class SingleVariate<T, RNG extends RandomNumberGenerator, IC extends InverseCumulative> implements Variate {
-    
-	public SingleVariate() {
-    	if (0==0) throw new UnsupportedOperationException("Work in progress");
-	}
-	
-	// FIXME: should not expose fields
+
+    // FIXME: should not expose fields
 // FIXME: adhere to standards
-  public RNG rng_traits;
-  // public Path path_type;
-  //public PathPricer<Path> path_pricer_type;
-  //public InverseCumulativeRsg<T, RNG, IC> rsg_type;
+    public RNG rng_traits;
+    // public Path path_type;
+    //public PathPricer<Path> path_pricer_type;
+    //public InverseCumulativeRsg<T, RNG, IC> rsg_type;
 
-  //TODO: code review
-  //public PathGenerator<T> path_generator_type;
-
+    //TODO: code review
+    //public PathGenerator<T> path_generator_type;
 //  public class PathGenerator<Double, Sample<Double> RNG extends RandomNumberGenerator<Path>, GSG extends RandomSequenceGenerator<Path, RNG>> { // should be GaussianSequenceGenerator ?
-
 //
 // hints for reference  
 //  
@@ -77,11 +69,14 @@ public class SingleVariate<T, RNG extends RandomNumberGenerator, IC extends Inve
 //  implements UniformSequenceGenerator<Sample<List<Double>>> {
 //
 //  
-  
-  //  enum { allowsErrorEstimate = RNG::allowsErrorEstimate };
+    //  enum { allowsErrorEstimate = RNG::allowsErrorEstimate };
+    public SingleVariate() {
+        if (0 == 0) {
+            throw new UnsupportedOperationException("Work in progress");
+        }
+    }
 
 }
-
 
 //template <class RNG = PseudoRandom>
 //struct SingleVariate {

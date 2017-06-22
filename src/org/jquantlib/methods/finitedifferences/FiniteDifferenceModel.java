@@ -34,22 +34,21 @@ import org.jquantlib.math.matrixutilities.Array;
  *
  */
 public class FiniteDifferenceModel<S extends Operator, T extends MixedScheme<S>> {
-	
+
     private final T evolver;
     private final List<Double> stoppingTimes;
-    
-    private final Class<? extends Operator>		classS;
-    private final Class<? extends MixedScheme>	classT;
-    
+
+    private final Class<? extends Operator> classS;
+    private final Class<? extends MixedScheme> classT;
 
     public FiniteDifferenceModel(
-    	    final Class<? extends Operator>		classS,
-    	    final Class<? extends MixedScheme>	classT,
-    		final S L, 
-    		final List<BoundaryCondition<S>> bcs, 
-    		final List<Double> stoppingTimes) {
-    	this.classS = classS;
-    	this.classT = classT;
+            final Class<? extends Operator> classS,
+            final Class<? extends MixedScheme> classT,
+            final S L,
+            final List<BoundaryCondition<S>> bcs,
+            final List<Double> stoppingTimes) {
+        this.classS = classS;
+        this.classT = classT;
         this.evolver = getEvolver(L, bcs);
         // This takes care of removing duplicates
         final Set<Double> times = new HashSet<Double>(stoppingTimes);
@@ -59,20 +58,20 @@ public class FiniteDifferenceModel<S extends Operator, T extends MixedScheme<S>>
     }
 
     public FiniteDifferenceModel(
-    	    final Class<? extends Operator>		classS,
-    	    final Class<? extends MixedScheme>	classT,
-    		final S L, 
-    		final List<BoundaryCondition<S>> bcs) {
-        this(classS, classT, L,bcs, new ArrayList<Double>());
+            final Class<? extends Operator> classS,
+            final Class<? extends MixedScheme> classT,
+            final S L,
+            final List<BoundaryCondition<S>> bcs) {
+        this(classS, classT, L, bcs, new ArrayList<Double>());
     }
 
     public FiniteDifferenceModel(
-    	    final Class<? extends Operator>		classS,
-    	    final Class<? extends MixedScheme>	classT,
-    		final T evolver, 
-    		final List<Double> stoppingTimes) {
-    	this.classS = classS;
-    	this.classT = classT;
+            final Class<? extends Operator> classS,
+            final Class<? extends MixedScheme> classT,
+            final T evolver,
+            final List<Double> stoppingTimes) {
+        this.classS = classS;
+        this.classT = classT;
         this.evolver = evolver;
         // This takes care of removing duplicates
         final Set<Double> times = new HashSet<Double>(stoppingTimes);
@@ -85,7 +84,7 @@ public class FiniteDifferenceModel<S extends Operator, T extends MixedScheme<S>>
         return evolver;
     }
 
-    public Array rollback(final Array a, final /*@Time*/ double from, final /*@Time*/double to, final int steps) {
+    public Array rollback(final Array a, final /*@Time*/ double from, final /*@Time*/ double to, final int steps) {
         return rollbackImpl(a, from, to, steps, null);
     }
 
@@ -93,23 +92,25 @@ public class FiniteDifferenceModel<S extends Operator, T extends MixedScheme<S>>
      * ! solves the problem between the given times, applying a condition at every step. \warning being this a rollback, <tt>from</tt>
      * must be a later time than <tt>to</tt>.
      */
-    public Array rollback(final Array a, final /*@Time*/double from, final /*@Time*/double to, final int steps, final StepCondition<Array> condition) {
+    public Array rollback(final Array a, final /*@Time*/ double from, final /*@Time*/ double to, final int steps, final StepCondition<Array> condition) {
         return rollbackImpl(a, from, to, steps, condition);
     }
 
-    private Array rollbackImpl(Array a, final /*@Time*/double from, final /*@Time*/double to, final int steps, final StepCondition<Array> condition) {
-        if (from <= to)
+    private Array rollbackImpl(Array a, final /*@Time*/ double from, final /*@Time*/ double to, final int steps, final StepCondition<Array> condition) {
+        if (from <= to) {
             throw new IllegalStateException("trying to roll back from " + from + " to " + to);
+        }
 
         final /* @Time */ double dt = (from - to) / steps;
         /* @Time */ double t = from;
         evolver.setStep(dt);
 
         for (int i = 0; i < steps; ++i, t -= dt) {
-            /* Time */double now = t;
+            /* Time */
+            double now = t;
             final double next = t - dt;
             boolean hit = false;
-            for (int j = stoppingTimes.size() - 1; j >= 0; --j)
+            for (int j = stoppingTimes.size() - 1; j >= 0; --j) {
                 if (next <= stoppingTimes.get(j) && stoppingTimes.get(j) < now) {
                     // a stopping time was hit
                     hit = true;
@@ -123,6 +124,7 @@ public class FiniteDifferenceModel<S extends Operator, T extends MixedScheme<S>>
                     // ...and continue the cycle
                     now = stoppingTimes.get(j);
                 }
+            }
             // if we did hit...
             if (hit) {
                 // ...we might have to make a small step to

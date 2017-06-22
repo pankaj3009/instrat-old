@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2005, 2006, 2007 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.termstructures;
 
 /**
@@ -45,23 +44,26 @@ package org.jquantlib.termstructures;
  * @author Richard Gomes
  */
 public enum Compounding {
-	/**
-	 * {@latex$ 1+rt }
-	 */
-	Simple,
-
-	/**
-	 * {@latex$ (1+r)^t }
-	 */
-	Compounded,
-
-	/**
-	 * {@latex$ e^{rt} }
-	 */
-	Continuous,
-
-	/**
-	 * Simple up to the first period then Compounded
-	 */
-	SimpleThenCompounded;
+    /**
+     * {
+     *
+     * @latex$ 1+rt }
+     */
+    Simple,
+    /**
+     * {
+     *
+     * @latex$ (1+r)^t }
+     */
+    Compounded,
+    /**
+     * {
+     *
+     * @latex$ e^{rt} }
+     */
+    Continuous,
+    /**
+     * Simple up to the first period then Compounded
+     */
+    SimpleThenCompounded;
 }

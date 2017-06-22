@@ -31,83 +31,85 @@ import org.jquantlib.time.JDate;
 
 public class AverageBMACouponPricer extends FloatingRateCouponPricer {
 
-	private AverageBMACoupon coupon;
-	
-	@Override
-	public /* @Real */ double swapletPrice() {
-		throw new LibraryException("not available");
-	}
+    private AverageBMACoupon coupon;
 
-	@Override
-	public /* @Real */ double swapletRate() {
+    @Override
+    public /* @Real */ double swapletPrice() {
+        throw new LibraryException("not available");
+    }
 
-		List<JDate> fixingDates = coupon.fixingDates();
-		InterestRateIndex index = coupon.index();
-		
-		@Natural int cutoffDays = 0; // to be verified
-		JDate startDate = coupon.accrualStartDate().sub(cutoffDays);
-		JDate endDate = coupon.accrualEndDate().sub(cutoffDays);
-		JDate d1 = new JDate(startDate.serialNumber());
-		JDate d2 = new JDate(startDate.serialNumber());
+    @Override
+    public /* @Real */ double swapletRate() {
 
-		QL.require(fixingDates.size() > 0, "fixing date list empty");
-		QL.require(index.valueDate(fixingDates.get(0)).le(startDate), "first fixing date valid after period start");
-		QL.require(index.valueDate(fixingDates.get((fixingDates.size()-1))).ge(startDate), "last fixing date valid before period end");
-		
-		@Rate double avgBMA = 0.0;
-		int days = 0;
-		
-		for (int i=0;i<(fixingDates.size()-1);i++) {
-			JDate valueDate = index.valueDate(fixingDates.get(i));
-			JDate nextValueDate = index.valueDate(fixingDates.get(i+1));
-			
-			if (fixingDates.get(i).ge(endDate) || valueDate.ge(valueDate)) {
-				break;
-			}
-			
-			if (fixingDates.get(i+1).lt(startDate) || nextValueDate.le(startDate)) {
-				continue;
-			}
-			
-			d2 = JDate.min(nextValueDate, endDate);
-			avgBMA += (index.fixing(fixingDates.get(i))) * (d2.sub(d1));
-			days += d2.sub(d1);
-			
-			d1 = d2;
-		}
-		
-		avgBMA /= (endDate.sub(startDate));
-		
-		QL.ensure(days == (endDate.sub(startDate)) , "averaging days " + days + " differ from interest days " + endDate.sub(startDate));
-		
-		return coupon.gearing() * avgBMA + coupon.spread();
+        List<JDate> fixingDates = coupon.fixingDates();
+        InterestRateIndex index = coupon.index();
 
-	}
+        @Natural
+        int cutoffDays = 0; // to be verified
+        JDate startDate = coupon.accrualStartDate().sub(cutoffDays);
+        JDate endDate = coupon.accrualEndDate().sub(cutoffDays);
+        JDate d1 = new JDate(startDate.serialNumber());
+        JDate d2 = new JDate(startDate.serialNumber());
 
-	@Override
-	public /* @Real */ double capletPrice(final double effectiveCap) {
-		throw new LibraryException("not available");
-	}
+        QL.require(fixingDates.size() > 0, "fixing date list empty");
+        QL.require(index.valueDate(fixingDates.get(0)).le(startDate), "first fixing date valid after period start");
+        QL.require(index.valueDate(fixingDates.get((fixingDates.size() - 1))).ge(startDate), "last fixing date valid before period end");
 
-	@Override
-	public /* @Real */ double capletRate(final double effectiveCap) {
-		throw new LibraryException("not available");
-	}
+        @Rate
+        double avgBMA = 0.0;
+        int days = 0;
 
-	@Override
-	public /* @Real */ double floorletPrice(final double effectiveFloor) {
-		throw new LibraryException("not available");
-	}
+        for (int i = 0; i < (fixingDates.size() - 1); i++) {
+            JDate valueDate = index.valueDate(fixingDates.get(i));
+            JDate nextValueDate = index.valueDate(fixingDates.get(i + 1));
 
-	@Override
-	public /* @Real */ double floorletRate(final double effectiveFloor) {
-		throw new LibraryException("not available");
-	}
+            if (fixingDates.get(i).ge(endDate) || valueDate.ge(valueDate)) {
+                break;
+            }
 
-	@Override
-	public void initialize(final FloatingRateCoupon coupon) {
-			QL.ensure(coupon instanceof AverageBMACoupon, "wrong coupon type");
-            this.coupon = (AverageBMACoupon)coupon;               
-	}
+            if (fixingDates.get(i + 1).lt(startDate) || nextValueDate.le(startDate)) {
+                continue;
+            }
+
+            d2 = JDate.min(nextValueDate, endDate);
+            avgBMA += (index.fixing(fixingDates.get(i))) * (d2.sub(d1));
+            days += d2.sub(d1);
+
+            d1 = d2;
+        }
+
+        avgBMA /= (endDate.sub(startDate));
+
+        QL.ensure(days == (endDate.sub(startDate)), "averaging days " + days + " differ from interest days " + endDate.sub(startDate));
+
+        return coupon.gearing() * avgBMA + coupon.spread();
+
+    }
+
+    @Override
+    public /* @Real */ double capletPrice(final double effectiveCap) {
+        throw new LibraryException("not available");
+    }
+
+    @Override
+    public /* @Real */ double capletRate(final double effectiveCap) {
+        throw new LibraryException("not available");
+    }
+
+    @Override
+    public /* @Real */ double floorletPrice(final double effectiveFloor) {
+        throw new LibraryException("not available");
+    }
+
+    @Override
+    public /* @Real */ double floorletRate(final double effectiveFloor) {
+        throw new LibraryException("not available");
+    }
+
+    @Override
+    public void initialize(final FloatingRateCoupon coupon) {
+        QL.ensure(coupon instanceof AverageBMACoupon, "wrong coupon type");
+        this.coupon = (AverageBMACoupon) coupon;
+    }
 
 }

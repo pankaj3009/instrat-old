@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004 StatPro Italia srl
@@ -38,7 +38,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.pricingengines;
 
 import org.jquantlib.QL;
@@ -53,19 +52,25 @@ import org.jquantlib.time.JDate;
 /**
  * Pricing engine for European vanilla options using analytical formulae
  * <p>
- * The correctness of the returned value is tested by reproducing results available in literature.
- * <li>the correctness of the returned <i>greeks</i> is tested by reproducing results available in literature.</li>
- * <li>the correctness of the returned greeks is tested by reproducing numerical derivatives.</li>
- * <li>the correctness of the returned implied volatility is tested by using it for reproducing the target value.</li>
- * <li>the <i>implied volatility</i> calculation is tested by checking that it does not modify the option.</li>
- * <li>the correctness of the returned value in case of <i>cash-or-nothing</i> binary payoff is tested by reproducing results
- *     available in literature.</li>
- * <li>the correctness of the returned value in case of <i>asset-or-nothing</i> binary payoff is tested by
- *     reproducing results available in literature.</li>
- * <li>the correctness of the returned value in case of <i>gap-or-nothing</i> binary payoff is tested by
- *     reproducing results available in literature.</li>
- * <li>the correctness of the returned <i>greeks</i> in case of <i>cash-or-nothing</i> binary payoff
- *     is tested by reproducing numerical derivatives.</li>
+ * The correctness of the returned value is tested by reproducing results
+ * available in literature.
+ * <li>the correctness of the returned <i>greeks</i> is tested by reproducing
+ * results available in literature.</li>
+ * <li>the correctness of the returned greeks is tested by reproducing numerical
+ * derivatives.</li>
+ * <li>the correctness of the returned implied volatility is tested by using it
+ * for reproducing the target value.</li>
+ * <li>the <i>implied volatility</i> calculation is tested by checking that it
+ * does not modify the option.</li>
+ * <li>the correctness of the returned value in case of <i>cash-or-nothing</i>
+ * binary payoff is tested by reproducing results available in literature.</li>
+ * <li>the correctness of the returned value in case of <i>asset-or-nothing</i>
+ * binary payoff is tested by reproducing results available in literature.</li>
+ * <li>the correctness of the returned value in case of <i>gap-or-nothing</i>
+ * binary payoff is tested by reproducing results available in literature.</li>
+ * <li>the correctness of the returned <i>greeks</i> in case of
+ * <i>cash-or-nothing</i> binary payoff is tested by reproducing numerical
+ * derivatives.</li>
  *
  * @see PricingEngine
  *
@@ -79,48 +84,47 @@ public class AnalyticEuropeanEngine extends OneAssetOption.EngineImpl {
     private static final String NON_STRIKED_PAYOFF_GIVEN = "non-striked payoff given";
     private static final String BLACK_SCHOLES_PROCESS_REQUIRED = "Black-Scholes process required";
 
-
     //
     // private final fields
     //
-
     private final GeneralizedBlackScholesProcess process;
     private final OneAssetOption.ArgumentsImpl a;
-    private final OneAssetOption.ResultsImpl   r;
-    private final Option.GreeksImpl            greeks;
-    private final Option.MoreGreeksImpl        moreGreeks;
-
+    private final OneAssetOption.ResultsImpl r;
+    private final Option.GreeksImpl greeks;
+    private final Option.MoreGreeksImpl moreGreeks;
 
     //
     // public constructors
     //
-
     public AnalyticEuropeanEngine(final GeneralizedBlackScholesProcess process) {
-        this.a = (OneAssetOption.ArgumentsImpl)arguments_;
-        this.r = (OneAssetOption.ResultsImpl)results_;
+        this.a = (OneAssetOption.ArgumentsImpl) arguments_;
+        this.r = (OneAssetOption.ResultsImpl) results_;
         this.greeks = r.greeks();
         this.moreGreeks = r.moreGreeks();
         this.process = process;
         this.process.addObserver(this);
     }
 
-
     //
     // implements PricingEngine
     //
-
     @Override
     public void calculate() /* @ReadOnly */ {
-        QL.require(a.exercise.type() == Exercise.Type.European , NOT_AN_EUROPEAN_OPTION); // TODO: message
+        QL.require(a.exercise.type() == Exercise.Type.European, NOT_AN_EUROPEAN_OPTION); // TODO: message
         final StrikedTypePayoff payoff = (StrikedTypePayoff) a.payoff;
-        QL.require(payoff != null , NON_STRIKED_PAYOFF_GIVEN); // TODO: message
+        QL.require(payoff != null, NON_STRIKED_PAYOFF_GIVEN); // TODO: message
 
-        /* @Variance */final double variance = process.blackVolatility().currentLink().blackVariance(a.exercise.lastDate(), payoff.strike());
-        /* @DiscountFactor */final double dividendDiscount = process.dividendYield().currentLink().discount(a.exercise.lastDate());
-        /* @DiscountFactor */final double riskFreeDiscount = process.riskFreeRate().currentLink().discount(a.exercise.lastDate());
-        /* @Real */final double spot = process.stateVariable().currentLink().value();
+        /* @Variance */
+        final double variance = process.blackVolatility().currentLink().blackVariance(a.exercise.lastDate(), payoff.strike());
+        /* @DiscountFactor */
+        final double dividendDiscount = process.dividendYield().currentLink().discount(a.exercise.lastDate());
+        /* @DiscountFactor */
+        final double riskFreeDiscount = process.riskFreeRate().currentLink().discount(a.exercise.lastDate());
+        /* @Real */
+        final double spot = process.stateVariable().currentLink().value();
         QL.require(spot > 0.0, "negative or null underlying given"); // TODO: message
-        /* @Real */final double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
+        /* @Real */
+        final double forwardPrice = spot * dividendDiscount / riskFreeDiscount;
         final BlackCalculator black = new BlackCalculator(payoff, forwardPrice, Math.sqrt(variance), riskFreeDiscount);
 
         r.value = black.value();
@@ -133,7 +137,8 @@ public class AnalyticEuropeanEngine extends OneAssetOption.EngineImpl {
         final DayCounter divdc = process.dividendYield().currentLink().dayCounter();
         final DayCounter voldc = process.blackVolatility().currentLink().dayCounter();
         final JDate refDate = process.riskFreeRate().currentLink().referenceDate();
-        /* @Time */double t = rfdc.yearFraction(refDate, a.exercise.lastDate());
+        /* @Time */
+        double t = rfdc.yearFraction(refDate, a.exercise.lastDate());
         greeks.rho = black.rho(t);
 
         t = divdc.yearFraction(process.dividendYield().currentLink().referenceDate(), a.exercise.lastDate());

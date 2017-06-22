@@ -11,8 +11,9 @@ import java.util.Date;
  * @author psharma
  */
 public class SplitInformation {
+
     Date splitDate;
     Double oldShares;
     Double newShares;
-    
+
 }

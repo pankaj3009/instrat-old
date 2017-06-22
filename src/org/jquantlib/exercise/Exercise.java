@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2006 StatPro Italia srl
@@ -37,8 +37,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.exercise;
 
 import java.util.ArrayList;
@@ -48,77 +47,71 @@ import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.time.JDate;
 
-
 /**
  * Abstract base class for exercise dates
- * 
+ *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Richard Gomes"})
 public abstract class Exercise {
 
-	//
-	// protected fields
-	//
-	
+    //
+    // protected fields
+    //
     protected Exercise.Type type;
-	protected final List<JDate> dates;
-	
+    protected final List<JDate> dates;
 
-	//
-	// protected constructors
-	//
-	
-	/**
-	 * Constructs an exercise and defines the exercise type
-	 * 
-	 * @param type is the type of exercise
-	 * 
-	 * @see Exercise.Type
-	 */
-	protected Exercise(final Exercise.Type type) {
-		this.type = type;
-		this.dates = new ArrayList<JDate>(5); // some reasonable prime number
-	}
+    //
+    // protected constructors
+    //
+    /**
+     * Constructs an exercise and defines the exercise type
+     *
+     * @param type is the type of exercise
+     *
+     * @see Exercise.Type
+     */
+    protected Exercise(final Exercise.Type type) {
+        this.type = type;
+        this.dates = new ArrayList<JDate>(5); // some reasonable prime number
+    }
 
-	
     //
     // public final methods
     //
-    
-	/**
-	 * Returns the exercise type
-	 * 
-	 * @return the exercise type
-	 * 
-	 * @see Exercise.Type
-	 */
-	public final Exercise.Type type() {
-		return type;
-	}
-	
-	public List<JDate> dates() {
-		return dates;
-	}
-	public final int size() {
-		return dates.size();
-	}
-	
-	public final JDate date(final int index) /* @ReadOnly */ {
-		return (JDate)dates.get(index);
-	}
-	
-	public final JDate lastDate() /* @ReadOnly */ {
-		return date(dates.size()-1);
-	}
-	
+    /**
+     * Returns the exercise type
+     *
+     * @return the exercise type
+     *
+     * @see Exercise.Type
+     */
+    public final Exercise.Type type() {
+        return type;
+    }
+
+    public List<JDate> dates() {
+        return dates;
+    }
+
+    public final int size() {
+        return dates.size();
+    }
+
+    public final JDate date(final int index) /* @ReadOnly */ {
+        return (JDate) dates.get(index);
+    }
+
+    public final JDate lastDate() /* @ReadOnly */ {
+        return date(dates.size() - 1);
+    }
+
     //
     // public static inner enums
     //
-    
     /**
      * Defines the exercise type. It can be American, Bermudan or European
-     * 
+     *
      * @author Richard Gomes
      */
     public static enum Type {

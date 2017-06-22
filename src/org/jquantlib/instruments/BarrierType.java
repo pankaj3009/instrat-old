@@ -28,7 +28,6 @@ package org.jquantlib.instruments;
  * @author <Richard Gomes>
  *
  */
-
 public enum BarrierType {
 
     DownIn {

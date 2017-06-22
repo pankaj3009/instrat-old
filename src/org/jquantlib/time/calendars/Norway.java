@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -57,60 +56,58 @@ import org.jquantlib.time.Weekday;
  * @author Anand Mani
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 
 public class Norway extends Calendar {
 
     //
     // public constructors
     //
-
     public Norway() {
         impl = new Impl();
     }
 
-
     //
     // private final inner classes
     //
-
     private final class Impl extends WesternImpl {
 
-		@Override
-		public String name() { return "Norway"; }
+        @Override
+        public String name() {
+            return "Norway";
+        }
 
-		@Override
-		public boolean isBusinessDay(final JDate date) {
-	        final Weekday w = date.weekday();
-	        final int d = date.dayOfMonth(), dd = date.dayOfYear();
-	        final Month m = date.month();
-	        final int y = date.year();
-	        final int em = easterMonday(y);
-	        if (isWeekend(w)
-	            // Holy Thursday
-	            || (dd == em-4)
-	            // Good Friday
-	            || (dd == em-3)
-	            // Easter Monday
-	            || (dd == em)
-	            // Ascension Thursday
-	            || (dd == em+38)
-	            // Whit Monday
-	            || (dd == em+49)
-	            // New Year's Day
-	            || (d == 1  && m == January)
-	            // May Day
-	            || (d == 1  && m == May)
-	            // National Independence Day
-	            || (d == 17  && m == May)
-	            // Christmas
-	            || (d == 25 && m == December)
-	            // Boxing Day
-				|| (d == 26 && m == December)) {
+        @Override
+        public boolean isBusinessDay(final JDate date) {
+            final Weekday w = date.weekday();
+            final int d = date.dayOfMonth(), dd = date.dayOfYear();
+            final Month m = date.month();
+            final int y = date.year();
+            final int em = easterMonday(y);
+            if (isWeekend(w)
+                    // Holy Thursday
+                    || (dd == em - 4)
+                    // Good Friday
+                    || (dd == em - 3)
+                    // Easter Monday
+                    || (dd == em)
+                    // Ascension Thursday
+                    || (dd == em + 38)
+                    // Whit Monday
+                    || (dd == em + 49)
+                    // New Year's Day
+                    || (d == 1 && m == January)
+                    // May Day
+                    || (d == 1 && m == May)
+                    // National Independence Day
+                    || (d == 17 && m == May)
+                    // Christmas
+                    || (d == 25 && m == December)
+                    // Boxing Day
+                    || (d == 26 && m == December)) {
                 return false;
             }
-	        return true;
-	    }
+            return true;
+        }
     }
 }

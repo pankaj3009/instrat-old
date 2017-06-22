@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.model.volatility;
 
 import java.util.Iterator;
@@ -55,34 +54,34 @@ import org.jquantlib.time.TimeSeries;
 //TODO : Test cases
 public class Garch11 implements VolatilityCompositor {
 
-	private /* @Real */ double alpha ;
-	private /* @Real */ double beta ;
-	private /* @Real */ double gamma ;
-	private /* @Real */ double v ;
+    private /* @Real */ double alpha;
+    private /* @Real */ double beta;
+    private /* @Real */ double gamma;
+    private /* @Real */ double v;
 
-	public Garch11 (final double alpha, final double beta, final double v) {
-		this.alpha = alpha ;
-		this.beta = beta ;
-		this.v = v ;
-		this.gamma = (1 - alpha - beta) ;
-	}
+    public Garch11(final double alpha, final double beta, final double v) {
+        this.alpha = alpha;
+        this.beta = beta;
+        this.v = v;
+        this.gamma = (1 - alpha - beta);
+    }
 
-	public Garch11(final TimeSeries<Double> qs) {
+    public Garch11(final TimeSeries<Double> qs) {
         calibrate(qs);
     }
 
-	@Override
-	public TimeSeries<Double> calculate(final TimeSeries<Double> vs) {
-		return calculate(vs, alpha, beta, gamma* v);
-	}
+    @Override
+    public TimeSeries<Double> calculate(final TimeSeries<Double> vs) {
+        return calculate(vs, alpha, beta, gamma * v);
+    }
 
-	@Override
-	public void calibrate(final TimeSeries<Double> timeSeries) {
-	    // nothing
-	}
+    @Override
+    public void calibrate(final TimeSeries<Double> timeSeries) {
+        // nothing
+    }
 
-	protected double costFunction (final TimeSeries<Double> vs, final double alpha, final double beta, final double omega) {
-		final TimeSeries<Double> test = calculate(vs, alpha, beta, omega);
+    protected double costFunction(final TimeSeries<Double> vs, final double alpha, final double beta, final double omega) {
+        final TimeSeries<Double> test = calculate(vs, alpha, beta, omega);
         QL.require(test.size() == vs.size(), "quote and test values do not match"); // TODO: message
         double retval = 0.0;
         for (final JDate date : Iterables.unmodifiableIterable(test.navigableKeySet())) {
@@ -90,26 +89,26 @@ public class Garch11 implements VolatilityCompositor {
             double u = vs.get(date);
             v *= v;
             u *= u;
-            retval += 2.0 * Math.log(v) + u/(v*v) ;
+            retval += 2.0 * Math.log(v) + u / (v * v);
         }
-		return retval ;
-	}
+        return retval;
+    }
 
-	private TimeSeries<Double> calculate(final TimeSeries<Double> vs, final double alpha, final double beta, final double omega) {
-		final TimeSeries<Double> retValue = new TimeSeries<Double>(Double.class);
+    private TimeSeries<Double> calculate(final TimeSeries<Double> vs, final double alpha, final double beta, final double omega) {
+        final TimeSeries<Double> retValue = new TimeSeries<Double>(Double.class);
         final Iterator<JDate> dates = vs.navigableKeySet().iterator();
-		JDate date = dates.next();
+        JDate date = dates.next();
 
-		final double zerothDayValue = vs.get(date);
-		retValue.put(date, zerothDayValue) ;
-		double u = 0;
-        double sigma2 = zerothDayValue * zerothDayValue ;
+        final double zerothDayValue = vs.get(date);
+        retValue.put(date, zerothDayValue);
+        double u = 0;
+        double sigma2 = zerothDayValue * zerothDayValue;
         while (dates.hasNext()) {
             date = dates.next();
             u = vs.get(date);
-            sigma2 = (omega * u * u) + (beta * sigma2) ;
-            retValue.put(date, Math.sqrt(sigma2)) ;
+            sigma2 = (omega * u * u) + (beta * sigma2);
+            retValue.put(date, Math.sqrt(sigma2));
         }
-		return retValue ;
-	}
+        return retValue;
+    }
 }

@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.QL;
@@ -34,8 +33,8 @@ import org.jquantlib.termstructures.SwaptionVolatilityStructure;
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public abstract class CmsCouponPricer extends FloatingRateCouponPricer {
 
-    private Handle<SwaptionVolatilityStructure> swaptionVol_;
     private static final String no_adequate_swaptionVol_given = "no adequate swaptionVol given";
+    private Handle<SwaptionVolatilityStructure> swaptionVol_;
 
     public CmsCouponPricer(final Handle<SwaptionVolatilityStructure> swaptionVol) {
         this.swaptionVol_ = swaptionVol;
@@ -54,18 +53,16 @@ public abstract class CmsCouponPricer extends FloatingRateCouponPricer {
         //unregisterWith(swaptionVol);
 
         this.swaptionVol_ = swaptionVol;
-        QL.require(swaptionVol_!=null && swaptionVol_.currentLink() != null , no_adequate_swaptionVol_given); // TODO: message
+        QL.require(swaptionVol_ != null && swaptionVol_.currentLink() != null, no_adequate_swaptionVol_given); // TODO: message
 
         this.swaptionVol_.addObserver(this);
         //registerWith(swaptionVol_);
         update();
     }
 
-
     //
     // implements Observer
     //
-
     @Override
     //TODO: code review
     public void update() {

@@ -21,7 +21,6 @@ When applicable, the original copyright notice follows this notice.
  */
 package org.jquantlib.time.calendars;
 
-
 import org.jquantlib.lang.annotation.QualityAssurance;
 import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
@@ -55,7 +54,9 @@ import org.jquantlib.time.Weekday;
  *
  * @category calendars
  *
- * @see <a href="http://en.wikipedia.org/wiki/Public_holidays_in_South_Africa">Hoidays in South Africa</a>
+ * @see
+ * <a href="http://en.wikipedia.org/wiki/Public_holidays_in_South_Africa">Hoidays
+ * in South Africa</a>
  *
  * @author Bernard Kruger
  * @author Richard Gomes
@@ -70,11 +71,11 @@ public class SouthAfrica extends Calendar {
         impl = new Impl();
 
         // once-off holidays
-        addHoliday(new JDate(31,12,1999));   // Y2K changeover
-        addHoliday(new JDate(2,1,2000));     // Y2K changeover
-        addHoliday(new JDate(3,1,2000));     // Y2K changeover
-        addHoliday(new JDate(2,5,2008));     // Human Rights Day and Good Friday was on same day in 2008
-        addHoliday(new JDate(22,4,2009));    // 2009 election day
+        addHoliday(new JDate(31, 12, 1999));   // Y2K changeover
+        addHoliday(new JDate(2, 1, 2000));     // Y2K changeover
+        addHoliday(new JDate(3, 1, 2000));     // Y2K changeover
+        addHoliday(new JDate(2, 5, 2008));     // Human Rights Day and Good Friday was on same day in 2008
+        addHoliday(new JDate(22, 4, 2009));    // 2009 election day
     }
 
     //
@@ -100,7 +101,7 @@ public class SouthAfrica extends Calendar {
                     // Human Rights Day, March 21
                     || ((d == 21 || (d == 22 && w == Weekday.Monday)) && m == Month.March)
                     // Good Friday
-                    || (dd == em-3)
+                    || (dd == em - 3)
                     // Easter Monday/Family Day
                     || (dd == em)
                     // Freedom Day, April 27

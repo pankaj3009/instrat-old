@@ -19,14 +19,13 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.methods.finitedifferences;
-
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public interface StepCondition<T> {
-	public void applyTo(T a, double/* @Time */t);
+
+    public void applyTo(T a, double/* @Time */ t);
 }

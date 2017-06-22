@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.pricingengines;
 
 import org.jquantlib.QL;
@@ -52,10 +51,8 @@ import org.jquantlib.math.distributions.CumulativeNormalDistribution;
  *
  * @author Jose Coll
  */
-
 //TODO: finish this class
 //-- When your code is not complete, please add "TODO" so that it becomes easy to track what is needed to be done
-
 public class AmericanPayoffAtExpiry {
 
     private final /*@DiscountFactor*/ double discount;
@@ -75,10 +72,10 @@ public class AmericanPayoffAtExpiry {
 
     public AmericanPayoffAtExpiry(final double spot, final double discount, final double dividendDiscount, final double variance, final StrikedTypePayoff strikedTypePayoff) {
         super();
-        QL.require(spot > 0.0 , "positive spot value required"); // TODO: message
-        QL.require(discount > 0.0 , "positive discount required"); // TODO: message
-        QL.require(dividendDiscount > 0.0 , "positive dividend discount required"); // TODO: message
-        QL.require(variance >= 0.0 , "non-negative variance required"); // TODO: message
+        QL.require(spot > 0.0, "positive spot value required"); // TODO: message
+        QL.require(discount > 0.0, "positive discount required"); // TODO: message
+        QL.require(dividendDiscount > 0.0, "positive dividend discount required"); // TODO: message
+        QL.require(variance >= 0.0, "non-negative variance required"); // TODO: message
 
         this.discount = discount;
         this.forward = spot * dividendDiscount / discount;
@@ -93,8 +90,7 @@ public class AmericanPayoffAtExpiry {
             final CashOrNothingPayoff coo = (CashOrNothingPayoff) strikedTypePayoff;
             K = coo.getCashPayoff();
             DKDstrike = 0.0;
-        }
-        // binary asset-or-nothing payoff ?
+        } // binary asset-or-nothing payoff ?
         else if (strikedTypePayoff instanceof AssetOrNothingPayoff) {
             K = forward;
             DKDstrike = 0.0;
@@ -115,8 +111,7 @@ public class AmericanPayoffAtExpiry {
             if (log_H_S > 0) {
                 cum_d1 = 1.0;
                 cum_d2 = 1.0;
-            }
-            else {
+            } else {
                 cum_d1 = 0.0;
                 cum_d2 = 0.0;
             }
@@ -128,39 +123,39 @@ public class AmericanPayoffAtExpiry {
         // a.k.a. american call with cash-or-nothing payoff
         if (optionType.equals(Type.Call)) {
             if (strike > spot) {
-                alpha     = 1.0-cum_d2;//  N(-d2)
-                DalphaDd1 =    -  n_d2; // -n( d2)
-                beta      = 1.0-cum_d1;//  N(-d1)
-                DbetaDd2  =    -  n_d1; // -n( d1)
+                alpha = 1.0 - cum_d2;//  N(-d2)
+                DalphaDd1 = -n_d2; // -n( d2)
+                beta = 1.0 - cum_d1;//  N(-d1)
+                DbetaDd2 = -n_d1; // -n( d1)
             } else {
-                alpha     = 0.5;
+                alpha = 0.5;
                 DalphaDd1 = 0.0;
-                beta      = 0.5;
-                DbetaDd2  = 0.0;
+                beta = 0.5;
+                DbetaDd2 = 0.0;
             }
-        }
-        // down-and-in cash-(at-hit)-or-nothing option
+        } // down-and-in cash-(at-hit)-or-nothing option
         // a.k.a. american put with cash-or-nothing payoff
         else if (optionType.equals(Type.Put)) {
             if (strike < spot) {
-                alpha     =     cum_d2;//  N(d2)
-                DalphaDd1 =       n_d2; //  n(d2)
-                beta      =     cum_d1;//  N(d1)
-                DbetaDd2  =       n_d1; //  n(d1)
+                alpha = cum_d2;//  N(d2)
+                DalphaDd1 = n_d2; //  n(d2)
+                beta = cum_d1;//  N(d1)
+                DbetaDd2 = n_d1; //  n(d1)
             } else {
-                alpha     = 0.5;
+                alpha = 0.5;
                 DalphaDd1 = 0.0;
-                beta      = 0.5;
-                DbetaDd2  = 0.0;
+                beta = 0.5;
+                DbetaDd2 = 0.0;
             }
-        } else
+        } else {
             throw new IllegalArgumentException("invalid option type");
+        }
 
-        inTheMoney = (optionType.equals(Type.Call) && strike < spot) ||
-        (optionType.equals(Type.Put) && strike > spot);
+        inTheMoney = (optionType.equals(Type.Call) && strike < spot)
+                || (optionType.equals(Type.Put) && strike > spot);
         if (inTheMoney) {
-            y         = 1.0;
-            x         = 1.0;
+            y = 1.0;
+            x = 1.0;
             DYDstrike = 0.0;
             DXDstrike = 0.0;
         } else {

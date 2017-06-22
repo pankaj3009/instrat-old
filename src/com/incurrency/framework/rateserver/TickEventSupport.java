@@ -10,39 +10,38 @@ import java.util.ArrayList;
  *
  * @author pankaj
  */
-public class TickEventSupport implements Runnable{
-    
-    private ArrayList<TickListener> listener=new ArrayList();
+public class TickEventSupport implements Runnable {
+
+    private ArrayList<TickListener> listener = new ArrayList();
     Thread t;
-    
-    public TickEventSupport(){
+
+    public TickEventSupport() {
         t = new Thread(this, "Tick Event Support");
         t.start();
 
     }
 
-    public  void addTickListener(TickListener l){
+    public void addTickListener(TickListener l) {
         listener.add(l);
     }
-    
-    public  void removeTickListener(TickListener l){
+
+    public void removeTickListener(TickListener l) {
         listener.remove(l);
     }
-    
-    public  void fireTickEvent(String topic, String message){
-        TickEvent tickEvent=new TickEvent(new Object(),topic,message);
-        for(TickListener l:listener){
+
+    public void fireTickEvent(String topic, String message) {
+        TickEvent tickEvent = new TickEvent(new Object(), topic, message);
+        for (TickListener l : listener) {
             l.tickReceived(tickEvent);
         }
     }
 
     @Override
     public void run() {
-        while(true){
-            
+        while (true) {
+
         }
 
     }
-    
-    
+
 }

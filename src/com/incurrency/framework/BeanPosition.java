@@ -14,31 +14,31 @@ import java.util.logging.Logger;
  * @author pankaj
  */
 public class BeanPosition implements Serializable {
-    
-private String strategy;
-private int position;
-private double price;
-private double profit;
-private int symbolid; //zero based
-private double pointValue;
-private double brokerage;
-private double unrealizedPNLPriorDay;
-private Date positionInitDate;
-public final Object lock=new Object();
-private ArrayList <BeanChildPosition>childPosition=new ArrayList<>();
-private final static Logger logger = Logger.getLogger(BeanPosition.class.getName());
 
+    private final static Logger logger = Logger.getLogger(BeanPosition.class.getName());
 
+    private String strategy;
+    private int position;
+    private double price;
+    private double profit;
+    private int symbolid; //zero based
+    private double pointValue;
+    private double brokerage;
+    private double unrealizedPNLPriorDay;
+    private Date positionInitDate;
+    public final Object lock = new Object();
+    private ArrayList<BeanChildPosition> childPosition = new ArrayList<>();
 
     public BeanPosition() {
-        
+
     }
 
-    public BeanPosition(int id, String strategy){
-        this.symbolid=id;
-        this.strategy=strategy;
-        
+    public BeanPosition(int id, String strategy) {
+        this.symbolid = id;
+        this.strategy = strategy;
+
     }
+
     /**
      * @return the strategy
      */
@@ -57,15 +57,16 @@ private final static Logger logger = Logger.getLogger(BeanPosition.class.getName
      * @return the position
      */
     public int getPosition() {
-        synchronized(lock){return position;
+        synchronized (lock) {
+            return position;
         }
     }
 
     /**
      * @param position the position to set
      */
-    public  void setPosition(int position) {
-        synchronized(lock){
+    public void setPosition(int position) {
+        synchronized (lock) {
             this.position = position;
         }
     }
@@ -143,14 +144,14 @@ private final static Logger logger = Logger.getLogger(BeanPosition.class.getName
     /**
      * @return the childPosition
      */
-    public ArrayList <BeanChildPosition> getChildPosition() {
+    public ArrayList<BeanChildPosition> getChildPosition() {
         return childPosition;
     }
 
     /**
      * @param childPosition the childPosition to set
      */
-    public void setChildPosition(ArrayList <BeanChildPosition> childPosition) {
+    public void setChildPosition(ArrayList<BeanChildPosition> childPosition) {
         this.childPosition = childPosition;
     }
 
@@ -181,6 +182,5 @@ private final static Logger logger = Logger.getLogger(BeanPosition.class.getName
     public void setUnrealizedPNLPriorDay(double unrealizedPNLPriorDay) {
         this.unrealizedPNLPriorDay = unrealizedPNLPriorDay;
     }
-  
-    
+
 }

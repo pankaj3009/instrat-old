@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2007 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.instruments;
 
 import java.util.List;
@@ -65,11 +64,9 @@ public class DividendVanillaOption extends VanillaOption {
 
     private final List<? extends Dividend> cashFlow;
 
-
     //
     // public constructors
     //
-
     public DividendVanillaOption(
             final Payoff payoff,
             final Exercise exercise,
@@ -79,53 +76,51 @@ public class DividendVanillaOption extends VanillaOption {
         cashFlow = Dividend.DividendVector(dates, dividends);
     }
 
-
     //
     // public methods
     //
-
     @Override
     public /*@Volatility*/ double impliedVolatility(
-            final double price,
-            final GeneralizedBlackScholesProcess process) /* @ReadOnly */ {
+                    final double price,
+                    final GeneralizedBlackScholesProcess process) /* @ReadOnly */ {
         return impliedVolatility(price, process, 1.0e-4, 100, 1.0e-7, 4.0);
     }
 
     @Override
     public /*@Volatility*/ double impliedVolatility(
-            final double price,
-            final GeneralizedBlackScholesProcess process,
-            final double accuracy) /* @ReadOnly */ {
+                    final double price,
+                    final GeneralizedBlackScholesProcess process,
+                    final double accuracy) /* @ReadOnly */ {
         return impliedVolatility(price, process, accuracy, 100, 1.0e-7, 4.0);
     }
 
     @Override
     public /*@Volatility*/ double impliedVolatility(
-            final double price,
-            final GeneralizedBlackScholesProcess process,
-            final double accuracy,
-            final int maxEvaluations) /* @ReadOnly */ {
+                    final double price,
+                    final GeneralizedBlackScholesProcess process,
+                    final double accuracy,
+                    final int maxEvaluations) /* @ReadOnly */ {
         return impliedVolatility(price, process, accuracy, maxEvaluations, 1.0e-7, 4.0);
     }
 
     @Override
     public /*@Volatility*/ double impliedVolatility(
-            final double price,
-            final GeneralizedBlackScholesProcess process,
-            final double accuracy,
-            final int maxEvaluations,
-            /*@Volatility*/ final double minVol) /* @ReadOnly */ {
+                    final double price,
+                    final GeneralizedBlackScholesProcess process,
+                    final double accuracy,
+                    final int maxEvaluations,
+                    /*@Volatility*/ final double minVol) /* @ReadOnly */ {
         return impliedVolatility(price, process, accuracy, maxEvaluations, minVol, 4.0);
     }
 
     @Override
     public /*@Volatility*/ double impliedVolatility(
-            final double targetValue,
-            final GeneralizedBlackScholesProcess process,
-            final double accuracy,
-            final int maxEvaluations,
-            /*@Volatility*/ final double minVol,
-            /*@Volatility*/ final double maxVol) /* @ReadOnly */ {
+                    final double targetValue,
+                    final GeneralizedBlackScholesProcess process,
+                    final double accuracy,
+                    final int maxEvaluations,
+                    /*@Volatility*/ final double minVol,
+                    /*@Volatility*/ final double maxVol) /* @ReadOnly */ {
 
         QL.require(!isExpired(), "option expired");
         final SimpleQuote volQuote = new SimpleQuote();
@@ -156,38 +151,31 @@ public class DividendVanillaOption extends VanillaOption {
                 minVol, maxVol);
     }
 
-
     //
     // Overrides OneAssetStrikedOption
     //
-
     @Override
     public void setupArguments(final PricingEngine.Arguments args) {
         QL.require(DividendVanillaOption.ArgumentsImpl.class.isAssignableFrom(args.getClass()), ReflectConstants.WRONG_ARGUMENT_TYPE); // QA:[RG]::verified
         super.setupArguments(args);
-        final DividendVanillaOption.ArgumentsImpl arguments = (DividendVanillaOption.ArgumentsImpl)args;
+        final DividendVanillaOption.ArgumentsImpl arguments = (DividendVanillaOption.ArgumentsImpl) args;
         arguments.cashFlow = cashFlow;
     }
-
 
     //
     // public inner classes
     //
-
     public static class ArgumentsImpl extends VanillaOption.ArgumentsImpl implements DividendVanillaOption.Arguments {
 
         //
         // public fields
         //
-
         // FIXME: public fields here is a bad design technique :(
         public List<? extends Dividend> cashFlow;
-
 
         //
         // public methods
         //
-
         @Override
         public void validate() {
             super.validate();
@@ -199,9 +187,8 @@ public class DividendVanillaOption extends VanillaOption {
         }
     }
 
-
-    public static class ResultsImpl extends VanillaOption.ResultsImpl implements DividendVanillaOption.Results { /* marking interface */ }
-
+    public static class ResultsImpl extends VanillaOption.ResultsImpl implements DividendVanillaOption.Results {
+        /* marking interface */ }
 
     static public abstract class EngineImpl
             extends VanillaOption.EngineImpl

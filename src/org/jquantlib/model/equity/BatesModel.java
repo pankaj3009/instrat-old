@@ -20,7 +20,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.model.equity;
 
 import org.jquantlib.math.optimization.NoConstraint;
@@ -29,7 +28,7 @@ import org.jquantlib.model.ConstantParameter;
 import org.jquantlib.processes.HestonProcess;
 
 /**
- * 
+ *
  * @author Ueli Hofstetter
  *
  */
@@ -49,7 +48,6 @@ public class BatesModel extends HestonModel {
     public BatesModel(final HestonProcess process) {
         this(process, 0.1, 0.0, 0.1);
     }
-
 
     public double nu() {
         return arguments_.get(5).get(0.0);

@@ -92,5 +92,5 @@ public class JedisMarketDataSubscriber extends JedisPubSub {
     public int getSubscribedChannels() {
         return super.getSubscribedChannels(); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }

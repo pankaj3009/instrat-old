@@ -9,14 +9,15 @@ package com.incurrency.framework.rateserver;
  * @author pankaj
  */
 public class Price {
+
     private String header;
     private String message;
 
-    
-    public Price(String header, String message){
-        this.header=header;
-        this.message=message;
+    public Price(String header, String message) {
+        this.header = header;
+        this.message = message;
     }
+
     /**
      * @return the header
      */

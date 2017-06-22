@@ -32,34 +32,31 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * 
- * UsdLiborSwapIsdaFixPm index base class
- * USD Libor Swap indexes fixed by ISDA in cooperation with
- * Reuters and Intercapital Brokers at 3pm New York.
- * Semiannual 30/360 vs 3M Libor
- * Reuters page ISDAFIX1 or USDSFIX=.
- * Further info can be found at <http://www.isda.org/fix/isdafix.html> or
- * Reuters page ISDAFIX.
- * 
+ *
+ * UsdLiborSwapIsdaFixPm index base class USD Libor Swap indexes fixed by ISDA
+ * in cooperation with Reuters and Intercapital Brokers at 3pm New York.
+ * Semiannual 30/360 vs 3M Libor Reuters page ISDAFIX1 or USDSFIX=. Further info
+ * can be found at <http://www.isda.org/fix/isdafix.html> or Reuters page
+ * ISDAFIX.
+ *
  * @author Tim Blackler
  */
 public class UsdLiborSwapIsdaFixPm extends SwapIndex {
 
     public UsdLiborSwapIsdaFixPm(final Period tenor) {
-    	this(tenor, new Handle<YieldTermStructure>());
+        this(tenor, new Handle<YieldTermStructure>());
     }
-	
+
     public UsdLiborSwapIsdaFixPm(final Period tenor, final Handle<YieldTermStructure> h) {
-        super( "UsdLiborSwapIsdaFixPm",
+        super("UsdLiborSwapIsdaFixPm",
                 tenor,
                 2, // settlement days
                 new USDCurrency(),
                 new Target(),
-                new Period(6,TimeUnit.Months),
+                new Period(6, TimeUnit.Months),
                 BusinessDayConvention.ModifiedFollowing,
                 new Thirty360(Thirty360.Convention.BondBasis),
-                new USDLibor(new Period(3,TimeUnit.Months), h)
-                		
-                );
-        }
+                new USDLibor(new Period(3, TimeUnit.Months), h)
+        );
+    }
 }

@@ -11,7 +11,7 @@ import java.util.EventObject;
  * @author admin
  */
 public class OrderStatusEvent extends EventObject {
-    
+
     //Variables for Event
     private int _orderID;
     private String _status;
@@ -24,21 +24,21 @@ public class OrderStatusEvent extends EventObject {
     private int _clientId;
     private String _whyHeld;
     private BeanConnection _c;
-    
-    OrderStatusEvent (Object obj,BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld){
+
+    OrderStatusEvent(Object obj, BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
         super(obj);
-        this._orderID=orderId;
-        this._status=status;
-        this._filled=filled;
-        this._remaining=remaining;
-        this._avgFillPrice=avgFillPrice;
-        this._permId=permId;
-        this._parentId=parentId;
-        this._lastFillPrice=lastFillPrice;
-        this._clientId=clientId;
-        this._whyHeld=whyHeld;
-        this._c=c;
-        
+        this._orderID = orderId;
+        this._status = status;
+        this._filled = filled;
+        this._remaining = remaining;
+        this._avgFillPrice = avgFillPrice;
+        this._permId = permId;
+        this._parentId = parentId;
+        this._lastFillPrice = lastFillPrice;
+        this._clientId = clientId;
+        this._whyHeld = whyHeld;
+        this._c = c;
+
     }
 
     /**
@@ -194,6 +194,5 @@ public class OrderStatusEvent extends EventObject {
     public void setC(BeanConnection c) {
         this._c = c;
     }
-    
-    
+
 }

@@ -49,10 +49,14 @@ import org.jquantlib.time.Frequency;
 /**
  * Two-additive-factor gaussian model class.
  * <p>
- * This class implements a two-additive-factor model defined by {@latex$ dr_t = \varphi(t) + x_t + y_t }
- * where {@latex$ x_t } and {@latex$ y_t } are defined by
- * {@latex[ dx_t = -a x_t dt + \sigma dW^1_t, x_0 = 0 }
- * {@latex[ dy_t = -b y_t dt + \sigma dW^2_t, y_0 = 0 } and {@latex$ dW^1_t dW^2_t = \rho dt }
+ * This class implements a two-additive-factor model defined by {
+ *
+ * @latex$ dr_t = \varphi(t) + x_t + y_t } where {
+ * @latex$ x_t } and {
+ * @latex$ y_t } are defined by {
+ * @latex[ dx_t = -a x_t dt + \sigma dW^1_t, x_0 = 0 } {
+ * @latex[ dy_t = -b y_t dt + \sigma dW^2_t, y_0 = 0 } and {
+ * @latex$ dW^1_t dW^2_t = \rho dt }
  *
  * @note This class was not tested enough to guarantee its functionality.
  *
@@ -61,7 +65,7 @@ import org.jquantlib.time.Frequency;
  * @author Praneet Tiwari
  * @author Richard Gomes
  */
-@QualityAssurance(quality=Quality.Q0_UNFINISHED, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q0_UNFINISHED, version = Version.V097, reviewers = "Richard Gomes")
 public class G2 extends TwoFactorModel implements AffineModel, TermStructureConsistentModel {
 
     private static final String g2_model_needs_two_factors = "g2 model needs two factors to compute discount bond";
@@ -120,8 +124,9 @@ public class G2 extends TwoFactorModel implements AffineModel, TermStructureCons
         super(5);
 
         //TODO: Code review :: incomplete code
-        if (true)
+        if (true) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
         termStructureConsistentModelClass = new TermStructureConsistentModelClass(termStructure);
         a_ = (arguments_.get(0) /* [0] */);
@@ -135,7 +140,6 @@ public class G2 extends TwoFactorModel implements AffineModel, TermStructureCons
 
         // TODO: code review :: please verify against QL/C++ code
         // seems like we should have this.termStructure
-
         termStructure.addObserver(this);
         //XXX:registerWith
         //registerWith(termStructure);
@@ -146,12 +150,12 @@ public class G2 extends TwoFactorModel implements AffineModel, TermStructureCons
     }
 
     @Override
-    public double /* @Real */discountBondOption(final Option.Type type, final double /* @Real */strike, final double /* @Time */maturity,
-            final double /* @Time */bondMaturity) {
+    public double /* @Real */ discountBondOption(final Option.Type type, final double /* @Real */ strike, final double /* @Time */ maturity,
+                    final double /* @Time */ bondMaturity) {
 
-        final double /* @Real */v = sigmaP(maturity, bondMaturity);
-        final double /* @Real */f = termStructureConsistentModelClass.termStructure().currentLink().discount(bondMaturity);
-        final double /* @Real */k = termStructureConsistentModelClass.termStructure().currentLink().discount(maturity) * strike;
+        final double /* @Real */ v = sigmaP(maturity, bondMaturity);
+        final double /* @Real */ f = termStructureConsistentModelClass.termStructure().currentLink().discount(bondMaturity);
+        final double /* @Real */ k = termStructureConsistentModelClass.termStructure().currentLink().discount(maturity) * strike;
 
         return blackFormula(type, k, f, v);
     }
@@ -186,62 +190,61 @@ public class G2 extends TwoFactorModel implements AffineModel, TermStructureCons
         phi_ = new FittingParameter(termStructureConsistentModelClass.termStructure(), a(), sigma(), b(), eta(), rho());
     }
 
-    protected double /* @Real */A(final double /* @Time */t, final double /* @Time */T) {
+    protected double /* @Real */ A(final double /* @Time */ t, final double /* @Time */ T) {
         return termStructureConsistentModelClass.termStructure().currentLink().discount(T)
-        / termStructureConsistentModelClass.termStructure().currentLink().discount(t)
-        * Math.exp(0.5 * (V(T - t) - V(T) + V(t)));
+                / termStructureConsistentModelClass.termStructure().currentLink().discount(t)
+                * Math.exp(0.5 * (V(T - t) - V(T) + V(t)));
     }
 
-    protected double /* @Real */B(final double /* @Real */x, final double /* @Time */t) {
+    protected double /* @Real */ B(final double /* @Real */ x, final double /* @Time */ t) {
         return (1.0 - Math.exp(-x * t)) / x;
     }
 
-    private double /* @Real */V(final double /* @Time */t) {
-        final double /* @Real */expat = Math.exp(-a() * t);
-        final double /* @Real */expbt = Math.exp(-b() * t);
-        final double /* @Real */cx = sigma() / a();
-        final double /* @Real */cy = eta() / b();
-        final double /* @Real */valuex = cx * cx * (t + (2.0 * expat - 0.5 * expat * expat - 1.5) / a());
-        final double /* @Real */valuey = cy * cy * (t + (2.0 * expbt - 0.5 * expbt * expbt - 1.5) / b());
-        final double /* @Real */value = 2.0 * rho() * cx * cy
-        * (t + (expat - 1.0) / a() + (expbt - 1.0) / b() - (expat * expbt - 1.0) / (a() + b()));
+    private double /* @Real */ V(final double /* @Time */ t) {
+        final double /* @Real */ expat = Math.exp(-a() * t);
+        final double /* @Real */ expbt = Math.exp(-b() * t);
+        final double /* @Real */ cx = sigma() / a();
+        final double /* @Real */ cy = eta() / b();
+        final double /* @Real */ valuex = cx * cx * (t + (2.0 * expat - 0.5 * expat * expat - 1.5) / a());
+        final double /* @Real */ valuey = cy * cy * (t + (2.0 * expbt - 0.5 * expbt * expbt - 1.5) / b());
+        final double /* @Real */ value = 2.0 * rho() * cx * cy
+                * (t + (expat - 1.0) / a() + (expbt - 1.0) / b() - (expat * expbt - 1.0) / (a() + b()));
         return valuex + valuey + value;
     }
 
-    private double /* @Real */a() {
+    private double /* @Real */ a() {
         return a_.get(0.0);
     }
 
-    private double /* @Real */sigma() {
+    private double /* @Real */ sigma() {
         return sigma_.get(0.0);
     }
 
-    private double /* @Real */b() {
+    private double /* @Real */ b() {
         return b_.get(0.0);
     }
 
-    private double /* @Real */eta() {
+    private double /* @Real */ eta() {
         return eta_.get(0.0);
     }
 
-    private double /* @Real */rho() {
+    private double /* @Real */ rho() {
         return rho_.get(0.0);
     }
 
-    private double /* @Real */sigmaP(final double /* @Time */t, final double /* @Time */s) {
-        final double /* @Real */temp = 1.0 - Math.exp(-(a() + b()) * t);
-        final double /* @Real */temp1 = 1.0 - Math.exp(-a() * (s - t));
-        final double /* @Real */temp2 = 1.0 - Math.exp(-b() * (s - t));
-        final double /* @Real */a3 = a() * a() * a();
-        final double /* @Real */b3 = b() * b() * b();
-        final double /* @Real */sigma2 = sigma() * sigma();
-        final double /* @Real */eta2 = eta() * eta();
-        final double /* @Real */value = 0.5 * sigma2 * temp1 * temp1 * (1.0 - Math.exp(-2.0 * a() * t)) / a3 + 0.5 * eta2 * temp2 * temp2
-        * (1.0 - Math.exp(-2.0 * b() * t)) / b3 + 2.0 * rho() * sigma() * eta() / (a() * b() * (a() + b())) * temp1 * temp2
-        * temp;
+    private double /* @Real */ sigmaP(final double /* @Time */ t, final double /* @Time */ s) {
+        final double /* @Real */ temp = 1.0 - Math.exp(-(a() + b()) * t);
+        final double /* @Real */ temp1 = 1.0 - Math.exp(-a() * (s - t));
+        final double /* @Real */ temp2 = 1.0 - Math.exp(-b() * (s - t));
+        final double /* @Real */ a3 = a() * a() * a();
+        final double /* @Real */ b3 = b() * b() * b();
+        final double /* @Real */ sigma2 = sigma() * sigma();
+        final double /* @Real */ eta2 = eta() * eta();
+        final double /* @Real */ value = 0.5 * sigma2 * temp1 * temp1 * (1.0 - Math.exp(-2.0 * a() * t)) / a3 + 0.5 * eta2 * temp2 * temp2
+                * (1.0 - Math.exp(-2.0 * b() * t)) / b3 + 2.0 * rho() * sigma() * eta() / (a() * b() * (a() + b())) * temp1 * temp2
+                * temp;
         return Math.sqrt(value);
     }
-
 
     @Override
     public Handle<YieldTermStructure> termStructure() {
@@ -251,180 +254,44 @@ public class G2 extends TwoFactorModel implements AffineModel, TermStructureCons
     @Override
     public double discountBond(final double now, final double maturity, final Array factors) {
         throw new UnsupportedOperationException(
-        "not sure whether this is a quantlib error - looks like they forgot to overwrite a virtual method");
+                "not sure whether this is a quantlib error - looks like they forgot to overwrite a virtual method");
     }
-
-
-    //
-    // private inner classes
-    //
-
-    private class Dynamics extends TwoFactorModel.ShortRateDynamics {
-        public Dynamics(final Parameter fitting, final double /* @Real */a, final double /* @Real */sigma, final double /* @Real */b,
-                final double /* @Real */eta, final double /* @Real */rho) {
-            super(new OrnsteinUhlenbeckProcess(a, sigma, 0.0, 0.0), new OrnsteinUhlenbeckProcess(b, eta, 0.0, 0.0), rho);
-            fitting_ = (fitting);
-        }
-
-        @Override
-        public double /* @Rate */shortRate(final double /* @Time */t, final double /* @Real */x, final double /* @Real */y) {
-            return fitting_.get(t) + x + y;
-        }
-
-        private final Parameter fitting_;
-    } // dynamics
-
-
-
-    //TODO: code review
-    private class SwaptionPricingFunction {
-
-        public SwaptionPricingFunction(final double /* @Real */a, final double /* @Real */sigma, final double /* @Real */b, final double /* @Real */eta,
-                final double /* @Real */rho, final double /* @Real */w, final double /* @Real */start,
-                final/* std::vector<Time>& */ArrayList<Double /* @Time */> payTimes, final double /* @Rate */fixedRate, final G2 model) {
-            a_ = (a);
-            sigma_ = (sigma);
-            b_ = (b);
-            eta_ = (eta);
-            rho_ = (rho);
-            w_ = (w);
-
-            T_ = (start);
-            t_ = (payTimes);
-            rate_ = (fixedRate);
-            size_ = (t_.size());
-
-            A_ = new Array(size_);
-            Ba_ = new Array(size_);
-            Bb_ = new Array(size_);
-
-            sigmax_ = sigma_ * Math.sqrt(0.5 * (1.0 - Math.exp(-2.0 * a_ * T_)) / a_);
-            sigmay_ = eta_ * Math.sqrt(0.5 * (1.0 - Math.exp(-2.0 * b_ * T_)) / b_);
-            rhoxy_ = rho_ * eta_ * sigma_ * (1.0 - Math.exp(-(a_ + b_) * T_)) / ((a_ + b_) * sigmax_ * sigmay_);
-
-            double /* @Real */temp = sigma_ * sigma_ / (a_ * a_);
-            mux_ = -((temp + rho_ * sigma_ * eta_ / (a_ * b_)) * (1.0 - Math.exp(-a * T_)) - 0.5 * temp
-                    * (1.0 - Math.exp(-2.0 * a_ * T_)) - rho_ * sigma_ * eta_ / (b_ * (a_ + b_))
-                    * (1.0 - Math.exp(-(b_ + a_) * T_)));
-
-            temp = eta_ * eta_ / (b_ * b_);
-            muy_ = -((temp + rho_ * sigma_ * eta_ / (a_ * b_)) * (1.0 - Math.exp(-b * T_)) - 0.5 * temp
-                    * (1.0 - Math.exp(-2.0 * b_ * T_)) - rho_ * sigma_ * eta_ / (a_ * (a_ + b_))
-                    * (1.0 - Math.exp(-(b_ + a_) * T_)));
-
-            for (int /* @Size */i = 0; i < size_; i++) {
-                /*
-                 * A_[i] = model.A(T_, t_[i]); Ba_[i] = model.B(a_, t_[i]-T_); Bb_[i] = model.B(b_, t_[i]-T_);
-                 */
-                A_.set(i, model.A(T_, t_.get(i)));
-                Ba_.set(i, model.B(a_, t_.get(i) - T_));
-                Bb_.set(i, model.B(b_, t_.get(i) - T_));
-            }
-        }
-
-        double /* @Real */mux() {
-            return mux_;
-        }
-
-        double /* @Real */sigmax() {
-            return sigmax_;
-        }
-
-        double /* @Real */getOperatorEq(final double /* @Real */x) {
-            final CumulativeNormalDistribution phi = new CumulativeNormalDistribution();
-            final double /* @Real */temp = (x - mux_) / sigmax_;
-            final double /* @Real */txy = Math.sqrt(1.0 - rhoxy_ * rhoxy_);
-
-            final Array lambda = new Array(size_);
-            int /* @Size */i;
-            for (i = 0; i < size_; i++) {
-                final double /* @Real */tau = (i == 0 ? t_.get(0) - T_ : t_.get(i) - t_.get(i - 1));
-                final double /* @Real */c = (i == size_ - 1 ? (1.0 + rate_ * tau) : rate_ * tau);
-                lambda.set(i, c * A_.get(i) * Math.exp(-Ba_.get(i) * x));
-            }
-
-            final SolvingFunction function = new SolvingFunction(lambda, Bb_);
-            final Brent s1d = new Brent();
-            s1d.setMaxEvaluations(1000);
-
-            final double /* @Real */yb = s1d.solve(function, 1e-6, 0.00, -100.0, 100.0);
-            final double /* @Real */h1 = (yb - muy_) / (sigmay_ * txy) - rhoxy_ * (x - mux_) / (sigmax_ * txy);
-            // not sure if evaluate method is equivalent of op overloading -> we have to test it ;-)
-            double /* @Real */value = /* phi(-w_*h1) */phi.op(-w_ * h1);
-
-            for (i = 0; i < size_; i++) {
-                final double /* @Real */h2 = h1 + Bb_.get(i) * sigmay_ * Math.sqrt(1.0 - rhoxy_ * rhoxy_);
-                final double /* @Real */kappa = -Bb_.get(i)
-                * (muy_ - 0.5 * txy * txy * sigmay_ * sigmay_ * Bb_.get(i) + rhoxy_ * sigmay_ * (x - mux_) / sigmax_);
-                // operator overloading problem again
-                value -= lambda.get(i) * Math.exp(kappa) * /* phi(-w_*h2) */phi.op(-w_ * h2);
-            }
-
-            return Math.exp(-0.5 * temp * temp) * value / (sigmax_ * Math.sqrt(2.0 * Constants.M_PI));
-        }
-
-        private class SolvingFunction implements Ops.DoubleOp {
-
-            public SolvingFunction(final Array lambda, final Array Bb) {
-                lambda_ = (lambda);
-                Bb_ = (Bb);
-            }
-
-            public double /* @Real */op(final double /* @Real */y) {
-                double /* @Real */value = 1.0;
-                for (int /* @Size */i = 0; i < lambda_.size(); i++)
-                    value -= lambda_.get(i) * Math.exp(-Bb_.get(i) * y);
-                return value;
-            }
-
-            private final Array lambda_;
-            private final Array Bb_;
-        }
-
-        double /* @Real */a_, sigma_, b_, eta_, rho_, w_;
-        double /* @Time */T_;
-        /* std::vector<Time> */List<Double /* @Time */> t_;
-        double /* @Rate */rate_;
-        int /* @Size */size_;
-        Array A_, Ba_, Bb_;
-        double /* @Real */mux_, muy_, sigmax_, sigmay_, rhoxy_;
-    }
-
-
 
     //
     // static private inner classes
     //
-
     /**
-     * Analytical term-structure fitting parameter {@latex$ \varphi(t) }.
+     * Analytical term-structure fitting parameter {
+     *
+     * @latex$ \varphi(t) }.
      * <p>
-     * {@latex$ \varphi(t) } is analytically defined by
+     * {
+     * @latex$ \varphi(t) } is analytically defined by
      * <p>
-     * {@latex[ \varphi(t) =
-     *          f(t)
-     *          + \frac{1}{2}(\frac{\sigma(1-e^{-at})}{a})^2
-     *          + \frac{1}{2}(\frac{\eta(1-e^{-bt})}{b})^2 + \rho\frac{\sigma(1-e^{-at})}{a}\frac{\eta(1-e^{-bt})}{b} },
+     * {
+     * @latex[ \varphi(t) = f(t) + \frac{1}{2}(\frac{\sigma(1-e^{-at})}{a})^2 +
+     * \frac{1}{2}(\frac{\eta(1-e^{-bt})}{b})^2 +
+     * \rho\frac{\sigma(1-e^{-at})}{a}\frac{\eta(1-e^{-bt})}{b} },
      * <p>
-     * where {@latex$ f(t)} is the instantaneous forward rate at {@latex$ t}.
+     * where {
+     * @latex$ f(t)} is the instantaneous forward rate at {
+     * @latex$ t}.
      */
     static class FittingParameter extends TermStructureFittingParameter {
 
         public FittingParameter(
                 final Handle<YieldTermStructure> termStructure,
-                final double /* @Real */a,
-                final double /* @Real */sigma,
-                final double /* @Real */b,
-                final double /* @Real */eta,
-                final double /* @Real */rho) {
+                final double /* @Real */ a,
+                final double /* @Real */ sigma,
+                final double /* @Real */ b,
+                final double /* @Real */ eta,
+                final double /* @Real */ rho) {
             super(new Impl(termStructure, a, sigma, b, eta, rho));
         }
-
 
         //
         // static private inner classes
         //
-
         static private class Impl implements Parameter.Impl {
 
             private final Handle<YieldTermStructure> termStructure_;
@@ -450,18 +317,160 @@ public class G2 extends TwoFactorModel implements AffineModel, TermStructureCons
             }
 
             @Override
-            public double /* @Real */value(final Array a, final double /* @Time */t) {
-                final double /* @Rate */forward =
-                    termStructure_.currentLink().forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
+            public double /* @Real */ value(final Array a, final double /* @Time */ t) {
+                final double /* @Rate */ forward
+                        = termStructure_.currentLink().forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
 
-                final double /* @Real */temp1 = sigma_ * (1.0 - Math.exp(-a_ * t)) / a_;
-                final double /* @Real */temp2 = eta_ * (1.0 - Math.exp(-b_ * t)) / b_;
-                final double /* @Real */value = 0.5 * temp1 * temp1 + 0.5 * temp2 * temp2 + rho_ * temp1 * temp2 + forward;
+                final double /* @Real */ temp1 = sigma_ * (1.0 - Math.exp(-a_ * t)) / a_;
+                final double /* @Real */ temp2 = eta_ * (1.0 - Math.exp(-b_ * t)) / b_;
+                final double /* @Real */ value = 0.5 * temp1 * temp1 + 0.5 * temp2 * temp2 + rho_ * temp1 * temp2 + forward;
                 return value;
             }
 
         }
 
+    }
+
+    private class Dynamics extends TwoFactorModel.ShortRateDynamics {
+
+        private final Parameter fitting_;
+
+        public Dynamics(final Parameter fitting, final double /* @Real */ a, final double /* @Real */ sigma, final double /* @Real */ b,
+                final double /* @Real */ eta, final double /* @Real */ rho) {
+            super(new OrnsteinUhlenbeckProcess(a, sigma, 0.0, 0.0), new OrnsteinUhlenbeckProcess(b, eta, 0.0, 0.0), rho);
+            fitting_ = (fitting);
+        }
+
+        @Override
+        public double /* @Rate */ shortRate(final double /* @Time */ t, final double /* @Real */ x, final double /* @Real */ y) {
+            return fitting_.get(t) + x + y;
+        }
+    }
+
+    private class SwaptionPricingFunction {
+
+        double a_;
+        double sigma_;
+        double b_;
+        double eta_;
+        double rho_;
+        double w_;
+        double /* @Time */ T_;
+        /* std::vector<Time> */
+        List<Double /* @Time */> t_;
+        double /* @Rate */ rate_;
+        int /* @Size */ size_;
+        Array A_;
+        Array Ba_;
+        Array Bb_;
+        double mux_;
+        double muy_;
+        double sigmax_;
+        double sigmay_;
+        double rhoxy_;
+
+        public SwaptionPricingFunction(final double /* @Real */ a, final double /* @Real */ sigma, final double /* @Real */ b, final double /* @Real */ eta,
+                final double /* @Real */ rho, final double /* @Real */ w, final double /* @Real */ start,
+                final/* std::vector<Time>& */ ArrayList<Double /* @Time */> payTimes, final double /* @Rate */ fixedRate, final G2 model) {
+            a_ = (a);
+            sigma_ = (sigma);
+            b_ = (b);
+            eta_ = (eta);
+            rho_ = (rho);
+            w_ = (w);
+
+            T_ = (start);
+            t_ = (payTimes);
+            rate_ = (fixedRate);
+            size_ = (t_.size());
+
+            A_ = new Array(size_);
+            Ba_ = new Array(size_);
+            Bb_ = new Array(size_);
+
+            sigmax_ = sigma_ * Math.sqrt(0.5 * (1.0 - Math.exp(-2.0 * a_ * T_)) / a_);
+            sigmay_ = eta_ * Math.sqrt(0.5 * (1.0 - Math.exp(-2.0 * b_ * T_)) / b_);
+            rhoxy_ = rho_ * eta_ * sigma_ * (1.0 - Math.exp(-(a_ + b_) * T_)) / ((a_ + b_) * sigmax_ * sigmay_);
+
+            double /* @Real */ temp = sigma_ * sigma_ / (a_ * a_);
+            mux_ = -((temp + rho_ * sigma_ * eta_ / (a_ * b_)) * (1.0 - Math.exp(-a * T_)) - 0.5 * temp
+                    * (1.0 - Math.exp(-2.0 * a_ * T_)) - rho_ * sigma_ * eta_ / (b_ * (a_ + b_))
+                    * (1.0 - Math.exp(-(b_ + a_) * T_)));
+
+            temp = eta_ * eta_ / (b_ * b_);
+            muy_ = -((temp + rho_ * sigma_ * eta_ / (a_ * b_)) * (1.0 - Math.exp(-b * T_)) - 0.5 * temp
+                    * (1.0 - Math.exp(-2.0 * b_ * T_)) - rho_ * sigma_ * eta_ / (a_ * (a_ + b_))
+                    * (1.0 - Math.exp(-(b_ + a_) * T_)));
+
+            for (int /* @Size */ i = 0; i < size_; i++) {
+                /*
+                * A_[i] = model.A(T_, t_[i]); Ba_[i] = model.B(a_, t_[i]-T_); Bb_[i] = model.B(b_, t_[i]-T_);
+                 */
+                A_.set(i, model.A(T_, t_.get(i)));
+                Ba_.set(i, model.B(a_, t_.get(i) - T_));
+                Bb_.set(i, model.B(b_, t_.get(i) - T_));
+            }
+        }
+
+        double /* @Real */ mux() {
+            return mux_;
+        }
+
+        double /* @Real */ sigmax() {
+            return sigmax_;
+        }
+
+        double /* @Real */ getOperatorEq(final double /* @Real */ x) {
+            final CumulativeNormalDistribution phi = new CumulativeNormalDistribution();
+            final double /* @Real */ temp = (x - mux_) / sigmax_;
+            final double /* @Real */ txy = Math.sqrt(1.0 - rhoxy_ * rhoxy_);
+
+            final Array lambda = new Array(size_);
+            int /* @Size */ i;
+            for (i = 0; i < size_; i++) {
+                final double /* @Real */ tau = (i == 0 ? t_.get(0) - T_ : t_.get(i) - t_.get(i - 1));
+                final double /* @Real */ c = (i == size_ - 1 ? (1.0 + rate_ * tau) : rate_ * tau);
+                lambda.set(i, c * A_.get(i) * Math.exp(-Ba_.get(i) * x));
+            }
+
+            final SolvingFunction function = new SolvingFunction(lambda, Bb_);
+            final Brent s1d = new Brent();
+            s1d.setMaxEvaluations(1000);
+
+            final double /* @Real */ yb = s1d.solve(function, 1e-6, 0.00, -100.0, 100.0);
+            final double /* @Real */ h1 = (yb - muy_) / (sigmay_ * txy) - rhoxy_ * (x - mux_) / (sigmax_ * txy);
+            // not sure if evaluate method is equivalent of op overloading -> we have to test it ;-)
+            double /* @Real */ value = /* phi(-w_*h1) */ phi.op(-w_ * h1);
+
+            for (i = 0; i < size_; i++) {
+                final double /* @Real */ h2 = h1 + Bb_.get(i) * sigmay_ * Math.sqrt(1.0 - rhoxy_ * rhoxy_);
+                final double /* @Real */ kappa = -Bb_.get(i)
+                        * (muy_ - 0.5 * txy * txy * sigmay_ * sigmay_ * Bb_.get(i) + rhoxy_ * sigmay_ * (x - mux_) / sigmax_);
+                // operator overloading problem again
+                value -= lambda.get(i) * Math.exp(kappa) * /* phi(-w_*h2) */ phi.op(-w_ * h2);
+            }
+
+            return Math.exp(-0.5 * temp * temp) * value / (sigmax_ * Math.sqrt(2.0 * Constants.M_PI));
+        }
+
+        private class SolvingFunction implements Ops.DoubleOp {
+
+            private final Array lambda_;
+            private final Array Bb_;
+
+            public SolvingFunction(final Array lambda, final Array Bb) {
+                lambda_ = (lambda);
+                Bb_ = (Bb);
+            }
+
+            public double /* @Real */ op(final double /* @Real */ y) {
+                double /* @Real */ value = 1.0;
+                for (int /* @Size */ i = 0; i < lambda_.size(); i++) {
+                    value -= lambda_.get(i) * Math.exp(-Bb_.get(i) * y);
+                }
+                return value;
+            }
+        }
     }
 
 }

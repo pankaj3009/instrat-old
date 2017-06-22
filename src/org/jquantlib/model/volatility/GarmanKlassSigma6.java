@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -44,7 +44,7 @@ package org.jquantlib.model.volatility;
 public class GarmanKlassSigma6 extends GarmanKlassOpenClose<GarmanKlassSigma4> {
 
     public GarmanKlassSigma6(final double y, final double marketOpenFraction) {
-		super(GarmanKlassSigma4.class, y, marketOpenFraction, 0.012);
-	}
+        super(GarmanKlassSigma4.class, y, marketOpenFraction, 0.012);
+    }
 
 }

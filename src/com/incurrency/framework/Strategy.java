@@ -33,29 +33,22 @@ import javax.swing.JOptionPane;
  */
 public class Strategy implements NotificationListener {
 
-
+    private static final Logger logger = Logger.getLogger(Strategy.class.getName());
+    public static String newline = System.getProperty("line.separator");
+    private static HashMap<String, String> combosAdded = new HashMap<>();
 
     /**
-     * @return the db
+     * @return the combosAdded
      */
-    public Database<String, String> getDb() {
-        synchronized(syncDB){
-        return db;
-        }
+    public static synchronized HashMap<String, String> getCombosAdded() {
+        return combosAdded;
     }
 
     /**
-     * @return the iamail
+     * @param aCombosAdded the combosAdded to set
      */
-    public String getIamail() {
-        return iamail;
-    }
-
-    /**
-     * @param iamail the iamail to set
-     */
-    public void setIamail(String iamail) {
-        this.iamail = iamail;
+    public static synchronized void setCombosAdded(HashMap<String, String> aCombosAdded) {
+        combosAdded = aCombosAdded;
     }
 
     //--common parameters required for all strategies
@@ -89,16 +82,13 @@ public class Strategy implements NotificationListener {
     private double startingCapital;
     private ProfitLossManager plmanager;
     private List<Integer> strategySymbols = new ArrayList();
-    private static final Logger logger = Logger.getLogger(Strategy.class.getName());
     ExecutionManager oms;
     private String strategy;
     private ArrayList<String> accounts;
     private Properties prop;
     private String parameterFile;
     private String tradedType;
-    public static String newline = System.getProperty("line.separator");
     public String allAccounts;
-    private static HashMap<String, String> combosAdded = new HashMap<>();
     private Integer stratCount;
     //Locks
     private final Object lockOMS = new Object();
@@ -120,7 +110,49 @@ public class Strategy implements NotificationListener {
     private double fallbackBidVol = 0.10;
     private double fallbackAskVol = 0.50;
     private String iamail;
-    private final Object syncDB=new Object();
+    private final Object syncDB = new Object();
+    TimerTask runOpenTradingWindow = new TimerTask() {
+
+        @Override
+        public void run() {
+            tradingWindow.set(Boolean.TRUE);
+            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
+                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
+        }
+    };
+    TimerTask runCloseTradingWindow = new TimerTask() {
+
+        @Override
+        public void run() {
+            tradingWindow.set(Boolean.FALSE);
+            //cancel all open orders and delete entry records from orders and trades
+
+            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
+                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
+            for (BeanPosition p : getPosition().values()) {
+                if (p.getPosition() != 0) {
+                    int id = p.getSymbolid();
+                    for (String account : accounts) {
+                        if (MainAlgorithm.isUseForTrading()) {
+                            for (BeanConnection c : Parameters.connection) {
+                                if (c.getAccountName().equals(account)) {
+                                    oms.cancelOpenOrders(c, id, strategy);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    TimerTask runPrintOrders = new TimerTask() {
+        @Override
+        public void run() {
+            //System.out.println("In Printorders");
+            //logger.log(Level.INFO, "{0},{1},Reporting,Print Orders and Trades Called", new Object[]{allAccounts, getStrategy()});
+            printOrders("", Strategy.this);
+        }
+    };
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -164,7 +196,7 @@ public class Strategy implements NotificationListener {
                     String redisURL = prop.getProperty("redisurl").toString().trim();
                     redisDatabaseID = redisURL.split(":")[2];
                     db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), Utilities.getInt(redisURL.split(":")[2], 1));
-                    dbParameters=new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), 1);
+                    dbParameters = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), 1);
                 } else {
                     logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
                 }
@@ -205,13 +237,13 @@ public class Strategy implements NotificationListener {
                     synchronized (Parameters.symbol) {
                         Parameters.symbol.add(s);
                     }
-                    id=s.getSerialno()-1;
+                    id = s.getSerialno() - 1;
                     switch (s.getType()) {
                         case "OPT":
                             if (s.getMinsize() == 0) {
-                                String referenceCashType="IND";
-                                if(!s.getDisplayname().contains("NSENIFTY")){
-                                    referenceCashType="STK";
+                                String referenceCashType = "IND";
+                                if (!s.getDisplayname().contains("NSENIFTY")) {
+                                    referenceCashType = "STK";
                                 }
                                 int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
                                 String expiry = Parameters.symbol.get(id).getExpiry();
@@ -224,10 +256,10 @@ public class Strategy implements NotificationListener {
                             break;
                         case "FUT":
                             if (Parameters.symbol.get(id).getMinsize() == 0) {
-                                String referenceCashType="IND";
-                              //  if(!s.getDisplayname().contains("NSENIFTY")){
-                              //      referenceCashType="STK";
-                              //  }
+                                String referenceCashType = "IND";
+                                //  if(!s.getDisplayname().contains("NSENIFTY")){
+                                //      referenceCashType="STK";
+                                //  }
                                 int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
                                 Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
                             }
@@ -238,7 +270,6 @@ public class Strategy implements NotificationListener {
                             }
                             break;
                     }
-
 
                     Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(s, false);
                 }
@@ -368,6 +399,29 @@ public class Strategy implements NotificationListener {
         }
     }
 
+    /**
+     * @return the db
+     */
+    public Database<String, String> getDb() {
+        synchronized (syncDB) {
+            return db;
+        }
+    }
+
+    /**
+     * @return the iamail
+     */
+    public String getIamail() {
+        return iamail;
+    }
+
+    /**
+     * @param iamail the iamail to set
+     */
+    public void setIamail(String iamail) {
+        this.iamail = iamail;
+    }
+
     public void displayStrategyValues() {
     }
 
@@ -435,7 +489,7 @@ public class Strategy implements NotificationListener {
             }
         }
         setStartingCapital(p.getProperty("StartingCapital") == null ? 0D : Double.parseDouble(p.getProperty("StartingCapital")));
-        setIamail(p.getProperty("iamail","psharma@incurrency.com"));
+        setIamail(p.getProperty("iamail", "psharma@incurrency.com"));
         String ordTypeString = p.getProperty("OrderType", "LMT");
         int i = 0;
         for (String s : ordTypeString.split(":")) {
@@ -575,51 +629,6 @@ public class Strategy implements NotificationListener {
             }
         }
     }
-
-    TimerTask runOpenTradingWindow = new TimerTask() {
-
-        @Override
-        public void run() {
-            tradingWindow.set(Boolean.TRUE);
-            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
-                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
-        }
-    };
-
-    TimerTask runCloseTradingWindow = new TimerTask() {
-
-        @Override
-        public void run() {
-            tradingWindow.set(Boolean.FALSE);
-            //cancel all open orders and delete entry records from orders and trades
-
-            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
-                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
-            for (BeanPosition p : getPosition().values()) {
-                if (p.getPosition() != 0) {
-                    int id = p.getSymbolid();
-                    for (String account : accounts) {
-                        if (MainAlgorithm.isUseForTrading()) {
-                            for (BeanConnection c : Parameters.connection) {
-                                if (c.getAccountName().equals(account)) {
-                                    oms.cancelOpenOrders(c, id, strategy);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    };
-
-    TimerTask runPrintOrders = new TimerTask() {
-        @Override
-        public void run() {
-            //System.out.println("In Printorders");
-            //logger.log(Level.INFO, "{0},{1},Reporting,Print Orders and Trades Called", new Object[]{allAccounts, getStrategy()});
-            printOrders("", Strategy.this);
-        }
-    };
 
     public synchronized void printOrders(String prefix, Strategy s) {
         double[] profitGrid = new double[5];
@@ -812,112 +821,111 @@ public class Strategy implements NotificationListener {
 //        }
 //
 //    }
-    
-       public int entry(OrderBean order) {
-           int id=order.getParentSymbolID();
-            if (order.getOrderSide() == EnumOrderSide.BUY) {
-                BeanPosition pd = getPosition().get(id);
-                double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-                int symbolPosition = pd.getPosition() + order.getCurrentOrderSize();
-                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                pd.setPosition(symbolPosition);
-                pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                pd.setPrice(positionPrice);
-                pd.setStrategy(strategy);
-                getPosition().put(id, pd);
-            } else {
-                BeanPosition pd = getPosition().get(id);
-                double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice(): Parameters.symbol.get(id).getLastPrice();
-                int symbolPosition = pd.getPosition() - order.getCurrentOrderSize();
-                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                pd.setPosition(symbolPosition);
-                pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                pd.setPrice(positionPrice);
-                pd.setStrategy(strategy);
-                getPosition().put(id, pd);
-            }
-            int internalorderid = getInternalOrderID();
-            order.setInternalOrderID(internalorderid);
-            order.setParentInternalOrderID(internalorderid);
-            order.setOrderIDForSquareOff(internalorderid);            
-            this.internalOpenOrders.put(id, internalorderid);
-            String log = order.get("log") != null ? order.get("log").toString() : "";
-            double lastprice = Parameters.symbol.get(id).getLastPrice();
-            lastprice = lastprice == 0 ? Utilities.getDouble(order.get("limitprice"), 0) : lastprice;
-            new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getCurrentOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
-            logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
-            if (MainAlgorithm.isUseForTrading()) {
-                oms.tes.fireOrderEvent(order);
-                //oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
-            }
-            return internalorderid;       
+    public int entry(OrderBean order) {
+        int id = order.getParentSymbolID();
+        if (order.getOrderSide() == EnumOrderSide.BUY) {
+            BeanPosition pd = getPosition().get(id);
+            double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
+            int symbolPosition = pd.getPosition() + order.getCurrentOrderSize();
+            double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
+            pd.setPosition(symbolPosition);
+            pd.setPositionInitDate(TradingUtil.getAlgoDate());
+            pd.setPrice(positionPrice);
+            pd.setStrategy(strategy);
+            getPosition().put(id, pd);
+        } else {
+            BeanPosition pd = getPosition().get(id);
+            double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
+            int symbolPosition = pd.getPosition() - order.getCurrentOrderSize();
+            double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
+            pd.setPosition(symbolPosition);
+            pd.setPositionInitDate(TradingUtil.getAlgoDate());
+            pd.setPrice(positionPrice);
+            pd.setStrategy(strategy);
+            getPosition().put(id, pd);
+        }
+        int internalorderid = getInternalOrderID();
+        order.setInternalOrderID(internalorderid);
+        order.setParentInternalOrderID(internalorderid);
+        order.setOrderIDForSquareOff(internalorderid);
+        this.internalOpenOrders.put(id, internalorderid);
+        String log = order.get("log") != null ? order.get("log").toString() : "";
+        double lastprice = Parameters.symbol.get(id).getLastPrice();
+        lastprice = lastprice == 0 ? Utilities.getDouble(order.get("limitprice"), 0) : lastprice;
+        new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getCurrentOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+        logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
+        if (MainAlgorithm.isUseForTrading()) {
+            oms.tes.fireOrderEvent(order);
+            //oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
+        }
+        return internalorderid;
 
     }
 
-  public synchronized void exit(OrderBean order) {
-      int id=order.getParentSymbolID();    
-            int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getCurrentOrderSize();
-            order.setCurrentOrderSize(tradeSize);
-            double expectedFillPrice = 0;
-            if (order.getOrderSide() == EnumOrderSide.COVER) {
-                BeanPosition pd = getPosition().get(id);
-                expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-                int symbolPosition = pd.getPosition() + tradeSize;
-                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                pd.setPosition(symbolPosition);
-                pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                pd.setPrice(positionPrice);
-                pd.setStrategy(strategy);
-                getPosition().put(id, pd);
-            } else {
-                BeanPosition pd = getPosition().get(id);
-                expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-                int symbolPosition = pd.getPosition() - tradeSize;
-                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-                pd.setPosition(symbolPosition);
-                pd.setPositionInitDate(TradingUtil.getAlgoDate());
-                pd.setPrice(positionPrice);
-                pd.setStrategy(strategy);
-                getPosition().put(id, pd);
-            }
-            //int tempinternalOrderID = Utilities.getInt(order.get("entryorderidint"),-1)>0?Utilities.getInt(order.get("entryorderidint"),-1):getFirstInternalOpenOrder(id, side, "Order");
-            HashSet<Integer> tempinternalOrderIDs = getFirstInternalOpenOrder(id, order.getOrderSide(), "Order");
-            for (int tempinternalOrderID : tempinternalOrderIDs) {
-                if (tradeSize > 0) { //only update trades if tradeSize>0
-                    String key = this.getStrategy() + ":" + tempinternalOrderID + ":" + "Order";
-                    boolean entryTradeExists = Trade.getEntrySize(getDb(), key) > 0 ? true : false;
-                    if (entryTradeExists) {
-                        int internalorderid = getInternalOrderID();
-                        order.setInternalOrderID(internalorderid);
-                        order.setParentInternalOrderID(internalorderid);
-                        int entrySize = Trade.getEntrySize(getDb(), key);
-                        int exitSize = Trade.getExitSize(getDb(), key);
-                        double exitPrice = Trade.getExitPrice(getDb(), key);
-                        int adjTradeSize = exitSize + tradeSize > entrySize ? (entrySize - exitSize) : tradeSize;
-                        int newexitSize = adjTradeSize + exitSize;
-                        tradeSize = tradeSize - adjTradeSize;
-                        double newexitPrice = (exitPrice * exitSize + adjTradeSize * expectedFillPrice) / (newexitSize);
-                        order.setOrderIDForSquareOff(tempinternalOrderID);
-                        String log = order.get("log") != null ? order.get("log").toString() : "";
-                        Trade.updateExit(getDb(), id, order.getOrderReason(), order.getOrderSide(), newexitPrice, newexitSize, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
-                        if (newexitSize == entrySize) {
-                            Trade.closeTrade(getDb(), key);
-                        }
-                        logger.log(Level.INFO, "201,ExitOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}",
-                                new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), Integer.toString(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
-
-                    } else {
-                        logger.log(Level.INFO, "201,ExitInternalIDNotFound,{0}:{1}:{2}:{3}:{4},Key={5}",
-                                new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), tempinternalOrderID, -1, key});
+    public synchronized void exit(OrderBean order) {
+        int id = order.getParentSymbolID();
+        int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getCurrentOrderSize();
+        order.setCurrentOrderSize(tradeSize);
+        double expectedFillPrice = 0;
+        if (order.getOrderSide() == EnumOrderSide.COVER) {
+            BeanPosition pd = getPosition().get(id);
+            expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
+            int symbolPosition = pd.getPosition() + tradeSize;
+            double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
+            pd.setPosition(symbolPosition);
+            pd.setPositionInitDate(TradingUtil.getAlgoDate());
+            pd.setPrice(positionPrice);
+            pd.setStrategy(strategy);
+            getPosition().put(id, pd);
+        } else {
+            BeanPosition pd = getPosition().get(id);
+            expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
+            int symbolPosition = pd.getPosition() - tradeSize;
+            double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
+            pd.setPosition(symbolPosition);
+            pd.setPositionInitDate(TradingUtil.getAlgoDate());
+            pd.setPrice(positionPrice);
+            pd.setStrategy(strategy);
+            getPosition().put(id, pd);
+        }
+        //int tempinternalOrderID = Utilities.getInt(order.get("entryorderidint"),-1)>0?Utilities.getInt(order.get("entryorderidint"),-1):getFirstInternalOpenOrder(id, side, "Order");
+        HashSet<Integer> tempinternalOrderIDs = getFirstInternalOpenOrder(id, order.getOrderSide(), "Order");
+        for (int tempinternalOrderID : tempinternalOrderIDs) {
+            if (tradeSize > 0) { //only update trades if tradeSize>0
+                String key = this.getStrategy() + ":" + tempinternalOrderID + ":" + "Order";
+                boolean entryTradeExists = Trade.getEntrySize(getDb(), key) > 0 ? true : false;
+                if (entryTradeExists) {
+                    int internalorderid = getInternalOrderID();
+                    order.setInternalOrderID(internalorderid);
+                    order.setParentInternalOrderID(internalorderid);
+                    int entrySize = Trade.getEntrySize(getDb(), key);
+                    int exitSize = Trade.getExitSize(getDb(), key);
+                    double exitPrice = Trade.getExitPrice(getDb(), key);
+                    int adjTradeSize = exitSize + tradeSize > entrySize ? (entrySize - exitSize) : tradeSize;
+                    int newexitSize = adjTradeSize + exitSize;
+                    tradeSize = tradeSize - adjTradeSize;
+                    double newexitPrice = (exitPrice * exitSize + adjTradeSize * expectedFillPrice) / (newexitSize);
+                    order.setOrderIDForSquareOff(tempinternalOrderID);
+                    String log = order.get("log") != null ? order.get("log").toString() : "";
+                    Trade.updateExit(getDb(), id, order.getOrderReason(), order.getOrderSide(), newexitPrice, newexitSize, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+                    if (newexitSize == entrySize) {
+                        Trade.closeTrade(getDb(), key);
                     }
+                    logger.log(Level.INFO, "201,ExitOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}",
+                            new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), Integer.toString(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
+
+                } else {
+                    logger.log(Level.INFO, "201,ExitInternalIDNotFound,{0}:{1}:{2}:{3}:{4},Key={5}",
+                            new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), tempinternalOrderID, -1, key});
                 }
             }
-            if (MainAlgorithm.isUseForTrading() && order.get("orderidint") != null) {
-                oms.tes.fireOrderEvent(order);
-            }
-        
+        }
+        if (MainAlgorithm.isUseForTrading() && order.get("orderidint") != null) {
+            oms.tes.fireOrderEvent(order);
+        }
+
     }
-       
+
 //    public synchronized void exit(HashMap<String, Object> order) {
 //        EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
 //        //if ((!getLongOnly() && side.equals(EnumOrderSide.COVER)) || (!getShortOnly() && side.equals(EnumOrderSide.SELL))) {
@@ -990,7 +998,6 @@ public class Strategy implements NotificationListener {
 //            }
 //        }
 //    }
-
     /**
      * Initializes the strategy for any new symbol that is added during the run.
      *
@@ -1537,20 +1544,6 @@ public class Strategy implements NotificationListener {
                     new Object[]{strategy, "Order", "Unknown", -1, -1, stopOrders});
             this.stopOrders = stopOrders;
         }
-    }
-
-    /**
-     * @return the combosAdded
-     */
-    public static synchronized HashMap<String, String> getCombosAdded() {
-        return combosAdded;
-    }
-
-    /**
-     * @param aCombosAdded the combosAdded to set
-     */
-    public static synchronized void setCombosAdded(HashMap<String, String> aCombosAdded) {
-        combosAdded = aCombosAdded;
     }
 
     /**

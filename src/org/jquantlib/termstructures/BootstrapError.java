@@ -20,8 +20,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
-
 package org.jquantlib.termstructures;
 
 import org.jquantlib.QL;
@@ -33,12 +31,29 @@ import org.jquantlib.termstructures.yieldcurves.Traits;
 
 // FIXME: http://bugs.jquantlib.org/view.php?id=463
 public class BootstrapError<T extends Traits> implements Ops.DoubleOp {
+    //
+    // static private methods
+    //
 
-    private final PiecewiseCurve    curve;
-    private final Traits            traits;
-    private final RateHelper        helper;
-    private final int               segment;
+    static private Traits constructTraits(final Class<?> klass) {
+        if (klass == null) {
+            throw new LibraryException("null Traits"); // TODO: message
+        }
+        if (klass != Traits.class) {
+            throw new LibraryException(ReflectConstants.WRONG_ARGUMENT_TYPE);
+        }
 
+        try {
+            return (Traits) klass.newInstance();
+        } catch (final Exception e) {
+            throw new LibraryException("cannot create Traits", e); // TODO: message
+        }
+    }
+
+    private final PiecewiseCurve curve;
+    private final Traits traits;
+    private final RateHelper helper;
+    private final int segment;
 
     public BootstrapError(
             final Class<?> klass,
@@ -47,6 +62,7 @@ public class BootstrapError<T extends Traits> implements Ops.DoubleOp {
             final int segment) {
         this(constructTraits(klass), curve, helper, segment);
     }
+
     public BootstrapError(
             final Traits traits,
             final PiecewiseCurve c,
@@ -64,37 +80,15 @@ public class BootstrapError<T extends Traits> implements Ops.DoubleOp {
         this.helper = helper;
     }
 
-
     //
     // public methods
     //
-
     @Override
-	public double op (final double guess) {
+    public double op(final double guess) {
         //FIXME: find a way to solve this! :: ifndef DOXYGEN
-        traits.updateGuess (curve.data(), guess, segment);
+        traits.updateGuess(curve.data(), guess, segment);
         curve.interpolation().update();
         return helper.quoteError();
-    }
-
-
-    //
-    // static private methods
-    //
-
-    static private Traits constructTraits(final Class<?> klass) {
-        if (klass==null) {
-            throw new LibraryException("null Traits"); // TODO: message
-        }
-        if (klass!=Traits.class) {
-            throw new LibraryException(ReflectConstants.WRONG_ARGUMENT_TYPE);
-        }
-
-        try {
-            return (Traits) klass.newInstance();
-        } catch (final Exception e) {
-            throw new LibraryException("cannot create Traits", e); // TODO: message
-        }
     }
 
 }

@@ -20,8 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -32,113 +30,107 @@ import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
 
 /**
- * 
+ *
  * @author Zahid Hussain
  *
  */
 // TODO: code review :: Please review this class! :S
 public class FixedRateCoupon extends Coupon {
 
-	private final InterestRate rate;
-	private final DayCounter dayCounter;
+    private final InterestRate rate;
+    private final DayCounter dayCounter;
 
-	//
-	// constructors
-	//
+    //
+    // constructors
+    //
+    public FixedRateCoupon(final double nominal, final JDate paymentDate,
+            final double rate, final DayCounter dayCounter,
+            final JDate accrualStartDate, final JDate accrualEndDate) {
+        this(nominal, paymentDate, rate, dayCounter, accrualStartDate,
+                accrualEndDate, new JDate(), new JDate());
+    }
 
-	public FixedRateCoupon(final double nominal, final JDate paymentDate,
-			final double rate, final DayCounter dayCounter,
-			final JDate accrualStartDate, final JDate accrualEndDate) {
-		this(nominal, paymentDate, rate, dayCounter, accrualStartDate,
-				accrualEndDate, new JDate(), new JDate());
-	}
+    public FixedRateCoupon(final double nominal, final JDate paymentDate,
+            final double rate, final DayCounter dayCounter,
+            final JDate accrualStartDate, final JDate accrualEndDate,
+            final JDate refPeriodStart, final JDate refPeriodEnd) {
+        super(nominal, paymentDate, accrualStartDate, accrualEndDate,
+                refPeriodStart, refPeriodEnd);
 
-	public FixedRateCoupon(final double nominal, final JDate paymentDate,
-			final double rate, final DayCounter dayCounter,
-			final JDate accrualStartDate, final JDate accrualEndDate,
-			final JDate refPeriodStart, final JDate refPeriodEnd) {
-		super(nominal, paymentDate, accrualStartDate, accrualEndDate,
-				refPeriodStart, refPeriodEnd);
+        this.rate = new InterestRate(rate, dayCounter, Compounding.Simple);
+        this.dayCounter = dayCounter;
+    }
 
-		this.rate = new InterestRate(rate, dayCounter, Compounding.Simple);
-		this.dayCounter = dayCounter;
-	}
+    public FixedRateCoupon(final double nominal, final JDate paymentDate,
+            final InterestRate interestRate, final DayCounter dayCounter,
+            final JDate accrualStartDate, final JDate accrualEndDate) {
+        this(nominal, paymentDate, interestRate, dayCounter, accrualStartDate,
+                accrualEndDate, new JDate(), new JDate());
+    }
 
-	public FixedRateCoupon(final double nominal, final JDate paymentDate,
-			final InterestRate interestRate, final DayCounter dayCounter,
-			final JDate accrualStartDate, final JDate accrualEndDate) {
-		this(nominal, paymentDate, interestRate, dayCounter, accrualStartDate,
-				accrualEndDate, new JDate(), new JDate());
-	}
+    public FixedRateCoupon(final double nominal, final JDate paymentDate,
+            final InterestRate interestRate, final DayCounter dayCounter,
+            final JDate accrualStartDate, final JDate accrualEndDate,
+            final JDate refPeriodStart, final JDate refPeriodEnd) {
+        super(nominal, paymentDate, accrualStartDate, accrualEndDate,
+                refPeriodStart, refPeriodEnd);
 
-	public FixedRateCoupon(final double nominal, final JDate paymentDate,
-			final InterestRate interestRate, final DayCounter dayCounter,
-			final JDate accrualStartDate, final JDate accrualEndDate,
-			final JDate refPeriodStart, final JDate refPeriodEnd) {
-		super(nominal, paymentDate, accrualStartDate, accrualEndDate,
-				refPeriodStart, refPeriodEnd);
+        this.rate = interestRate;
+        this.dayCounter = dayCounter;
+    }
 
-		this.rate = interestRate;
-		this.dayCounter = dayCounter;
-	}
+    //
+    // public methods
+    //
+    public InterestRate interestRate() {
+        return rate;
+    }
 
-	//
-	// public methods
-	//
+    //
+    // Overrides Coupon
+    //
+    @Override
+    public DayCounter dayCounter() {
+        return dayCounter;
+    }
 
-	public InterestRate interestRate() {
-		return rate;
-	}
+    @Override
+    public double rate() {
+        return rate.rate();
+    }
 
-	//
-	// Overrides Coupon
-	//
-
-	@Override
-	public DayCounter dayCounter() {
-		return dayCounter;
-	}
-
-	@Override
-	public double rate() {
-		return rate.rate();
-	}
-
-	@Override
-	public double accruedAmount(final JDate d) {
-		if (d.le(accrualStartDate_) || d.gt(paymentDate_))
+    @Override
+    public double accruedAmount(final JDate d) {
+        if (d.le(accrualStartDate_) || d.gt(paymentDate_)) {
             return 0.0;
-        else {
-			final JDate minD = d.le(accrualEndDate_) ? d : accrualEndDate_;
-			return nominal()
-					* (rate.compoundFactor(accrualStartDate_, minD,
-							refPeriodStart_, refPeriodEnd_) - 1.0);
-		}
-	}
+        } else {
+            final JDate minD = d.le(accrualEndDate_) ? d : accrualEndDate_;
+            return nominal()
+                    * (rate.compoundFactor(accrualStartDate_, minD,
+                            refPeriodStart_, refPeriodEnd_) - 1.0);
+        }
+    }
 
-	//
-	// Overrides CashFlow
-	//
+    //
+    // Overrides CashFlow
+    //
+    @Override
+    public double amount() {
+        return nominal()
+                * (rate.compoundFactor(accrualStartDate_, accrualEndDate_,
+                        refPeriodStart_, refPeriodEnd_) - 1.0);
+    }
 
-	@Override
-	public double amount() {
-		return nominal()
-				* (rate.compoundFactor(accrualStartDate_, accrualEndDate_,
-						refPeriodStart_, refPeriodEnd_) - 1.0);
-	}
-
-
-	//
-	// implements PolymorphicVisitable
-	//
-
-	@Override
-	public void accept(final PolymorphicVisitor pv) {
-		final Visitor<FixedRateCoupon> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+    //
+    // implements PolymorphicVisitable
+    //
+    @Override
+    public void accept(final PolymorphicVisitor pv) {
+        final Visitor<FixedRateCoupon> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {
             super.accept(pv);
         }
-	}
+    }
 }

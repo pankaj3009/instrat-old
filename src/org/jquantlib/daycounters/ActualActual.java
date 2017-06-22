@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.daycounters;
 
 import org.jquantlib.QL;
@@ -35,33 +34,19 @@ import org.jquantlib.time.TimeUnit;
 /**
  * Implementation of ActualActual day counters.
  *
- * @see <a href="http://en.wikipedia.org/wiki/Day_count_convention">Day count convention</a>
+ * @see <a href="http://en.wikipedia.org/wiki/Day_count_convention">Day count
+ * convention</a>
  *
  * @author Srinivas Hasti
  * @author Richard Gomes
  *
  */
-@QualityAssurance(quality=Quality.Q4_UNIT, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q4_UNIT, version = Version.V097, reviewers = "Richard Gomes")
 public class ActualActual extends DayCounter {
-
-    //
-    // public enums
-    //
-
-    /**
-     * Actual/Actual Calendar Conventions
-     */
-    public static enum Convention {
-        ISMA, Bond,
-        ISDA, Historical, Actual365,
-        AFB, Euro
-    }
-
 
     //
     // public constructors
     //
-
     public ActualActual() {
         this(Convention.ISDA);
     }
@@ -85,36 +70,48 @@ public class ActualActual extends DayCounter {
                 throw new LibraryException("unknown act/act convention"); // TODO: message
         }
     }
+    //
+    // public enums
+    //
 
+    /**
+     * Actual/Actual Calendar Conventions
+     */
+    public static enum Convention {
+        ISMA, Bond,
+        ISDA, Historical, Actual365,
+        AFB, Euro
+    }
 
     //
     // inner classes
     //
-
     final private class ImplISMA extends DayCounter.Impl {
 
         @Override
-        public final String name() /* @ReadOnly */{
+        public final String name() /* @ReadOnly */ {
             return "Actual/Actual (ISMA)";
         }
 
         @Override
         public final double yearFraction(
                 final JDate d1, final JDate d2,
-                final JDate d3, final JDate d4) /* @ReadOnly */{
+                final JDate d3, final JDate d4) /* @ReadOnly */ {
 
-            if (d1.equals(d2))
+            if (d1.equals(d2)) {
                 return 0.0;
+            }
 
-            if (d1.gt(d2))
+            if (d1.gt(d2)) {
                 return -yearFraction(d2, d1, d3, d4);
+            }
 
             // when the reference period is not specified, try taking
             // it equal to (d1,d2)
             JDate refPeriodStart = (!d3.isNull() ? d3 : d1);
-            JDate refPeriodEnd   = (!d4.isNull() ? d4 : d2);
+            JDate refPeriodEnd = (!d4.isNull() ? d4 : d2);
 
-            QL.ensure(refPeriodEnd.gt(refPeriodStart) && refPeriodEnd.gt(d1) , "invalid reference period");  // TODO: message
+            QL.ensure(refPeriodEnd.gt(refPeriodStart) && refPeriodEnd.gt(d1), "invalid reference period");  // TODO: message
 
             // estimate roughly the length in months of a period
             int months = (int) (0.5 + 12 * (refPeriodEnd.sub(refPeriodStart)) / 365.0);
@@ -131,16 +128,16 @@ public class ActualActual extends DayCounter {
 
             if (d2.le(refPeriodEnd)) {
                 // here refPeriodEnd is a future (notional?) payment date
-                if (d1.ge(refPeriodStart))
-                    // here refPeriodStart is the last (maybe notional)
-                    // payment date.
-                    // refPeriodStart <= d1 <= d2 <= refPeriodEnd
-                    // [maybe the equality should be enforced, since
-                    // refPeriodStart < d1 <= d2 < refPeriodEnd
-                    // could give wrong results] ???
+                if (d1.ge(refPeriodStart)) // here refPeriodStart is the last (maybe notional)
+                // payment date.
+                // refPeriodStart <= d1 <= d2 <= refPeriodEnd
+                // [maybe the equality should be enforced, since
+                // refPeriodStart < d1 <= d2 < refPeriodEnd
+                // could give wrong results] ???
+                {
                     return period * dayCount(d1, d2)
-                    / dayCount(refPeriodStart, refPeriodEnd);
-                else {
+                            / dayCount(refPeriodStart, refPeriodEnd);
+                } else {
                     // here refPeriodStart is the next (maybe notional)
                     // payment date and refPeriodEnd is the second next
                     // (maybe notional) payment date.
@@ -151,24 +148,24 @@ public class ActualActual extends DayCounter {
                     // the last notional payment date
                     final JDate previousRef = refPeriodStart.add(new Period(
                             -months, TimeUnit.Months));
-                    if (d2.gt(refPeriodStart))
+                    if (d2.gt(refPeriodStart)) {
                         return yearFraction(d1, refPeriodStart, previousRef,
                                 refPeriodStart)
                                 + yearFraction(refPeriodStart, d2,
                                         refPeriodStart, refPeriodEnd);
-                    else
+                    } else {
                         return yearFraction(d1, d2, previousRef,
                                 refPeriodStart);
+                    }
                 }
             } else {
                 // TODO: code review :: please verify against QL/C++ code
 
                 // here refPeriodEnd is the last notional payment date
                 // d1 < refPeriodEnd < d2 AND refPeriodStart < refPeriodEnd
-                QL.require(refPeriodStart.le(d1) , "invalid dates"); // TODO: message
+                QL.require(refPeriodStart.le(d1), "invalid dates"); // TODO: message
 
                 // now it is: refPeriodStart <= d1 < refPeriodEnd < d2
-
                 // the part from d1 to refPeriodEnd
                 double sum = yearFraction(d1, refPeriodEnd, refPeriodStart, refPeriodEnd);
 
@@ -180,9 +177,9 @@ public class ActualActual extends DayCounter {
                 do {
                     newRefStart = refPeriodEnd.add(new Period(months * i, TimeUnit.Months));
                     newRefEnd = refPeriodEnd.add(new Period(months * (i + 1), TimeUnit.Months));
-                    if (d2.lt(newRefEnd))
+                    if (d2.lt(newRefEnd)) {
                         break;
-                    else {
+                    } else {
                         sum += period;
                         i++;
                     }
@@ -193,27 +190,28 @@ public class ActualActual extends DayCounter {
         }
     }
 
-
     final private class ImplISDA extends DayCounter.Impl {
 
         @Override
-        public final String name() /* @ReadOnly */{
+        public final String name() /* @ReadOnly */ {
             return "Actual/Actual (ISDA)";
         }
 
         @Override
         public final double yearFraction(
                 final JDate dateStart, final JDate dateEnd,
-                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
-            if (dateStart.equals(dateEnd))
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */ {
+            if (dateStart.equals(dateEnd)) {
                 return 0.0;
-            if (dateStart.gt(dateEnd))
+            }
+            if (dateStart.gt(dateEnd)) {
                 return -yearFraction(dateEnd, dateStart, new JDate(), new JDate());
+            }
 
             final int y1 = dateStart.year();
             final int y2 = dateEnd.year();
             final double dib1 = JDate.isLeap(dateStart.year()) ? 366.0 : 365.0;
-            final double dib2 = JDate.isLeap(dateEnd.year())   ? 366.0 : 365.0;
+            final double dib2 = JDate.isLeap(dateEnd.year()) ? 366.0 : 365.0;
 
             double sum = y2 - y1 - 1;
 
@@ -226,7 +224,6 @@ public class ActualActual extends DayCounter {
 
     }
 
-
     final private class ImplAFB extends DayCounter.Impl {
 
         @Override
@@ -237,19 +234,22 @@ public class ActualActual extends DayCounter {
         @Override
         public final double yearFraction(
                 final JDate dateStart, final JDate dateEnd,
-                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */{
-            if (dateStart.equals(dateEnd))
+                final JDate refPeriodStart, final JDate refPeriodEnd) /* @ReadOnly */ {
+            if (dateStart.equals(dateEnd)) {
                 return 0.0;
-            if (dateStart.gt(dateEnd))
+            }
+            if (dateStart.gt(dateEnd)) {
                 return -1.0 * yearFraction(dateEnd, dateStart, new JDate(), new JDate());
+            }
 
             JDate newD2 = dateEnd;
             JDate temp = dateEnd;
             double sum = 0.0;
             while (temp.gt(dateStart)) {
                 temp = newD2.add(Period.ONE_YEAR_BACKWARD);
-                if (temp.dayOfMonth() == 28 && temp.month().value() == 2 && JDate.isLeap(temp.year()))
+                if (temp.dayOfMonth() == 28 && temp.month().value() == 2 && JDate.isLeap(temp.year())) {
                     temp.inc();
+                }
                 if (temp.ge(dateStart)) {
                     sum += 1.0;
                     newD2 = temp;
@@ -259,13 +259,16 @@ public class ActualActual extends DayCounter {
             double den = 365.0;
 
             if (JDate.isLeap(newD2.year())) {
-                if (newD2.gt(new JDate(29, Month.February, newD2.year())) &&
-                        dateStart.le(new JDate(29, Month.February, newD2.year())))
+                if (newD2.gt(new JDate(29, Month.February, newD2.year()))
+                        && dateStart.le(new JDate(29, Month.February, newD2.year()))) {
                     den += 1.0;
-            } else if (JDate.isLeap(dateStart.year()))
-                if (newD2.gt(new JDate(29, Month.February, dateStart.year())) &&
-                        dateStart.le(new JDate(29, Month.February, dateStart.year())))
+                }
+            } else if (JDate.isLeap(dateStart.year())) {
+                if (newD2.gt(new JDate(29, Month.February, dateStart.year()))
+                        && dateStart.le(new JDate(29, Month.February, dateStart.year()))) {
                     den += 1.0;
+                }
+            }
             return sum + dayCount(dateStart, newD2) / den;
         }
 

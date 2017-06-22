@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,7 +34,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.optimization;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -48,21 +47,17 @@ import org.jquantlib.math.matrixutilities.Array;
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality=Quality.Q3_DOCUMENTATION, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = "Richard Gomes")
 public abstract class Constraint {
-
 
     //
     // protected fields
     //
-
     protected Impl impl;
-
 
     //
     // public constructors
     //
-
     public Constraint() {
         this.impl = null;
     }
@@ -71,20 +66,18 @@ public abstract class Constraint {
         this.impl = impl;
     }
 
-
     //
     // public methods
     //
-
     public boolean empty() /* @ReadOnly */ {
         return impl == null;
     }
 
-    public boolean test(final Array  p) /* @ReadOnly */ {
+    public boolean test(final Array p) /* @ReadOnly */ {
         return impl.test(p);
     }
 
-    public double update(final Array  params, final Array  direction, final double beta) {
+    public double update(final Array params, final Array direction, final double beta) {
         double diff = beta;
         Array newParams = params.add(direction.mul(diff));
         boolean valid = test(newParams);
@@ -95,7 +88,7 @@ public abstract class Constraint {
                 throw new LibraryException("can't update parameter vector"); // TODO: message
             }
             diff *= 0.5;
-            icount ++;
+            icount++;
             newParams = params.add(direction.mul(diff));
             valid = test(newParams);
         }
@@ -103,11 +96,9 @@ public abstract class Constraint {
         return diff;
     }
 
-
     //
     // protected inner classes
     //
-
     /**
      * Base class for constraint implementations.
      */
@@ -116,11 +107,11 @@ public abstract class Constraint {
         //
         // public abstract methods
         //
-
         /**
-         * <p>Tests if params satisfy the constraint. </p>
+         * <p>
+         * Tests if params satisfy the constraint. </p>
          */
-        public abstract boolean test(final Array  params) /* @ReadOnly */;
+        public abstract boolean test(final Array params) /* @ReadOnly */;
 
     }
 

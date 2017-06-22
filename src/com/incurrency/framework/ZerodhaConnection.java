@@ -37,39 +37,39 @@ public class ZerodhaConnection implements Connection {
 
     @Override
     public boolean connect() {
-        try{
-        KiteConnect kiteSdk = new com.rainmatter.kiteconnect.KiteConnect("0ik2gu1f75jbf2hi");
-        kiteSdk.setUserId("HODP0008");
-        String url = kiteSdk.getLoginUrl();
-        WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED);
-        webClient.getCookieManager().setCookiesEnabled(true);
-        webClient.getOptions().setUseInsecureSSL(true);
-        HtmlPage page = webClient.getPage(url);
-        System.out.println(page.asText());
-        if(page.asText().contains("Forgot password?")){
-        HtmlForm form = page.getFormByName("loginform");
-        form.getInputByName("user_id").type("DP0008");
-        form.getInputByName("password").type("abc005");
-        page=form.getButtonByName("login").click();
-        System.out.println(page.asText());
-        form=page.getFormByName("twofaform");
-        form.getInputByName("answer1").type("a");
-        form.getInputByName("answer2").type("a");
-        page=form.getButtonByName("twofa").click();
-        System.out.println(page.asText());            
-        }     
-        
-        JedisPool pool;
-        String request_token = null;
-        pool = new JedisPool("127.0.0.1", 6379);
-        try (Jedis jedis = pool.getResource()) {
-            request_token = jedis.get("requesttoken");
-        }
-        UserModel userModel = kiteSdk.requestAccessToken(request_token, "degjzz0m3y937s4e96besvzv4huze8t6");
-        kiteSdk.setAccessToken(userModel.accessToken);
-        kiteSdk.setPublicToken(userModel.publicToken);
-        }catch (ElementNotFoundException |KiteException| FailingHttpStatusCodeException | IOException | NullPointerException | JSONException e){
-            logger.log(Level.SEVERE ,null,e);
+        try {
+            KiteConnect kiteSdk = new com.rainmatter.kiteconnect.KiteConnect("0ik2gu1f75jbf2hi");
+            kiteSdk.setUserId("HODP0008");
+            String url = kiteSdk.getLoginUrl();
+            WebClient webClient = new WebClient(BrowserVersion.BEST_SUPPORTED);
+            webClient.getCookieManager().setCookiesEnabled(true);
+            webClient.getOptions().setUseInsecureSSL(true);
+            HtmlPage page = webClient.getPage(url);
+            System.out.println(page.asText());
+            if (page.asText().contains("Forgot password?")) {
+                HtmlForm form = page.getFormByName("loginform");
+                form.getInputByName("user_id").type("DP0008");
+                form.getInputByName("password").type("abc005");
+                page = form.getButtonByName("login").click();
+                System.out.println(page.asText());
+                form = page.getFormByName("twofaform");
+                form.getInputByName("answer1").type("a");
+                form.getInputByName("answer2").type("a");
+                page = form.getButtonByName("twofa").click();
+                System.out.println(page.asText());
+            }
+
+            JedisPool pool;
+            String request_token = null;
+            pool = new JedisPool("127.0.0.1", 6379);
+            try (Jedis jedis = pool.getResource()) {
+                request_token = jedis.get("requesttoken");
+            }
+            UserModel userModel = kiteSdk.requestAccessToken(request_token, "degjzz0m3y937s4e96besvzv4huze8t6");
+            kiteSdk.setAccessToken(userModel.accessToken);
+            kiteSdk.setPublicToken(userModel.publicToken);
+        } catch (ElementNotFoundException | KiteException | FailingHttpStatusCodeException | IOException | NullPointerException | JSONException e) {
+            logger.log(Level.SEVERE, null, e);
             return false;
         }
         return true;
@@ -254,5 +254,5 @@ public class ZerodhaConnection implements Connection {
     public void removeTradeListener(TradeListener l) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }

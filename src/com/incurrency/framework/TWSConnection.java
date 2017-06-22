@@ -30,8 +30,55 @@ import redis.clients.jedis.Jedis;
  *
  * @author admin
  */
-public class TWSConnection extends Thread implements EWrapper,Connection {
+public class TWSConnection extends Thread implements EWrapper, Connection {
 
+    protected final static int MAX_WAIT_COUNT = 10;
+    protected final static int WAIT_TIME = 1;//seconds
+    public static volatile int mTotalSymbols;
+    public static volatile int mTotalATMChecks;
+    private static final Logger logger = Logger.getLogger(TWSConnection.class.getName());
+    static final Object lock_request = new Object();
+    public static boolean skipsymbol = false;
+    public static String[][] marketData;
+    public static AtomicBoolean serverInitialized = new AtomicBoolean();
+    public EClientSocket eClientSocket = new EClientSocket(this);
+    private BeanConnection c;
+    private int mRequestId;
+    private ArrayList _fundamentallisteners = new ArrayList();
+    private Drop accountIDSync = new Drop();
+    private boolean initialsnapShotFilled = false; //set to true by getMktData() once the first 100 snapshot requests are out to IB
+    private TradingEventSupport tes = new TradingEventSupport();
+    private LimitedQueue recentOrders;
+    private boolean stopTrading = false;
+    AtomicBoolean severeEmailSent = new AtomicBoolean(Boolean.FALSE);
+    public ConcurrentHashMap<Integer, Request> requestDetails = new ConcurrentHashMap<>();
+    public ConcurrentHashMap<Integer, Request> requestDetailsWithSymbolKey = new ConcurrentHashMap<>();
+    private int outstandingSnapshots = 0;
+    private final String delimiter = "_";
+    private boolean historicalDataFarmConnected = true;
+    //Parameters for dataserver
+    private BeanCassandraConnection cassandra = new BeanCassandraConnection();
+    public Socket cassandraConnection;
+    public PrintStream output;
+    Jedis jedis = Algorithm.marketdatapool.getResource();
+    public RequestIDManager requestIDManager = new RequestIDManager();
+    private SimpleDateFormat sdfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private SynchronousQueue<String> startingOrderID = new SynchronousQueue<>();
+    private java.util.Random random = new java.util.Random();
+
+    public TWSConnection(BeanConnection c) {
+        this.c = c;
+        cassandra.setTopic(Algorithm.topic);
+        cassandra.setCassandraPort(4242);
+        mTotalSymbols = Parameters.symbol.size();
+        if (mTotalATMChecks == 0) {
+            for (BeanSymbol s : Parameters.symbol) {
+                if (s.getType().compareTo("OPT") == 0 && s.getOption() == null) {
+                    mTotalATMChecks = mTotalATMChecks + 1;
+                }
+            }
+        }
+    }
 
     /**
      * @return the outstandingSnapshots
@@ -45,54 +92,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
      */
     public void setOutstandingSnapshots(int outstandingSnapshots) {
         this.outstandingSnapshots = outstandingSnapshots;
-    }
-
-    protected final static int MAX_WAIT_COUNT = 10;
-    protected final static int WAIT_TIME = 1;//seconds
-    public EClientSocket eClientSocket = new EClientSocket(this);
-    private BeanConnection c;
-    private int mRequestId;
-    public static volatile int mTotalSymbols;
-    public static volatile int mTotalATMChecks;
-    private ArrayList _fundamentallisteners = new ArrayList();
-    private Drop accountIDSync = new Drop();
-    private static final Logger logger = Logger.getLogger(TWSConnection.class.getName());
-    private boolean initialsnapShotFilled = false; //set to true by getMktData() once the first 100 snapshot requests are out to IB
-    private TradingEventSupport tes = new TradingEventSupport();
-    private LimitedQueue recentOrders;
-    private boolean stopTrading = false;
-    AtomicBoolean severeEmailSent = new AtomicBoolean(Boolean.FALSE);
-    public ConcurrentHashMap<Integer, Request> requestDetails = new ConcurrentHashMap<>();
-    public ConcurrentHashMap<Integer, Request> requestDetailsWithSymbolKey = new ConcurrentHashMap<>();
-    private int outstandingSnapshots = 0;
-    private final String delimiter = "_";
-    static final Object lock_request = new Object();
-    private boolean historicalDataFarmConnected = true;
-    public static boolean skipsymbol = false;
-    //Parameters for dataserver
-    private BeanCassandraConnection cassandra=new BeanCassandraConnection();
-    public Socket cassandraConnection;
-    public PrintStream output;
-    Jedis jedis = Algorithm.marketdatapool.getResource();    
-    public static String[][] marketData;
-    public static AtomicBoolean serverInitialized = new AtomicBoolean();
-    public RequestIDManager requestIDManager = new RequestIDManager();
-    private SimpleDateFormat sdfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    private SynchronousQueue<String> startingOrderID = new SynchronousQueue<>();
-    private java.util.Random random=new java.util.Random();
-    
-    public TWSConnection(BeanConnection c) {
-        this.c = c;
-        cassandra.setTopic(Algorithm.topic);
-        cassandra.setCassandraPort(4242);
-        mTotalSymbols = Parameters.symbol.size();
-        if (mTotalATMChecks == 0) {
-            for (BeanSymbol s : Parameters.symbol) {
-                if (s.getType().compareTo("OPT") == 0 && s.getOption() == null) {
-                    mTotalATMChecks = mTotalATMChecks + 1;
-                }
-            }
-        }
     }
 
     public synchronized boolean connect() {
@@ -185,7 +184,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
             requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB, mRequestId, s, EnumRequestType.SNAPSHOT, EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(), c.getAccountName()));
             logger.log(Level.FINER, "MarketDataRequestSent_Snapshot,{0}", new Object[]{s.getSerialno() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + this.getC().getAccountName()});
 
-
             //c.getmSnapShotReqID().put(mRequestId, s.getSerialno());
             Contract con;
             con = createContract(s);
@@ -208,10 +206,8 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                 logger.log(Level.FINER, "401,MarketDataRequestSentStreaming,{0}:{1}:{2}:{3}:{4},RequestID={5}",
                         new Object[]{"Unknown", c.getAccountName(), s.getDisplayname(), -1, -1, mRequestId});
 
-
                 //c.getmReqID().put(mRequestId, s.getSerialno());
                 //requestDetails.putIfAbsentIfAbsent(mRequestId, new Request(mRequestId, s, EnumRequestType.STREAMING, EnumRequestStatus.PENDING, new Date().getTime()));
-
                 //c.getmStreamingSymbolRequestID().put(s.getSerialno(), mRequestId);
                 List<TagValue> l = new ArrayList<>();
                 //TagValue tv=new TagValue();
@@ -294,11 +290,15 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
         }
         return tickValue;
     }
-/**
- * Returns a Map containing parentsymbolid and corresponding Order for non-combo orders.For combo orders, returns childsymbolid and corresponding order
- * @param e
- * @return 
- */
+
+    /**
+     * Returns a Map containing parentsymbolid and corresponding Order for
+     * non-combo orders.For combo orders, returns childsymbolid and
+     * corresponding order
+     *
+     * @param e
+     * @return
+     */
     public HashMap<Integer, Order> createOrder(OrderBean e) {
         if (recentOrders == null) {
             recentOrders = new LimitedQueue(getC().getOrdersHaltTrading());
@@ -381,7 +381,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
         }
     }
 
-   
     @Override
     public Order createBrokerOrder(OrderBean e) {
         Order order = new Order();
@@ -394,7 +393,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
         String ordValidity = null;
         String orderRef = e.getOrderReference();
         String effectiveFrom = e.getEffectiveFrom();
-        order.m_orderId=e.getExternalOrderID();
+        order.m_orderId = e.getExternalOrderID();
         order.m_action = (ordSide == EnumOrderSide.BUY || ordSide == EnumOrderSide.COVER) ? "BUY" : "SELL";
         order.m_auxPrice = trigger > 0 ? trigger : 0;
         order.m_lmtPrice = limit > 0 ? limit : 0;
@@ -454,7 +453,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
 
     }
 
-     public double calculatePairPrice(int pairID, HashMap<Integer, Double> limitPrices) {
+    public double calculatePairPrice(int pairID, HashMap<Integer, Double> limitPrices) {
         HashMap<BeanSymbol, Integer> combo = Parameters.symbol.get(pairID).getCombo();
         double pairPrice = 0;
         int i = 0;
@@ -536,7 +535,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     }
 
     @Override
-    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, HashMap<Integer, Order> orders,  ExecutionManager oms, OrderBean event) {
+    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, HashMap<Integer, Order> orders, ExecutionManager oms, OrderBean event) {
         ArrayList<Integer> orderids = new ArrayList<>();
         if (!tradeIntegrityOK(event.getOrderSide(), event.getOrderStage(), orders, true)) {//reset trading flag set during createorder
             return orderids;
@@ -547,60 +546,60 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
             i = i + 1;
             Order order = entry1.getValue();
             int symbolid = entry1.getKey();
-            if (c.getReqHandle().getHandle()) {                
+            if (c.getReqHandle().getHandle()) {
                 int mOrderID = order.m_orderId == 0 ? c.getIdmanager().getNextOrderId() : order.m_orderId;
-                event.put("ExternalOrderID",String.valueOf(mOrderID));
+                event.put("ExternalOrderID", String.valueOf(mOrderID));
                 int parentid = event.getParentSymbolID();
                 //save orderIDs at two places
                 //1st location
-                event.put("OrderTime",DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
-                event.put("OrderSize",String.valueOf(order.m_totalQuantity));
-                int displaySize=0;
+                event.put("OrderTime", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
+                event.put("OrderSize", String.valueOf(order.m_totalQuantity));
+                int displaySize = 0;
                 int value = event.getMaximumOrderValue();
                 double bidPrice = Parameters.symbol.get(parentid).getBidPrice();
                 double askPrice = Parameters.symbol.get(parentid).getAskPrice();
-                double lastPrice=Parameters.symbol.get(parentid).getLastPrice();
-                if(value>0){
-                    if(lastPrice<=0){
-                        lastPrice=Math.max(bidPrice,askPrice);
+                double lastPrice = Parameters.symbol.get(parentid).getLastPrice();
+                if (value > 0) {
+                    if (lastPrice <= 0) {
+                        lastPrice = Math.max(bidPrice, askPrice);
                     }
-                    if(lastPrice>0){
-                        displaySize=(int)(value/lastPrice);
+                    if (lastPrice > 0) {
+                        displaySize = (int) (value / lastPrice);
                     }
-                }else{
+                } else {
                     displaySize = event.getDisplaySize() * Parameters.symbol.get(parentid).getMinsize();
                 }
                 double impactCost = Math.abs((askPrice - bidPrice) * 2 / (askPrice + bidPrice));
-                double impactCostThreshold=event.getMaxPermissibleImpactCost();
-                if (displaySize>0 && (impactCostThreshold==0 || impactCost < impactCostThreshold)) {
+                double impactCostThreshold = event.getMaxPermissibleImpactCost();
+                if (displaySize > 0 && (impactCostThreshold == 0 || impactCost < impactCostThreshold)) {
                     double rand = random.nextGaussian();
                     displaySize = (int) (displaySize * rand);
                     displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
-                    displaySize=Math.max(Parameters.symbol.get(parentid).getMinsize(),displaySize);
+                    displaySize = Math.max(Parameters.symbol.get(parentid).getMinsize(), displaySize);
                 }
-                logger.log(Level.FINE,"500,DisplaySizeSet,{0}",new Object[]{displaySize});
+                logger.log(Level.FINE, "500,DisplaySizeSet,{0}", new Object[]{displaySize});
                 order.m_displaySize = displaySize;
                 //event.put("DisplaySize",String.valueOf(order.m_displaySize));
                 boolean singlelegorder = TradingUtil.isSyntheticSymbol(event.getParentSymbolID());
                 if (singlelegorder) {
                     if (event.getChildSymbolID() == 0) {
-                        event.put("ChildDisplayName",Parameters.symbol.get(parentid).getDisplayname());
+                        event.put("ChildDisplayName", Parameters.symbol.get(parentid).getDisplayname());
                     }
-                    event.put("CurrentOrderSize",String.valueOf(order.m_totalQuantity));
-                    event.put("LimitPrice",String.valueOf(order.m_lmtPrice));
-                    event.put("TriggerPrice",String.valueOf(order.m_auxPrice));
-                    event.put("OrderStatus","SUBMITTED");
+                    event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
+                    event.put("LimitPrice", String.valueOf(order.m_lmtPrice));
+                    event.put("TriggerPrice", String.valueOf(order.m_auxPrice));
+                    event.put("OrderStatus", "SUBMITTED");
                     ArrayList<Contract> contracts = c.getWrapper().createContract(event.getChildSymbolID());
                     if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0 && !event.getOrderStage().equals(EnumOrderStage.AMEND)) {
-                        String key="OQ:*"+c.getAccountName()+":"+event.getOrderReference()+":"+event.getParentDisplayName()+":"+event.getChildDisplayName()+":"+event.getParentInternalOrderID()+":"+event.getInternalOrderID();
-                        event.put("OrderStage","INIT");
+                        String key = "OQ:*" + c.getAccountName() + ":" + event.getOrderReference() + ":" + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":" + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
+                        event.put("OrderStage", "INIT");
                         event.put("CurrentFillSize", "0");
-                        order.m_totalQuantity = Math.min(order.m_displaySize,(event.getOriginalOrderSize()-event.getTotalFillSize()));
-                        event.put("CurrentOrderSize",String.valueOf(order.m_totalQuantity ));
+                        order.m_totalQuantity = Math.min(order.m_displaySize, (event.getOriginalOrderSize() - event.getTotalFillSize()));
+                        event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
                         int connectionid = Parameters.connection.indexOf(this.getC());
                         logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize())});
                         if (Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
-                            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), event.getOrderSide(), oms.tickSize,event.getOrderType());
+                            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), event.getOrderSide(), oms.tickSize, event.getOrderType());
                             if (limitprice > 0) {
                                 order.m_lmtPrice = limitprice;
                             }
@@ -768,7 +767,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                 logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
             }
-            String searchString = "OQ:*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":"+ob.getInternalOrderID()+":";
+            String searchString = "OQ:*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getInternalOrderID() + ":";
             Set<OrderQueueKey> oqks = TradingUtil.getLiveOrderKeys(Algorithm.db, c, searchString);
             for (OrderQueueKey oqki : oqks) {
                 int obindex = c.getOrders().get(oqki).size() - 1;
@@ -782,8 +781,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
             }
         }
     }
-        
-    
 
     public void requestFundamentalData(BeanSymbol s, String reportType) {
 
@@ -812,7 +809,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
     public void cancelFundamentalData(int reqId) {
         eClientSocket.cancelFundamentalData(reqId);
     }
-
 
     public void requestOpenOrders() {
         eClientSocket.reqOpenOrders();
@@ -869,7 +865,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                 eClientSocket.reqHistoricalData(mRequestId, con, endDate, duration, barSize, "TRADES", 1, 2, null);
                 logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize + delimiter + endDate});
                 //System.out.println("HistoricalDataRequestSent"+c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize+delimiter+endDate);
-
 
             } else {
                 System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getBrokerSymbol());
@@ -988,7 +983,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                             Parameters.symbol.get(id).setOpenPrice(price);
                         }
                         if (Parameters.symbol.get(id).isAddedToSymbols()) {
-                            jedis.publish(this.getCassandraDetails().getTopic(),field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());
+                            jedis.publish(this.getCassandraDetails().getTopic(), field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());
 
                         }
                     }
@@ -1366,12 +1361,12 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
 
     @Override
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
-        try {            
-                 logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
-                        new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, String.valueOf(orderId), status, filled, remaining});
-                //logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
-                tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
-             
+        try {
+            logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
+                    new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, String.valueOf(orderId), status, filled, remaining});
+            //logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
+            tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
+
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
@@ -1627,7 +1622,6 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                     default:
                         break;
 
-
                 }
             }
 
@@ -1801,7 +1795,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                     if (rd != null) {
                         logger.log(Level.INFO, "402,RequestID is not available for processing with IB Servers,{0}:{1}:{2}:{3}:{4},RequestTYpe={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
                                 new Object[]{"Unknown", rd.accountName, rd.symbol.getDisplayname(), -1, -1,
-                            rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
+                                    rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
                     }
                     break;
 
@@ -1809,7 +1803,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
                     rd = requestDetails.get(id);
                     logger.log(Level.INFO, "402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestType={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
                             new Object[]{"Unknown", rd.accountName, rd.symbol.getDisplayname(), -1, -1,
-                        rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
+                                rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
                     break;
 
                 case 1102: //Reconnected
@@ -2034,7 +2028,7 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
 
     @Override
     public void disconnect() {
-       this.eClientSocket.eDisconnect();
+        this.eClientSocket.eDisconnect();
     }
 
     @Override
@@ -2044,13 +2038,12 @@ public class TWSConnection extends Thread implements EWrapper,Connection {
 
     @Override
     public boolean isConnected() {
-       return this.eClientSocket.isConnected(); //To change body of generated methods, choose Tools | Templates.
+        return this.eClientSocket.isConnected(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public BeanCassandraConnection getCassandraDetails() {
         return this.cassandra;
     }
-
 
 }

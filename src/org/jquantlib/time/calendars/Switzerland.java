@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -58,14 +57,12 @@ import org.jquantlib.time.Weekday;
  * @author Dominik Holenstein
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class Switzerland extends Calendar {
 
     //
     // public constructors
     //
-
     public Switzerland() {
         impl = new Impl();
     }
@@ -73,8 +70,8 @@ public class Switzerland extends Calendar {
     //
     // private final inner classes
     //
-
     private class Impl extends WesternImpl {
+
         @Override
         public String name() {
             return "Switzerland";

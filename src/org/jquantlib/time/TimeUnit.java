@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2005, 2006 Ferdinando Ametrano
  Copyright (C) 2006 Katiuscia Manzoni
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
@@ -39,12 +39,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.time;
 
 /**
  * Time units
- * 
+ *
  * @author Richard Gomes
  */
 public enum TimeUnit {
@@ -52,7 +51,7 @@ public enum TimeUnit {
 
     /**
      * Returns the name of time unit in long format (e.g. "week")
-     * 
+     *
      * @return the name of time unit in long format (e.g. "week")
      */
     public String getLongFormat() {
@@ -61,7 +60,7 @@ public enum TimeUnit {
 
     /**
      * Returns the name of time unit in short format (e.g. "w")
-     * 
+     *
      * @return the name of time unit in short format (e.g. "w")
      */
     public String getShortFormat() {
@@ -70,7 +69,7 @@ public enum TimeUnit {
 
     /**
      * Output time units in long format (e.g. "week")
-     * 
+     *
      * @note message in singular form
      */
     private String getLongFormatString() {

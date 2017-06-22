@@ -32,11 +32,8 @@ public class Rates {
     private static int responseport;
     public static com.incurrency.framework.rateserver.RedisPublisher rateServer;
     private static final Logger logger = Logger.getLogger(Rates.class.getName());
-    Date endDate;
     public static String country;
     public static boolean useRTVolume = false;
-    //--common parameters required for all strategies
-    Properties properties;
     public static String tickFutureMetric;
     public static String tickEquityMetric;
     public static String tickOptionMetric;
@@ -44,6 +41,9 @@ public class Rates {
     public static String rtEquityMetric;
     public static String rtOptionMetric;
     public static boolean pushToCassandra = false;
+    Date endDate;
+    //--common parameters required for all strategies
+    Properties properties;
 
     public Rates(String parameterFile) {
         loadParameters(parameterFile);
@@ -85,13 +85,13 @@ public class Rates {
         rtEquityMetric = properties.getProperty("rtequitymetric");
         rtOptionMetric = properties.getProperty("rtoptionmetric");
         if (useRTVolume) {
-           // ZMQPubSub.equityMetric = rtEquityMetric;
-           // ZMQPubSub.futureMetric = rtFutureMetric;
-           // ZMQPubSub.optionMetric = rtOptionMetric;
+            // ZMQPubSub.equityMetric = rtEquityMetric;
+            // ZMQPubSub.futureMetric = rtFutureMetric;
+            // ZMQPubSub.optionMetric = rtOptionMetric;
         } else {
-           // ZMQPubSub.equityMetric = tickEquityMetric;
-           // ZMQPubSub.futureMetric = tickFutureMetric;
-           // ZMQPubSub.optionMetric = tickOptionMetric;
+            // ZMQPubSub.equityMetric = tickEquityMetric;
+            // ZMQPubSub.futureMetric = tickFutureMetric;
+            // ZMQPubSub.optionMetric = tickOptionMetric;
         }
         boolean realtime = Boolean.parseBoolean(properties.getProperty("realtime", "false"));
         pushToCassandra = Boolean.parseBoolean(properties.getProperty("savetocassandra", "false"));
@@ -102,7 +102,7 @@ public class Rates {
                 c.getWrapper().getCassandraDetails().setCassandraPort(cassandraPort);
                 c.getWrapper().getCassandraDetails().setTopic(topic);
                 c.getWrapper().getCassandraDetails().setSaveToCassandra(pushToCassandra);
-                c.getWrapper().getCassandraDetails().setTickEquityMetric(tickEquityMetric); 
+                c.getWrapper().getCassandraDetails().setTickEquityMetric(tickEquityMetric);
                 c.getWrapper().getCassandraDetails().setTickFutureMetric(tickFutureMetric);
                 c.getWrapper().getCassandraDetails().setTickOptionMetric(tickOptionMetric);
                 c.getWrapper().getCassandraDetails().setRtEquityMetric(rtEquityMetric);
@@ -112,9 +112,9 @@ public class Rates {
                 c.getWrapper().getCassandraDetails().setSaveToCassandra(savetocassandra);
                 if (savetocassandra) {
                     try {
-                      //  ZMQPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);
-                      //  ZMQPubSub.output = new PrintStream(ZMQPubSub.cassandraConnection.getOutputStream());
-                      //  ZMQPubSub.saveToCassandra = savetocassandra;
+                        //  ZMQPubSub.cassandraConnection = new Socket(cassandraIP, cassandraPort);
+                        //  ZMQPubSub.output = new PrintStream(ZMQPubSub.cassandraConnection.getOutputStream());
+                        //  ZMQPubSub.saveToCassandra = savetocassandra;
                     } catch (Exception e) {
                         logger.log(Level.SEVERE, null, e);
                     }

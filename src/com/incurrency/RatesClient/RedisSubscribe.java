@@ -9,21 +9,20 @@ import java.util.logging.Logger;
 import redis.clients.jedis.Client;
 import redis.clients.jedis.JedisPubSub;
 
-
 /**
  *
  * @author Pankaj
  */
 public class RedisSubscribe extends JedisPubSub {
 
-    ExecutorService taskPool;
     private static final Logger logger = Logger.getLogger(RedisSubscribe.class.getName());
+    public static TradingEventSupport tes;
+    ExecutorService taskPool;
     final String topic;
-    public static TradingEventSupport tes ;
 
     public RedisSubscribe(String topic) {
         this.topic = topic;
-        tes=new TradingEventSupport();
+        tes = new TradingEventSupport();
         if (globalProperties.getProperty("threadlimit") != null) {
             int limit = Integer.valueOf(globalProperties.getProperty("threadlimit").toString().trim());
             taskPool = Executors.newFixedThreadPool(limit);
@@ -38,7 +37,7 @@ public class RedisSubscribe extends JedisPubSub {
     @Override
     public void onMessage(String channel, String message) {
         super.onMessage(channel, message); //To change body of generated methods, choose Tools | Templates.
-       // System.out.println(message);
+        // System.out.println(message);
         if (message != null) {
             try {
                 //queue.put(string);

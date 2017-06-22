@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2008 Ferdinando Ametrano
  Copyright (C) 2004, 2005, 2007 StatPro Italia srl
 
@@ -52,100 +52,94 @@ import org.jquantlib.time.JDate;
 
 /**
  * Constant caplet volatility, no time-strike dependence
- * 
+ *
  * @author Zahid Hussain
  */
 public class ConstantOptionletVolatility extends OptionletVolatilityStructure {
 
-	private final Handle<Quote> volatility_;
+    private final Handle<Quote> volatility_;
 
-	/**
-	 * floating reference date, floating market data
-	 */
-	public ConstantOptionletVolatility(final int settlementDays,
-			final Calendar cal, final BusinessDayConvention bdc,
-			final Handle<Quote> vol, final DayCounter dc) {
-		super(settlementDays, cal, bdc, dc);
-		this.volatility_ = vol;
-		volatility_.addObserver(this);
-	}
+    /**
+     * floating reference date, floating market data
+     */
+    public ConstantOptionletVolatility(final int settlementDays,
+            final Calendar cal, final BusinessDayConvention bdc,
+            final Handle<Quote> vol, final DayCounter dc) {
+        super(settlementDays, cal, bdc, dc);
+        this.volatility_ = vol;
+        volatility_.addObserver(this);
+    }
 
-	/**
-	 * fixed reference date, floating market data
-	 */
-	public ConstantOptionletVolatility(final JDate referenceDate,
-			final Calendar cal, final BusinessDayConvention bdc,
-			final Handle<Quote> vol, final DayCounter dc) {
-		super(referenceDate, cal, bdc, dc);
-		this.volatility_ = vol;
-		volatility_.addObserver(this);
-	}
+    /**
+     * fixed reference date, floating market data
+     */
+    public ConstantOptionletVolatility(final JDate referenceDate,
+            final Calendar cal, final BusinessDayConvention bdc,
+            final Handle<Quote> vol, final DayCounter dc) {
+        super(referenceDate, cal, bdc, dc);
+        this.volatility_ = vol;
+        volatility_.addObserver(this);
+    }
 
-	/**
-	 * floating reference date, fixed market data
-	 */
-	public ConstantOptionletVolatility(final int settlementDays,
-			final Calendar cal, final BusinessDayConvention bdc,
-			final double vol, final DayCounter dc) {
-		super(settlementDays, cal, bdc, dc);
-		this.volatility_ = new Handle<Quote>(new SimpleQuote(vol));
-	}
+    /**
+     * floating reference date, fixed market data
+     */
+    public ConstantOptionletVolatility(final int settlementDays,
+            final Calendar cal, final BusinessDayConvention bdc,
+            final double vol, final DayCounter dc) {
+        super(settlementDays, cal, bdc, dc);
+        this.volatility_ = new Handle<Quote>(new SimpleQuote(vol));
+    }
 
-	/**
-	 * fixed reference date, fixed market data
-	 */
-	public ConstantOptionletVolatility(final JDate referenceDate,
-			final Calendar cal, final BusinessDayConvention bdc, final double vol,
-			final DayCounter dc) {
-		super(referenceDate, cal, bdc, dc);
-		volatility_ = new Handle<Quote>(new SimpleQuote(vol));
-	}
+    /**
+     * fixed reference date, fixed market data
+     */
+    public ConstantOptionletVolatility(final JDate referenceDate,
+            final Calendar cal, final BusinessDayConvention bdc, final double vol,
+            final DayCounter dc) {
+        super(referenceDate, cal, bdc, dc);
+        volatility_ = new Handle<Quote>(new SimpleQuote(vol));
+    }
 
-
-	//
-	// overrides TermStructure
-	//
-
-	@Override
+    //
+    // overrides TermStructure
+    //
+    @Override
     public JDate maxDate() {
-		return JDate.maxDate();
-	}
-
+        return JDate.maxDate();
+    }
 
     //
     // overrides VolatilityTermStructure
     //
-
-	@Override
+    @Override
     public double minStrike() {
-		return Constants.QL_MIN_REAL;
-	}
+        return Constants.QL_MIN_REAL;
+    }
 
-	@Override
+    @Override
     public double maxStrike() {
-		return Constants.QL_MAX_REAL;
-	}
-
+        return Constants.QL_MAX_REAL;
+    }
 
     //
     // overrides OptionletVolatilityStructure
     //
-
     @Override
     protected SmileSection smileSectionImpl(final JDate d) {
 
-        final double /* Volatility */atmVol = volatility_.currentLink().value();
+        final double /* Volatility */ atmVol = volatility_.currentLink().value();
         return new FlatSmileSection(d, atmVol, dayCounter(), referenceDate());
     }
 
     @Override
     protected SmileSection smileSectionImpl(final double optionTime) {
-        final double /* Volatility */atmVol = volatility_.currentLink().value();
+        final double /* Volatility */ atmVol = volatility_.currentLink().value();
         return new FlatSmileSection(optionTime, atmVol, dayCounter());
     }
 
-	@Override
-    protected double /* Volatility */volatilityImpl(final double time, final double rate) {
-		return volatility_.currentLink().value();
-	}
+    @Override
+    protected double /* Volatility */ volatilityImpl(final double time, final double rate) {
+        return volatility_.currentLink().value();
+    }
 }

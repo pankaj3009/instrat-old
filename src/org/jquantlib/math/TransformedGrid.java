@@ -23,7 +23,6 @@ package org.jquantlib.math;
 
 import org.jquantlib.math.matrixutilities.Array;
 
-
 /**
  *
  * @author Srinivas Hasti
@@ -32,81 +31,81 @@ import org.jquantlib.math.matrixutilities.Array;
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public class TransformedGrid {
 
-	protected Array grid;
-	protected Array transformedGrid;
-	protected Array dxm;
-	protected Array dxp;
-	protected Array dx;
+    protected Array grid;
+    protected Array transformedGrid;
+    protected Array dxm;
+    protected Array dxp;
+    protected Array dx;
 
-	public TransformedGrid(final Array grid) {
-	    // TODO: code review :: use of clone()
-		this.grid = grid;
-		this.transformedGrid = grid.clone();
-		this.dxm = new Array(grid.size());
-		this.dxp = new Array(grid.size());
-		this.dx = new Array(grid.size());
-		for (int i = 1; i < transformedGrid.size() - 1; i++) {
-			dxm.set(i, transformedGrid.get(i) - transformedGrid.get(i - 1));
-			dxp.set(i, transformedGrid.get(i + 1) - transformedGrid.get(i));
-			dx.set(i, dxm.get(i) + dxp.get(i));
-		}
-	}
+    public TransformedGrid(final Array grid) {
+        // TODO: code review :: use of clone()
+        this.grid = grid;
+        this.transformedGrid = grid.clone();
+        this.dxm = new Array(grid.size());
+        this.dxp = new Array(grid.size());
+        this.dx = new Array(grid.size());
+        for (int i = 1; i < transformedGrid.size() - 1; i++) {
+            dxm.set(i, transformedGrid.get(i) - transformedGrid.get(i - 1));
+            dxp.set(i, transformedGrid.get(i + 1) - transformedGrid.get(i));
+            dx.set(i, dxm.get(i) + dxp.get(i));
+        }
+    }
 
-	public TransformedGrid(final Array grid, final Ops.DoubleOp f) {
-	    // TODO: code review :: use of clone()
-	    this.grid = grid;
-		this.transformedGrid = grid.clone().transform(f);
-		this.dxm = new Array(grid.size());
-		this.dxp = new Array(grid.size());
-		this.dx = new Array(grid.size());
-		for (int i = 1; i < transformedGrid.size() - 1; i++) {
-			dxm.set(i, transformedGrid.get(i) - transformedGrid.get(i - 1));
-			dxp.set(i, transformedGrid.get(i + 1) - transformedGrid.get(i));
-			dx.set(i, dxm.get(i) + dxp.get(i));
-		}
-	}
+    public TransformedGrid(final Array grid, final Ops.DoubleOp f) {
+        // TODO: code review :: use of clone()
+        this.grid = grid;
+        this.transformedGrid = grid.clone().transform(f);
+        this.dxm = new Array(grid.size());
+        this.dxp = new Array(grid.size());
+        this.dx = new Array(grid.size());
+        for (int i = 1; i < transformedGrid.size() - 1; i++) {
+            dxm.set(i, transformedGrid.get(i) - transformedGrid.get(i - 1));
+            dxp.set(i, transformedGrid.get(i + 1) - transformedGrid.get(i));
+            dx.set(i, dxm.get(i) + dxp.get(i));
+        }
+    }
 
-	public Array gridArray() {
-		return grid;
-	}
+    public Array gridArray() {
+        return grid;
+    }
 
-	public Array transformedGridArray() {
-		return transformedGrid;
-	}
+    public Array transformedGridArray() {
+        return transformedGrid;
+    }
 
-	public Array dxmArray() {
-		return dxm;
-	}
+    public Array dxmArray() {
+        return dxm;
+    }
 
-	public Array dxpArray() {
-		return dxp;
-	}
+    public Array dxpArray() {
+        return dxp;
+    }
 
-	public Array dxArray() {
-		return dx;
-	}
+    public Array dxArray() {
+        return dx;
+    }
 
-	public double grid(final int i) {
-		return grid.get(i);
-	}
+    public double grid(final int i) {
+        return grid.get(i);
+    }
 
-	public double transformedGrid(final int i) {
-		return transformedGrid.get(i);
-	}
+    public double transformedGrid(final int i) {
+        return transformedGrid.get(i);
+    }
 
-	public double dxm(final int i) {
-		return dxm.get(i);
-	}
+    public double dxm(final int i) {
+        return dxm.get(i);
+    }
 
-	public double dxp(final int i) {
-		return dxp.get(i);
-	}
+    public double dxp(final int i) {
+        return dxp.get(i);
+    }
 
-	public double dx(final int i) {
-		return dx.get(i);
-	}
+    public double dx(final int i) {
+        return dx.get(i);
+    }
 
-	public int size() {
-		return grid.size();
-	}
+    public int size() {
+        return grid.size();
+    }
 }

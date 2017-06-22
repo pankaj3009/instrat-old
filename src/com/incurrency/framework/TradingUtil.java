@@ -51,7 +51,6 @@ import javax.mail.internet.InternetAddress;
 import javax.swing.JOptionPane;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
-
 /**
  *
  * @author psharma
@@ -530,7 +529,7 @@ public class TradingUtil {
 
     public static boolean checkLicense() {
         try {
-            if(!Algorithm.lc){
+            if (!Algorithm.lc) {
                 return true;
             }
             digest = new byte[]{
@@ -919,7 +918,6 @@ public class TradingUtil {
                 file.createNewFile();
             }
 
-
             //true = append file
             SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd");
             SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:mm:ss");
@@ -943,7 +941,6 @@ public class TradingUtil {
             if (!file.exists()) {
                 file.createNewFile();
             }
-
 
             //true = append file
             SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd");
@@ -1002,6 +999,7 @@ public class TradingUtil {
         }
         return sb.toString();
     }
+
     /*
      public static String encrypt(String source, String password){
      String encryptedString="";
@@ -1071,7 +1069,6 @@ public class TradingUtil {
         
      }
      */
-
     public static String getPublicIPAddress() {
         String ip = "";
         try {
@@ -1083,6 +1080,7 @@ public class TradingUtil {
         }
         return ip;
     }
+
     /*
      public static Date getExpiryDate(String macID, String accounts, boolean realaccount) {
 
@@ -1118,7 +1116,6 @@ public class TradingUtil {
      return expiryDate;
      }
      */
-
     public static boolean isValidTime(String time) {
         //http://www.vogella.com/tutorials/JavaRegularExpressions/article.html
         //http://stackoverflow.com/questions/884848/regular-expression-to-validate-valid-time
@@ -1189,6 +1186,7 @@ public class TradingUtil {
         }.toArray(new Integer[inputArray.length]);
         return out;
     }
+
     /*
      public static int getIDFromSymbol(String symbol, String type, String expiry, String right, String option) {
      for (BeanSymbol symb : Parameters.symbol) {
@@ -1211,7 +1209,7 @@ public class TradingUtil {
      return -1;
      }
      */
-    /*
+ /*
      public static int getIDFromDisplayName(String symbol, String type, String expiry, String right, String option) {
      for (BeanSymbol symb : Parameters.symbol) {
      String s = symb.getDisplayname() == null ? "" : symb.getDisplayname();
@@ -1234,7 +1232,7 @@ public class TradingUtil {
      }
      */
 
-    /*
+ /*
      public static int getIDFromDisplayName(String displayName) {
      for (BeanSymbol symb : Parameters.symbol) {
      if (symb.getDisplayname().equals(displayName)) {
@@ -1262,7 +1260,6 @@ public class TradingUtil {
         }
     }
 
-    
     public static int tradesToday(Database<String, String> db, String strategyName, String timeZone, String accountName, String today) {
         int tradesToday = 0; //Holds the number of trades done today
         for (String key : db.getKeys("opentrades_" + strategyName)) {
@@ -1325,7 +1322,7 @@ public class TradingUtil {
              * 4 => YTD profit
              */
 
-            /* 5=> Max Drawdown
+ /* 5=> Max Drawdown
              * 6=> Max Drawdown Days
              * 7=> Avg Drawdown days
              * 8 => Sharpe ratio
@@ -1333,7 +1330,6 @@ public class TradingUtil {
              * 10 => Average Drawdown days
              * 11 => # days in current drawdown
              */
-
             String today = DateUtil.getFormatedDate("yyyy-MM-dd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             String todaylongtime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
             String todayyyyyMMdd = DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
@@ -1344,10 +1340,10 @@ public class TradingUtil {
                     String account = Trade.getAccountName(db, key);
                     if (account.equals(accountName)) {
                         //TradingUtil.updateMTM(db, key, timeZone);
-                        String parentDisplayName=Trade.getParentSymbol(db, key);
-                         int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentDisplayName);
-                        if(Parameters.symbol.get(id).getLastPrice()!=0 && Parameters.symbol.get(id).getLastPrice()!=-1){
-                             Trade.setMtm(db, parentDisplayName,today,Parameters.symbol.get(id).getLastPrice());
+                        String parentDisplayName = Trade.getParentSymbol(db, key);
+                        int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentDisplayName);
+                        if (Parameters.symbol.get(id).getLastPrice() != 0 && Parameters.symbol.get(id).getLastPrice() != -1) {
+                            Trade.setMtm(db, parentDisplayName, today, Parameters.symbol.get(id).getLastPrice());
                         }
                         int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10));
                         ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
@@ -1355,7 +1351,7 @@ public class TradingUtil {
                         Trade.setExitBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(1), 0));
                         String expiry = Trade.getParentSymbol(db, key).split("_", -1)[2];
                         if (expiry != null && !expiry.equals("") && expiry.compareTo(todayyyyyMMdd) <= 0) {
-                            double tdyexitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key),today);
+                            double tdyexitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key), today);
                             double ydyexitprice = Trade.getExitPrice(db, key);
                             int ydayexitsize = Trade.getExitSize(db, key);
                             double exitprice;
@@ -1363,7 +1359,7 @@ public class TradingUtil {
                                 int tdyexitsize = Trade.getEntrySize(db, key) - ydayexitsize;
                                 exitprice = (ydyexitprice * ydayexitsize + tdyexitprice * tdyexitsize) / Trade.getEntrySize(db, key);
                             } else {
-                                exitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key),today);
+                                exitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key), today);
                             }
                             Trade.setExitPrice(db, key, "opentrades", exitprice);
                             Trade.setExitSize(db, key, "opentrades", Trade.getEntrySize(db, key));
@@ -1520,13 +1516,13 @@ public class TradingUtil {
         for (String today : pnlDates) {
             //get last trade record date
             logger.log(Level.INFO, "PNLRecords,{0}", new Object[]{strategy + delimiter + account + delimiter + today});
-            String yesterday = DateUtil.getPriorBusinessDay(today,"yyy-MM-dd",1);
+            String yesterday = DateUtil.getPriorBusinessDay(today, "yyy-MM-dd", 1);
             double ytdpnl = 0;
             ytdpnl = Utilities.getDouble(db.getValue("pnl", strategy + ":" + account + ":" + yesterday, "ytd"), 0);
             Iterator<Map.Entry<Long, String>> keys = pair.entrySet().iterator();
             while (keys.hasNext()) {
                 String key = keys.next().getValue();
-                String parentSymbol=Trade.getParentSymbol(db, key);
+                String parentSymbol = Trade.getParentSymbol(db, key);
                 String exitDate = Trade.getExitTime(db, key);
                 exitDate = exitDate.equals("") ? "" : exitDate.substring(0, 10);
                 if (exitDate.compareTo(today) <= 0 && !exitDate.equals("")) {//update win loss ratio
@@ -1560,12 +1556,12 @@ public class TradingUtil {
                             double mtmYesterday = Trade.getMtm(db, parentSymbol, yesterday);
                             if (entryDate.equals(today)) {
                                 entryPrice = Trade.getEntryPrice(db, key);
-                            } else if (entryDate.compareTo(yesterday)<=0) {
-                                entryPrice = Trade.getMtm(db, parentSymbol,yesterday);
-                            }                               
+                            } else if (entryDate.compareTo(yesterday) <= 0) {
+                                entryPrice = Trade.getMtm(db, parentSymbol, yesterday);
+                            }
                             int entrySize = Trade.getEntrySize(db, key);
                             if (exitDate.equals("") || exitDate.compareTo(today) > 0) {
-                                exitPrice = Trade.getMtm(db, parentSymbol,today);
+                                exitPrice = Trade.getMtm(db, parentSymbol, today);
                             } else {
                                 exitPrice = Trade.getExitPrice(db, key);
                             }
@@ -1678,7 +1674,7 @@ public class TradingUtil {
         }
         return settlePrice;
     }
-*/
+     */
     private static String getLastPNLRecordDate(Database<String, String> db, String accountName, String strategyName, String referenceDate, boolean equals) {
         Set<String> dates = db.getKeys("pnl_" + strategyName + ":" + accountName);
         String yesterday = "";
@@ -2145,35 +2141,35 @@ public class TradingUtil {
      * @param orderId reference to an order for which linked orders are needed
      */
     static ArrayList<Integer> getLinkedOrderIds(int orderid, BeanConnection c) {
-        ArrayList<Integer>out=new ArrayList<>();
-        String searchString="OQ:"+orderid+":"+c.getAccountName()+":*";
-        Set<OrderQueueKey> oqks=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
-        if(oqks.size()>1){
-            logger.log(Level.SEVERE,"501,DuplicateExternalOrderID during linkedid search,Account={0},ExternalOrderID={1}",new Object[]{c.getAccountName(),orderid});
+        ArrayList<Integer> out = new ArrayList<>();
+        String searchString = "OQ:" + orderid + ":" + c.getAccountName() + ":*";
+        Set<OrderQueueKey> oqks = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+        if (oqks.size() > 1) {
+            logger.log(Level.SEVERE, "501,DuplicateExternalOrderID during linkedid search,Account={0},ExternalOrderID={1}", new Object[]{c.getAccountName(), orderid});
             return out;
-        }else if (oqks.size()==1){
-            for(OrderQueueKey oqki:oqks){
-                int id=Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
-                boolean combo=TradingUtil.isSyntheticSymbol(id);
-                if(combo){
-                    int parentorderidint=oqki.getParentorderidint();
-                    searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
-                    Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
-                    for(OrderQueueKey oqkinew:oqksnew){
-                        int obsize=c.getOrders().get(oqkinew).size();
-                        OrderBean ob=c.getOrders().get(oqkinew).get(obsize-1);
-                        if(ob.getExternalOrderID()>=0 && TradingUtil.isLiveOrder(c, oqkinew)){
+        } else if (oqks.size() == 1) {
+            for (OrderQueueKey oqki : oqks) {
+                int id = Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
+                boolean combo = TradingUtil.isSyntheticSymbol(id);
+                if (combo) {
+                    int parentorderidint = oqki.getParentorderidint();
+                    searchString = "OQ:*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
+                    Set<OrderQueueKey> oqksnew = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+                    for (OrderQueueKey oqkinew : oqksnew) {
+                        int obsize = c.getOrders().get(oqkinew).size();
+                        OrderBean ob = c.getOrders().get(oqkinew).get(obsize - 1);
+                        if (ob.getExternalOrderID() >= 0 && TradingUtil.isLiveOrder(c, oqkinew)) {
                             out.add(ob.getExternalOrderID());
                         }
                     }
-                }            
-                
+                }
+
             }
         }
         return out;
     }
 
-        /**
+    /**
      * Returns linked external broker orders. The integer argument must specify
      * the reference to a broker order.
      * <p>
@@ -2185,63 +2181,62 @@ public class TradingUtil {
      * @param orderId reference to an order for which linked orders are needed
      */
     static ArrayList<OrderBean> getLinkedOrderBeans(int orderid, BeanConnection c) {
-        ArrayList<OrderBean>out=new ArrayList<>();
-        String searchString="OQ:"+orderid+":"+c.getAccountName()+":*";
-        Set<OrderQueueKey> oqks=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
-        if(oqks.size()>1){
-            logger.log(Level.SEVERE,"501,DuplicateExternalOrderID during linkedid search,Account={0},ExternalOrderID={1}",new Object[]{c.getAccountName(),orderid});
+        ArrayList<OrderBean> out = new ArrayList<>();
+        String searchString = "OQ:" + orderid + ":" + c.getAccountName() + ":*";
+        Set<OrderQueueKey> oqks = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+        if (oqks.size() > 1) {
+            logger.log(Level.SEVERE, "501,DuplicateExternalOrderID during linkedid search,Account={0},ExternalOrderID={1}", new Object[]{c.getAccountName(), orderid});
             return out;
-        }else if (oqks.size()==1){
-            for(OrderQueueKey oqki:oqks){
-                int id=Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
-                boolean combo=TradingUtil.isSyntheticSymbol(id);
-                if(combo){
-                    int parentorderidint=oqki.getParentorderidint();
-                    searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
-                    Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
-                    for(OrderQueueKey oqkinew:oqksnew){
-                        int obsize=c.getOrders().get(oqkinew).size();
-                        OrderBean ob=c.getOrders().get(oqkinew).get(obsize-1);
-                        if(ob.getExternalOrderID()>0 && TradingUtil.isLiveOrder(c, oqkinew)){
+        } else if (oqks.size() == 1) {
+            for (OrderQueueKey oqki : oqks) {
+                int id = Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
+                boolean combo = TradingUtil.isSyntheticSymbol(id);
+                if (combo) {
+                    int parentorderidint = oqki.getParentorderidint();
+                    searchString = "OQ:*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
+                    Set<OrderQueueKey> oqksnew = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+                    for (OrderQueueKey oqkinew : oqksnew) {
+                        int obsize = c.getOrders().get(oqkinew).size();
+                        OrderBean ob = c.getOrders().get(oqkinew).get(obsize - 1);
+                        if (ob.getExternalOrderID() > 0 && TradingUtil.isLiveOrder(c, oqkinew)) {
                             out.add(ob);
                         }
                     }
-                }            
-                
+                }
+
             }
         }
         return out;
     }
-    
-      static ArrayList<OrderBean> getLinkedOrderBeansGivenParentBean(OrderBean ob, BeanConnection c) {
-        ArrayList<OrderBean>out=new ArrayList<>();
-        String searchString="OQ:*"+":"+c.getAccountName()+":"+ob.getOrderReference()+":"+ob.getParentDisplayName()+":"+ob.getChildDisplayName()+":"+ob.getParentInternalOrderID()+":*";
-        Set<OrderQueueKey> oqks=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
-        for(OrderQueueKey oqki:oqks){
-                int id=Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
-                boolean combo=TradingUtil.isSyntheticSymbol(id);
-                if(combo){
-                    int parentorderidint=oqki.getParentorderidint();
-                    searchString="OQ:*"+":"+c.getAccountName()+":"+oqki.getStrategy()+":"+oqki.getParentDisplayName()+":"+oqki.getParentDisplayName()+":"+parentorderidint+":";
-                    Set<OrderQueueKey> oqksnew=TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
-                    for(OrderQueueKey oqkinew:oqksnew){
-                        int obsize=c.getOrders().get(oqkinew).size();
-                        OrderBean obi=c.getOrders().get(oqkinew).get(obsize-1);
-                        if(ob.getExternalOrderID()>0 && TradingUtil.isLiveOrder(c, oqkinew)){
-                            out.add(obi);
-                        }
+
+    static ArrayList<OrderBean> getLinkedOrderBeansGivenParentBean(OrderBean ob, BeanConnection c) {
+        ArrayList<OrderBean> out = new ArrayList<>();
+        String searchString = "OQ:*" + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":" + ob.getParentInternalOrderID() + ":*";
+        Set<OrderQueueKey> oqks = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+        for (OrderQueueKey oqki : oqks) {
+            int id = Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
+            boolean combo = TradingUtil.isSyntheticSymbol(id);
+            if (combo) {
+                int parentorderidint = oqki.getParentorderidint();
+                searchString = "OQ:*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
+                Set<OrderQueueKey> oqksnew = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
+                for (OrderQueueKey oqkinew : oqksnew) {
+                    int obsize = c.getOrders().get(oqkinew).size();
+                    OrderBean obi = c.getOrders().get(oqkinew).get(obsize - 1);
+                    if (ob.getExternalOrderID() > 0 && TradingUtil.isLiveOrder(c, oqkinew)) {
+                        out.add(obi);
                     }
-                }            
-                
+                }
             }
-        
+
+        }
+
         return out;
     }
 
-    
     /**
-     * Returns orders connected to a parent id. The integer argument must specify
-     * the reference to a parent id.
+     * Returns orders connected to a parent id. The integer argument must
+     * specify the reference to a parent id.
      * <p>
      * If the argument is not found as an open order, an empty ArrayList will be
      * returned. If there are no other linked orders, and the argument is the
@@ -2252,12 +2247,12 @@ public class TradingUtil {
      * @param c
      * @param strategy
      * @param parentid
-     * @return 
+     * @return
      */
     static ArrayList<Integer> getLinkedOrdersByParentID(Database db, BeanConnection c, OrderBean obp) {
         ArrayList<Integer> orderids = new ArrayList<>();
-        int parentid=obp.getParentSymbolID();
-        String strategy=obp.getOrderReference();
+        int parentid = obp.getParentSymbolID();
+        String strategy = obp.getOrderReference();
         String[] childDisplayNames = TradingUtil.getChildDisplayNames(parentid);
         String parentDisplayName = Parameters.symbol.get(parentid).getDisplayname();
         for (String childDisplayName : childDisplayNames) {
@@ -2285,7 +2280,7 @@ public class TradingUtil {
         }
         logger.log(Level.INFO, "------------------------------------------------------------");
     }
-    
+
     /**
      * Returns the status of the order referenced by OrderQueueKey
      *
@@ -2318,35 +2313,36 @@ public class TradingUtil {
         }
         return false;
     }
-        
-   
-        /**
+
+    /**
      * Returns child display names for a given symbolid
+     *
      * @param id
-     * @return 
+     * @return
      */
-    public static String[] getChildDisplayNames(int id){
-        String parentDisplayName=Parameters.symbol.get(id).getDisplayname();
-        String[] childDisplayName=parentDisplayName.split(":");
+    public static String[] getChildDisplayNames(int id) {
+        String parentDisplayName = Parameters.symbol.get(id).getDisplayname();
+        String[] childDisplayName = parentDisplayName.split(":");
         return childDisplayName;
     }
-    
-        /**
+
+    /**
      * Returns true if the symbol referenced by id is a synthetic Symbol
+     *
      * @param id
-     * @return 
+     * @return
      */
-    public static boolean isSyntheticSymbol(int id){
-        String[] childDisplayName=getChildDisplayNames(id);
-        if(childDisplayName.length>1){
+    public static boolean isSyntheticSymbol(int id) {
+        String[] childDisplayName = getChildDisplayNames(id);
+        if (childDisplayName.length > 1) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
-    
-    public static Set<OrderQueueKey> getAllOrderKeys(Database db,BeanConnection c, String searchString) {
-        Set<OrderQueueKey>out=new HashSet<>();
+
+    public static Set<OrderQueueKey> getAllOrderKeys(Database db, BeanConnection c, String searchString) {
+        Set<OrderQueueKey> out = new HashSet<>();
         Set<String> oqks = db.getKeys("", searchString);
         for (String oqki : oqks) { //for each orderqueuekey string
             OrderQueueKey oqk = new OrderQueueKey(oqki);
@@ -2354,46 +2350,46 @@ public class TradingUtil {
         }
         return out;
     }
-    
-        public static Set<OrderQueueKey> getLiveOrderKeys(Database db,BeanConnection c, String searchString) {
-        Set<OrderQueueKey>oqks=getAllOrderKeys(db, c, searchString);
-        Set<OrderQueueKey>out=new HashSet<>();
-        for(OrderQueueKey oqki:oqks){
-            if(TradingUtil.isLiveOrder(c, oqki)){
+
+    public static Set<OrderQueueKey> getLiveOrderKeys(Database db, BeanConnection c, String searchString) {
+        Set<OrderQueueKey> oqks = getAllOrderKeys(db, c, searchString);
+        Set<OrderQueueKey> out = new HashSet<>();
+        for (OrderQueueKey oqki : oqks) {
+            if (TradingUtil.isLiveOrder(c, oqki)) {
                 out.add(oqki);
-            }            
+            }
         }
         return out;
     }
-        
-       public static Set<OrderBean> getLiveOrders(Database db,BeanConnection c, String searchString) {
-        Set<OrderQueueKey>oqks=getAllOrderKeys(db, c, searchString);
-        Set<OrderBean>out=new HashSet<>();
-        for(OrderQueueKey oqki:oqks){
-            if(TradingUtil.isLiveOrder(c, oqki)){
+
+    public static Set<OrderBean> getLiveOrders(Database db, BeanConnection c, String searchString) {
+        Set<OrderQueueKey> oqks = getAllOrderKeys(db, c, searchString);
+        Set<OrderBean> out = new HashSet<>();
+        for (OrderQueueKey oqki : oqks) {
+            if (TradingUtil.isLiveOrder(c, oqki)) {
                 out.add(c.getOrderBean(oqki));
-            }            
+            }
         }
         return out;
     }
-       
-       public static Set<OrderBean> getRestingOrders(Database db,BeanConnection c, String searchString) {
-        Set<OrderQueueKey>oqks=getAllOrderKeys(db, c, searchString);
-        Set<OrderBean>out=new HashSet<>();
-        for(OrderQueueKey oqki:oqks){
-            if(TradingUtil.isRestingOrder(c, oqki)){
+
+    public static Set<OrderBean> getRestingOrders(Database db, BeanConnection c, String searchString) {
+        Set<OrderQueueKey> oqks = getAllOrderKeys(db, c, searchString);
+        Set<OrderBean> out = new HashSet<>();
+        for (OrderQueueKey oqki : oqks) {
+            if (TradingUtil.isRestingOrder(c, oqki)) {
                 out.add(c.getOrderBean(oqki));
-            }            
+            }
         }
         return out;
     }
-       
-       public static OrderBean getSyntheticOrder(Database db,BeanConnection c,OrderBean ob){
-           String key="OQ:-1:"+c.getAccountName()+":"+ob.getOrderReference()+":"+ob.getParentDisplayName()+":"+ob.getParentDisplayName()+":"+ob.getInternalOrderID()+":"+ob.getInternalOrderID();
-           return c.getOrderBean(new OrderQueueKey(key));
-       }
-       
-           /**
+
+    public static OrderBean getSyntheticOrder(Database db, BeanConnection c, OrderBean ob) {
+        String key = "OQ:-1:" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getParentDisplayName() + ":" + ob.getInternalOrderID() + ":" + ob.getInternalOrderID();
+        return c.getOrderBean(new OrderQueueKey(key));
+    }
+
+    /**
      * @return the internalOrderID
      */
     public static synchronized int getInternalOrderID() {

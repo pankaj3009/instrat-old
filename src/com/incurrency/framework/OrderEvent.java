@@ -12,6 +12,11 @@ import java.util.HashMap;
  * @author admin
  */
 public class OrderEvent extends EventObject {
+
+    static OrderEvent fastClose(BeanSymbol s, EnumOrderSide side, int size, String orderReference) {
+        OrderEvent e = new OrderEvent(new Object(), -1, -1, s, side, EnumOrderReason.REGULAREXIT, EnumOrderType.MKT, size, 0, 0, orderReference, 0, EnumOrderStage.INIT, 0, 0D, true, "DAY", false, "", "", null, "fastclose");
+        return e;
+    }
     private int _orderidint;
     private int _entryorderidint;
     private BeanSymbol _symbolBean;
@@ -25,116 +30,112 @@ public class OrderEvent extends EventObject {
     private EnumOrderStage _orderStage;
     private int _dynamicOrderDuration;
     private double _maxSlippage;
-    private String _tag="";
+    private String _tag = "";
     private boolean _transmit;
     private String _validity;
     private String _account;
-    private boolean _scale=true;
+    private boolean _scale = true;
     private EnumOrderType _orderType;
     private EnumOrderReason _reason;
     private String _orderGroup;
     private String _effectiveFrom;
     private HashMap _stubs;
     private String _log;
-    private HashMap<String,Object> _orderAttributes=new HashMap<>();
-    
-    public OrderEvent(Object obj){
-        super (obj);
+    private HashMap<String, Object> _orderAttributes = new HashMap<>();
+
+    public OrderEvent(Object obj) {
+        super(obj);
     }
-    
-       public OrderEvent clone(OrderEvent orig) {
+
+    public OrderEvent(Object obj, int internalorder, int internalorderentry, BeanSymbol s, EnumOrderSide side, EnumOrderReason reason, EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicdur, double slippage, boolean transmit, String validity, boolean scale, String orderGroup, String effectiveFrom, HashMap<Integer, Integer> stubs, String log) {
+        //after slippage add boolean trasmit,string validity, at end add String effectiveFrom, HashMap<Integer,Integer>stubs
+        super(obj);
+        this._orderidint = internalorder;
+        this._entryorderidint = internalorderentry;
+        this._symbolBean = s;
+        this._side = side;
+        this._orderType = orderType;
+        this._orderSize = orderSize;
+        this._limitPrice = limitprice;
+        this._triggerPrice = triggerprice;
+        this._ordReference = ordReference;
+        this._expireTime = expireTime;
+        this._orderStage = intent;
+        this._dynamicOrderDuration = dynamicdur;
+        this._maxSlippage = slippage;
+        this._firstLimitPrice = limitprice;
+        this._tag = "";
+        this._transmit = true;
+        this._validity = "DAY";
+        this._account = "";
+        this._scale = scale;
+        this._reason = reason;
+        this._orderGroup = orderGroup;
+        this._effectiveFrom = "";
+        this._log = log;
+
+    }
+
+    public OrderEvent(Object obj, HashMap<String, Object> order) {
+        //after slippage add boolean trasmit,string validity, at end add String effectiveFrom, HashMap<Integer,Integer>stubs
+        super(obj);
+        this._orderidint = Utilities.getInt(order.get("orderidint").toString(), -1);
+        this._entryorderidint = Utilities.getInt(order.get("entryorderidint"), -1);
+        int id = Utilities.getInt(order.get("id"), -1);
+        this._symbolBean = id >= 0 ? Parameters.symbol.get(id) : null;
+        this._side = (order.get("side") != null && order.get("side") != "") ? EnumOrderSide.valueOf(order.get("side").toString()) : EnumOrderSide.UNDEFINED;
+        this._orderType = (order.get("type") != null && order.get("type") != "") ? EnumOrderType.valueOf(order.get("type").toString()) : EnumOrderType.UNDEFINED;
+        this._orderSize = Utilities.getInt(order.get("size"), 0);
+        this._limitPrice = Utilities.getDouble(order.get("limitprice"), 0);
+        this._triggerPrice = Utilities.getDouble(order.get("triggerprice"), 0);
+        this._ordReference = (order.get("orderref") != null && order.get("orderref") != "") ? order.get("orderref").toString().toLowerCase() : "NOTSPECIFIED";
+        this._expireTime = Utilities.getInt(order.get("expiretime"), 0);
+        this._orderStage = (order.get("orderstage") != null && order.get("orderstage") != "") ? EnumOrderStage.valueOf(order.get("orderstage").toString()) : EnumOrderStage.UNDEFINED;
+        this._dynamicOrderDuration = Utilities.getInt(order.get("dynamicorderduration"), 0);
+        this._maxSlippage = Utilities.getDouble(order.get("maxslippage"), 0);
+        this._firstLimitPrice = this._limitPrice;
+        this._tag = "";
+        this._transmit = (order.get("transmit") != null && order.get("transmit") != "") ? Boolean.valueOf(order.get("transmit").toString()) : Boolean.TRUE;
+        this._validity = (order.get("validity") != null && order.get("validity") != "") ? order.get("validity").toString() : "DAY";
+        this._account = "";
+        this._scale = (order.get("scale") != null && order.get("scale") != "") ? Boolean.valueOf(order.get("scale").toString()) : Boolean.FALSE;
+        this._reason = (order.get("reason") != null && order.get("reason") != "") ? EnumOrderReason.valueOf(order.get("reason").toString()) : EnumOrderReason.UNDEFINED;
+        this._orderGroup = (order.get("ordergroup") != null && order.get("ordergroup") != "") ? order.get("ordergroup").toString() : null;
+        this._effectiveFrom = (order.get("effectivefrom") != null && order.get("effectivefrom") != "") ? order.get("effectivefrom").toString() : null;
+        this._log = (order.get("log") != null && order.get("log") != "") ? order.get("log").toString() : null;
+        this._orderAttributes = (HashMap<String, Object>) order.get("orderattributes");
+    }
+
+    public OrderEvent clone(OrderEvent orig) {
         OrderEvent b = new OrderEvent(new Object());
-    b._orderidint=orig._orderidint;
-    b._entryorderidint=orig._entryorderidint;
-    b._symbolBean=orig._symbolBean;
-    b._side=orig._side;
-    b._orderSize=orig._orderSize;
-    b._limitPrice=orig._limitPrice;
-    b._firstLimitPrice=orig._firstLimitPrice;
-    b._triggerPrice=orig._triggerPrice;
-    b._ordReference=orig._ordReference;
-    b._expireTime=orig._expireTime;
-    b._orderStage=orig._orderStage;
-    b._dynamicOrderDuration=orig._dynamicOrderDuration;
-    b._maxSlippage=orig._maxSlippage;
-    b._tag=orig._tag;
-    b._transmit=orig._transmit;
-    b._validity=orig._validity;
-    b._account=orig._account;
-    b._scale=orig._scale;
-    b._orderType=orig._orderType;
-    b._reason=orig._reason;
-    b._orderGroup=orig._orderGroup;
-    b._effectiveFrom=orig._effectiveFrom;
-    b._stubs=orig._stubs;
-    b._log=orig._log;
-    b._orderAttributes=orig._orderAttributes;
-    return b;
+        b._orderidint = orig._orderidint;
+        b._entryorderidint = orig._entryorderidint;
+        b._symbolBean = orig._symbolBean;
+        b._side = orig._side;
+        b._orderSize = orig._orderSize;
+        b._limitPrice = orig._limitPrice;
+        b._firstLimitPrice = orig._firstLimitPrice;
+        b._triggerPrice = orig._triggerPrice;
+        b._ordReference = orig._ordReference;
+        b._expireTime = orig._expireTime;
+        b._orderStage = orig._orderStage;
+        b._dynamicOrderDuration = orig._dynamicOrderDuration;
+        b._maxSlippage = orig._maxSlippage;
+        b._tag = orig._tag;
+        b._transmit = orig._transmit;
+        b._validity = orig._validity;
+        b._account = orig._account;
+        b._scale = orig._scale;
+        b._orderType = orig._orderType;
+        b._reason = orig._reason;
+        b._orderGroup = orig._orderGroup;
+        b._effectiveFrom = orig._effectiveFrom;
+        b._stubs = orig._stubs;
+        b._log = orig._log;
+        b._orderAttributes = orig._orderAttributes;
+        return b;
     }
 
-    public OrderEvent(Object obj,int internalorder,int internalorderentry,BeanSymbol s,EnumOrderSide side,EnumOrderReason reason,EnumOrderType orderType, int orderSize, double limitprice, double triggerprice, String ordReference, int expireTime, EnumOrderStage intent, int dynamicdur, double slippage, boolean transmit, String validity,boolean scale,String orderGroup,String effectiveFrom,HashMap<Integer,Integer>stubs,String log){
-        //after slippage add boolean trasmit,string validity, at end add String effectiveFrom, HashMap<Integer,Integer>stubs
-        super(obj);
-        this._orderidint=internalorder;
-        this._entryorderidint=internalorderentry;
-        this._symbolBean=s;
-        this._side=side;
-        this._orderType=orderType;
-        this._orderSize=orderSize;
-        this._limitPrice=limitprice;
-        this._triggerPrice=triggerprice;
-        this._ordReference=ordReference;
-        this._expireTime=expireTime;
-        this._orderStage=intent;
-        this._dynamicOrderDuration=dynamicdur;
-        this._maxSlippage=slippage;
-        this._firstLimitPrice=limitprice;
-        this._tag="";
-        this._transmit=true;
-        this._validity="DAY";
-        this._account="";
-        this._scale=scale;
-        this._reason=reason;
-        this._orderGroup=orderGroup;
-        this._effectiveFrom="";
-        this._log=log;
-        
-    }
-
-    public OrderEvent(Object obj,HashMap<String,Object>order){
-        //after slippage add boolean trasmit,string validity, at end add String effectiveFrom, HashMap<Integer,Integer>stubs
-        super(obj);
-        this._orderidint=Utilities.getInt(order.get("orderidint").toString(),-1);
-        this._entryorderidint=Utilities.getInt(order.get("entryorderidint"),-1);
-        int id=Utilities.getInt(order.get("id"),-1);
-        this._symbolBean=id>=0?Parameters.symbol.get(id):null;
-        this._side=(order.get("side")!=null&&order.get("side")!="")?EnumOrderSide.valueOf(order.get("side").toString()):EnumOrderSide.UNDEFINED;
-        this._orderType=(order.get("type")!=null&&order.get("type")!="")?EnumOrderType.valueOf(order.get("type").toString()):EnumOrderType.UNDEFINED;
-        this._orderSize=Utilities.getInt(order.get("size"),0);
-        this._limitPrice=Utilities.getDouble(order.get("limitprice"),0);
-        this._triggerPrice=Utilities.getDouble(order.get("triggerprice"),0);
-        this._ordReference=(order.get("orderref")!=null&&order.get("orderref")!="")?order.get("orderref").toString().toLowerCase():"NOTSPECIFIED";
-        this._expireTime=Utilities.getInt(order.get("expiretime"),0);
-        this._orderStage=(order.get("orderstage")!=null&&order.get("orderstage")!="")?EnumOrderStage.valueOf(order.get("orderstage").toString()):EnumOrderStage.UNDEFINED;
-        this._dynamicOrderDuration=Utilities.getInt(order.get("dynamicorderduration"),0);
-        this._maxSlippage=Utilities.getDouble(order.get("maxslippage"),0);
-        this._firstLimitPrice=this._limitPrice;
-        this._tag="";
-        this._transmit=(order.get("transmit")!=null&&order.get("transmit")!="")?Boolean.valueOf(order.get("transmit").toString()):Boolean.TRUE;
-        this._validity=(order.get("validity")!=null&&order.get("validity")!="")?order.get("validity").toString():"DAY";
-        this._account="";
-        this._scale=(order.get("scale")!=null&&order.get("scale")!="")?Boolean.valueOf(order.get("scale").toString()):Boolean.FALSE;
-        this._reason=(order.get("reason")!=null&&order.get("reason")!="")?EnumOrderReason.valueOf(order.get("reason").toString()):EnumOrderReason.UNDEFINED;
-        this._orderGroup=(order.get("ordergroup")!=null&&order.get("ordergroup")!="")?order.get("ordergroup").toString():null;
-        this._effectiveFrom=(order.get("effectivefrom")!=null&&order.get("effectivefrom")!="")?order.get("effectivefrom").toString():null;
-        this._log=(order.get("log")!=null&&order.get("log")!="")?order.get("log").toString():null;
-        this._orderAttributes=(HashMap<String,Object>)order.get("orderattributes");
-    }
-
-    static OrderEvent fastClose(BeanSymbol s,EnumOrderSide side,int size,String orderReference){
-        OrderEvent e=new OrderEvent(new Object(),-1,-1,s,side,EnumOrderReason.REGULAREXIT,EnumOrderType.MKT,size,0,0,orderReference,0, EnumOrderStage.INIT, 0, 0D, true, "DAY", false,"","",null,"fastclose");
-        return e;
-    }
     /**
      * @return the _symbolBean
      */
@@ -471,19 +472,17 @@ public class OrderEvent extends EventObject {
         this._log = log;
     }
 
-
-
     /**
      * @return the _orderAttributes
      */
-    public HashMap<String,Object> getOrderAttributes() {
+    public HashMap<String, Object> getOrderAttributes() {
         return _orderAttributes;
     }
 
     /**
      * @param orderAttributes the _orderAttributes to set
      */
-    public void setOrderAttributes(HashMap<String,Object> orderAttributes) {
+    public void setOrderAttributes(HashMap<String, Object> orderAttributes) {
         this._orderAttributes = orderAttributes;
     }
 }

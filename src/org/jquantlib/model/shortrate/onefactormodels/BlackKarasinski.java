@@ -41,9 +41,11 @@ import org.jquantlib.time.TimeGrid;
 /**
  * Standard Black-Karasinski model class.
  * <p>
- * This class implements the standard Black-Karasinski model defined by
- * {@latex[ d\ln r_t = (\theta(t) - \alpha \ln r_t)dt + \sigma dW_t }
- * where {@latex$ \alpha } and {@latex$ \sigma } are constants.
+ * This class implements the standard Black-Karasinski model defined by {
+ *
+ * @latex[ d\ln r_t = (\theta(t) - \alpha \ln r_t)dt + \sigma dW_t } where {
+ * @latex$ \alpha } and {
+ * @latex$ \sigma } are constants.
  *
  * @category shortrate
  *
@@ -52,22 +54,25 @@ import org.jquantlib.time.TimeGrid;
 // TODO: code review :: please verify against QL/C++ code
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public class BlackKarasinski extends OneFactorModel implements TermStructureConsistentModel {
+
+    private static final String no_defined_process_for_bk = "no defined process for Black-Karasinski";
     // need permanent solution for this one
 
     //TODO:renaming....
     private final TermStructureConsistentModelClass termstructureConsistentModel;
+    private Parameter a_;
+    private Parameter sigma_;
 
-    private static final String no_defined_process_for_bk = "no defined process for Black-Karasinski";
-
-    public BlackKarasinski(final Handle<YieldTermStructure> termStructure){
-        this(termStructure, 0.1,0.1);
+    public BlackKarasinski(final Handle<YieldTermStructure> termStructure) {
+        this(termStructure, 0.1, 0.1);
     }
 
-    public BlackKarasinski(final Handle<YieldTermStructure> termStructure, final double a, final double sigma){
+    public BlackKarasinski(final Handle<YieldTermStructure> termStructure, final double a, final double sigma) {
         super(2);
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
         termstructureConsistentModel = new TermStructureConsistentModelClass(termStructure);
         this.a_ = arguments_.get(0);
@@ -78,58 +83,18 @@ public class BlackKarasinski extends OneFactorModel implements TermStructureCons
 
         // TODO: code review :: please verify against QL/C++ code
         // seems like we should have this.termStructure
-
         termStructure.addObserver(this);
         //XXX:registerWith
         //registerWith(termStructure);
     }
 
-    public double /* @Real */a() {
+    public double /* @Real */ a() {
         return a_.get(0.0);
     }
 
-    public double /* @Real */sigma() {
+    public double /* @Real */ sigma() {
         return sigma_.get(0.0);
     }
-
-    private Parameter a_;
-    private Parameter sigma_;
-
-
-    private class Helper implements Ops.DoubleOp {
-        private final int /* @Size */size_;
-        private final double /* @Time */dt_;
-        private final double /* @Real */xMin_, dx_;
-        private final Array statePrices_;
-        private final double /* @Real */discountBondPrice_;
-
-        public Helper(
-                final int /* @Size */i,
-                final double /* @Real */xMin,
-                final double /* @Real */dx,
-                final double /* @Real */discountBondPrice,
-                final OneFactorModel.ShortRateTree tree) {
-            size_ = (tree.size(i));
-            dt_ = (tree.timeGrid().dt(i));
-            xMin_ = (xMin);
-            dx_ = (dx);
-            statePrices_ = (tree.statePrices(i));
-            discountBondPrice_ = (discountBondPrice);
-        }
-
-        public double /* @Real */op /* () */(final double /* @Real */theta) {
-            double /* @Real */value = discountBondPrice_;
-            double /* @Real */x = xMin_;
-            for (int /* @Size */j = 0; j < size_; j++) {
-                final double /* @Real */discount = Math.exp(-Math.exp(theta + x) * dt_);
-                value -= statePrices_.get(j)/* [j] */* discount;
-                x += dx_;
-            }
-            return value;
-        }
-    }
-
-
 
     @Override
     public ShortRateDynamics dynamics() {
@@ -145,13 +110,13 @@ public class BlackKarasinski extends OneFactorModel implements TermStructureCons
 
         final TermStructureFittingParameter.NumericalImpl impl = (TermStructureFittingParameter.NumericalImpl) (phi.implementation());
         impl.reset();
-        double /* @Real */value = 1.0;
-        final double /* @Real */vMin = -50.0;
-        final double /* @Real */vMax = 50.0;
-        for (int /* @Size */i = 0; i < (grid.size() - 1); i++) {
-            final double /* @Real */discountBond = termstructureConsistentModel.termStructure().currentLink().discount(grid.at(i + 1));
-            final double /* @Real */xMin = trinomial.underlying(i, 0);
-            final double /* @Real */dx = trinomial.dx(i);
+        double /* @Real */ value = 1.0;
+        final double /* @Real */ vMin = -50.0;
+        final double /* @Real */ vMax = 50.0;
+        for (int /* @Size */ i = 0; i < (grid.size() - 1); i++) {
+            final double /* @Real */ discountBond = termstructureConsistentModel.termStructure().currentLink().discount(grid.at(i + 1));
+            final double /* @Real */ xMin = trinomial.underlying(i, 0);
+            final double /* @Real */ dx = trinomial.dx(i);
 
             final Helper finder = new BlackKarasinski.Helper(i, xMin, dx, discountBond, numericTree);
             final Brent s1d = new Brent();
@@ -164,35 +129,62 @@ public class BlackKarasinski extends OneFactorModel implements TermStructureCons
         return numericTree;
     }
 
-    /**
-     * Short-rate dynamics in the Black-Karasinski model
-     * <p>
-     * ! The short-rate is here \f[ r_t = e^{\varphi(t) + x_t} \f] where \f$ \varphi(t) \f$ is the deterministic time-dependent
-     * parameter (which can not be determined analytically) used for term-structure fitting and \f$ x_t \f$ is the state variable
-     * following an Ornstein-Uhlenbeck process.
-     */
+    @Override
+    public Handle<YieldTermStructure> termStructure() {
+        return termstructureConsistentModel.termStructure();
+    }
+
+    private class Helper implements Ops.DoubleOp {
+
+        private final int /* @Size */ size_;
+        private final double /* @Time */ dt_;
+        private final double /* @Real */ xMin_, dx_;
+        private final Array statePrices_;
+        private final double /* @Real */ discountBondPrice_;
+
+        public Helper(
+                final int /* @Size */ i,
+                final double /* @Real */ xMin,
+                final double /* @Real */ dx,
+                final double /* @Real */ discountBondPrice,
+                final OneFactorModel.ShortRateTree tree) {
+            size_ = (tree.size(i));
+            dt_ = (tree.timeGrid().dt(i));
+            xMin_ = (xMin);
+            dx_ = (dx);
+            statePrices_ = (tree.statePrices(i));
+            discountBondPrice_ = (discountBondPrice);
+        }
+
+        public double /* @Real */ op /* () */(final double /* @Real */ theta) {
+            double /* @Real */ value = discountBondPrice_;
+            double /* @Real */ x = xMin_;
+            for (int /* @Size */ j = 0; j < size_; j++) {
+                final double /* @Real */ discount = Math.exp(-Math.exp(theta + x) * dt_);
+                value -= statePrices_.get(j)/* [j] */ * discount;
+                x += dx_;
+            }
+            return value;
+        }
+    }
+
     private class Dynamics extends ShortRateDynamics {
 
-        public Dynamics(final Parameter fitting, final double /* @Real */alpha, final double /* @Real */sigma) {
-            super(new OrnsteinUhlenbeckProcess(alpha, sigma, /* default */0.0, /* default */0.0));
+        private final Parameter fitting_;
+
+        public Dynamics(final Parameter fitting, final double /* @Real */ alpha, final double /* @Real */ sigma) {
+            super(new OrnsteinUhlenbeckProcess(alpha, sigma, /* default */ 0.0, /* default */ 0.0));
             fitting_ = (fitting);
         }
 
         @Override
-        public double /* @Real */variable(final double /* @Time */t, final double /* @Rate */r) {
+        public double /* @Real */ variable(final double /* @Time */ t, final double /* @Rate */ r) {
             return Math.log(r) - fitting_.get(t);
         }
 
         @Override
-        public double /* @Real */shortRate(final double /* @Time */t, final double /* @Real */x) {
+        public double /* @Real */ shortRate(final double /* @Time */ t, final double /* @Real */ x) {
             return Math.exp(x + fitting_.get(t));
         }
-
-        private final Parameter fitting_;
-    }
-
-    @Override
-    public Handle<YieldTermStructure> termStructure() {
-        return termstructureConsistentModel.termStructure();
     }
 }

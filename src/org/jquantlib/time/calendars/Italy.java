@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -72,7 +71,8 @@ import org.jquantlib.time.Weekday;
  * <li>New Year's Eve, December 31st</li>
  * </ul>
  *
- * @test the correctness of the returned results is tested against a list of known holidays.
+ * @test the correctness of the returned results is tested against a list of
+ * known holidays.
  *
  * @category calendars
  * @see <a href="http://www.borsaitalia.it">Borsa Italiana</a>
@@ -80,50 +80,45 @@ import org.jquantlib.time.Weekday;
  * @author Srinivas Hasti
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class Italy extends Calendar {
-
-    public static enum Market {
-        /**
-         * Generic settlement calendar
-         */
-        Settlement,
-
-        /**
-         * Milan stock-exchange calendar
-         */
-        Exchange
-    }
-
 
     //
     // public constructors
     //
-
     public Italy() {
         this(Market.Settlement);
     }
 
     public Italy(final Market market) {
         switch (market) {
-        case Settlement:
-            impl = new SettlementImpl();
-            break;
-        case Exchange:
-            impl = new ExchangeImpl();
-            break;
-        default:
-            throw new LibraryException(UNKNOWN_MARKET);
+            case Settlement:
+                impl = new SettlementImpl();
+                break;
+            case Exchange:
+                impl = new ExchangeImpl();
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
         }
     }
 
+    public static enum Market {
+        /**
+         * Generic settlement calendar
+         */
+        Settlement,
+        /**
+         * Milan stock-exchange calendar
+         */
+        Exchange
+    }
 
     //
     // private final inner classes
     //
-
     private final class SettlementImpl extends WesternImpl {
+
         @Override
         public String name() {
             return "Italian settlement";
@@ -137,7 +132,7 @@ public class Italy extends Calendar {
             final int y = date.year();
             final int em = easterMonday(y);
             if (isWeekend(w)
-            // New Year's Day
+                    // New Year's Day
                     || (d == 1 && m == January)
                     // Epiphany
                     || (d == 6 && m == January)
@@ -168,6 +163,7 @@ public class Italy extends Calendar {
     }
 
     private final class ExchangeImpl extends WesternImpl {
+
         @Override
         public String name() {
             return "Milan stock exchange";
@@ -181,7 +177,7 @@ public class Italy extends Calendar {
             final int y = date.year();
             final int em = easterMonday(y);
             if (isWeekend(w)
-            // New Year's Day
+                    // New Year's Day
                     || (d == 1 && m == January)
                     // Good Friday
                     || (dd == em - 3)

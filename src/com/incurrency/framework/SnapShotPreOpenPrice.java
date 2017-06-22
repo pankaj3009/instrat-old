@@ -16,22 +16,19 @@ public class SnapShotPreOpenPrice extends TimerTask {
 
     @Override
     public void run() {
-        
-         List<BeanSymbol> filteredSymbols = new ArrayList();
-        for(BeanSymbol s : Parameters.symbol) {
-        if( "Y".compareTo(s.getPreopen())==0){
-             filteredSymbols.add(s);
+
+        List<BeanSymbol> filteredSymbols = new ArrayList();
+        for (BeanSymbol s : Parameters.symbol) {
+            if ("Y".compareTo(s.getPreopen()) == 0) {
+                filteredSymbols.add(s);
+            }
         }
-}
         int count = filteredSymbols.size();
         int allocatedCapacity = 0;
-       Thread t= new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, count,filteredSymbols,Parameters.connection.get(0).getTickersLimit(),true,false));
-       t.setName("Pre Open Data");
-       t.start();
-       
-            
-        
-                
+        Thread t = new Thread(new MarketData(Parameters.connection.get(0), allocatedCapacity, count, filteredSymbols, Parameters.connection.get(0).getTickersLimit(), true, false));
+        t.setName("Pre Open Data");
+        t.start();
+
     }
-    
+
 }

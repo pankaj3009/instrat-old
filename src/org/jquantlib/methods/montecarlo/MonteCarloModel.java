@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2007 StatPro Italia srl
 
@@ -34,8 +34,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.montecarlo;
 
 import org.jquantlib.math.randomnumbers.RandomNumberGenerator;
@@ -45,14 +44,17 @@ import org.jquantlib.math.statistics.Statistics;
  *
  * General-purpose Monte Carlo model for path samples
  * <p>
- * The template arguments of this class correspond to available policies for the particular model to be instantiated---i.e., whether
- * it is single- or multi-asset, or whether it should use pseudo-random or low-discrepancy numbers for path generation. Such
- * decisions are grouped in trait classes so as to be orthogonal---see mctraits.hpp for examples.
+ * The template arguments of this class correspond to available policies for the
+ * particular model to be instantiated---i.e., whether it is single- or
+ * multi-asset, or whether it should use pseudo-random or low-discrepancy
+ * numbers for path generation. Such decisions are grouped in trait classes so
+ * as to be orthogonal---see mctraits.hpp for examples.
  * <p>
  *
- * The constructor accepts two safe references, i.e. two smart pointers, one to a path generator and the other to a path pricer. In
- * case of control variate technique the user should provide the additional control option, namely the option path pricer and the
- * option value.
+ * The constructor accepts two safe references, i.e. two smart pointers, one to
+ * a path generator and the other to a path pricer. In case of control variate
+ * technique the user should provide the additional control option, namely the
+ * option path pricer and the option value.
  *
  * @category mcarlo
  *
@@ -60,32 +62,30 @@ import org.jquantlib.math.statistics.Statistics;
  */
 public class MonteCarloModel<MC extends Variate, RNG extends RandomNumberGenerator, S extends Statistics> {
 
-	public MonteCarloModel() {
-        if (System.getProperty("EXPERIMENTAL")==null)
-            throw new UnsupportedOperationException("Work in progress");
-	}
-
 //    private PathGeneratorType pathGenerator_;
 //    private PathPricerType pathPricer_;
-
-      private S sampleAccumulator_;
+    private S sampleAccumulator_;
 //    private boolean isAntitheticVariate_;
 //    private PathPricerType cvPathPricer_;
 //    private ResultType cvOptionValue_;
 //    private boolean isControlVariate_;
 
-	public void addSamples(final int size){
-		//  TODO... we have to work on this a bit.
+    public MonteCarloModel() {
+        if (System.getProperty("EXPERIMENTAL") == null) {
+            throw new UnsupportedOperationException("Work in progress");
+        }
+    }
 
-	}
+    public void addSamples(final int size) {
+        //  TODO... we have to work on this a bit.
 
-	public S sampleAccumulator(){
-		return sampleAccumulator_;
-	}
+    }
 
+    public S sampleAccumulator() {
+        return sampleAccumulator_;
+    }
 
 }
-
 
 //template <template <class> class MC, class RNG, class S = Statistics>
 //class MonteCarloModel {

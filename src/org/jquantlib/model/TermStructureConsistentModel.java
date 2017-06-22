@@ -19,7 +19,7 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2005, 2007 StatPro Italia srl
 
@@ -35,8 +35,7 @@ When applicable, the original copyright notice follows this notice.
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.model;
 
 import org.jquantlib.quotes.Handle;
@@ -44,16 +43,18 @@ import org.jquantlib.termstructures.YieldTermStructure;
 import org.jquantlib.util.Observable;
 
 public abstract class TermStructureConsistentModel implements Observable {
+
     private final Handle<YieldTermStructure> termStructure_;
 
-    public TermStructureConsistentModel(final Handle<YieldTermStructure> termStructure){
+    public TermStructureConsistentModel(final Handle<YieldTermStructure> termStructure) {
         this.termStructure_ = termStructure;
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
     }
 
-    public Handle<YieldTermStructure> termStructure(){
+    public Handle<YieldTermStructure> termStructure() {
         return termStructure_;
     }
 }

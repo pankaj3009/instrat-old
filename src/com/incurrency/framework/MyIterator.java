@@ -10,7 +10,7 @@ import java.util.Iterator;
  *
  * @author Pankaj
  */
-public class MyIterator <T> implements Iterator<T> {
+public class MyIterator<T> implements Iterator<T> {
 
     @Override
     public boolean hasNext() {
@@ -26,5 +26,5 @@ public class MyIterator <T> implements Iterator<T> {
     public void remove() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
-    
+
 }

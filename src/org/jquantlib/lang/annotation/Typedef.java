@@ -34,7 +34,7 @@ AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 package org.jquantlib.lang.annotation;
 
 import java.lang.annotation.ElementType;
@@ -48,5 +48,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.ANNOTATION_TYPE)
 public @interface Typedef {
-	// Tags other annotations as 'typedefs'
+    // Tags other annotations as 'typedefs'
 }

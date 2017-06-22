@@ -20,7 +20,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2004, 2008 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2001, 2002, 2003 Nicolas Di C�sar�
@@ -37,13 +37,11 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.interpolations;
 
 import org.jquantlib.math.interpolations.factories.Linear;
 import org.jquantlib.math.matrixutilities.Array;
-
 
 /**
  * log-linear interpolation between discrete points
@@ -56,7 +54,6 @@ public class LogLinearInterpolation extends AbstractInterpolation {
     //
     // public constructors
     //
-
     public LogLinearInterpolation(final Array vx, final Array vy) {
         super.impl = new AbstractInterpolation.LogInterpolationImpl(vx, vy, new Linear());
         super.impl.update();

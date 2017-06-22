@@ -39,85 +39,7 @@ import org.jquantlib.time.TimeGrid;
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public abstract class TwoFactorModel extends ShortRateModel {
 
-    // ! Class describing the dynamics of the two state variables
-    /*
-     * ! We assume here that the short-rate is a function of two state variables x and y. \f[ r_t = f(t, x_t, y_t) \f] of two state
-     * variables \f$ x_t \f$ and \f$ y_t \f$. These stochastic processes satisfy \f[ x_t = \mu_x(t, x_t)dt + \sigma_x(t, x_t) dW_t^x
-     * \f] and \f[ y_t = \mu_y(t,y_t)dt + \sigma_y(t, y_t) dW_t^y \f] where \f$ W^x \f$ and \f$ W^y \f$ are two brownian motions
-     * satisfying \f[ dW^x_t dW^y_t = \rho dt \f].
-     */
-    public abstract class ShortRateDynamics {
-
-        private final StochasticProcess1D xProcess_, yProcess_;
-        double /* @Real */correlation_;
-
-        public ShortRateDynamics(final StochasticProcess1D xProcess, final StochasticProcess1D yProcess,
-                final double /* @Real */correlation) {
-            xProcess_ = (xProcess);
-            yProcess_ = (yProcess);
-            correlation_ = (correlation);
-        }
-
-        public abstract double /* @Rate */shortRate(double /* @Time */t, double /* @Real */x, double /* @Real */y);
-
-        // ! Risk-neutral dynamics of the first state variable x
-        public StochasticProcess1D xProcess() {
-            return xProcess_;
-        }
-
-        // ! Risk-neutral dynamics of the second state variable y
-        public StochasticProcess1D yProcess() {
-            return yProcess_;
-        }
-
-        // ! Correlation \f$ \rho \f$ between the two brownian motions.
-        public double /* @Real */correlation() {
-            return correlation_;
-        }
-
-        // ! Joint process of the two variables
-
-        public StochasticProcess process() {
-            final Matrix correlation = new Matrix(2, 2);
-            correlation.set(0, 0, 1.0);
-            correlation.set(1, 1, 1.0);
-            correlation.set(0, 1, correlation_);
-            correlation.set(1, 0, correlation_);
-            final ArrayList<StochasticProcess1D> processes = new ArrayList<StochasticProcess1D>();
-            processes.add(0, xProcess_);
-            processes.add(1, xProcess_);
-            return (new StochasticProcessArray(processes, correlation));
-        }
-    }
-
-    // ! Recombining two-dimensional tree discretizing the state variable
-
-    public class ShortRateTree extends TreeLattice2D<TrinomialTree> {
-
-        private final ShortRateDynamics dynamics_;
-
-        // ! Plain tree build-up from short-rate dynamics
-        public ShortRateTree(final TrinomialTree tree1, final TrinomialTree tree2, final ShortRateDynamics dynamics) {
-            super(tree1, tree2, dynamics.correlation());
-
-            dynamics_ = dynamics;
-        }
-
-        @Override
-        public double /* @DiscountFactor */discount(final int /* @Size */i, final int /* @Size */index) {
-            final int /* @Size */modulo = tree1.size(i);
-            final int /* @Size */index1 = index % modulo;
-            final int /* @Size */index2 = index / modulo;
-
-            final double /* @Real */x = tree1.underlying(i, index1);
-            final double /* @Real */y = tree2.underlying(i, index2);
-
-            final double /* @Real */r = dynamics_.shortRate(timeGrid().at(i), x, y);
-            return Math.exp(-r * timeGrid().dt(i));
-        }
-    }
-
-    public TwoFactorModel(final int /* @Size */nParams) {
+    public TwoFactorModel(final int /* @Size */ nParams) {
         super(nParams);
     }
 
@@ -135,5 +57,81 @@ public abstract class TwoFactorModel extends ShortRateModel {
 
         return new ShortRateTree(tree1, tree2, dyn);
 
+    }
+
+    // ! Class describing the dynamics of the two state variables
+    /*
+    * ! We assume here that the short-rate is a function of two state variables x and y. \f[ r_t = f(t, x_t, y_t) \f] of two state
+    * variables \f$ x_t \f$ and \f$ y_t \f$. These stochastic processes satisfy \f[ x_t = \mu_x(t, x_t)dt + \sigma_x(t, x_t) dW_t^x
+    * \f] and \f[ y_t = \mu_y(t,y_t)dt + \sigma_y(t, y_t) dW_t^y \f] where \f$ W^x \f$ and \f$ W^y \f$ are two brownian motions
+    * satisfying \f[ dW^x_t dW^y_t = \rho dt \f].
+     */
+    public abstract class ShortRateDynamics {
+
+        private final StochasticProcess1D xProcess_, yProcess_;
+        double /* @Real */ correlation_;
+
+        public ShortRateDynamics(final StochasticProcess1D xProcess, final StochasticProcess1D yProcess,
+                final double /* @Real */ correlation) {
+            xProcess_ = (xProcess);
+            yProcess_ = (yProcess);
+            correlation_ = (correlation);
+        }
+
+        public abstract double /* @Rate */ shortRate(double /* @Time */ t, double /* @Real */ x, double /* @Real */ y);
+
+        // ! Risk-neutral dynamics of the first state variable x
+        public StochasticProcess1D xProcess() {
+            return xProcess_;
+        }
+
+        // ! Risk-neutral dynamics of the second state variable y
+        public StochasticProcess1D yProcess() {
+            return yProcess_;
+        }
+
+        // ! Correlation \f$ \rho \f$ between the two brownian motions.
+        public double /* @Real */ correlation() {
+            return correlation_;
+        }
+
+        // ! Joint process of the two variables
+        public StochasticProcess process() {
+            final Matrix correlation = new Matrix(2, 2);
+            correlation.set(0, 0, 1.0);
+            correlation.set(1, 1, 1.0);
+            correlation.set(0, 1, correlation_);
+            correlation.set(1, 0, correlation_);
+            final ArrayList<StochasticProcess1D> processes = new ArrayList<StochasticProcess1D>();
+            processes.add(0, xProcess_);
+            processes.add(1, xProcess_);
+            return (new StochasticProcessArray(processes, correlation));
+        }
+    }
+    // ! Recombining two-dimensional tree discretizing the state variable
+
+    public class ShortRateTree extends TreeLattice2D<TrinomialTree> {
+
+        private final ShortRateDynamics dynamics_;
+
+        // ! Plain tree build-up from short-rate dynamics
+        public ShortRateTree(final TrinomialTree tree1, final TrinomialTree tree2, final ShortRateDynamics dynamics) {
+            super(tree1, tree2, dynamics.correlation());
+
+            dynamics_ = dynamics;
+        }
+
+        @Override
+        public double /* @DiscountFactor */ discount(final int /* @Size */ i, final int /* @Size */ index) {
+            final int /* @Size */ modulo = tree1.size(i);
+            final int /* @Size */ index1 = index % modulo;
+            final int /* @Size */ index2 = index / modulo;
+
+            final double /* @Real */ x = tree1.underlying(i, index1);
+            final double /* @Real */ y = tree2.underlying(i, index2);
+
+            final double /* @Real */ r = dynamics_.shortRate(timeGrid().at(i), x, y);
+            return Math.exp(-r * timeGrid().dt(i));
+        }
     }
 }

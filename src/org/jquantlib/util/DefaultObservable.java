@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.util;
 
 import java.util.Collections;
@@ -27,23 +26,25 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.jquantlib.QL;
 
-
 // --------------------------------------------------------
 // This class is based on the work done by Martin Fischer.
 // See references in JavaDoc
 //--------------------------------------------------------
-
 /**
  * Default implementation of an {@link Observable}.
  * <p>
- * This implementation notifies the observers in a synchronous fashion. Note that this can cause trouble if you notify the observers
- * while in a transactional context because once the notification is done it cannot be rolled back.
+ * This implementation notifies the observers in a synchronous fashion. Note
+ * that this can cause trouble if you notify the observers while in a
+ * transactional context because once the notification is done it cannot be
+ * rolled back.
  *
  * @note This class is not thread safe
  *
- * @see <a href="http://www.jroller.com/martin_fischer/entry/a_generic_java_observer_pattern"> Martin Fischer: Observer and
- *      Observable interfaces</a>
- * @see <a href="http://jdj.sys-con.com/read/35878.htm">Improved Observer/Observable</a>
+ * @see
+ * <a href="http://www.jroller.com/martin_fischer/entry/a_generic_java_observer_pattern">
+ * Martin Fischer: Observer and Observable interfaces</a>
+ * @see <a href="http://jdj.sys-con.com/read/35878.htm">Improved
+ * Observer/Observable</a>
  *
  * @see Observable
  * @see Observer
@@ -60,14 +61,12 @@ public class DefaultObservable implements Observable {
     //
     // private final fields
     //
-
     private final List<Observer> observers;
     private final Observable observable;
 
     //
     // public constructors
     //
-
     public DefaultObservable(final Observable observable) {
         QL.require(observable != null, DefaultObservable.OBSERVABLE_IS_NULL);
         this.observers = new CopyOnWriteArrayList<Observer>();
@@ -77,7 +76,6 @@ public class DefaultObservable implements Observable {
     //
     // public methods
     //
-
     @Override
     public void addObserver(final Observer observer) {
         observers.add(observer);
@@ -125,13 +123,14 @@ public class DefaultObservable implements Observable {
                 exception = e;
             }
         }
-        if (exception!=null) QL.error(DefaultObservable.CANNOT_NOTIFY_OBSERVERS, exception);
+        if (exception != null) {
+            QL.error(DefaultObservable.CANNOT_NOTIFY_OBSERVERS, exception);
+        }
     }
 
     //
     // protected methods
     //
-
     /**
      * This method is intended to encapsulate the notification semantics, in
      * order to let extended classes to implement their own version. Possible

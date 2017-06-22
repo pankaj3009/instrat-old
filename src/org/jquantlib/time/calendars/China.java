@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -46,12 +45,14 @@ import static org.jquantlib.time.Weekday.Sunday;
  * <ul>
  * <li>Saturdays</li>
  * <li>SUNDAYs</li>
- * <li>New Year's day, JANUARY 1st (possibly followed by one or two more holidays)</li>
+ * <li>New Year's day, JANUARY 1st (possibly followed by one or two more
+ * holidays)</li>
  * <li>Labour Day, first week in May</li>
  * <li>National Day, one week from October 1st</li>
  * </ul>
  *
- * Other holidays for which no rule is given (data available for 2004-2008 only):
+ * Other holidays for which no rule is given (data available for 2004-2008
+ * only):
  * <ul>
  * <li>Chinese New Year</li>
  * <li>Ching Ming Festival</li>
@@ -63,16 +64,34 @@ import static org.jquantlib.time.Weekday.Sunday;
  *
  * \ingroup calendars
  *
- * @see <a href="http://www.sse.com.cn/sseportal/webapp/cm/keyWordSearchEn?KeyWord=holiday&page=1&x=0&y=0">SSE Holidays</a>
+ * @see
+ * <a href="http://www.sse.com.cn/sseportal/webapp/cm/keyWordSearchEn?KeyWord=holiday&page=1&x=0&y=0">SSE
+ * Holidays</a>
  *
  * @author Tim Swetonic
  * @author Jia Jia
  * @author Renjith Nair
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class China extends Calendar {
+
+    //
+    // public constructors
+    //
+    public China() {
+        this(Market.SSE);
+    }
+
+    public China(final Market m) {
+        switch (m) {
+            case SSE:
+                impl = new SseImpl();
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
+        }
+    }
 
     public static enum Market {
         /**
@@ -82,27 +101,8 @@ public class China extends Calendar {
     }
 
     //
-    // public constructors
-    //
-
-    public China() {
-        this(Market.SSE);
-    }
-
-    public China(final Market m) {
-        switch (m) {
-        case SSE:
-            impl = new SseImpl();
-            break;
-        default:
-            throw new LibraryException(UNKNOWN_MARKET);
-        }
-    }
-
-    //
     // private final inner classes
     //
-
     private final class SseImpl extends Impl {
 
         @Override

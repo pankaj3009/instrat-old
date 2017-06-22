@@ -38,17 +38,16 @@ public class Expression implements Ops.DoubleOp {
         this.list = list;
     }
 
-
-	//
+    //
     // implements Ops.DoubleOp
     //
-
-	@Override
-	public double op(final double a) {
+    @Override
+    public double op(final double a) {
         double result = a;
-        for (int i = 0; i<list.size(); i++)
+        for (int i = 0; i < list.size(); i++) {
             result = list.get(i).op(result);
+        }
         return result;
-	}
+    }
 
 }

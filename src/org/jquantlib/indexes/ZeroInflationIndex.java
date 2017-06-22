@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.indexes;
 
 import org.jquantlib.QL;
@@ -45,85 +44,89 @@ import org.jquantlib.util.Pair;
 // TODO: code review :: please verify against QL/C++ code
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public abstract class ZeroInflationIndex extends InflationIndex {
-    
+
     private Handle<ZeroInflationTermStructure> zeroInflation;
-    
+
     public ZeroInflationIndex(final String familyName,
-			 final Region region,
-			 final boolean revised,
-			 final boolean interpolated,
-			 final Frequency frequency,
-			 final Period availabilityLag,
-			 final Currency currency) {
-    	this(familyName, region, revised, interpolated, frequency, availabilityLag, currency, new Handle<ZeroInflationTermStructure>());
+            final Region region,
+            final boolean revised,
+            final boolean interpolated,
+            final Frequency frequency,
+            final Period availabilityLag,
+            final Currency currency) {
+        this(familyName, region, revised, interpolated, frequency, availabilityLag, currency, new Handle<ZeroInflationTermStructure>());
     }
-    
+
     public ZeroInflationIndex(final String familyName,
-            				 final Region region,
-            				 final boolean revised,
-            				 final boolean interpolated,
-            				 final Frequency frequency,
-            				 final Period availabilityLag,
-            				 final Currency currency,
-            				 final Handle<ZeroInflationTermStructure> zeroInflation) {
-    	super(familyName, region, revised, interpolated, frequency, availabilityLag, currency);
-    	this.zeroInflation = zeroInflation;
-    	this.zeroInflation.addObserver(this);	
+            final Region region,
+            final boolean revised,
+            final boolean interpolated,
+            final Frequency frequency,
+            final Period availabilityLag,
+            final Currency currency,
+            final Handle<ZeroInflationTermStructure> zeroInflation) {
+        super(familyName, region, revised, interpolated, frequency, availabilityLag, currency);
+        this.zeroInflation = zeroInflation;
+        this.zeroInflation.addObserver(this);
     }
- 
+
     @Override
     public double fixing(JDate fixingDate) {
-    	return this.fixing(fixingDate, false);
-    }	
-    
+        return this.fixing(fixingDate, false);
+    }
+
     @Override
     public double fixing(JDate fixingDate, boolean forecastTodaysFixing) {
-    	JDate today = new Settings().evaluationDate();
-    	JDate todayMinusLag = today.sub(availabilityLag);
-    	
-    	Pair<JDate,JDate> lim = InflationTermStructure.inflationPeriod(todayMinusLag, frequency);
-    	todayMinusLag = lim.second().inc();
-    	
-    	if ((fixingDate.lt(todayMinusLag)) ||
-    		(fixingDate.eq(todayMinusLag) && !forecastTodaysFixing)) {
-    		
-    		@Real double pastFixing = IndexManager.getInstance().getHistory(name()).get(fixingDate);
-    		QL.require(!(Double.isNaN(pastFixing)) , "Missing " + name() + " fixing for " + fixingDate);
-    		return pastFixing;
-    	} else {
-    		return forecastFixing(fixingDate);
-    	}
+        JDate today = new Settings().evaluationDate();
+        JDate todayMinusLag = today.sub(availabilityLag);
+
+        Pair<JDate, JDate> lim = InflationTermStructure.inflationPeriod(todayMinusLag, frequency);
+        todayMinusLag = lim.second().inc();
+
+        if ((fixingDate.lt(todayMinusLag))
+                || (fixingDate.eq(todayMinusLag) && !forecastTodaysFixing)) {
+
+            @Real
+            double pastFixing = IndexManager.getInstance().getHistory(name()).get(fixingDate);
+            QL.require(!(Double.isNaN(pastFixing)), "Missing " + name() + " fixing for " + fixingDate);
+            return pastFixing;
+        } else {
+            return forecastFixing(fixingDate);
+        }
     }
-    
+
     public Handle<ZeroInflationTermStructure> zeroInflationTermStructure() {
-    	return zeroInflation;
+        return zeroInflation;
     }
-    
+
     private /* @Rate */ double forecastFixing(final JDate fixingDate) {
-    	// the term structure is relative to the fixing value at the base date.
-    	JDate baseDate = zeroInflation.currentLink().baseDate();
-    	@Real double baseFixing = fixing(baseDate);
-    	
-    	// get the relevant period end
-    	Pair<JDate, JDate> limBase = InflationTermStructure.inflationPeriod(baseDate, frequency);
-    	JDate trueBaseDate = limBase.second();
-    	
+        // the term structure is relative to the fixing value at the base date.
+        JDate baseDate = zeroInflation.currentLink().baseDate();
+        @Real
+        double baseFixing = fixing(baseDate);
+
+        // get the relevant period end
+        Pair<JDate, JDate> limBase = InflationTermStructure.inflationPeriod(baseDate, frequency);
+        JDate trueBaseDate = limBase.second();
+
         // if the value is not interpolated, get the value for half
         // way along the period.
-    	JDate d = fixingDate;
-    	if (!interpolated()) {
-    		Pair<JDate, JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
-    		int n = (int)(lim.second().sub(lim.first())) / 2;
-    		
-    		d = lim.first().add(n);
-    	}
-    	
+        JDate d = fixingDate;
+        if (!interpolated()) {
+            Pair<JDate, JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
+            int n = (int) (lim.second().sub(lim.first())) / 2;
+
+            d = lim.first().add(n);
+        }
+
         // Assume annual compounding (we're using a zero inflation
         // term structure)
-    	@Rate double zero = zeroInflation.currentLink().zeroRate(d);
-    	@Time double t = zeroInflation.currentLink().dayCounter().yearFraction(trueBaseDate, d);
-    	
-    	return baseFixing * Math.pow((1.0 + zero), t);
+        @Rate
+        double zero = zeroInflation.currentLink().zeroRate(d);
+        @Time
+        double t = zeroInflation.currentLink().dayCounter().yearFraction(trueBaseDate, d);
+
+        return baseFixing * Math.pow((1.0 + zero), t);
     }
-       
+
 }

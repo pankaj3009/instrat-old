@@ -19,40 +19,76 @@ import java.util.HashMap;
 public interface Connection {
 
     public boolean connect();
+
     public void disconnect();
+
     public Drop getAccountIDSync();
+
     public void getAccountUpdates();
+
     public void cancelAccountUpdates();
-    public void getContractDetails(BeanSymbol s,String overrideType);
+
+    public void getContractDetails(BeanSymbol s, String overrideType);
+
     public void requestSingleSnapshot(BeanSymbol s);
+
     public void getMktData(BeanSymbol s, boolean isSnap);
+
     public int getOutstandingSnapshots();
+
     public HashMap<Integer, Order> createOrder(OrderBean e);
+
     public Object createBrokerOrder(OrderBean e);
+
     public ArrayList<Contract> createContract(int id);
+
     public Contract createContract(BeanSymbol s);
-    public ArrayList<Integer> placeOrder(BeanConnection c, HashMap<Integer, Order> orders,  ExecutionManager oms, OrderBean event);
-    boolean tradeIntegrityOK(EnumOrderSide side, EnumOrderStage stage, HashMap<Integer, Order> orders, boolean reset);   
+
+    public ArrayList<Integer> placeOrder(BeanConnection c, HashMap<Integer, Order> orders, ExecutionManager oms, OrderBean event);
+
+    boolean tradeIntegrityOK(EnumOrderSide side, EnumOrderStage stage, HashMap<Integer, Order> orders, boolean reset);
+
     public void cancelMarketData(BeanSymbol s);
+
     public void cancelOrder(BeanConnection c, OrderBean ob);
+
     public void requestFundamentalData(BeanSymbol s, String reportType);
+
     public void cancelFundamentalData(int reqId);
+
     public void requestOpenOrders();
+
     public void requestExecutionDetails(ExecutionFilter filter);
+
     public void requestHistoricalData(BeanSymbol s, String endDate, String duration, String barSize);
-    public void cancelHistoricalData(int reqid);   
+
+    public void cancelHistoricalData(int reqid);
+
     public void getCurrentTime();
+
     public boolean isHistoricalDataFarmConnected();
+
     public boolean isConnected();
+
     public BeanCassandraConnection getCassandraDetails();
+
     public void addOrderStatusListener(OrderStatusListener l);
-    public void removeOrderStatusListener(OrderStatusListener l);   
-    public void addTWSErrorListener(TWSErrorListener l) ;
+
+    public void removeOrderStatusListener(OrderStatusListener l);
+
+    public void addTWSErrorListener(TWSErrorListener l);
+
     public void removeTWSErrorListener(TWSErrorListener l);
+
     public void addBidAskListener(BidAskListener l);
+
     public void removeBidAskListener(BidAskListener l);
+
     public void addFundamentalListener(FundamentalDataListener l);
+
     public void removeFundamentalListener(FundamentalDataListener l);
+
     public void addTradeListener(TradeListener l);
-    public void removeTradeListener(TradeListener l) ;
+
+    public void removeTradeListener(TradeListener l);
 }

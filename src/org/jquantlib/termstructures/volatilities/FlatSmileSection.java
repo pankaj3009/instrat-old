@@ -20,7 +20,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2007 Ferdinando Ametrano
  Copyright (C) 2007 Fran�ois du Vignaud
  Copyright (C) 2007 Giorgio Facchinetti
@@ -37,9 +37,8 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.termstructures.volatilities;
-
 
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.math.Constants;
@@ -59,13 +58,12 @@ public class FlatSmileSection extends SmileSection {
     //
     // public constructors
     //
-
     public FlatSmileSection(
             final JDate d,
             final double vol,
             final DayCounter dc,
             final JDate referenceDate) {
-    	this(d, vol, dc, referenceDate, Constants.NULL_REAL);
+        this(d, vol, dc, referenceDate, Constants.NULL_REAL);
     }
 
     public FlatSmileSection(
@@ -85,22 +83,20 @@ public class FlatSmileSection extends SmileSection {
             final double vol,
             final DayCounter dc,
             final /* @Real */ double atmLevel) {
-    	super(exerciseTime, dc);
-    	vol_ = vol;
-    	atmLevel_ = atmLevel;
+        super(exerciseTime, dc);
+        vol_ = vol;
+        atmLevel_ = atmLevel;
     }
 
     public FlatSmileSection(
             final /* @Time */ double exerciseTime,
             final double vol, final DayCounter dc) {
-    	this(exerciseTime, vol, dc, Constants.NULL_REAL);
+        this(exerciseTime, vol, dc, Constants.NULL_REAL);
     }
-
 
     //
     // overrides SmileSection
     //
-
     @Override
     public double variance() {
         return vol_ * vol_ * exerciseTime_;

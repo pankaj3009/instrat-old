@@ -5,9 +5,10 @@
 package com.incurrency.framework;
 
 /**
- *Gets historical OHLCV from cassandra
+ * Gets historical OHLCV from cassandra
+ *
  * @author Pankaj
  */
 public class CHistoricalBars {
-    
+
 }

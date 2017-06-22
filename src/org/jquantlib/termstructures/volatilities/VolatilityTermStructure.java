@@ -11,7 +11,8 @@ import org.jquantlib.time.Period;
 /**
  * Volatility term structure
  * <p>
- * This abstract class defines the interface of concrete volatility structures which will be derived from this one.
+ * This abstract class defines the interface of concrete volatility structures
+ * which will be derived from this one.
  *
  * @author Richard Gomes
  */
@@ -20,7 +21,6 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
     //
     // private methods
     //
-
     private final BusinessDayConvention bdc;
 
     //
@@ -28,13 +28,11 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
     //
     // See the TermStructure documentation for issues regarding constructors.
     //
-
     /**
      * 'default' constructor
      * <p>
-     * @warning term structures initialized by means of this
-     *          finalructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this finalructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public VolatilityTermStructure(
             final Calendar cal,
@@ -42,13 +40,11 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
         this(cal, bdc, new DayCounter());
     }
 
-
     /**
      * 'default' constructor
      * <p>
-     * @warning term structures initialized by means of this
-     *          finalructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this finalructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public VolatilityTermStructure(
             final Calendar cal,
@@ -58,7 +54,6 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
         this.bdc = bdc;
         this.calendar = cal;
     }
-
 
     /**
      * initialize with a fixed reference date
@@ -86,7 +81,7 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
      * calculate the reference date based on the global evaluation date
      */
     public VolatilityTermStructure(
-            /*@Natural*/ final int settlementDays,
+            /*@Natural*/final int settlementDays,
             final Calendar cal,
             final BusinessDayConvention bdc) {
         this(settlementDays, cal, bdc, new DayCounter());
@@ -96,7 +91,7 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
      * calculate the reference date based on the global evaluation date
      */
     public VolatilityTermStructure(
-            /*@Natural*/ final int settlementDays,
+            /*@Natural*/final int settlementDays,
             final Calendar cal,
             final BusinessDayConvention bdc,
             final DayCounter dc) {
@@ -104,11 +99,9 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
         this.bdc = bdc;
     }
 
-
     //
     // public methods
     //
-
     /**
      * The business day convention used in tenor to date conversion
      */
@@ -124,11 +117,9 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
         return calendar().advance(referenceDate(), p, businessDayConvention());
     }
 
-
     //
     // public abstract methods
     //
-
     /**
      * The minimum strike for which the term structure can return vols
      */
@@ -139,15 +130,13 @@ public abstract class VolatilityTermStructure extends AbstractTermStructure {
      */
     public abstract /*@Rate*/ double maxStrike();
 
-
     //
     // protected methods
     //
-
     /**
      * Strike-range check
      */
-    protected void checkStrike(final /*@Rate*/ double  strike, final boolean extrapolate) /* @ReadOnly */ {
+    protected void checkStrike(final /*@Rate*/ double strike, final boolean extrapolate) /* @ReadOnly */ {
         QL.require(extrapolate || allowsExtrapolation() || (strike >= minStrike() && strike <= maxStrike()),
                 "strike is outside the curve domain");
     }

@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2006 Banca Profilo S.p.A.
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,7 +34,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.processes;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -50,7 +50,7 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
  *
  * @author Ueli Hofstetter
  */
-@QualityAssurance(quality=Quality.Q2_RESEMBLANCE, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q2_RESEMBLANCE, version = Version.V097, reviewers = "Richard Gomes")
 public abstract class ForwardMeasureProcess1D extends StochasticProcess1D {
 
     protected double T_;

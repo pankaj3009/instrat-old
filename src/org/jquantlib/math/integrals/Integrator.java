@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.integrals;
 
 import org.jquantlib.QL;
@@ -36,30 +35,25 @@ public abstract class Integrator {
     //
     // private fields
     //
-
     private double absoluteAccuracy;
     private int maxEvaluations;
     private double absoluteError;
     private int numberOfEvaluations;
 
-
     //
     // public constructors
     //
-
     public Integrator(final double absoluteAccuracy, final int maxEvaluations) {
-        QL.require(absoluteAccuracy > Constants.QL_EPSILON , "required tolerance must be > epsilon"); // TODO: message
+        QL.require(absoluteAccuracy > Constants.QL_EPSILON, "required tolerance must be > epsilon"); // TODO: message
 
         this.absoluteAccuracy = absoluteAccuracy;
         this.maxEvaluations = maxEvaluations;
     }
 
-
     //
     // final public methods
     //
-
-    final public double op(final Ops.DoubleOp f, final double a, final double b) /* @ReadOnly */{
+    final public double op(final Ops.DoubleOp f, final double a, final double b) /* @ReadOnly */ {
         if (a == b) {
             return 0.0;
         }
@@ -70,11 +64,9 @@ public abstract class Integrator {
         }
     }
 
-
     //
     // public virtual methods
     //
-
     public boolean isIntegrationSuccess() /* @ReadOnly */ {
         return numberOfEvaluations <= maxEvaluations && absoluteError <= absoluteAccuracy;
     }
@@ -99,11 +91,9 @@ public abstract class Integrator {
         return absoluteError;
     }
 
-
     //
     // final protected methods
     //
-
     final protected void setAbsoluteError(final double error) /* @ReadOnly */ {
         absoluteError = error;
     }
@@ -116,20 +106,16 @@ public abstract class Integrator {
         this.numberOfEvaluations += increase;
     }
 
-
     //
     // protected virtual methods
     //
-
     protected int numberOfEvaluations() /* @ReadOnly */ {
         return this.numberOfEvaluations;
     }
 
-
     //
     // protected abstract methods
     //
-
     protected abstract double integrate(final Ops.DoubleOp f, final double a, final double b) /* @ReadOnly */;
 
 }

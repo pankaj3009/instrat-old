@@ -32,18 +32,18 @@ public class HistoricalRequestJson {
          put("strike", "8500");
          put("option", "CALL");
          */
-        if(samplingValue!=null){
-        sampling.put("value", samplingValue);//1
-        sampling.put("unit", samplingUnit);//days
-        aggregators0.put("name", aggregatorName);//last
-        aggregators0.put("align_sampling", "true");
-        aggregators0.put("sampling", sampling);
-        aggregators.add(aggregators0);
+        if (samplingValue != null) {
+            sampling.put("value", samplingValue);//1
+            sampling.put("unit", samplingUnit);//days
+            aggregators0.put("name", aggregatorName);//last
+            aggregators0.put("align_sampling", "true");
+            aggregators0.put("sampling", sampling);
+            aggregators.add(aggregators0);
         }
         HashMap metric = new HashMap();
         metric.put("tags", tags);
-        if(samplingValue!=null){
-        metric.put("aggregators", aggregators);
+        if (samplingValue != null) {
+            metric.put("aggregators", aggregators);
         }
         metric.put("name", metricName);
         ArrayList query = new ArrayList<>();

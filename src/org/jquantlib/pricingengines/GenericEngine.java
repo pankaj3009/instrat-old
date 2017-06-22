@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.pricingengines;
 
 import java.util.List;
@@ -46,29 +45,38 @@ import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
 
 /**
- * This is a generic definition of a PriceEngine which takes its arguments from an {@link Arguments} structure and returns its
- * results in a {@link Results} structure.
+ * This is a generic definition of a PriceEngine which takes its arguments from
+ * an {@link Arguments} structure and returns its results in a {@link Results}
+ * structure.
  *
  * @param <A> is an parameterized Arguments object
  * @param <R> is an parameterized Results object
  *
  * @author Richard Gomes
  */
-public abstract class GenericEngine
-            <A extends Instrument.Arguments, R extends Instrument.Results>
-            implements PricingEngine, Observer {
+public abstract class GenericEngine<A extends Instrument.Arguments, R extends Instrument.Results>
+        implements PricingEngine, Observer {
 
     //
     // protected fields
     //
-
     protected A arguments_;
     protected R results_;
+    //
+    // implements Observable
+    //
+
+    /**
+     * Implements multiple inheritance via delegate pattern to an inner class
+     *
+     * @see Observable
+     * @see DefaultObservable
+     */
+    private final Observable delegatedObservable = new DefaultObservable(this);
 
     //
     // protected constructors
     //
-
     protected GenericEngine(final A arguments, final R results) {
         this.arguments_ = arguments;
         this.results_ = results;
@@ -77,7 +85,6 @@ public abstract class GenericEngine
     //
     // implements PricingEngine
     //
-
     @Override
     public final A getArguments() {
         return arguments_;
@@ -96,25 +103,12 @@ public abstract class GenericEngine
     //
     // implements Observer
     //
-
     @Override
     //XXX::OBS public void update(final Observable o, final Object arg) {
     public void update() {
         //XXX:OBS update();
         notifyObservers();
     }
-
-    //
-    // implements Observable
-    //
-
-    /**
-     * Implements multiple inheritance via delegate pattern to an inner class
-     *
-     * @see Observable
-     * @see DefaultObservable
-     */
-    private final Observable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public final void addObserver(final Observer observer) {

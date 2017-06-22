@@ -19,26 +19,23 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.distributions;
 
 import org.jquantlib.math.Ops;
 
-
 /**
- * 
+ *
  * @author Richard Gomes
  *
  */
-
 public interface Derivative extends Ops.DoubleOp {
-    	
+
     /**
-	 * Computes the derivation of the function; f(x)
-	 * 
-	 * @param x
-	 * @return f(x)
-	 */
-	public double derivative(final double x) /* ReadOnly */;
-	
+     * Computes the derivation of the function; f(x)
+     *
+     * @param x
+     * @return f(x)
+     */
+    public double derivative(final double x) /* ReadOnly */;
+
 }

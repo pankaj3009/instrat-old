@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.model.equity;
 
 import org.jquantlib.math.matrixutilities.Array;
@@ -32,7 +31,6 @@ import org.jquantlib.quotes.Quote;
 import org.jquantlib.quotes.RelinkableHandle;
 import org.jquantlib.quotes.SimpleQuote;
 
-
 //! Heston model for the stochastic volatility of an asset
 /*! References:
 
@@ -43,16 +41,16 @@ import org.jquantlib.quotes.SimpleQuote;
 
  \test calibration is tested against known good values.
  */
-
 /**
- * Implementation of the Heston Model, see http://en.wikipedia.org/wiki/Heston_model
+ * Implementation of the Heston Model, see
+ * http://en.wikipedia.org/wiki/Heston_model
  */
-
-
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public class HestonModel extends CalibratedModel {
 
-    protected RelinkableHandle<Quote> v0_, kappa_, theta_, sigma_, rho_;;
+    protected RelinkableHandle<Quote> v0_, kappa_, theta_, sigma_, rho_;
+
+    ;
 
     public HestonModel(final HestonProcess process) {
         super(5);
@@ -106,16 +104,14 @@ public class HestonModel extends CalibratedModel {
         return arguments_.get(4).get(0.0);
     }
 
-
     //
     // private inner classes
     //
-
     // TODO: code review :: please verify against QL/C++ code
     private class VolatilityConstraint extends Constraint {
 
-        public VolatilityConstraint(){
-            if(true) {
+        public VolatilityConstraint() {
+            if (true) {
                 throw new UnsupportedOperationException("Work in progress. Todo: check class hierarchy");
             }
         }
@@ -125,7 +121,7 @@ public class HestonModel extends CalibratedModel {
             final double theta = p.get(0);
             final double kappa = p.get(1);
             final double sigma = p.get(2);
-            return (sigma >= 0.0 && sigma*sigma < 2.0*kappa*theta);
+            return (sigma >= 0.0 && sigma * sigma < 2.0 * kappa * theta);
         }
 
     }

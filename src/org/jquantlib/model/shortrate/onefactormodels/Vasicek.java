@@ -33,8 +33,9 @@ import org.jquantlib.processes.OrnsteinUhlenbeckProcess;
 /**
  * Vasicek model class
  * <p>
- * This class implements the Vasicek model defined by \f[ dr_t = a(b - r_t)dt + \sigma dW_t , \f] where \f$ a \f$, \f$ b \f$ and
- * \f$ \sigma \f$ are constants; a risk premium \f$ \lambda \f$ can also be specified.
+ * This class implements the Vasicek model defined by \f[ dr_t = a(b - r_t)dt +
+ * \sigma dW_t , \f] where \f$ a \f$, \f$ b \f$ and \f$ \sigma \f$ are
+ * constants; a risk premium \f$ \lambda \f$ can also be specified.
  *
  * @category shortrate
  *
@@ -46,45 +47,38 @@ public class Vasicek extends OneFactorAffineModel {
     //
     // protected fields
     //
-
     protected double r0_;
-    protected Parameter  a_;
-    protected Parameter  b_;
-    protected Parameter  sigma_;
-    protected Parameter  lambda_;
-
+    protected Parameter a_;
+    protected Parameter b_;
+    protected Parameter sigma_;
+    protected Parameter lambda_;
 
     //
     // public methods
     //
-
-    public Vasicek(/* @Rate */ final double r0, final double a, final double b, final double sigma, final double lambda) {
+    public Vasicek(/* @Rate */final double r0, final double a, final double b, final double sigma, final double lambda) {
         super(4);
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
         this.r0_ = r0;
 
-
         // TODO: code review :: please verify against QL/C++ code :: Seems to be non-sense!
-
         this.a_ = arguments_.get(0);
         this.b_ = arguments_.get(1);
         this.sigma_ = arguments_.get(2);
         this.lambda_ = arguments_.get(3);
 
         // TODO: code review :: please verify against QL/C++ code :: Seems to be non-sense!
-
         this.a_ = new ConstantParameter(a, new PositiveConstraint());
         this.b_ = new ConstantParameter(b, new NoConstraint());
         this.sigma_ = new ConstantParameter(sigma, new PositiveConstraint());
         this.lambda_ = new ConstantParameter(lambda, new NoConstraint());
     }
 
-
     //
     // protected methods
     //
-
     protected double a() /* @ReadOnly */ {
         return a_.get(0.0);
     }
@@ -101,11 +95,9 @@ public class Vasicek extends OneFactorAffineModel {
         return sigma_.get(0.0);
     }
 
-
     //
     // implements AffineModel
     //
-
     @Override
     public double discountBondOption(
             final Option.Type type,
@@ -114,57 +106,54 @@ public class Vasicek extends OneFactorAffineModel {
             /* @Time */ final double bondMaturity) /* @ReadOnly */ {
         double v;
         final double _a = a();
-        if (Math.abs(maturity) < Constants.QL_EPSILON)
+        if (Math.abs(maturity) < Constants.QL_EPSILON) {
             v = 0.0;
-        else if (_a < Math.sqrt(Constants.QL_EPSILON))
+        } else if (_a < Math.sqrt(Constants.QL_EPSILON)) {
             v = sigma() * B(maturity, bondMaturity) * Math.sqrt(maturity);
-        else
+        } else {
             v = sigma() * B(maturity, bondMaturity) * Math.sqrt(0.5 * (1.0 - Math.exp(-2.0 * _a * maturity)) / _a);
+        }
 
-        final double /* @Real */f = discountBond(0.0, bondMaturity, r0_);
-        final double /* @Real */k = discountBond(0.0, maturity, r0_) * strike;
+        final double /* @Real */ f = discountBond(0.0, bondMaturity, r0_);
+        final double /* @Real */ k = discountBond(0.0, maturity, r0_) * strike;
 
         return blackFormula(type, k, f, v);
     }
 
-
     //
     // implements OneFactorAffineModel
     //
-
     @Override
-    public  ShortRateDynamics dynamics() /* @ReadOnly */ {
+    public ShortRateDynamics dynamics() /* @ReadOnly */ {
         return new Dynamics(a(), b(), sigma(), r0_);
     }
 
-
     @Override
-    protected double A(/* @Time */ final double t, /* @Time */ final double T) /* @ReadOnly */ {
-        final double /* @Real */_a = a();
-        if (_a < Math.sqrt(Constants.QL_EPSILON))
+    protected double A(/* @Time */final double t, /* @Time */ final double T) /* @ReadOnly */ {
+        final double /* @Real */ _a = a();
+        if (_a < Math.sqrt(Constants.QL_EPSILON)) {
             return 0.0;
-        else {
-            final double /* @Real */sigma2 = sigma() * sigma();
-            final double /* @Real */bt = B(t, T);
+        } else {
+            final double /* @Real */ sigma2 = sigma() * sigma();
+            final double /* @Real */ bt = B(t, T);
             return Math.exp((b() + lambda() * sigma() / _a - 0.5 * sigma2 / (_a * _a)) * (bt - (T - t)) - 0.25 * sigma2 * bt * bt
                     / _a);
         }
     }
 
     @Override
-    protected double B(/* @Time */ final double t, /* @Time */ final double T) /* @ReadOnly */ {
-        final double /* @Real */_a = a();
-        if (_a < Math.sqrt(Constants.QL_EPSILON))
+    protected double B(/* @Time */final double t, /* @Time */ final double T) /* @ReadOnly */ {
+        final double /* @Real */ _a = a();
+        if (_a < Math.sqrt(Constants.QL_EPSILON)) {
             return (T - t);
-        else
+        } else {
             return (1.0 - Math.exp(-_a * (T - t))) / _a;
+        }
     }
-
 
     //
     // private inner classes
     //
-
     /**
      * Short-rate dynamics in the %Vasicek model
      * <p>
@@ -175,30 +164,27 @@ public class Vasicek extends OneFactorAffineModel {
         //
         // private fields
         //
-
         private final double a_;
         private final double b_;
         private final double r0_;
 
-
         //
         // public methods
         //
-
         public Dynamics(final double a, final double b, final double sigma, final double r0) {
             super(new OrnsteinUhlenbeckProcess(a, sigma, r0 - b, 0.0));
-            this.a_  = a;
-            this.b_  = b;
+            this.a_ = a;
+            this.b_ = b;
             this.r0_ = r0;
         }
 
         @Override
-        public double variable(/* @Time */ final double t, /* @Rate */ final double r) /* @ReadOnly */ {
+        public double variable(/* @Time */final double t, /* @Rate */ final double r) /* @ReadOnly */ {
             return r - b_;
         }
 
         @Override
-        public double shortRate(/* @Time */ final double t, final double x) /* @ReadOnly */ {
+        public double shortRate(/* @Time */final double t, final double x) /* @ReadOnly */ {
             return x + b_;
         }
 

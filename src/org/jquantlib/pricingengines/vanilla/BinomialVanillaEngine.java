@@ -17,7 +17,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2002, 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2007 StatPro Italia srl
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines.vanilla;
 
 import java.lang.reflect.Constructor;
@@ -68,14 +67,13 @@ import org.jquantlib.time.TimeGrid;
  *
  * @category vanillaengines
  *
- * @test the correctness of the returned values is tested by
- *       checking it against analytic results.
+ * @test the correctness of the returned values is tested by checking it against
+ * analytic results.
  *
- * @todo Greeks are not overly accurate. They could be improved
- *       by building a tree so that it has three points at the
- *       current time. The value would be fetched from the middle
- *       one, while the two side points would be used for
- *       estimating partial derivatives.
+ * @todo Greeks are not overly accurate. They could be improved by building a
+ * tree so that it has three points at the current time. The value would be
+ * fetched from the middle one, while the two side points would be used for
+ * estimating partial derivatives.
  *
  * @author Srinivas Hasti
  * @author Richard Gomes
@@ -86,45 +84,39 @@ public class BinomialVanillaEngine<T extends Tree> extends VanillaOption.EngineI
     //
     // private final fields
     //
-
     final private GeneralizedBlackScholesProcess process;
     final private int timeSteps_;
     final private VanillaOption.ArgumentsImpl a;
-    final private VanillaOption.ResultsImpl   r;
+    final private VanillaOption.ResultsImpl r;
     final private Option.GreeksImpl greeks;
     final private Option.MoreGreeksImpl moreGreeks;
 
     //
     // private fields
     //
-
     private final Class<? extends Tree> classT;
-
 
     //
     // public constructors
     //
-
     public BinomialVanillaEngine(
-    		final Class<? extends Tree> classT,
-    		final GeneralizedBlackScholesProcess process, 
-    		final int timeSteps) {
+            final Class<? extends Tree> classT,
+            final GeneralizedBlackScholesProcess process,
+            final int timeSteps) {
         this.classT = classT;
-        QL.require(timeSteps > 0 , "timeSteps must be positive"); // TODO: message
+        QL.require(timeSteps > 0, "timeSteps must be positive"); // TODO: message
         this.timeSteps_ = timeSteps;
-        this.a = (VanillaOption.ArgumentsImpl)arguments_;
-        this.r = (VanillaOption.ResultsImpl)results_;
+        this.a = (VanillaOption.ArgumentsImpl) arguments_;
+        this.r = (VanillaOption.ResultsImpl) results_;
         this.greeks = r.greeks();
         this.moreGreeks = r.moreGreeks();
         this.process = process;
         this.process.addObserver(this);
     }
 
-
     //
     // private methods
     //
-
     private Object getTreeInstance(
             final StochasticProcess1D bs,
             final /*@Date*/ double maturity,
@@ -143,24 +135,22 @@ public class BinomialVanillaEngine<T extends Tree> extends VanillaOption.EngineI
         }
     }
 
-
     //
     // implements PricingEngine
     //
-
     @Override
     public void calculate() /*@ReadOnly*/ {
         //FIXME: code review: what about BermudanExercise?
         //QL.require(a.exercise.type() == Exercise.Type.European || a.exercise.type() == Exercise.Type.American,
         //           "neither European nor American option"); // TODO: message
 
-        final DayCounter rfdc  = process.riskFreeRate().currentLink().dayCounter();
+        final DayCounter rfdc = process.riskFreeRate().currentLink().dayCounter();
         final DayCounter divdc = process.dividendYield().currentLink().dayCounter();
         final DayCounter voldc = process.blackVolatility().currentLink().dayCounter();
-        final Calendar volcal  = process.blackVolatility().currentLink().calendar();
+        final Calendar volcal = process.blackVolatility().currentLink().calendar();
 
         final double s0 = process.stateVariable().currentLink().value();
-        QL.require(s0 > 0.0 , "negative or null underlying given"); // TODO: message
+        QL.require(s0 > 0.0, "negative or null underlying given"); // TODO: message
         final double v = process.blackVolatility().currentLink().blackVol(a.exercise.lastDate(), s0);
         final JDate maturityDate = a.exercise.lastDate();
 
@@ -173,13 +163,13 @@ public class BinomialVanillaEngine<T extends Tree> extends VanillaOption.EngineI
         final Handle<YieldTermStructure> flatDividends = new Handle<YieldTermStructure>(new FlatForward(referenceDate, qRate, divdc));
         final Handle<BlackVolTermStructure> flatVol = new Handle<BlackVolTermStructure>(new BlackConstantVol(referenceDate, volcal, v, voldc));
         final PlainVanillaPayoff payoff = (PlainVanillaPayoff) a.payoff;
-        QL.require(payoff!=null , "non-plain payoff given"); // TODO: message
+        QL.require(payoff != null, "non-plain payoff given"); // TODO: message
 
         final double maturity = rfdc.yearFraction(referenceDate, maturityDate);
 
         final StochasticProcess1D bs = new GeneralizedBlackScholesProcess(process.stateVariable(), flatDividends, flatRiskFree, flatVol);
         final TimeGrid grid = new TimeGrid(maturity, timeSteps_);
-        final Tree tree = (Tree)getTreeInstance(bs, maturity, timeSteps_, payoff.strike());
+        final Tree tree = (Tree) getTreeInstance(bs, maturity, timeSteps_, payoff.strike());
 
         final BlackScholesLattice<Tree> lattice = new BlackScholesLattice<Tree>(tree, rRate, maturity, timeSteps_);
         final DiscretizedVanillaOption option = new DiscretizedVanillaOption(a, process, grid);
@@ -187,11 +177,10 @@ public class BinomialVanillaEngine<T extends Tree> extends VanillaOption.EngineI
         option.initialize(lattice, maturity);
 
         // Partial derivatives calculated from various points in the binomial tree (Odegaard)
-
         // Rollback to third-last step, and get underlying price (s2) & option values (p2) at this point
         option.rollback(grid.at(2));
         final Array va2 = option.values();
-        QL.require(va2.size() == 3 , "expect 3 nodes in grid at second step"); // TODO: message
+        QL.require(va2.size() == 3, "expect 3 nodes in grid at second step"); // TODO: message
         final double p2h = va2.get(2); // high-price
         final double s2 = lattice.underlying(2, 2); // high price
 

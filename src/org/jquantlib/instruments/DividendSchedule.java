@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.instruments;
 
 import java.util.ArrayList;
@@ -30,9 +29,10 @@ import org.jquantlib.cashflow.Dividend;
  * @author Zahid Hussain
  */
 public class DividendSchedule extends ArrayList<Dividend> implements Cloneable {
-	private static final long serialVersionUID = 1L;
 
-	public DividendSchedule() {
+    private static final long serialVersionUID = 1L;
+
+    public DividendSchedule() {
         super();
     }
 
@@ -41,18 +41,18 @@ public class DividendSchedule extends ArrayList<Dividend> implements Cloneable {
     }
 
     public Dividend first() {
-        QL.require(this.size() > 0 , "no Dividend"); 
+        QL.require(this.size() > 0, "no Dividend");
         return this.get(0);
     }
 
     public Dividend last() {
-        QL.require(this.size() > 0 , "no Dividend");
-        return this.get(this.size()-1);
+        QL.require(this.size() > 0, "no Dividend");
+        return this.get(this.size() - 1);
     }
 
     @Override
     public Object clone() {
-    	return (DividendSchedule)super.clone();
+        return (DividendSchedule) super.clone();
     }
 
 }

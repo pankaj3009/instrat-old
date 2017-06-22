@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import java.util.ArrayList;
@@ -38,53 +37,45 @@ import org.jquantlib.util.Visitor;
  */
 @SuppressWarnings("PMD.AbstractNaming")
 public abstract class Dividend extends CashFlow {
+    //
+    // public static methods
+    //
 
-	protected JDate date;
-
-	public Dividend (final JDate date) {
-		super();
-		this.date = date;
-	}
-
-
-	//
-	// overrides Event
-	//
-
-	@Override
-	public JDate date() {
-		return date;
-	}
-
-
-	//
-	// public abstract methods
-	//
-
-	public abstract double amount(final double underlying);
-
-
-	//
-	// public static methods
-	//
-
-	public static List<? extends Dividend> DividendVector(final List<JDate> dividendDates, final List<Double> dividends) {
-	    QL.require(dividendDates.size() == dividends.size() , "size mismatch between dividend dates and amounts");  // TODO: message
+    public static List<? extends Dividend> DividendVector(final List<JDate> dividendDates, final List<Double> dividends) {
+        QL.require(dividendDates.size() == dividends.size(), "size mismatch between dividend dates and amounts");  // TODO: message
         final List<Dividend> items = new ArrayList<Dividend>(dividendDates.size());
-        for (int i=0; i<dividendDates.size(); i++) {
+        for (int i = 0; i < dividendDates.size(); i++) {
             items.add(new FixedDividend(dividends.get(i), dividendDates.get(i)));
         }
         return items;
     }
 
+    protected JDate date;
+
+    public Dividend(final JDate date) {
+        super();
+        this.date = date;
+    }
+
+    //
+    // overrides Event
+    //
+    @Override
+    public JDate date() {
+        return date;
+    }
+
+    //
+    // public abstract methods
+    //
+    public abstract double amount(final double underlying);
 
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<Dividend> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<Dividend> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

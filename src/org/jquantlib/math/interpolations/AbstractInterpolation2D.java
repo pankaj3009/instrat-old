@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003, 2006 Ferdinando Ametrano
  Copyright (C) 2004, 2005, 2006, 2007 StatPro Italia srl
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.interpolations;
 
 import org.jquantlib.QL;
@@ -49,25 +48,41 @@ import org.jquantlib.math.matrixutilities.Matrix;
 /**
  * Base class for 2-D interpolations.
  * <p>
- * Classes derived from this class will provide interpolated
- * values from two sequences of length {@latex$ N } and {@latex$ M },
- * representing the discretized values of the {@latex$ x } and {@latex$ y}
- * variables, and a {@latex$ N \times M } matrix representing
- * the tabulated function values.
+ * Classes derived from this class will provide interpolated values from two
+ * sequences of length {
+ *
+ * @latex$ N } and {
+ * @latex$ M }, representing the discretized values of the {
+ * @latex$ x } and {
+ * @latex$ y} variables, and a {
+ * @latex$ N \times M } matrix representing the tabulated function values.
  *
  * @author Richard Gomes
  */
 public class AbstractInterpolation2D implements Interpolation2D {
 
     protected Impl impl_;
+    //
+    // implements Extrapolator
+    //
+
+    /**
+     * Implements multiple inheritance via delegate pattern to an inner class
+     *
+     * @see Extrapolator
+     */
+    private final DefaultExtrapolator delegatedExtrapolator = new DefaultExtrapolator();
 
     @Override
-    public boolean empty() /* @ReadOnly */ { return impl_==null; }
+    public boolean empty() /* @ReadOnly */ {
+        return impl_ == null;
+    }
 
     @Override
     public /*@Real*/ double op(final /*@Real*/ double x, final /*@Real*/ double y) /* @ReadOnly */ {
         return op(x, y, false);
     }
+
     @Override
     public /*@Real*/ double op(final /*@Real*/ double x, final /*@Real*/ double y, final boolean allowExtrapolation) /* @ReadOnly */ {
         checkRange(x, y, allowExtrapolation);
@@ -114,11 +129,9 @@ public class AbstractInterpolation2D implements Interpolation2D {
         impl_.calculate();
     }
 
-
     //
     // protected methods
     //
-
     /**
      * This method verifies if
      * <li> extrapolation is enabled;</li>
@@ -130,7 +143,7 @@ public class AbstractInterpolation2D implements Interpolation2D {
      * @throws IllegalStateException if extrapolation is not enabled.
      * @throws IllegalArgumentException if <i>x</i> is out of range
      */
-    protected final void checkRange(final double x, final double y, final boolean extrapolate) /* @ReadOnly */{
+    protected final void checkRange(final double x, final double y, final boolean extrapolate) /* @ReadOnly */ {
         if (!(extrapolate || allowsExtrapolation() || isInRange(x, y))) {
             final StringBuilder sb = new StringBuilder();
             sb.append("interpolation range is [");
@@ -143,17 +156,6 @@ public class AbstractInterpolation2D implements Interpolation2D {
             throw new IllegalArgumentException(sb.toString());
         }
     }
-
-    //
-    // implements Extrapolator
-    //
-
-    /**
-     * Implements multiple inheritance via delegate pattern to an inner class
-     *
-     * @see Extrapolator
-     */
-    private final DefaultExtrapolator delegatedExtrapolator = new DefaultExtrapolator();
 
     @Override
     public final boolean allowsExtrapolation() {
@@ -170,33 +172,32 @@ public class AbstractInterpolation2D implements Interpolation2D {
         delegatedExtrapolator.enableExtrapolation();
     }
 
-
     //
     // protected inner classes
     //
-
     protected abstract class Impl {
 
         /**
-         * @note Derived classes are responsible for initializing <i>vx</i>, <i>vy</i> and eventually <i>mz</i>
+         * @note Derived classes are responsible for initializing <i>vx</i>,
+         * <i>vy</i> and eventually <i>mz</i>
          */
         protected Array vx;
 
         /**
-         * @note Derived classes are responsible for initializing <i>vx</i>, <i>vy</i> and eventually <i>mz</i>
+         * @note Derived classes are responsible for initializing <i>vx</i>,
+         * <i>vy</i> and eventually <i>mz</i>
          */
         protected Array vy;
 
         /**
-         * @note Derived classes are responsible for initializing <i>vx</i>, <i>vy</i> and eventually <i>mz</i>
+         * @note Derived classes are responsible for initializing <i>vx</i>,
+         * <i>vy</i> and eventually <i>mz</i>
          */
         protected Matrix mz;
-
 
         //
         // protected constructors
         //
-
         protected Impl() {
             // nothing
         }
@@ -216,9 +217,8 @@ public class AbstractInterpolation2D implements Interpolation2D {
         //
         // final public methods
         //
-
         public double xMin() /* @ReadOnly */ {
-            return  vx.first();
+            return vx.first();
         }
 
         public double xMax() /* @ReadOnly */ {
@@ -226,7 +226,7 @@ public class AbstractInterpolation2D implements Interpolation2D {
         }
 
         public double yMin() /* @ReadOnly */ {
-            return  vy.first();
+            return vy.first();
         }
 
         public double yMax() /* @ReadOnly */ {
@@ -242,57 +242,56 @@ public class AbstractInterpolation2D implements Interpolation2D {
             QL.require(extraSafetyChecksX(), "unsorted values on array X"); // TODO: message
             final double x1 = xMin(), x2 = xMax();
             final boolean xIsInrange = (x >= x1 && x <= x2) || isClose(x, x1) || isClose(x, x2);
-            if (!xIsInrange)
+            if (!xIsInrange) {
                 return false;
+            }
 
             QL.require(extraSafetyChecksY(), "unsorted values on array Y"); // TODO: message
             final double y1 = yMin(), y2 = yMax();
             return (y >= y1 && y <= y2) || isClose(y, y1) || isClose(y, y2);
         }
 
-
         //
         // virtual public methods
         //
-
         public abstract double op(final double x, final double y) /* @ReadOnly */;
-        public abstract void calculate();
 
+        public abstract void calculate();
 
         //
         // protected methods
         //
-
-        protected int locateX(final double x) /* @ReadOnly */{
+        protected int locateX(final double x) /* @ReadOnly */ {
             QL.require(extraSafetyChecksX(), "unsorted values on array X"); // TODO: message
-            if (x <= vx.first())
+            if (x <= vx.first()) {
                 return 0;
-            else if (x > vx.last())
+            } else if (x > vx.last()) {
                 return vx.size() - 2;
-            else
+            } else {
                 return vx.upperBound(x) - 1;
+            }
         }
 
-        protected int locateY(final double y) /* @ReadOnly */{
+        protected int locateY(final double y) /* @ReadOnly */ {
             QL.require(extraSafetyChecksY(), "unsorted values on array Y"); // TODO: message
-            if (y <= vy.first())
+            if (y <= vy.first()) {
                 return 0;
-            else if (y > vy.last())
+            } else if (y > vy.last()) {
                 return vy.size() - 2;
-            else
+            } else {
                 return vy.upperBound(y) - 1;
+            }
         }
-
 
         //
         // private methods
         //
-
         private boolean extraSafetyChecksX() {
             if (new Settings().isExtraSafetyChecks()) {
                 for (int i = 0; i < vx.size() - 1; i++) {
-                    if (vx.get(i) > vx.get(i + 1))
+                    if (vx.get(i) > vx.get(i + 1)) {
                         return false;
+                    }
                 }
             }
             return true;
@@ -301,8 +300,9 @@ public class AbstractInterpolation2D implements Interpolation2D {
         private boolean extraSafetyChecksY() {
             if (new Settings().isExtraSafetyChecks()) {
                 for (int i = 0; i < vy.size() - 1; i++) {
-                    if (vy.get(i) > vy.get(i + 1))
+                    if (vy.get(i) > vy.get(i + 1)) {
                         return false;
+                    }
                 }
             }
             return true;

@@ -3,8 +3,8 @@
  * and open the template in the editor.
  */
 package com.incurrency.framework;
-import java.util.EventObject;
 
+import java.util.EventObject;
 
 /**
  *
@@ -14,29 +14,27 @@ public class HistoricalBarEvent extends EventObject {
 
     private int _barNumber;
 
+    private BeanSymbol _symbol;
+    private BeanOHLC _ohlc;
+    private TreeMapExtension<Long, BeanOHLC> _list = new TreeMapExtension<>();
+
+    public HistoricalBarEvent(Object source, int barNumber, TreeMapExtension list, BeanSymbol s, BeanOHLC ohlc) {
+        super(source);
+        _barNumber = barNumber;
+        _list = list;
+        _symbol = s;
+        _ohlc = ohlc;
+    }
+
     public void setBarNumber(int _barNumber) {
         this._barNumber = _barNumber;
     }
-    
-    private BeanSymbol _symbol;
-    private BeanOHLC _ohlc;
-    private TreeMapExtension<Long,BeanOHLC> _list=new TreeMapExtension<>();
-    public HistoricalBarEvent( Object source,int barNumber,TreeMapExtension list, BeanSymbol s,BeanOHLC ohlc)
-    {
-    super(source);    
-    _barNumber=barNumber;
-    _list=list;
-    _symbol=s;
-    _ohlc=ohlc;
-    }
-    
-    public int barNumber()
-    {
-        return _barNumber;
-    }    
 
-    
-    public TreeMapExtension<Long,BeanOHLC> list(){
+    public int barNumber() {
+        return _barNumber;
+    }
+
+    public TreeMapExtension<Long, BeanOHLC> list() {
         return _list;
     }
 

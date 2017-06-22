@@ -14,20 +14,37 @@ import org.jquantlib.util.Visitor;
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality=Quality.Q0_UNFINISHED, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q0_UNFINISHED, version = Version.V097, reviewers = "Richard Gomes")
 public class PricerSetter implements PolymorphicVisitor {
 
     private static final String INCOMPATIBLE_PRICER = "incompatible pricer";
     private static final String UNKNOWN_VISITABLE = "unknown visitable";
 
+    //
+    // static public methods
+    //
+    static public void setCouponPricer(final Leg leg, final FloatingRateCouponPricer pricer) {
+        final PricerSetter setter = new PricerSetter(pricer);
+        for (int i = 0; i < leg.size(); i++) {
+            leg.get(i).accept(setter);
+        }
+    }
 
+    static public void setCouponPricers(final Leg leg, final List<FloatingRateCouponPricer> pricers) {
+        QL.require(leg.size() > 0, "no cashflows");
+        QL.require(leg.size() == pricers.size(), "mismatch between leg size and number of pricers");
+        final int nCashFlows = leg.size();
+        final int nPricers = pricers.size();
+        for (int i = 0; i < nCashFlows; i++) {
+            final PricerSetter setter = new PricerSetter(i < nPricers ? pricers.get(i) : pricers.get(nPricers - 1));
+            leg.get(i).accept(setter);
+        }
+    }
     //
     // private fields
     //
 
     private final FloatingRateCouponPricer pricer;
-
-
     // private constructors
     //
 
@@ -35,52 +52,27 @@ public class PricerSetter implements PolymorphicVisitor {
         this.pricer = pricer;
     }
 
-
-    //
-    // static public methods
-    //
-
-    static public void setCouponPricer(final Leg leg, final FloatingRateCouponPricer pricer) {
-        final PricerSetter setter = new PricerSetter(pricer);
-        for (int i=0; i<leg.size(); i++) {
-            leg.get(i).accept(setter);
-        }
-    }
-
-    static public void setCouponPricers(final Leg leg, final List<FloatingRateCouponPricer> pricers) {
-        QL.require(leg.size()>0 , "no cashflows");
-        QL.require(leg.size() == pricers.size() , "mismatch between leg size and number of pricers");
-        final int nCashFlows = leg.size();
-        final int nPricers = pricers.size();
-        for (int i=0; i<nCashFlows; i++) {
-            final PricerSetter setter = new PricerSetter(i<nPricers ? pricers.get(i) : pricers.get(nPricers-1));
-            leg.get(i).accept(setter);
-        }
-    }
-
-
     //
     // implements PolymorphicVisitor
     //
-
     @Override
     public <CashFlow> Visitor<CashFlow> visitor(Class<? extends CashFlow> klass) {
-        if (klass==org.jquantlib.cashflow.CashFlow.class ) {
+        if (klass == org.jquantlib.cashflow.CashFlow.class) {
             return (Visitor<CashFlow>) new CashFlowVisitor();
         }
-        if ( klass == SimpleCashFlow.class) {
+        if (klass == SimpleCashFlow.class) {
             return (Visitor<CashFlow>) new SimpleCashFlowVisitor();
         }
-        if (klass==Coupon.class) {
+        if (klass == Coupon.class) {
             return (Visitor<CashFlow>) new CouponVisitor();
         }
-        if (klass==IborCoupon.class) {
+        if (klass == IborCoupon.class) {
             return (Visitor<CashFlow>) new IborCouponVisitor();
         }
         if (klass == CmsCoupon.class) {
             return (Visitor<CashFlow>) new CmsCouponVisitor();
         }
-        
+
 //        if (klass == CappedFlooredIborCoupon.class) {
 //            return (Visitor<CashFlow>) new CappedFlooredIborCouponVisitor();
 //        }
@@ -99,22 +91,22 @@ public class PricerSetter implements PolymorphicVisitor {
 //        if (klass == SubPeriodsCoupon.class) {
 //            return (Visitor<CashFlow>) new SubPeriodsCouponVisitor();
 //        }
-
         throw new LibraryException(UNKNOWN_VISITABLE); // QA:[RG]::verified
     }
-
 
     //
     // private inner classes
     //
-
     private class CashFlowVisitor implements Visitor<CashFlow> {
+
         @Override
         public void visit(final CashFlow o) {
             // nothing
         }
     }
+
     private class SimpleCashFlowVisitor implements Visitor<CashFlow> {
+
         @Override
         public void visit(final CashFlow o) {
             // nothing
@@ -122,6 +114,7 @@ public class PricerSetter implements PolymorphicVisitor {
     }
 
     private class CouponVisitor implements Visitor<CashFlow> {
+
         @Override
         public void visit(final CashFlow o) {
             // nothing
@@ -129,6 +122,7 @@ public class PricerSetter implements PolymorphicVisitor {
     }
 
     private class IborCouponVisitor implements Visitor<CashFlow> {
+
         @Override
         public void visit(final CashFlow o) {
             if (IborCouponPricer.class.isAssignableFrom(pricer.getClass())) {
@@ -141,25 +135,21 @@ public class PricerSetter implements PolymorphicVisitor {
     }
 
     private class CmsCouponVisitor implements Visitor<CashFlow> {
+
         @Override
         public void visit(final CashFlow o) {
             if (CmsCouponPricer.class.isAssignableFrom(pricer.getClass())) {
                 final CmsCoupon c = (CmsCoupon) o;
-                c.setPricer((CmsCouponPricer)pricer);
+                c.setPricer((CmsCouponPricer) pricer);
             } else {
                 throw new LibraryException(INCOMPATIBLE_PRICER); // QA:[RG]::verified
             }
         }
     }
 
-
-    
     //
     // TODO: Uncomment the following code as soon the corresponding classes become translated
     //
-    
-    
-    
 //	private class CappedFlooredIborCouponVisitor implements Visitor<CashFlow> {
 //		@Override
 //		public void visit(final CashFlow o) {
@@ -232,5 +222,4 @@ public class PricerSetter implements PolymorphicVisitor {
 //            }
 //        }
 //    }
-
 }

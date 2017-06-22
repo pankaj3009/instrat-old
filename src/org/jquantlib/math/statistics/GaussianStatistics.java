@@ -21,7 +21,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
@@ -37,8 +37,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.statistics;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -47,14 +46,14 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 
 /**
  * This class is an alias to GenericGaussianStatistics
- * 
+ *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q4_UNIT, reviewers = { "Richard Gomes" }, version = Version.V097)
+@QualityAssurance(quality = Quality.Q4_UNIT, reviewers = {"Richard Gomes"}, version = Version.V097)
 public abstract class GaussianStatistics extends GenericGaussianStatistics {
 
-	public GaussianStatistics() {
-		super();
-	} 
-	
+    public GaussianStatistics() {
+        super();
+    }
+
 }

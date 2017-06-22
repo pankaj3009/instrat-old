@@ -24,8 +24,9 @@ package org.jquantlib.math.functions;
 import org.jquantlib.math.Ops;
 
 /**
- * This method binds the 2nd argument of a binary function to a scalar value, effectively enabling
- * a binary function to be called in a context intended for a unary function.
+ * This method binds the 2nd argument of a binary function to a scalar value,
+ * effectively enabling a binary function to be called in a context intended for
+ * a unary function.
  *
  * @author Richard Gomes
  */
@@ -34,19 +35,17 @@ public final class Bind2nd implements Ops.DoubleOp {
     private final Ops.BinaryDoubleOp f;   // 1st argument
     private final double scalar;          // 2nd argument
 
-	public Bind2nd(final Ops.BinaryDoubleOp f, final double scalar) {
-	    this.f = f;
+    public Bind2nd(final Ops.BinaryDoubleOp f, final double scalar) {
+        this.f = f;
         this.scalar = scalar;
-	}
+    }
 
-
-	//
+    //
     // implements Ops.DoubleOp
     //
-
-	@Override
-	public double op(final double a) {
-		return f.op(a, scalar);
-	}
+    @Override
+    public double op(final double a) {
+        return f.op(a, scalar);
+    }
 
 }

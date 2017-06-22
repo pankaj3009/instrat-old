@@ -20,7 +20,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2008 Klaus Spanderen
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,34 +35,45 @@ When applicable, the original copyright notice follows this notice.
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.matrixutilities;
 
 import java.util.Arrays;
 import org.jquantlib.QL;
 import org.jquantlib.math.optimization.Minpack;
 
-
 /**
  * QR decompoisition
  * <p>
- * This implementation is based on <a href="http://www1.fpl.fs.fed.us/optimization.html">MINPACK/J</a>
+ * This implementation is based on
+ * <a href="http://www1.fpl.fs.fed.us/optimization.html">MINPACK/J</a>
  * <p>
- * This subroutine uses householder transformations with <i>optional</i> column pivoting to compute a QR factorization of
- * the {@latex$ m} by {@latex$ n} matrix {@latex$ A}.
+ * This subroutine uses householder transformations with <i>optional</i> column
+ * pivoting to compute a QR factorization of the {
+ *
+ * @latex$ m} by {
+ * @latex$ n} matrix {
+ * @latex$ A}.
  * <p>
- * That is, Minpack_f77#qrfac determines an orthogonal matrix {@latex$ Q}, a permutation matrix {@latex$ P}, and
- * an upper trapezoidal matrix {@latex$ R} with diagonal elements of nonincreasing magnitude, such that {@latex$ A*P = Q*R}.
+ * That is, Minpack_f77#qrfac determines an orthogonal matrix {
+ * @latex$ Q}, a permutation matrix {
+ * @latex$ P}, and an upper trapezoidal matrix {
+ * @latex$ R} with diagonal elements of nonincreasing magnitude, such that {
+ * @latex$ A*P = Q*R}.
  * <p>
- * Return value <code>ipvt</code> is an integer array of length {@latex$ n}, which defines the permutation matrix {@latex$ P}
- * such that {@latex$ A*P = Q*R}.
+ * Return value <code>ipvt</code> is an integer array of length {
+ * @latex$ n}, which defines the permutation matrix {
+ * @latex$ P} such that {
+ * @latex$ A*P = Q*R}.
  * <p>
- * Column {@latex$ j} of {@latex$ P} is column <code>ipvt[j]</code> of the identity matrix.
+ * Column {
+ * @latex$ j} of {
+ * @latex$ P} is column <code>ipvt[j]</code> of the identity matrix.
  * <p>
  * See lmdiff.cpp for further details.
  *
- * @see <a href="http://mathworld.wolfram.com/QRDecomposition.html">MathWorld</a>
+ * @see
+ * <a href="http://mathworld.wolfram.com/QRDecomposition.html">MathWorld</a>
  * @see <a href="http://en.wikipedia.org/wiki/QR_decomposition">Wikipedia</a>
  * @see <a href="http://www1.fpl.fs.fed.us/optimization.html">MINPACK/J</a>
  * @see <a href="http://www.netlib.org/minpack">MINPACK</a>
@@ -80,18 +91,18 @@ public class QRDecomposition {
     private final int ipvt[];
     private final boolean isNonSingular;
 
-
     /**
      * Calculates the QR-decomposition of the given matrix.
+     *
      * @param A The matrix to decompose.
      */
     public QRDecomposition(final Matrix matrix) {
         this(matrix, false);
     }
 
-
     /**
      * Calculates the QR-decomposition of the given matrix.
+     *
      * @param M The matrix to decompose.
      */
     public QRDecomposition(final Matrix A, final boolean pivot) {
@@ -107,10 +118,10 @@ public class QRDecomposition {
         System.out.println("mT (BEFORE) = " + mT);
         Minpack.qrfac(
                 m, n,
-                mT,                      // input/output parameter (sorry for that :~ )
+                mT, // input/output parameter (sorry for that :~ )
                 pivot,
-                ipvt, rdiag, rdiag, wa  // output parameters (sorry for that :~ )
-                );
+                ipvt, rdiag, rdiag, wa // output parameters (sorry for that :~ )
+        );
 
         System.out.println("mT (AFTER)  = " + mT);
         System.out.println("Array ipvt = " + Arrays.toString(ipvt));
@@ -119,7 +130,7 @@ public class QRDecomposition {
 
         // obtain R
         final double[][] r = new double[n][n];
-        for (int i=0; i < n; i++) {
+        for (int i = 0; i < n; i++) {
             // r[i][i] = rdiag[i];
             r[i][i] = rdiag.get(i);
             if (i < m) {
@@ -134,10 +145,10 @@ public class QRDecomposition {
         // obtain Q
         final double[][] q = new double[m][n];
         final double w[] = new double[m];
-        for (int k=0; k < m; k++) {
+        for (int k = 0; k < m; k++) {
             Arrays.fill(w, 0.0);
             w[k] = 1.0;
-            for (int j=0; j < Math.min(n, m); j++) {
+            for (int j = 0; j < Math.min(n, m); j++) {
                 final double t3 = mT.get(j, j);
                 if (t3 != 0.0) {
                     // final double t = std::inner_product(mT.row_begin(j)+j, mT.row_end(j), w.begin()+j, 0.0)/t3;
@@ -147,7 +158,7 @@ public class QRDecomposition {
                     }
                     t /= t3;
 
-                    for (int i=j; i<m; i++) {
+                    for (int i = j; i < m; i++) {
                         w[i] -= mT.get(j, i) * t;
                     }
                 }
@@ -158,11 +169,11 @@ public class QRDecomposition {
         // reverse column pivoting
         final double[][] p = new double[n][n];
         if (pivot) {
-            for (int i=0; i < n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 p[ipvt[i]][i] = 1.0;
             }
         } else {
-            for (int i=0; i < n; ++i) {
+            for (int i = 0; i < n; ++i) {
                 p[i][i] = 1.0;
             }
         }
@@ -174,10 +185,10 @@ public class QRDecomposition {
         this.Q = fortran ? new Matrix(q).toFortran() : new Matrix(q);
         this.P = fortran ? new Matrix(p).toFortran() : new Matrix(p);
 
-        System.out.println("Matrix Q = "+Q.toString());
-        System.out.println("Matrix R = "+R.toString());
-        System.out.println("Matrix P = "+P.toString());
-        System.out.println("Matrix mT = "+mT.toString());
+        System.out.println("Matrix Q = " + Q.toString());
+        System.out.println("Matrix R = " + R.toString());
+        System.out.println("Matrix P = " + P.toString());
+        System.out.println("Matrix mT = " + mT.toString());
     }
 
     public Matrix Q() {
@@ -196,8 +207,7 @@ public class QRDecomposition {
         return isNonSingular;
     }
 
-
-    public Array solve (
+    public Array solve(
             final Array b,
             final boolean pivot,
             final Array d) {
@@ -212,7 +222,7 @@ public class QRDecomposition {
         final Array wa = new Array(n);
 
         final Array ld = new Array(n);
-        if (d!=null && !d.empty()) {
+        if (d != null && !d.empty()) {
             ld.fill(d);
         }
         final Array x = new Array(n);
@@ -223,15 +233,14 @@ public class QRDecomposition {
         //TODO:: return x;
     }
 
-
     //
     // private methods
     //
-
     private boolean isNonSingular(final double[] rdiag) {
         for (final double diag : rdiag) {
-            if (diag == 0)
+            if (diag == 0) {
                 return false;
+            }
         }
         return true;
     }

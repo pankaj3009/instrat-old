@@ -1,10 +1,9 @@
 /* Copyright (C) 2013 Interactive Brokers LLC. All rights reserved.  This code is subject to the terms
  * and conditions of the IB API Non-Commercial License or the IB API Commercial License, as applicable. */
-
 package com.ib.client;
 
-
 public class EClientErrors {
+
     public static final int NO_VALID_ID = -1;
     public static final CodeMsgPair NOT_CONNECTED = new CodeMsgPair(504, "Not connected");
     public static final CodeMsgPair UPDATE_TWS = new CodeMsgPair(503, "The TWS is out of date and must be upgraded.");
@@ -63,14 +62,22 @@ public class EClientErrors {
         int m_errorCode;
         String m_errorMsg;
 
-        // Get/Set methods
-        public int code()    { return m_errorCode; }
-        public String msg()  { return m_errorMsg; }
-
-        /** Constructor */
+        /**
+         * Constructor
+         */
         public CodeMsgPair(int i, String errString) {
             m_errorCode = i;
             m_errorMsg = errString;
         }
+
+        // Get/Set methods
+        public int code() {
+            return m_errorCode;
+        }
+
+        public String msg() {
+            return m_errorMsg;
+        }
+
     }
 }

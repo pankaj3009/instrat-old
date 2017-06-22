@@ -3,20 +3,21 @@ package org.jquantlib.math.optimization;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
 
-public class LeastSquareFunction extends CostFunction  {
+public class LeastSquareFunction extends CostFunction {
 
     //! least square problem
     protected LeastSquareProblem lsp_;
 
     //! Default constructor
     LeastSquareFunction(final LeastSquareProblem lsp) {
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
         this.lsp_ = lsp;
     }
 
     @Override
-    public double value(final Array x)  {
+    public double value(final Array x) {
         // size of target and function to fit vectors
         final Array target = new Array(lsp_.size());
         final Array fct2fit = new Array(lsp_.size());
@@ -34,7 +35,7 @@ public class LeastSquareFunction extends CostFunction  {
         final Array target = new Array(lsp_.size());
         final Array fct2fit = new Array(lsp_.size());
         // size of gradient matrix
-        final Matrix grad_fct2fit  = new Matrix(lsp_.size(), x.size());
+        final Matrix grad_fct2fit = new Matrix(lsp_.size(), x.size());
         // compute its values
         lsp_.targetValueAndGradient(x, grad_fct2fit, target, fct2fit);
         // do the difference
@@ -50,7 +51,7 @@ public class LeastSquareFunction extends CostFunction  {
         final Array target = new Array(lsp_.size());
         final Array fct2fit = new Array(lsp_.size());
         // size of gradient matrix
-        final Matrix grad_fct2fit  = new Matrix(lsp_.size (), x.size());
+        final Matrix grad_fct2fit = new Matrix(lsp_.size(), x.size());
         // compute its values
         lsp_.targetValueAndGradient(x, grad_fct2fit, target, fct2fit);
         // do the difference

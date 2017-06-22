@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.methods.finitedifferences;
 
 import org.jquantlib.instruments.Option.Type;
@@ -27,21 +26,21 @@ import org.jquantlib.math.matrixutilities.Array;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public class AmericanCondition extends CurveDependentStepCondition {
 
-	public AmericanCondition(Type type, double strike) {
-		super(type, strike);
-	}
+    public AmericanCondition(Type type, double strike) {
+        super(type, strike);
+    }
 
-	public AmericanCondition(Array a) {
-		super(a);
-	}
+    public AmericanCondition(Array a) {
+        super(a);
+    }
 
-	public/* @Real */double applyToValue(/* @Real */double current, /* @Real */
-			double intrinsic) {
-		return Math.max(current, intrinsic);
-	}
+    public/* @Real */ double applyToValue(/* @Real */double current, /* @Real */
+                    double intrinsic) {
+        return Math.max(current, intrinsic);
+    }
 
 }

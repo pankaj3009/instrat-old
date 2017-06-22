@@ -19,7 +19,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
  Copyright (C) 2007 StatPro Italia srl
 
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import org.jquantlib.instruments.OneAssetOption;
@@ -55,18 +54,15 @@ public class FDBermudanEngine extends OneAssetOption.EngineImpl {
     //
     // private fields
     //
-
     private double extraTermInBermuda; // TODO: code review
     private final FDMultiPeriodEngine fdVanillaEngine;
-
 
     //
     // public constructors
     //
-
     public FDBermudanEngine(
             final GeneralizedBlackScholesProcess process) {
-        this(process, 100,100, false);
+        this(process, 100, 100, false);
     }
 
     public FDBermudanEngine(
@@ -90,11 +86,9 @@ public class FDBermudanEngine extends OneAssetOption.EngineImpl {
         fdVanillaEngine = new FDBermudianMPEngine(process, timeSteps, gridPoints, timeDependent);
     }
 
-
     //
     // private methods
     //
-
     // TODO: verify how this method is called
     private void initializeStepCondition() {
         fdVanillaEngine.stepCondition = new NullCondition<Array>();
@@ -108,34 +102,28 @@ public class FDBermudanEngine extends OneAssetOption.EngineImpl {
         }
     }
 
-
     //
     // implements PricingEngine
     //
-
     @Override
     public void calculate() {
-        final Option.ArgumentsImpl a = (Option.ArgumentsImpl)arguments_;
+        final Option.ArgumentsImpl a = (Option.ArgumentsImpl) arguments_;
         fdVanillaEngine.setupArguments(a);
         fdVanillaEngine.calculate(results_);
     }
 
-
     //
     // private inner classes
     //
-
     private static class FDBermudianMPEngine extends FDMultiPeriodEngine {
 
         public FDBermudianMPEngine(final GeneralizedBlackScholesProcess process, final int timeSteps, final int gridPoints, final boolean timeDependent) {
             super(process, timeSteps, gridPoints, timeDependent);
         }
 
-
         //
         // overrides FDMultiPeriodEngine
         //
-
         @Override
         protected void executeIntermediateStep(final int step) {
             final int size = intrinsicValues.size();

@@ -28,20 +28,23 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 /**
  * Singular Value Decomposition
  * <P>
- * For an m-by-n matrix A with m >= n, the singular value decomposition is an m-by-n orthogonal matrix U, an n-by-n diagonal matrix
- * S, and an n-by-n orthogonal matrix V so that A = U*S*V'.
+ * For an m-by-n matrix A with m >= n, the singular value decomposition is an
+ * m-by-n orthogonal matrix U, an n-by-n diagonal matrix S, and an n-by-n
+ * orthogonal matrix V so that A = U*S*V'.
  * <P>
- * The singular values, sigma[k] = S.data[S.addr.op(k,k)], are ordered so that sigma[0] >= sigma[1] >= ... >= sigma[n-1].
+ * The singular values, sigma[k] = S.data[S.addr.op(k,k)], are ordered so that
+ * sigma[0] >= sigma[1] >= ... >= sigma[n-1].
  * <P>
- * The singular value decompostion always exists, so the constructor will never fail. The matrix condition number and the effective
- * numerical rank can be computed from this decomposition.
+ * The singular value decompostion always exists, so the constructor will never
+ * fail. The matrix condition number and the effective numerical rank can be
+ * computed from this decomposition.
  *
- * @note  This class was adapted from JAMA
+ * @note This class was adapted from JAMA
  * @see <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a>
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = {"Richard Gomes"})
 public class SVD {
 
     private final Matrix U;
@@ -54,7 +57,6 @@ public class SVD {
     //
     // public constructors
     //
-
     /**
      * Construct the singular value decomposition
      *
@@ -79,7 +81,6 @@ public class SVD {
 
         // Reduce A to bidiagonal form, storing the diagonal elements
         // in s and the super-diagonal elements in e.
-
         final int nct = Math.min(m - 1, n);
         final int nrt = Math.max(0, Math.min(n - 2, m));
         for (int k = 0; k < Math.max(nct, nrt); k++) {
@@ -107,7 +108,6 @@ public class SVD {
                 if ((k < nct) & (s.$[s.addr.op(k)] != 0.0)) {
 
                     // Apply the transformation.
-
                     double t = 0;
                     for (int i = k; i < m; i++) {
                         t += A.$[A.addr.op(i, k)] * A.$[A.addr.op(i, j)];
@@ -120,14 +120,12 @@ public class SVD {
 
                 // Place the k-th row of A into e for the
                 // subsequent calculation of the row transformation.
-
                 e[j] = A.$[A.addr.op(k, j)];
             }
             if (wantu & (k < nct)) {
 
                 // Place the transformation in U for subsequent back
                 // multiplication.
-
                 for (int i = k; i < m; i++) {
                     U.$[U.addr.op(i, k)] = A.$[A.addr.op(i, k)];
                 }
@@ -154,7 +152,6 @@ public class SVD {
                 if ((k + 1 < m) & (e[k] != 0.0)) {
 
                     // Apply the transformation.
-
                     for (int i = k + 1; i < m; i++) {
                         work[i] = 0.0;
                     }
@@ -174,7 +171,6 @@ public class SVD {
 
                     // Place the transformation in V for subsequent
                     // back multiplication.
-
                     for (int i = k + 1; i < n; i++) {
                         V.$[V.addr.op(i, k)] = e[i];
                     }
@@ -183,7 +179,6 @@ public class SVD {
         }
 
         // Set up the final bidiagonal matrix or order p.
-
         int p = Math.min(n, m + 1);
         if (nct < n) {
             s.$[nct] = A.$[A.addr.op(nct, nct)];
@@ -197,7 +192,6 @@ public class SVD {
         e[p - 1] = 0.0;
 
         // If required, generate U.
-
         if (wantu) {
             for (int j = nct; j < nu; j++) {
                 for (int i = 0; i < m; i++) {
@@ -234,7 +228,6 @@ public class SVD {
         }
 
         // If required, generate V.
-
         if (wantv) {
             for (int k = n - 1; k >= 0; k--) {
                 if ((k < nrt) && (e[k] != 0.0)) { //FINDBUGS:: NS_DANGEROUS_NON_SHORT_CIRCUIT (solved)
@@ -257,7 +250,6 @@ public class SVD {
         }
 
         // Main iteration loop for the singular values.
-
         final int pp = p - 1;
         int iter = 0;
         final double eps = Math.pow(2.0, -52.0);
@@ -265,17 +257,14 @@ public class SVD {
             int k, kase;
 
             // Here is where a test for too many iterations would go.
-
             // This section of the program inspects for
             // negligible elements in the s and e arrays. On
             // completion the variables kase and k are set as follows.
-
             // kase = 1 if s(p) and e[k-1] are negligible and k<p
             // kase = 2 if s(k) is negligible and k<p
             // kase = 3 if e[k-1] is negligible, k<p, and
             // s(k), ..., s(p) are not negligible (qr step).
             // kase = 4 if e(p-1) is negligible (convergence).
-
             for (k = p - 2; k >= -1; k--) {
                 if (k == -1) {
                     break;
@@ -311,174 +300,163 @@ public class SVD {
             k++;
 
             // Perform the task indicated by kase.
-
             switch (kase) {
 
-            // Deflate negligible s(p).
-
-            case 1: {
-                double f = e[p - 2];
-                e[p - 2] = 0.0;
-                for (int j = p - 2; j >= k; j--) {
-                    double t = Math.hypot(s.$[j], f);
-                    final double cs = s.$[j] / t;
-                    final double sn = f / t;
-                    s.$[j] = t;
-                    if (j != k) {
-                        f = -sn * e[j - 1];
-                        e[j - 1] = cs * e[j - 1];
-                    }
-                    if (wantv) {
-                        for (int i = 0; i < n; i++) {
-                            t = cs * V.$[V.addr.op(i, j)] + sn * V.$[V.addr.op(i, p - 1)];
-                            V.$[V.addr.op(i, p - 1)] = -sn * V.$[V.addr.op(i, j)] + cs * V.$[V.addr.op(i, p - 1)];
-                            V.$[V.addr.op(i, j)] = t;
+                // Deflate negligible s(p).
+                case 1: {
+                    double f = e[p - 2];
+                    e[p - 2] = 0.0;
+                    for (int j = p - 2; j >= k; j--) {
+                        double t = Math.hypot(s.$[j], f);
+                        final double cs = s.$[j] / t;
+                        final double sn = f / t;
+                        s.$[j] = t;
+                        if (j != k) {
+                            f = -sn * e[j - 1];
+                            e[j - 1] = cs * e[j - 1];
+                        }
+                        if (wantv) {
+                            for (int i = 0; i < n; i++) {
+                                t = cs * V.$[V.addr.op(i, j)] + sn * V.$[V.addr.op(i, p - 1)];
+                                V.$[V.addr.op(i, p - 1)] = -sn * V.$[V.addr.op(i, j)] + cs * V.$[V.addr.op(i, p - 1)];
+                                V.$[V.addr.op(i, j)] = t;
+                            }
                         }
                     }
                 }
-            }
                 break;
 
-            // Split at negligible s(k).
-
-            case 2: {
-                double f = e[k - 1];
-                e[k - 1] = 0.0;
-                for (int j = k; j < p; j++) {
-                    double t = Math.hypot(s.$[j], f);
-                    final double cs = s.$[j] / t;
-                    final double sn = f / t;
-                    s.$[j] = t;
-                    f = -sn * e[j];
-                    e[j] = cs * e[j];
-                    if (wantu) {
-                        for (int i = 0; i < m; i++) {
-                            t = cs * U.$[U.addr.op(i, j)] + sn * U.$[U.addr.op(i, k - 1)];
-                            U.$[U.addr.op(i, k - 1)] = -sn * U.$[U.addr.op(i, j)] + cs * U.$[U.addr.op(i, k - 1)];
-                            U.$[U.addr.op(i, j)] = t;
+                // Split at negligible s(k).
+                case 2: {
+                    double f = e[k - 1];
+                    e[k - 1] = 0.0;
+                    for (int j = k; j < p; j++) {
+                        double t = Math.hypot(s.$[j], f);
+                        final double cs = s.$[j] / t;
+                        final double sn = f / t;
+                        s.$[j] = t;
+                        f = -sn * e[j];
+                        e[j] = cs * e[j];
+                        if (wantu) {
+                            for (int i = 0; i < m; i++) {
+                                t = cs * U.$[U.addr.op(i, j)] + sn * U.$[U.addr.op(i, k - 1)];
+                                U.$[U.addr.op(i, k - 1)] = -sn * U.$[U.addr.op(i, j)] + cs * U.$[U.addr.op(i, k - 1)];
+                                U.$[U.addr.op(i, j)] = t;
+                            }
                         }
                     }
                 }
-            }
                 break;
 
-            // Perform one qr step.
+                // Perform one qr step.
+                case 3: {
 
-            case 3: {
-
-                // Calculate the shift.
-
-                final double scale = Math.max(Math.max(Math.max(Math.max(Math.abs(s.$[p - 1]), Math.abs(s.$[p - 2])),
-                        Math.abs(e[p - 2])), Math.abs(s.$[s.addr.op(k)])), Math.abs(e[k]));
-                final double sp = s.$[p - 1] / scale;
-                final double spm1 = s.$[p - 2] / scale;
-                final double epm1 = e[p - 2] / scale;
-                final double sk = s.$[s.addr.op(k)] / scale;
-                final double ek = e[k] / scale;
-                final double b = ((spm1 + sp) * (spm1 - sp) + epm1 * epm1) / 2.0;
-                final double c = (sp * epm1) * (sp * epm1);
-                double shift = 0.0;
-                if ((b != 0.0) | (c != 0.0)) {
-                    shift = Math.sqrt(b * b + c);
-                    if (b < 0.0) {
-                        shift = -shift;
+                    // Calculate the shift.
+                    final double scale = Math.max(Math.max(Math.max(Math.max(Math.abs(s.$[p - 1]), Math.abs(s.$[p - 2])),
+                            Math.abs(e[p - 2])), Math.abs(s.$[s.addr.op(k)])), Math.abs(e[k]));
+                    final double sp = s.$[p - 1] / scale;
+                    final double spm1 = s.$[p - 2] / scale;
+                    final double epm1 = e[p - 2] / scale;
+                    final double sk = s.$[s.addr.op(k)] / scale;
+                    final double ek = e[k] / scale;
+                    final double b = ((spm1 + sp) * (spm1 - sp) + epm1 * epm1) / 2.0;
+                    final double c = (sp * epm1) * (sp * epm1);
+                    double shift = 0.0;
+                    if ((b != 0.0) | (c != 0.0)) {
+                        shift = Math.sqrt(b * b + c);
+                        if (b < 0.0) {
+                            shift = -shift;
+                        }
+                        shift = c / (b + shift);
                     }
-                    shift = c / (b + shift);
-                }
-                double f = (sk + sp) * (sk - sp) + shift;
-                double g = sk * ek;
+                    double f = (sk + sp) * (sk - sp) + shift;
+                    double g = sk * ek;
 
-                // Chase zeros.
-
-                for (int j = k; j < p - 1; j++) {
-                    double t = Math.hypot(f, g);
-                    double cs = f / t;
-                    double sn = g / t;
-                    if (j != k) {
-                        e[j - 1] = t;
-                    }
-                    f = cs * s.$[j] + sn * e[j];
-                    e[j] = cs * e[j] - sn * s.$[j];
-                    g = sn * s.$[j + 1];
-                    s.$[j + 1] = cs * s.$[j + 1];
-                    if (wantv) {
-                        for (int i = 0; i < n; i++) {
-                            t = cs * V.$[V.addr.op(i, j)] + sn * V.$[V.addr.op(i, j + 1)];
-                            V.$[V.addr.op(i, j + 1)] = -sn * V.$[V.addr.op(i, j)] + cs * V.$[V.addr.op(i, j + 1)];
-                            V.$[V.addr.op(i, j)] = t;
+                    // Chase zeros.
+                    for (int j = k; j < p - 1; j++) {
+                        double t = Math.hypot(f, g);
+                        double cs = f / t;
+                        double sn = g / t;
+                        if (j != k) {
+                            e[j - 1] = t;
+                        }
+                        f = cs * s.$[j] + sn * e[j];
+                        e[j] = cs * e[j] - sn * s.$[j];
+                        g = sn * s.$[j + 1];
+                        s.$[j + 1] = cs * s.$[j + 1];
+                        if (wantv) {
+                            for (int i = 0; i < n; i++) {
+                                t = cs * V.$[V.addr.op(i, j)] + sn * V.$[V.addr.op(i, j + 1)];
+                                V.$[V.addr.op(i, j + 1)] = -sn * V.$[V.addr.op(i, j)] + cs * V.$[V.addr.op(i, j + 1)];
+                                V.$[V.addr.op(i, j)] = t;
+                            }
+                        }
+                        t = Math.hypot(f, g);
+                        cs = f / t;
+                        sn = g / t;
+                        s.$[j] = t;
+                        f = cs * e[j] + sn * s.$[j + 1];
+                        s.$[j + 1] = -sn * e[j] + cs * s.$[j + 1];
+                        g = sn * e[j + 1];
+                        e[j + 1] = cs * e[j + 1];
+                        if (wantu && (j < m - 1)) {
+                            for (int i = 0; i < m; i++) {
+                                t = cs * U.$[U.addr.op(i, j)] + sn * U.$[U.addr.op(i, j + 1)];
+                                U.$[U.addr.op(i, j + 1)] = -sn * U.$[U.addr.op(i, j)] + cs * U.$[U.addr.op(i, j + 1)];
+                                U.$[U.addr.op(i, j)] = t;
+                            }
                         }
                     }
-                    t = Math.hypot(f, g);
-                    cs = f / t;
-                    sn = g / t;
-                    s.$[j] = t;
-                    f = cs * e[j] + sn * s.$[j + 1];
-                    s.$[j + 1] = -sn * e[j] + cs * s.$[j + 1];
-                    g = sn * e[j + 1];
-                    e[j + 1] = cs * e[j + 1];
-                    if (wantu && (j < m - 1)) {
-                        for (int i = 0; i < m; i++) {
-                            t = cs * U.$[U.addr.op(i, j)] + sn * U.$[U.addr.op(i, j + 1)];
-                            U.$[U.addr.op(i, j + 1)] = -sn * U.$[U.addr.op(i, j)] + cs * U.$[U.addr.op(i, j + 1)];
-                            U.$[U.addr.op(i, j)] = t;
-                        }
-                    }
+                    e[p - 2] = f;
+                    iter = iter + 1;
                 }
-                e[p - 2] = f;
-                iter = iter + 1;
-            }
                 break;
 
-            // Convergence.
+                // Convergence.
+                case 4: {
 
-            case 4: {
-
-                // Make the singular values positive.
-
-                if (s.$[s.addr.op(k)] <= 0.0) {
-                    s.$[s.addr.op(k)] = (s.$[s.addr.op(k)] < 0.0 ? -s.$[s.addr.op(k)] : 0.0);
-                    if (wantv) {
-                        for (int i = 0; i <= pp; i++) {
-                            V.$[V.addr.op(i, k)] = -V.$[V.addr.op(i, k)];
+                    // Make the singular values positive.
+                    if (s.$[s.addr.op(k)] <= 0.0) {
+                        s.$[s.addr.op(k)] = (s.$[s.addr.op(k)] < 0.0 ? -s.$[s.addr.op(k)] : 0.0);
+                        if (wantv) {
+                            for (int i = 0; i <= pp; i++) {
+                                V.$[V.addr.op(i, k)] = -V.$[V.addr.op(i, k)];
+                            }
                         }
                     }
+
+                    // Order the singular values.
+                    while (k < pp) {
+                        if (s.$[s.addr.op(k)] >= s.$[s.addr.op(k + 1)]) {
+                            break;
+                        }
+                        double t = s.$[s.addr.op(k)];
+                        s.$[s.addr.op(k)] = s.$[s.addr.op(k + 1)];
+                        s.$[s.addr.op(k + 1)] = t;
+                        if (wantv && (k < n - 1)) {
+                            for (int i = 0; i < n; i++) {
+                                t = V.$[V.addr.op(i, k + 1)];
+                                V.$[V.addr.op(i, k + 1)] = V.$[V.addr.op(i, k)];
+                                V.$[V.addr.op(i, k)] = t;
+                            }
+                        }
+                        if (wantu && (k < m - 1)) {
+                            for (int i = 0; i < m; i++) {
+                                t = U.$[U.addr.op(i, k + 1)];
+                                U.$[U.addr.op(i, k + 1)] = U.$[U.addr.op(i, k)];
+                                U.$[U.addr.op(i, k)] = t;
+                            }
+                        }
+                        k++;
+                    }
+                    iter = 0;
+                    p--;
                 }
-
-                // Order the singular values.
-
-                while (k < pp) {
-                    if (s.$[s.addr.op(k)] >= s.$[s.addr.op(k + 1)]) {
-                        break;
-                    }
-                    double t = s.$[s.addr.op(k)];
-                    s.$[s.addr.op(k)] = s.$[s.addr.op(k + 1)];
-                    s.$[s.addr.op(k + 1)] = t;
-                    if (wantv && (k < n - 1)) {
-                        for (int i = 0; i < n; i++) {
-                            t = V.$[V.addr.op(i, k + 1)];
-                            V.$[V.addr.op(i, k + 1)] = V.$[V.addr.op(i, k)];
-                            V.$[V.addr.op(i, k)] = t;
-                        }
-                    }
-                    if (wantu && (k < m - 1)) {
-                        for (int i = 0; i < m; i++) {
-                            t = U.$[U.addr.op(i, k + 1)];
-                            U.$[U.addr.op(i, k + 1)] = U.$[U.addr.op(i, k)];
-                            U.$[U.addr.op(i, k)] = t;
-                        }
-                    }
-                    k++;
-                }
-                iter = 0;
-                p--;
-            }
                 break;
             }
         }
 
-
         // Populate S matrix
-
         for (int i = 0; i < n; i++) {
             // XXX: not needed
             // for (int j = 0; j < n; j++) {
@@ -491,7 +469,6 @@ public class SVD {
     //
     // public methods
     //
-
     /**
      * Return the left singular vectors
      *

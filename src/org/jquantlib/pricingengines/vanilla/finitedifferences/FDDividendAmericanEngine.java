@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
  Copyright (C) 2007 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.util.List;
@@ -48,8 +47,10 @@ import org.jquantlib.util.Observer;
 /**
  * Finite-differences pricing engine for dividend American options
  *
- * @test the correctness of the returned greeks is tested by reproducing numerical derivatives.
- * @test the invariance of the results upon addition of null dividends is tested.
+ * @test the correctness of the returned greeks is tested by reproducing
+ * numerical derivatives.
+ * @test the invariance of the results upon addition of null dividends is
+ * tested.
  *
  * @bug results are not overly reliable.
  * @bug method impliedVolatility() utterly fails
@@ -58,8 +59,6 @@ import org.jquantlib.util.Observer;
  *
  * @author Richard Gomes
  */
-
-
 /*
 this:: typedef FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption::engine> FDDividendAmericanEngine;
 
@@ -67,17 +66,15 @@ TODO:: typedef FDEngineAdapter<FDAmericanCondition<FDDividendEngineMerton73>, Di
 
 TODO:: typedef FDEngineAdapter<FDAmericanCondition<FDDividendEngineShiftScale>, DividendVanillaOption::engine> FDDividendAmericanEngineShiftScale;
 
-*/
-
+ */
 //typedef FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption::engine> FDDividendAmericanEngine;
 public class FDDividendAmericanEngine
-    extends FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption.Engine>
-    implements DividendVanillaOption.Engine {
+        extends FDEngineAdapter<FDAmericanCondition<FDDividendEngine>, DividendVanillaOption.Engine>
+        implements DividendVanillaOption.Engine {
 
     //
     // public constructors
     //
-
     public FDDividendAmericanEngine(final GeneralizedBlackScholesProcess process) {
         this(process, 100, 100, false);
         super.impl = new Impl(this);
@@ -110,28 +107,9 @@ public class FDDividendAmericanEngine
     //
     // private inner classes
     //
-
-
-    private class Impl extends DividendVanillaOption.EngineImpl {
-
-        private final FDDividendAmericanEngine engine;
-
-        private Impl(final FDDividendAmericanEngine engine) {
-            this.engine = engine;
-        }
-
-        @Override
-        public void calculate() {
-            // calls FDEngineAdapter#calculate()
-            engine.calculate();
-        }
-    }
-
-
     //
     // implements OneAssetOption.Engine
     //
-
     @Override
     public Arguments getArguments() {
         return super.impl.getArguments();
@@ -147,11 +125,9 @@ public class FDDividendAmericanEngine
         super.impl.reset();
     }
 
-
     //
     // implements Observer
     //
-
 //    @Override
 //XXX::OBS    public void update(final Observable o, final Object arg) {
 //        super.impl.update(o, arg);
@@ -161,11 +137,9 @@ public class FDDividendAmericanEngine
         super.impl.update();
     }
 
-
     //
     // implements Observable
     //
-
     @Override
     public void addObserver(final Observer observer) {
         super.impl.addObserver(observer);
@@ -199,6 +173,21 @@ public class FDDividendAmericanEngine
     @Override
     public void notifyObservers(final Object arg) {
         super.impl.notifyObservers(arg);
+    }
+
+    private class Impl extends DividendVanillaOption.EngineImpl {
+
+        private final FDDividendAmericanEngine engine;
+
+        private Impl(final FDDividendAmericanEngine engine) {
+            this.engine = engine;
+        }
+
+        @Override
+        public void calculate() {
+            // calls FDEngineAdapter#calculate()
+            engine.calculate();
+        }
     }
 
 }

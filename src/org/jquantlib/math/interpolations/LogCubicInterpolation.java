@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2004, 2008 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2001, 2002, 2003 Nicolas Di C�sar�
@@ -36,15 +36,13 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.interpolations;
 
 import org.jquantlib.math.interpolations.CubicInterpolation.BoundaryCondition;
 import org.jquantlib.math.interpolations.CubicInterpolation.DerivativeApprox;
 import org.jquantlib.math.interpolations.factories.Cubic;
 import org.jquantlib.math.matrixutilities.Array;
-
 
 /**
  * log-cubic interpolation between discrete points
@@ -56,7 +54,6 @@ public class LogCubicInterpolation extends AbstractInterpolation {
     //
     // public constructors
     //
-
     public LogCubicInterpolation(
             final Array vx,
             final Array vy,

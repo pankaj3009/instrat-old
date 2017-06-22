@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -35,35 +34,33 @@ import org.jquantlib.time.Weekday;
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Richard Gomes"})
 public class NullCalendar extends Calendar {
 
     //
     // public constructors
     //
-
     public NullCalendar() {
         impl = new Impl();
     }
 
-
     //
     // private final inner classes
     //
-
     private final class Impl extends Calendar.Impl {
+
         @Override
-        public String name() /* @ReadOnly */{
+        public String name() /* @ReadOnly */ {
             return "Null";
         }
 
         @Override
-        public boolean isWeekend(final Weekday weekday) /* @ReadOnly */{
+        public boolean isWeekend(final Weekday weekday) /* @ReadOnly */ {
             return false;
         }
 
         @Override
-        public boolean isBusinessDay(final JDate date) /* @ReadOnly */{
+        public boolean isBusinessDay(final JDate date) /* @ReadOnly */ {
             return true;
         }
     }

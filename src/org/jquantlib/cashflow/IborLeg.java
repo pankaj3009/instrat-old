@@ -21,7 +21,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2007 Ferdinando Ametrano
  Copyright (C) 2007 Giorgio Facchinetti
  Copyright (C) 2007 Cristina Duminuco
@@ -39,7 +39,7 @@ When applicable, the original copyright notice follows this notice.
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.cashflow;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -89,7 +89,7 @@ public class IborLeg {
     }
 
     public final IborLeg withNotionals(/* @Real */final double notional) {
-        notionals_ = new Array(new double[] { notional });// std::vector<Real>(1,notional);
+        notionals_ = new Array(new double[]{notional});// std::vector<Real>(1,notional);
         return this;
     }
 
@@ -109,7 +109,7 @@ public class IborLeg {
     }
 
     public final IborLeg withFixingDays(/* @Natural */final double fixingDays) {
-        fixingDays_ = new Array(new double[] { fixingDays });// std::vector<Natural>(1,fixingDays);
+        fixingDays_ = new Array(new double[]{fixingDays});// std::vector<Natural>(1,fixingDays);
         return this;
     }
 
@@ -119,7 +119,7 @@ public class IborLeg {
     }
 
     public IborLeg withGearings(/* @Real */final double gearing) {
-        gearings_ = new Array(new double[] { gearing });
+        gearings_ = new Array(new double[]{gearing});
         return this;
     }
 
@@ -129,7 +129,7 @@ public class IborLeg {
     }
 
     public IborLeg withSpreads(/* @Spread */final double spread) {
-        spreads_ = new Array(new double[] { spread });
+        spreads_ = new Array(new double[]{spread});
         return this;
     }
 
@@ -168,16 +168,16 @@ public class IborLeg {
         return this;
     }
 
-    public Leg Leg() /* @ReadOnly */{
+    public Leg Leg() /* @ReadOnly */ {
 
         final Leg cashflows = new FloatingLeg(
-        		IborIndex.class, IborCoupon.class, CappedFlooredIborCoupon.class,
+                IborIndex.class, IborCoupon.class, CappedFlooredIborCoupon.class,
                 notionals_, schedule_, index_,
                 paymentDayCounter_, paymentAdjustment_, fixingDays_,
                 gearings_, spreads_, caps_, floors_, inArrears_, zeroPayments_);
 
         if (caps_.empty() && floors_.empty() && !inArrears_) {
-            PricerSetter.setCouponPricer(cashflows, new BlackIborCouponPricer(new Handle <OptionletVolatilityStructure>()));
+            PricerSetter.setCouponPricer(cashflows, new BlackIborCouponPricer(new Handle<OptionletVolatilityStructure>()));
         }
         return cashflows;
     }

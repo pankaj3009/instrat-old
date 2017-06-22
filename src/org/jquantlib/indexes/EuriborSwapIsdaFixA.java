@@ -31,35 +31,33 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * 
- * EuriborSwapIfrFixA index base class
- * Euribor Swap indexes fixed by ISDA in cooperation with
- * Reuters and Intercapital Brokers at 11am Frankfurt.
- * Annual 30/360 vs 6M Euribor, 1Y vs 3M Euribor.
- * Reuters page ISDAFIX2 or EURSFIXA=.
- * 
- * Further info can be found at <http://www.isda.org/fix/isdafix.html> or Reuters page ISDAFIX.
- * 
+ *
+ * EuriborSwapIfrFixA index base class Euribor Swap indexes fixed by ISDA in
+ * cooperation with Reuters and Intercapital Brokers at 11am Frankfurt. Annual
+ * 30/360 vs 6M Euribor, 1Y vs 3M Euribor. Reuters page ISDAFIX2 or EURSFIXA=.
+ *
+ * Further info can be found at <http://www.isda.org/fix/isdafix.html> or
+ * Reuters page ISDAFIX.
+ *
  * @author Tim Blackler
  */
 public class EuriborSwapIsdaFixA extends SwapIndex {
 
     public EuriborSwapIsdaFixA(final Period tenor) {
-    	this(tenor, new Handle<YieldTermStructure>());
+        this(tenor, new Handle<YieldTermStructure>());
     }
-	
+
     public EuriborSwapIsdaFixA(final Period tenor, final Handle<YieldTermStructure> h) {
-        super( "EuriborSwapIsdaFixA",
+        super("EuriborSwapIsdaFixA",
                 tenor,
                 2, // settlement days
                 new EURCurrency(),
                 new Target(),
-                new Period(1,TimeUnit.Years),
+                new Period(1, TimeUnit.Years),
                 BusinessDayConvention.ModifiedFollowing,
                 new Thirty360(Thirty360.Convention.BondBasis),
-                tenor.gt(new Period(1,TimeUnit.Years)) ? new Euribor(new Period(6,TimeUnit.Months), h):
-                	 									 new Euribor(new Period(3,TimeUnit.Months), h)
-                		
-                );
-        }
+                tenor.gt(new Period(1, TimeUnit.Years)) ? new Euribor(new Period(6, TimeUnit.Months), h)
+                : new Euribor(new Period(3, TimeUnit.Months), h)
+        );
+    }
 }

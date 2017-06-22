@@ -1,8 +1,8 @@
 package org.jquantlib;
 
-
 /**
  * helper class to temporarily and safely change the settings
+ *
  * @author goovy
  */
 public class SavedSettings {
@@ -13,11 +13,6 @@ public class SavedSettings {
     // Method finalize() is called by GC when GC decides it's time for reclaiming memory occupied by this class.
     // This behaviour is neither deterministic nor reliable and may even never happen at all.
     //
-
-
-
-
-
     //    private Date evaluationDate_;
     //    private    boolean enforcesTodaysHistoricFixings_;
     //
@@ -37,4 +32,3 @@ public class SavedSettings {
     //    	destroy();
     //      }
 }
-

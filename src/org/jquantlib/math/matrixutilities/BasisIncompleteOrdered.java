@@ -22,7 +22,7 @@ When applicable, the original copyright notice follows this notice.
 
  */
 
-/*
+ /*
 Copyright (C) 2007 Mark Joshi
 
 This file is part of QuantLib, a free-software/open-source library
@@ -40,13 +40,10 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
 package org.jquantlib.math.matrixutilities;
 
-
-
 /**
  * @author M. Do
  * @author Q. Boiler
  */
-
 //
 // TODO: code review
 //
@@ -55,14 +52,14 @@ package org.jquantlib.math.matrixutilities;
 // becomes completely translated an integrated to all dependencies.
 //
 //
-
 // TODO: code review :: please verify against QL/C++ code
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public class BasisIncompleteOrdered {
 
     public BasisIncompleteOrdered() {
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
     }
 
 //	private final int euclideanDimension;
@@ -127,5 +124,4 @@ public class BasisIncompleteOrdered {
 //		}
 //		return basis;
 //	}
-
 }

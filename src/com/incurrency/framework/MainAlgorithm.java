@@ -40,26 +40,16 @@ public class MainAlgorithm extends Algorithm {
     public final static Logger logger = Logger.getLogger(MainAlgorithm.class.getName());
     private static final Object lockInput = new Object();
     public static JFrame ui;
-    private Date preopenDate;
     private static Date startDate;
-    private static Date closeDate=null;
-    Timer preopen;
+    private static Date closeDate = null;
     public static Boolean preOpenCompleted = false;
     private static List<String> strategies = new ArrayList();
-    private List<Double> maxPNL = new ArrayList();
-    private List<Double> minPNL = new ArrayList();
-    private String historicalData;
-    private String realTimeBars;
     private static boolean collectTicks;
-    private boolean tradingAlgoInitialized = false;
     public static ArrayList<Boolean> contractIdAvailable = new ArrayList();
     public static boolean contractDetailsCompleted = false;
-    private boolean duplicateAccounts = false;
     public static ArrayList<Strategy> strategyInstances = new ArrayList<>();
-    private License lic = null;
     public static ArrayList<String[]> comboList = new ArrayList<>();
     public static TradingEventSupport tes = new TradingEventSupport();
-    private String version = "1.03B-20140826";
     public static boolean instantiated = false;
     private static MainAlgorithm instance = null;
     public static String simulationStartDate;
@@ -74,7 +64,134 @@ public class MainAlgorithm extends Algorithm {
     private static final Object lockUseForTrading = new Object();
     private static final Object lockStrategies = new Object();
     public static int selectedStrategy = 0;
-    public static boolean rtvolume=false;
+    public static boolean rtvolume = false;
+
+    public static void connectToTWS(BeanConnection c) {
+        c.getWrapper().disconnect();
+        c.setWrapper(new TWSConnection(c));
+        c.getWrapper().connect();
+    }
+
+    public static MainAlgorithm getInstance(HashMap<String, String> args) throws Exception {
+        if (instance == null) {
+            instance = new MainAlgorithm(args);
+        }
+        if (MainAlgorithm.instantiated) {
+            return instance;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * @return the licensedStrategies
+     */
+    public static List<String> getStrategies() {
+        synchronized (lockStrategies) {
+            return strategies;
+        }
+    }
+
+    public static void delStrategies(String strategy) {
+        synchronized (lockStrategies) {
+            strategies.remove(strategy);
+        }
+    }
+
+    /**
+     * @param licensedStrategies the licensedStrategies to set
+     */
+    public static synchronized void setStrategies(List<String> strategies) {
+        MainAlgorithm.strategies = strategies;
+    }
+
+    /**
+     * @return the startDate
+     */
+    public static Date getStartDate() {
+        return startDate;
+    }
+
+    /**
+     * @param date the date to set
+     */
+    public static void setCloseDate(Date date) {
+        if (closeDate == null) {
+            closeDate = date;
+        } else if (closeDate.compareTo(date) < 0) {
+            closeDate = date;
+        }
+        logger.log(Level.INFO, "100,inStratShutdown,{0}", new Object[]{closeDate.toString()});
+    }
+
+    /**
+     * @return the collectTicks
+     */
+    public static boolean getCollectTicks() {
+        return collectTicks;
+    }
+
+    /**
+     * @param aCollectTicks the collectTicks to set
+     */
+    public static void setCollectTicks(boolean aCollectTicks) {
+        collectTicks = aCollectTicks;
+    }
+
+    public static MainAlgorithm getInstance() {
+        return instance;
+    }
+
+    /**
+     * @return the getAlgoDate
+     */
+    public static synchronized Date getAlgoDate() {
+        return MainAlgorithm.algoDate;
+    }
+
+    /**
+     * @param getAlgoDate the getAlgoDate to set
+     */
+    public static synchronized void setAlgoDate(long algoDate) {
+        MainAlgorithm.algoDate = new Date(algoDate);
+    }
+
+    /**
+     * @return the useForTrading
+     */
+    public static boolean isUseForTrading() {
+        synchronized (lockUseForTrading) {
+            return Algorithm.useForTrading;
+        }
+    }
+
+    /**
+     * @return the useForTrading
+     */
+    public static boolean isUseForSimulation() {
+        synchronized (lockUseForTrading) {
+            return Algorithm.useForSimulation;
+        }
+    }
+
+    /**
+     * @param aUseForTrading the useForTrading to set
+     */
+    public static void setUseForTrading(boolean aUseForTrading) {
+        synchronized (lockUseForTrading) {
+            Algorithm.useForTrading = aUseForTrading;
+        }
+    }
+    private Date preopenDate;
+    Timer preopen;
+    private List<Double> maxPNL = new ArrayList();
+    private List<Double> minPNL = new ArrayList();
+    private String historicalData;
+    private String realTimeBars;
+    private boolean tradingAlgoInitialized = false;
+    private boolean duplicateAccounts = false;
+    private License lic = null;
+    private String version = "1.03B-20140826";
     /*
      * EOD Validation Fixed
      * Deemed cancellations wes a string arraylist. Changed this to <Integer>
@@ -82,43 +199,60 @@ public class MainAlgorithm extends Algorithm {
      * EOD reporting now includes open positions
      */
     private final String delimiter = "_";
+    TimerTask closeAlgorithms = new TimerTask() {
+        @Override
+        public void run() {
+            logger.log(Level.INFO, "100, inStratShutdown,{0}", new Object[]{closeDate});
+            System.exit(0);
+        }
+    };
+    TimerTask keepConnectionAlive = new TimerTask() {
+        @Override
+        public void run() {
+            for (BeanConnection c : Parameters.connection) {
+                if (!c.getWrapper().isConnected()) {
+                    MainAlgorithm.connectToTWS(c);
+                }
+            }
+        }
+    };
 
     protected MainAlgorithm(HashMap<String, String> args) throws Exception {
         super(args); //this initializes the connection and symbols
         input = args;
         logStartupData();
-        String today=DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+        String today = DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         if (useForTrading) {
-            if(!holidays.contains(today)){
-            JQuantLib.setLogger(logger);
-            connectToTWS();
-            getContractInformation();
-            subscribeMarketData();
-            Timer keepAlive = new Timer("Timer: Maintain IB Connection");
-            keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
-            }else{
-                logger.log(Level.SEVERE,"Trading holiday");
-                System.exit(0);
-            }
-            } else if (useForSimulation) {
-            //Used for subscribing to cassandra historical data
-
-        }else if(Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
-            //used to get historical data
             if (!holidays.contains(today)) {
-            connectToTWS();
-            boolean subscribe=Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
-            if (subscribe) {
+                JQuantLib.setLogger(logger);
+                connectToTWS();
                 getContractInformation();
                 subscribeMarketData();
                 Timer keepAlive = new Timer("Timer: Maintain IB Connection");
                 keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
-            }
-            }else{
-                logger.log(Level.SEVERE,"Trading holiday");
+            } else {
+                logger.log(Level.SEVERE, "Trading holiday");
                 System.exit(0);
-            
-            }   
+            }
+        } else if (useForSimulation) {
+            //Used for subscribing to cassandra historical data
+
+        } else if (Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())) {
+            //used to get historical data
+            if (!holidays.contains(today)) {
+                connectToTWS();
+                boolean subscribe = Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
+                if (subscribe) {
+                    getContractInformation();
+                    subscribeMarketData();
+                    Timer keepAlive = new Timer("Timer: Maintain IB Connection");
+                    keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
+                }
+            } else {
+                logger.log(Level.SEVERE, "Trading holiday");
+                System.exit(0);
+
+            }
         }
         collectTicks = Boolean.parseBoolean(globalProperties.getProperty("collectticks", "false").toString().trim());
     }
@@ -206,29 +340,22 @@ public class MainAlgorithm extends Algorithm {
                 //Launch.setMessage("No License. If you are only executing on IB paper accounts, please register. If you have a real account setup for trading, please contact support@incurrency.com");
             }
             logger.log(Level.INFO, "100,License Check Failed");
-            while(true){
-                
+            while (true) {
+
             }
         }
     }
-    
-   public static void connectToTWS(BeanConnection c){
-            c.getWrapper().disconnect();
-            c.setWrapper(new TWSConnection(c));
-            c.getWrapper().connect();
-        }
-    
 
     private void getContractInformation() throws InterruptedException {
         if (TradingUtil.checkLicense() && !duplicateAccounts) {
             //int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
-            if (globalProperties.getProperty("datasource") != null &&!"".equals(globalProperties.getProperty("datasource").toString().trim()) ) {
+            if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) {
                 for (BeanSymbol s : Parameters.symbol) {
-                   try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
-                       String contractid=jedis.get(s.getDisplayname());
-                       s.setContractID(Utilities.getInt(contractid.split(":")[0],0));
-                       s.setTickSize(Utilities.getDouble(contractid.split(":")[1],0.05));
-                   }
+                    try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
+                        String contractid = jedis.get(s.getDisplayname());
+                        s.setContractID(Utilities.getInt(contractid.split(":")[0], 0));
+                        s.setTickSize(Utilities.getDouble(contractid.split(":")[1], 0.05));
+                    }
                 }
 
                 //populate contracts with missing contract id - to be deleted
@@ -245,7 +372,7 @@ public class MainAlgorithm extends Algorithm {
 
                 for (BeanSymbol s : Parameters.symbol) {
                     tempC.getWrapper().getContractDetails(s, "");
-                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol()+"\n");
+                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol() + "\n");
                 }
                 /*
                 while (TWSConnection.mTotalSymbols > 0) {
@@ -254,7 +381,7 @@ public class MainAlgorithm extends Algorithm {
                     if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                     }
                 }
-*/
+                 */
 
                 for (BeanSymbol s : Parameters.symbol) {
                     /*
@@ -267,9 +394,9 @@ public class MainAlgorithm extends Algorithm {
                         }
                     }
                     contractIdAvailable.add(s.isStatus());
-                    */
+                     */
                     contractIdAvailable.add(Boolean.TRUE);
-                    
+
                 }
             }
             //Add combos
@@ -354,27 +481,7 @@ public class MainAlgorithm extends Algorithm {
         }
 
     }
-    
-    TimerTask closeAlgorithms = new TimerTask() {
-        @Override
-        public void run() {
-            logger.log(Level.INFO, "100, inStratShutdown,{0}", new Object[]{closeDate});
-            System.exit(0);
-        }
-    };
-    
-    TimerTask keepConnectionAlive = new TimerTask() {
-        @Override
-        public void run() {
-            for (BeanConnection c : Parameters.connection) {
-                if (!c.getWrapper().isConnected()) {
-                    MainAlgorithm.connectToTWS(c);
-                }
-            }
-        }
-    };
-    
- 
+
     /*
     private void runSimulation() throws ParseException, InterruptedException {
         String backtestVariationFile = globalProperties.getProperty("backtestvariationfile");
@@ -452,7 +559,7 @@ public class MainAlgorithm extends Algorithm {
 //            requestClient.sendRequest("historicaldata", "finished", new String[]{},null,null,false);
         }
     }
-*/
+     */
     private void loadBackTestParameters(String parameterFile) throws ParseException {
         Properties p = TradingUtil.loadParameters(parameterFile);
         Enumeration em = p.keys();
@@ -488,7 +595,7 @@ public class MainAlgorithm extends Algorithm {
         startDate = sdf.parse(simulationStartDate);
     }
 
-   private void loadBackTestStrategies(ArrayList<ArrayList<String>> parameterList, Constructor constructor, Properties p, String parameterFile, ArrayList<String> tradingAccounts, int n, ArrayList<String> prefix) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    private void loadBackTestStrategies(ArrayList<ArrayList<String>> parameterList, Constructor constructor, Properties p, String parameterFile, ArrayList<String> tradingAccounts, int n, ArrayList<String> prefix) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if (backtestOrderFile == null) {
             backtestOrderFile = p.getProperty("OrderFile");
         }
@@ -523,9 +630,9 @@ public class MainAlgorithm extends Algorithm {
         if (strategyInstances.isEmpty()) {
             getStrategies().add("NoStrategy");
         }
-        
-        if(!Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())){
-            
+
+        if (!Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())) {
+
         }
         for (int i = 0; i < strategyInstances.size(); i++) {
             minPNL.add(0D);
@@ -533,19 +640,21 @@ public class MainAlgorithm extends Algorithm {
         }
         //set close timer after all licensedStrategies have been initialized. This ensures we get the futhest closeDate
         Timer closeProcessing = new Timer("Timer: Close Algorithm");
-        if (closeDate!=null) {
+        if (closeDate != null) {
             closeProcessing.schedule(closeAlgorithms, closeDate);
         }
-        if (MainAlgorithm.isUseForTrading()||MainAlgorithm.isUseForSimulation()) {
+        if (MainAlgorithm.isUseForTrading() || MainAlgorithm.isUseForSimulation()) {
             if (TradingUtil.checkLicense() && !Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                 ui = new com.incurrency.framework.display.DashBoardNew(); //Display main UI
             }
         }
         instantiated = true;
     }
-    
+
     /**
-     * Registers a strategy with inStrat.Strategy is the fully qualified classname of a strategy package.
+     * Registers a strategy with inStrat.Strategy is the fully qualified
+     * classname of a strategy package.
+     *
      * @param strategy
      * @param algorithm
      * @throws NoSuchMethodException
@@ -553,9 +662,9 @@ public class MainAlgorithm extends Algorithm {
      * @throws IllegalArgumentException
      * @throws InvocationTargetException
      * @throws ClassNotFoundException
-     * @throws InstantiationException 
+     * @throws InstantiationException
      */
-     public void registerStrategy(String strategy) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, InstantiationException {
+    public void registerStrategy(String strategy) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, InstantiationException {
         HashMap<String, ArrayList<String>> initValues = strategyInitValues(strategy);
         boolean trading = Boolean.parseBoolean(globalProperties.getProperty("trading", "false").toString().trim());
         boolean simulation = Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim());
@@ -564,7 +673,7 @@ public class MainAlgorithm extends Algorithm {
             String parameterFile = entry.getKey();
             ArrayList<String> tradingAccounts = entry.getValue();
             Class[] arg;
-            if (simulation == true || trading == true||backtest==true) {
+            if (simulation == true || trading == true || backtest == true) {
                 arg = new Class[5];
                 arg[0] = MainAlgorithm.class;
                 arg[1] = Properties.class;
@@ -577,14 +686,13 @@ public class MainAlgorithm extends Algorithm {
             }
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
             Properties p = TradingUtil.loadParameters(parameterFile);
-            if (useForTrading || simulation||backtest) {
+            if (useForTrading || simulation || backtest) {
                 //String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
                 String[] tempStrategyArray = parameterFile.split("\\.")[0].split("_");
                 String strategyName = tempStrategyArray[tempStrategyArray.length - 1];
                 getStrategies().add(strategyName);
                 strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts, null));
-            } 
-            /*
+            } /*
             else if (Boolean.parseBoolean(globalProperties.getProperty("backtest", "false"))) {
                 ArrayList<ArrayList<String>> parameterList = new ArrayList<>();
                 for (BackTestParameter b : backtestParameters) {
@@ -595,8 +703,7 @@ public class MainAlgorithm extends Algorithm {
                     parameterList.add(s);
                 }
                 loadBackTestStrategies(parameterList, constructor, p, parameterFile, tradingAccounts, 0, new ArrayList<String>());
-            }*/ 
-            else { //this is a strategy outside trading, like historical data, market data, scanner etc. 
+            }*/ else { //this is a strategy outside trading, like historical data, market data, scanner etc. 
                 //trading=false, simulation=false
                 constructor.newInstance(parameterFile);
             }
@@ -605,9 +712,11 @@ public class MainAlgorithm extends Algorithm {
     }
 
     /**
-     * Returns a hashmap.Key=Parameter File name, Values=Accounts that will use the file
+     * Returns a hashmap.Key=Parameter File name, Values=Accounts that will use
+     * the file
+     *
      * @param strategy
-     * @return 
+     * @return
      */
     public HashMap<String, ArrayList<String>> strategyInitValues(String strategy) {
 
@@ -651,24 +760,14 @@ public class MainAlgorithm extends Algorithm {
                     }
                 }
             }
-            if(!subAccountNames.isEmpty()){
-            out.put(instanceFile[i], subAccountNames);
+            if (!subAccountNames.isEmpty()) {
+                out.put(instanceFile[i], subAccountNames);
             }
             //[U72311-DU12345-inradr2.properties,<U72311,DU12345>]
         }
         return out;
     }
 
-    public static MainAlgorithm getInstance(HashMap<String, String> args) throws Exception {
-        if (instance == null) {
-            instance = new MainAlgorithm(args);
-        }
-        if (MainAlgorithm.instantiated) {
-            return instance;
-        } else {
-            return null;
-        }
-    }
 
     /*
      * ***************************************************************************************
@@ -680,28 +779,6 @@ public class MainAlgorithm extends Algorithm {
      */
     public Date getPreopenDate() {
         return preopenDate;
-    }
-
-    /**
-     * @return the licensedStrategies
-     */
-    public static List<String> getStrategies() {
-        synchronized(lockStrategies){
-        return strategies;
-        }
-    }
-    
-    public static void delStrategies(String strategy) {
-        synchronized(lockStrategies){
-            strategies.remove(strategy);
-        }
-    }
-
-    /**
-     * @param licensedStrategies the licensedStrategies to set
-     */
-    public static synchronized void setStrategies(List<String> strategies) {
-        MainAlgorithm.strategies = strategies;
     }
 
     /**
@@ -730,13 +807,6 @@ public class MainAlgorithm extends Algorithm {
      */
     public void setMinPNL(List<Double> minPNL) {
         this.minPNL = minPNL;
-    }
-
-    /**
-     * @return the startDate
-     */
-    public static Date getStartDate() {
-        return startDate;
     }
 
     /**
@@ -782,32 +852,6 @@ public class MainAlgorithm extends Algorithm {
     }
 
     /**
-     * @param date the date to set
-     */
-    public static void setCloseDate(Date date) {
-        if (closeDate == null) {
-            closeDate = date;
-        } else if (closeDate.compareTo(date) < 0) {
-            closeDate = date;
-        }
-        logger.log(Level.INFO, "100,inStratShutdown,{0}", new Object[]{closeDate.toString()});
-    }
-
-    /**
-     * @return the collectTicks
-     */
-    public static boolean getCollectTicks() {
-        return collectTicks;
-    }
-
-    /**
-     * @param aCollectTicks the collectTicks to set
-     */
-    public static void setCollectTicks(boolean aCollectTicks) {
-        collectTicks = aCollectTicks;
-    }
-
-    /**
      * @return the tradingAlgoInitialized
      */
     public boolean isTradingAlgoInitialized() {
@@ -835,48 +879,4 @@ public class MainAlgorithm extends Algorithm {
         this.strategyInstances = strategyInstances;
     }
 
-    public static MainAlgorithm getInstance() {
-        return instance;
-    }
-
-    /**
-     * @return the getAlgoDate
-     */
-    public static synchronized Date getAlgoDate() {
-        return MainAlgorithm.algoDate;
-    }
-
-    /**
-     * @param getAlgoDate the getAlgoDate to set
-     */
-    public static synchronized void setAlgoDate(long algoDate) {
-        MainAlgorithm.algoDate = new Date(algoDate);
-    }
-
-    /**
-     * @return the useForTrading
-     */
-    public static boolean isUseForTrading() {
-        synchronized (lockUseForTrading) {
-            return Algorithm.useForTrading;
-        }
-    }
-    
-        /**
-     * @return the useForTrading
-     */
-    public static boolean isUseForSimulation() {
-        synchronized (lockUseForTrading) {
-            return Algorithm.useForSimulation;
-        }
-    }
-
-    /**
-     * @param aUseForTrading the useForTrading to set
-     */
-    public static void setUseForTrading(boolean aUseForTrading) {
-        synchronized (lockUseForTrading) {
-            Algorithm.useForTrading = aUseForTrading;
-        }
-    }
 }

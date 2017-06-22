@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures.volatilities;
 
 import org.jquantlib.QL;
@@ -28,7 +27,6 @@ import org.jquantlib.lang.annotation.Real;
 import org.jquantlib.lang.annotation.Time;
 import static org.jquantlib.math.Closeness.isClose;
 import org.jquantlib.math.Constants;
-
 
 /**
  * Implements the Black equivalent volatility for the S.A.B.R. model.
@@ -63,39 +61,39 @@ public class Sabr {
             final double nu,
             final double rho) {
 
-        final double oneMinusBeta = 1.0-beta;
-        final double A = Math.pow(forward*strike, oneMinusBeta);
-        final double sqrtA= Math.sqrt(A);
+        final double oneMinusBeta = 1.0 - beta;
+        final double A = Math.pow(forward * strike, oneMinusBeta);
+        final double sqrtA = Math.sqrt(A);
         double logM;
-        if (!isClose(forward, strike))
-            logM = Math.log(forward/strike);
-        else {
-            final double epsilon = (forward-strike)/strike;
-            logM = epsilon - .5 * epsilon * epsilon ;
+        if (!isClose(forward, strike)) {
+            logM = Math.log(forward / strike);
+        } else {
+            final double epsilon = (forward - strike) / strike;
+            logM = epsilon - .5 * epsilon * epsilon;
         }
-        final double z = (nu/alpha)*sqrtA*logM;
-        final double B = 1.0-2.0*rho*z+z*z;
-        final double C = oneMinusBeta*oneMinusBeta*logM*logM;
-        final double tmp = (Math.sqrt(B)+z-rho)/(1.0-rho);
+        final double z = (nu / alpha) * sqrtA * logM;
+        final double B = 1.0 - 2.0 * rho * z + z * z;
+        final double C = oneMinusBeta * oneMinusBeta * logM * logM;
+        final double tmp = (Math.sqrt(B) + z - rho) / (1.0 - rho);
         final double xx = Math.log(tmp);
-        final double D = sqrtA*(1.0+C/24.0+C*C/1920.0);
-        final double d = 1.0 + expiryTime * (oneMinusBeta*oneMinusBeta*alpha*alpha/(24.0*A)
-                + 0.25*rho*beta*nu*alpha/sqrtA
-                +(2.0-3.0*rho*rho)*(nu*nu/24.0));
+        final double D = sqrtA * (1.0 + C / 24.0 + C * C / 1920.0);
+        final double d = 1.0 + expiryTime * (oneMinusBeta * oneMinusBeta * alpha * alpha / (24.0 * A)
+                + 0.25 * rho * beta * nu * alpha / sqrtA
+                + (2.0 - 3.0 * rho * rho) * (nu * nu / 24.0));
 
         double multiplier;
         // computations become precise enough if the square of z worth
         // slightly more than the precision machine (hence the m)
         final double m = 10;
-        if (Math.abs(z*z)>Constants.QL_EPSILON * m)
-            multiplier = z/xx;
-        else {
-            final double talpha = (0.5-rho*rho)/(1.0-rho);
+        if (Math.abs(z * z) > Constants.QL_EPSILON * m) {
+            multiplier = z / xx;
+        } else {
+            final double talpha = (0.5 - rho * rho) / (1.0 - rho);
             final double tbeta = alpha - .5;
-            final double tgamma = rho/(1-rho);
-            multiplier = 1.0 - beta*z + (tgamma - talpha + tbeta*tbeta*.5)*z*z;
+            final double tgamma = rho / (1 - rho);
+            multiplier = 1.0 - beta * z + (tgamma - talpha + tbeta * tbeta * .5) * z * z;
         }
-        return (alpha/D)*multiplier*d;
+        return (alpha / D) * multiplier * d;
 
     }
 
@@ -107,6 +105,7 @@ public class Sabr {
      * <li><code>nu</code> >= 0.0</li>
      * <li><code>rho*rho</code> < 1.0 </li>
      * </ol>
+     *
      * @param alpha
      * @param beta
      * @param nu
@@ -119,17 +118,18 @@ public class Sabr {
             final double rho) {
         //FIXME don't spent time constructing string until the error is real...
         // TODO: code review :: please verify against QL/C++ code
-        QL.require(alpha>0.0 , "alpha must be positive"); // TODO: message
-        QL.require(beta>=0.0 && beta<=1.0 , "beta must be in (0.0, 1.0)"); // TODO: message
-        QL.require(nu>=0.0 , "nu must be non negative"); // TODO: message
-        QL.require(rho*rho<1.0 , "rho square must be less than one"); // TODO: message
+        QL.require(alpha > 0.0, "alpha must be positive"); // TODO: message
+        QL.require(beta >= 0.0 && beta <= 1.0, "beta must be in (0.0, 1.0)"); // TODO: message
+        QL.require(nu >= 0.0, "nu must be non negative"); // TODO: message
+        QL.require(rho * rho < 1.0, "rho square must be less than one"); // TODO: message
     }
 
     /**
      *
      * Computes the S.A.B.R. volatility
      * <p>
-     * Checks S.A.B.R. model parameters using {@code #validateSabrParameters(Real, Real, Real, Real)}
+     * Checks S.A.B.R. model parameters using
+     * {@code #validateSabrParameters(Real, Real, Real, Real)}
      * <p>
      * Checks the terms and conditions;
      * <ol>
@@ -137,7 +137,8 @@ public class Sabr {
      * <li><code>forward</code> > 0.0</li>
      * <li><code>expiryTime</code> >= 0.0</li>
      * </ol>
-     *  @param strike
+     *
+     * @param strike
      * @param forward
      * @param expiryTime
      * @param alpha
@@ -157,12 +158,11 @@ public class Sabr {
             final double beta,
             final double nu,
             final double rho) {
-        QL.require(strike>0.0 , "strike must be positive"); // TODO: message
-        QL.require(forward>0.0 , "forward must be positive"); // TODO: message
-        QL.require(expiryTime>=0.0 , "expiry time must be non-negative"); // TODO: message
+        QL.require(strike > 0.0, "strike must be positive"); // TODO: message
+        QL.require(forward > 0.0, "forward must be positive"); // TODO: message
+        QL.require(expiryTime >= 0.0, "expiry time must be non-negative"); // TODO: message
         validateSabrParameters(alpha, beta, nu, rho);
         return unsafeSabrVolatility(strike, forward, expiryTime, alpha, beta, nu, rho);
     }
 
 }
-

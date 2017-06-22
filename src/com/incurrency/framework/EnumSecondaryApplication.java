@@ -9,5 +9,5 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public enum EnumSecondaryApplication {
-    EXCLUDEINTRADAYREVERSAL,EXCLUDEBUY
+    EXCLUDEINTRADAYREVERSAL, EXCLUDEBUY
 }

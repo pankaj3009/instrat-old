@@ -9,6 +9,7 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public class SplitInformation {
+
     String symbol;
     String expectedDate;
     int oldShares;
@@ -21,5 +22,4 @@ public class SplitInformation {
         this.newShares = newShares;
     }
 
-    
 }

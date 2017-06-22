@@ -12,7 +12,7 @@ import org.jquantlib.math.matrixutilities.internal.Address;
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = {"Richard Gomes"})
 public class Identity extends Matrix {
 
     /**
@@ -23,7 +23,6 @@ public class Identity extends Matrix {
     public Identity(final int dim) {
         this(dim, EnumSet.noneOf(Address.Flags.class));
     }
-
 
     /**
      * Default constructor
@@ -37,10 +36,9 @@ public class Identity extends Matrix {
     public Identity(final int dim, final Set<Address.Flags> flags) {
         super(dim, dim, flags);
         final int offset = addr.isFortran() ? 1 : 0;
-        for (int i = offset; i < dim+offset; i++) {
+        for (int i = offset; i < dim + offset; i++) {
             this.set(i, i, 1.0);
         }
     }
-
 
 }

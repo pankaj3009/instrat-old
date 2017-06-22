@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.quotes.Handle;
@@ -32,30 +31,30 @@ public abstract class IborCouponPricer extends FloatingRateCouponPricer {
 
     private Handle<OptionletVolatilityStructure> capletVol_;
 
-    public IborCouponPricer(final Handle<OptionletVolatilityStructure> capletVol){
+    public IborCouponPricer(final Handle<OptionletVolatilityStructure> capletVol) {
         this.capletVol_ = capletVol;
         this.capletVol_.addObserver(this);
         //XXX:registerWith
         //registerWith(this.capletVol_);
     }
 
-    public Handle<OptionletVolatilityStructure> capletVolatility(){
+    public Handle<OptionletVolatilityStructure> capletVolatility() {
         return capletVol_;
     }
 
-    public void setCapletVolatility(final Handle<OptionletVolatilityStructure> capletVol){
-        if (capletVol!=null) {
+    public void setCapletVolatility(final Handle<OptionletVolatilityStructure> capletVol) {
+        if (capletVol != null) {
             capletVol.currentLink().deleteObserver(this);
         }
         this.capletVol_ = capletVol;
-        if (this.capletVol_!=null) {
+        if (this.capletVol_ != null) {
             this.capletVol_.addObserver(this);
         }
         update();
     }
 
     @Override
-    public void update(){
+    public void update() {
         notifyObservers();
     }
 }

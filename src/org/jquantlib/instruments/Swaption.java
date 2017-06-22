@@ -28,7 +28,6 @@ import org.jquantlib.pricingengines.PricingEngine.Arguments;
  *
  * @author Praneet Tiwari
  */
-
 // ! %Swaption class
 /*
  * ! \ingroup instruments
@@ -58,10 +57,11 @@ public class Swaption {// extends Option {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-
-    /*****
-     * class arguments extends VanillaSwap::arguments, public Option::arguments { public: arguments() :
-     * settlementType(Settlement::Physical) {} boost::shared_ptr<VanillaSwap> swap; Settlement::Type settlementType; void validate()
-     * const; }
-     ********/
+    /**
+     * ***
+     * class arguments extends VanillaSwap::arguments, public Option::arguments
+     * { public: arguments() : settlementType(Settlement::Physical) {}
+     * boost::shared_ptr<VanillaSwap> swap; Settlement::Type settlementType;
+     * void validate() const; } ******
+     */
 }

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003 StatPro Italia srl
@@ -39,7 +39,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.distributions;
 
 import org.jquantlib.QL;
@@ -47,32 +46,35 @@ import org.jquantlib.math.Constants;
 import org.jquantlib.math.Ops;
 import org.jquantlib.math.integrals.TabulatedGaussLegendre;
 
-
-
 /**
  * Cumulative bivariate normal distibution function (West 2004).
  * <p>
- * The bivariate normal distribution is a distribution of a pair of variables whose
- * conditional distributions are normal and that satisfy certain other technical conditions.
+ * The bivariate normal distribution is a distribution of a pair of variables
+ * whose conditional distributions are normal and that satisfy certain other
+ * technical conditions.
  * <p>
- * The implementation derives from the article <i>"Better Approximations To Cumulative
- * Normal Distibutions", Graeme West, Dec 2004</i> available at www.finmod.co.za.
- * Also available in <i>Wilmott Magazine, 2005, (May), 70-76,</i> The main code is a
- * port of the C++ code at <a href="www.finmod.co.za/cumnorm.zip">www.finmod.co.za/cummnorm.zip</a>.
+ * The implementation derives from the article <i>"Better Approximations To
+ * Cumulative Normal Distibutions", Graeme West, Dec 2004</i> available at
+ * www.finmod.co.za. Also available in <i>Wilmott Magazine, 2005, (May),
+ * 70-76,</i> The main code is a port of the C++ code at
+ * <a href="www.finmod.co.za/cumnorm.zip">www.finmod.co.za/cummnorm.zip</a>.
  * <p>
  * The algorithm is based on the near double-precision algorithm described in
  * <i>"Numerical Computation of Rectangular Bivariate an Trivariate Normal and t
  * Probabilities", Genz (2004), Statistics and Computing 14, 151-160. </i>
- * (available at <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/bvnt.html">www.math.wsu.edu/faculty/genz/papers/bvnt/bvnt.html</a>)
+ * (available at
+ * <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/bvnt.html">www.math.wsu.edu/faculty/genz/papers/bvnt/bvnt.html</a>)
  * <p>
- * The standard bivariate normal distribution function is given by
- * {@latex[
- * 	\Phi({ \bf b}, \rho)= \frac{1}{2 \pi \sqrt{1- \rho^{2}}} \int_{- \infty}^{b_1} \int_{- \infty}^{b_2} e^{-(x^{2}-2 \rho xy +y^{2})/(2(1- \rho^{2}))}dydx
- * }
+ * The standard bivariate normal distribution function is given by {
+ *
+ * @latex[ \Phi({ \bf b}, \rho)= \frac{1}{2 \pi \sqrt{1- \rho^{2}}} \int_{-
+ * \infty}^{b_1} \int_{- \infty}^{b_2} e^{-(x^{2}-2 \rho xy +y^{2})/(2(1-
+ * \rho^{2}))}dydx }
  * <p>
  * This implementation mainly differs from the original code in two regards;
  * <ol>
- * <li>The implementation of the cumulative normal distribution is {@code CumulativeNormalDistribution}</li>
+ * <li>The implementation of the cumulative normal distribution is
+ * {@code CumulativeNormalDistribution}</li>
  * <li> The arrays XX and W are zero-based</li>
  * </ol>
  *
@@ -81,41 +83,37 @@ import org.jquantlib.math.integrals.TabulatedGaussLegendre;
 //TODO: code review :: seems like we should extend or implement something ?
 public class BivariateNormalDistribution implements Ops.BinaryDoubleOp {
 
+    private final static CumulativeNormalDistribution cumnorm = new CumulativeNormalDistribution();
     //
     // private fields
     //
 
     private final double correlation;
-    private final static CumulativeNormalDistribution cumnorm = new CumulativeNormalDistribution();
-
 
     //
     // public constructor
     //
-
     /**
      * Constructor of BivariateNormalDistribution to initialize the correlation.
      * The correlation <code>rho</code> must be >=-1.0 and <=1.0.
+     *
      * @param rho correlation
      */
     public BivariateNormalDistribution(final double rho) {
-        QL.require(rho >= -1.0 && rho <= 1.0 , "rho must be >= -1.0 and <= 1.0"); // TODO: message
+        QL.require(rho >= -1.0 && rho <= 1.0, "rho must be >= -1.0 and <= 1.0"); // TODO: message
         correlation = rho;
     }
-
 
     //
     // implements Ops.BinaryDoubleOp
     //
-
     /**
-     * Computes the Bivariate Normal Distribution of the two variables <code>x</code> and <code>y</code>
-     * which can be correlated in a particular manner.
+     * Computes the Bivariate Normal Distribution of the two variables
+     * <code>x</code> and <code>y</code> which can be correlated in a particular
+     * manner.
      *
-     * @param x
-     *                First variable
-     * @param y
-     *                Second variable
+     * @param x First variable
+     * @param y Second variable
      * @return BVN
      */
     @Override
@@ -159,7 +157,7 @@ public class BivariateNormalDistribution implements Ops.BinaryDoubleOp {
                 if (-hk < 100) {
                     final double B = Math.sqrt(bs);
                     bvn -= Math.exp(-hk / 2) * Constants.M_SQRT2PI * cumnorm.op(-B / a) * B
-                    * (1 - c * bs * (1 - d * bs / 5) / 3);
+                            * (1 - c * bs * (1 - d * bs / 5) / 3);
                 }
                 a /= 2;
                 final Eqn6 f = new Eqn6(a, c, d, bs, hk);
@@ -179,13 +177,13 @@ public class BivariateNormalDistribution implements Ops.BinaryDoubleOp {
         return bvn;
     }
 
-
     /**
      * Relates to equation 3, see references
      *
-     * @see <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/node4.html#L1P">Genz 2004, The Transformed BVN Problem</a>
+     * @see
+     * <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/node4.html#L1P">Genz
+     * 2004, The Transformed BVN Problem</a>
      */
-
     private static class Eqn3 implements Ops.DoubleOp {
 
         private final double hk, asr, hs;
@@ -198,22 +196,21 @@ public class BivariateNormalDistribution implements Ops.BinaryDoubleOp {
          * @param asr ASIN of <code>correlation_</code>
          * @return Math.exp((sn * hk_ - hs_) / (1.0 - sn * sn))
          */
-
         public Eqn3(final double h, final double k, final double asr) {
             this.hk = h * k;
             this.hs = (h * h + k * k) / 2;
             this.asr = asr;
         }
 
-
         //
         // Implements Ops.DoubleOp
         //
-
         /**
          * Computes equation 3, see references
          *
-         * @see <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/node4.html#L1P">Genz 2004, The Transformed BVN Problem</a>
+         * @see
+         * <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/node4.html#L1P">Genz
+         * 2004, The Transformed BVN Problem</a>
          *
          * @param h
          * @param k
@@ -226,11 +223,12 @@ public class BivariateNormalDistribution implements Ops.BinaryDoubleOp {
         }
     }
 
-
     /**
      * Relates to equation 6, see references
      *
-     * @see <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/node5.html#L3">Genz 2004, Numerical Integration Results</a>
+     * @see
+     * <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/node5.html#L3">Genz
+     * 2004, Numerical Integration Results</a>
      *
      */
     private static class Eqn6 implements Ops.DoubleOp {
@@ -254,21 +252,21 @@ public class BivariateNormalDistribution implements Ops.BinaryDoubleOp {
             this.hk = hk;
         }
 
-
         //
         // Implements Ops.DoubleOp
         //
-
         /**
          * Computes equation 6, see references<br>
          *
-         * @see <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/node5.html#L3">Genz 2004, Numerical Integration
-         *      Results</a>
+         * @see
+         * <a href="http://www.math.wsu.edu/faculty/genz/papers/bvnt/node5.html#L3">Genz
+         * 2004, Numerical Integration Results</a>
          *
          * @param x
-         * @return <code>if (asr > -100.0) </code> return (a_ * Math.exp(asr) * (Math.exp(-hk_ * (1 - rs) / (2 * (1 + rs))) / rs -
-         *         (1 + c_ * xs * (1 + d_ * xs))))<br>
-         *         <code>else</code> return 0.00
+         * @return <code>if (asr > -100.0) </code> return (a_ * Math.exp(asr) *
+         * (Math.exp(-hk_ * (1 - rs) / (2 * (1 + rs))) / rs - (1 + c_ * xs * (1
+         * + d_ * xs))))<br>
+         * <code>else</code> return 0.00
          *
          */
         public double op(final double x) {

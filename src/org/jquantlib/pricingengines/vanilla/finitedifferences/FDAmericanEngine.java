@@ -19,7 +19,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,8 +34,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.util.List;
@@ -51,21 +50,17 @@ import org.jquantlib.util.Observer;
  * @author Srinivas Hasti
  * @author Richard Gomes
  */
-
 // typedef FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, OneAssetOption::engine> FDAmericanEngine;
 public class FDAmericanEngine
         extends FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, OneAssetOption.Engine>
         implements OneAssetOption.Engine {
 
-	
-	
     //
     // public constructors
     //
-
     public FDAmericanEngine(
             final GeneralizedBlackScholesProcess process) {
-        super(FDAmericanCondition.class, OneAssetOption.Engine.class, process, 100,100, false);
+        super(FDAmericanCondition.class, OneAssetOption.Engine.class, process, 100, 100, false);
         super.impl = new Impl(this);
     }
 
@@ -93,31 +88,9 @@ public class FDAmericanEngine
         super.impl = new Impl(this);
     }
 
-
-    //
-    // private inner classes
-    //
-
-
-    private class Impl extends OneAssetOption.EngineImpl {
-        private final FDAmericanEngine engine;
-
-        private Impl(final FDAmericanEngine engine) {
-            this.engine = engine;
-        }
-
-        @Override
-        public void calculate() {
-            // calls FDEngineAdapter#calculate()
-            engine.calculate();
-        }
-    }
-
-
     //
     // implements OneAssetOption.Engine
     //
-
     @Override
     public Arguments getArguments() {
         return super.impl.getArguments();
@@ -133,11 +106,9 @@ public class FDAmericanEngine
         super.impl.reset();
     }
 
-
     //
     // implements Observer
     //
-
 //    @Override
 //XXX::OBS    public void update(final Observable o, final Object arg) {
 //        super.impl.update(o, arg);
@@ -147,11 +118,9 @@ public class FDAmericanEngine
         super.impl.update();
     }
 
-
     //
     // implements Observable
     //
-
     @Override
     public void addObserver(final Observer observer) {
         super.impl.addObserver(observer);
@@ -185,6 +154,24 @@ public class FDAmericanEngine
     @Override
     public void notifyObservers(final Object arg) {
         super.impl.notifyObservers(arg);
+    }
+    //
+    // private inner classes
+    //
+
+    private class Impl extends OneAssetOption.EngineImpl {
+
+        private final FDAmericanEngine engine;
+
+        private Impl(final FDAmericanEngine engine) {
+            this.engine = engine;
+        }
+
+        @Override
+        public void calculate() {
+            // calls FDEngineAdapter#calculate()
+            engine.calculate();
+        }
     }
 
 }

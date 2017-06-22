@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import java.util.List;
@@ -33,11 +32,7 @@ import org.jquantlib.util.Pair;
  *
  * @author Richard Gomes
  */
-
-
 //FIXME: This class needs full code review
-
-
 public interface Traits {
 
     /**
@@ -71,26 +66,27 @@ public interface Traits {
     public void updateGuess(final double[] data, double value, int i);
 
     public boolean dummyInitialValue() /* @ReadOnly */;
-    public JDate initialDate(final YieldTermStructure curve);
-    public int maxIterations() /* @ReadOnly */;
 
+    public JDate initialDate(final YieldTermStructure curve);
+
+    public int maxIterations() /* @ReadOnly */;
 
     public interface Curve extends YieldTermStructure /* TODO: public boost::noncopyable*/ {
 
         @Override
         public JDate maxDate();
-        
+
         public JDate[] dates() /* @ReadOnly */;
-        
+
         public /*@Time*/ double[] times() /* @ReadOnly */;
 
-        public List<Pair<JDate, /* @Rate */Double>> nodes() /* @ReadOnly */;
+        public List<Pair<JDate, /* @Rate */ Double>> nodes() /* @ReadOnly */;
 
         public double[] data();
-        
+
         @Override
         public JDate referenceDate();
-        
+
         @Override
         public double timeFromReference(final JDate date) /* @ReadOnly */;
 
@@ -98,16 +94,16 @@ public interface Traits {
         public void update();
 
         public Interpolator interpolator() /* @ReadOnly */;
-        
+
         public Interpolation interpolation() /* @ReadOnly */;
-        
+
         public void setInterpolation(final Interpolation interpolation);
 
-        public void setDates (final JDate[] dates);
-        
-        public void setTimes (/*@Time*/ double[] times);
-        
-        public void setData (final double[] data);
+        public void setDates(final JDate[] dates);
+
+        public void setTimes(/*@Time*/double[] times);
+
+        public void setData(final double[] data);
 
         public /*@DiscountFactor*/ double discount(final /*@Time*/ double t) /* @ReadOnly */;
 

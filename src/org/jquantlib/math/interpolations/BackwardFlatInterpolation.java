@@ -19,12 +19,10 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.interpolations;
 
 import org.jquantlib.math.interpolations.factories.BackwardFlat;
 import org.jquantlib.math.matrixutilities.Array;
-
 
 /**
  * Backward-flat interpolation between discrete points
@@ -38,46 +36,38 @@ public class BackwardFlatInterpolation extends AbstractInterpolation {
     //
     // public constructors
     //
-
     public BackwardFlatInterpolation(final Array vx, final Array vy) {
         super.impl = new BackwardFlatInterpolationImpl(vx, vy);
         super.impl.update();
     }
 
-
     //
     // protected inner classes
     //
-
     private class BackwardFlatInterpolationImpl extends AbstractInterpolation.Impl {
 
         //
         // private fields
         //
-
         private final Array vp;
-
 
         //
         // protected constructors
         //
-
         protected BackwardFlatInterpolationImpl(final Array vx, final Array vy) {
             super(vx, vy);
             this.vp = new Array(vx.size());
         }
 
-
         //
         // overrides AbstractInterpolation.Impl
         //
-
         @Override
         public void update() {
             vp.set(0, 0.0);
-            for (int i=1; i<vx.size(); i++) {
-                final double dx = vx.get(i) - vx.get(i-1);
-                vp.set(i, vp.get(i-1) + dx*vy.get(i));
+            for (int i = 1; i < vx.size(); i++) {
+                final double dx = vx.get(i) - vx.get(i - 1);
+                vp.set(i, vp.get(i - 1) + dx * vy.get(i));
             }
         }
 
@@ -90,7 +80,7 @@ public class BackwardFlatInterpolation extends AbstractInterpolation {
             if (x == vx.get(i)) {
                 return vy.get(i);
             } else {
-                return vy.get(i+1);
+                return vy.get(i + 1);
             }
         }
 
@@ -98,7 +88,7 @@ public class BackwardFlatInterpolation extends AbstractInterpolation {
         public double primitive(final double x) {
             final int i = locate(x);
             final double dx = x - vx.get(i);
-            return vp.get(i) + dx*vy.get(i+1);
+            return vp.get(i) + dx * vy.get(i + 1);
         }
 
         @Override

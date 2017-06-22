@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005 StatPro Italia srl
 
@@ -34,8 +34,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.montecarlo;
 
 import org.jquantlib.math.randomnumbers.RandomNumberGenerator;
@@ -44,17 +43,15 @@ import org.jquantlib.math.randomnumbers.RandomNumberGenerator;
  * @author Richard Gomes
  */
 public class MultiVariate<RNG extends RandomNumberGenerator> implements Variate {
-	
-	public MultiVariate() {
-        if (System.getProperty("EXPERIMENTAL")==null) {
+
+    public MultiVariate() {
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
         }
-	}
+    }
 
     // FIXME: decide how to implement
-    
 }
-
 
 ////! default Monte Carlo traits for multi-variate models
 //template <class RNG = PseudoRandom>

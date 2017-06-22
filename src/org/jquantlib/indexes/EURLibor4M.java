@@ -27,20 +27,19 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * 4-months EUR Libor index    
- * 
+ * 4-months EUR Libor index
+ *
  * @author Tim Blackler
  */
 public class EURLibor4M extends EURLibor {
 
-
     //
     // public constructors
     //
-
     public EURLibor4M() {
-    	this(new Handle<YieldTermStructure>());
+        this(new Handle<YieldTermStructure>());
     }
+
     public EURLibor4M(final Handle<YieldTermStructure> h) {
         super(new Period(4, TimeUnit.Months), h);
     }

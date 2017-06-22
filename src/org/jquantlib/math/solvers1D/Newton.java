@@ -19,24 +19,24 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.solvers1D;
 
 import org.jquantlib.math.AbstractSolver1D;
 import org.jquantlib.math.distributions.Derivative;
 
-
 /**
  * Newton's 1d solver.
- * 
- * @see Book: <i>Press, Teukolsky, Vetterling, and Flannery, "Numerical Recipes in C", 2nd edition, Cambridge University Press</i>
- * 
+ *
+ * @see Book: <i>Press, Teukolsky, Vetterling, and Flannery, "Numerical Recipes
+ * in C", 2nd edition, Cambridge University Press</i>
+ *
  * @author Dominik Holenstein
  */
 public class Newton extends AbstractSolver1D<Derivative> {
 
     /**
      * Computes the roots of a function by using Newton's method.
+     *
      * @param f the function
      * @param xAccuracy the provided accuracy
      * @returns <code>root_</code>
@@ -50,17 +50,18 @@ public class Newton extends AbstractSolver1D<Derivative> {
         dfroot = f.derivative(root);
         evaluationNumber++;
 
-        while (evaluationNumber<= getMaxEvaluations()) {
-            dx=froot/dfroot;
+        while (evaluationNumber <= getMaxEvaluations()) {
+            dx = froot / dfroot;
             root -= dx;
             // jumped out of brackets, switch to NewtonSafe
-            if ((xMin-root)*(root-xMax) < 0.0) {
+            if ((xMin - root) * (root - xMax) < 0.0) {
                 final NewtonSafe s = new NewtonSafe();
-                s.setMaxEvaluations(getMaxEvaluations()-evaluationNumber);
-                return s.solve(f, xAccuracy, root+dx, xMin, xMax);
+                s.setMaxEvaluations(getMaxEvaluations() - evaluationNumber);
+                return s.solve(f, xAccuracy, root + dx, xMin, xMax);
             }
-            if (Math.abs(dx) < xAccuracy)
+            if (Math.abs(dx) < xAccuracy) {
                 return root;
+            }
             froot = f.op(root);
             dfroot = f.derivative(root);
             evaluationNumber++;

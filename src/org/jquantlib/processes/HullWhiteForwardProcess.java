@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Banca Profilo S.p.A.
 
  This file is part of QuantLib, a free-software/open-source library
@@ -53,10 +53,10 @@ import org.jquantlib.time.Frequency;
  */
 public class HullWhiteForwardProcess extends ForwardMeasureProcess1D {
 
-    protected OrnsteinUhlenbeckProcess   process;
+    protected OrnsteinUhlenbeckProcess process;
     protected Handle<YieldTermStructure> h;
-    protected double                     a;
-    protected double                     sigma;
+    protected double a;
+    protected double sigma;
 
     public HullWhiteForwardProcess(
             final Handle<YieldTermStructure> h,
@@ -67,11 +67,11 @@ public class HullWhiteForwardProcess extends ForwardMeasureProcess1D {
                 a,
                 sigma,
                 h.currentLink()
-                    .forwardRate(
-                        0.0,
-                        0.0,
-                        Compounding.Continuous,Frequency.NoFrequency)
-                    .rate());
+                        .forwardRate(
+                                0.0,
+                                0.0,
+                                Compounding.Continuous, Frequency.NoFrequency)
+                        .rate());
         this.h = h;
         this.a = a;
         this.sigma = sigma;
@@ -80,17 +80,16 @@ public class HullWhiteForwardProcess extends ForwardMeasureProcess1D {
     //
     // public methods
     //
-
-    public double a() /* @ReadOnly */{
+    public double a() /* @ReadOnly */ {
         return this.a;
     }
 
-    public double sigma() /* @ReadOnly */{
+    public double sigma() /* @ReadOnly */ {
         return this.sigma;
     }
 
     public double alpha(
-            final/* @Time */double t) /* @ReadOnly */{
+            final/* @Time */ double t) /* @ReadOnly */ {
         double alfa = a > Constants.QL_EPSILON ? (sigma / a) * (1 - Math.exp(-a * t)) : sigma * t;
         alfa *= 0.5 * alfa;
         alfa += h.currentLink().forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
@@ -100,7 +99,7 @@ public class HullWhiteForwardProcess extends ForwardMeasureProcess1D {
     public double M_T(
             final double s,
             final double t,
-            final double T) /* @ReadOnly */{
+            final double T) /* @ReadOnly */ {
         if (a > Constants.QL_EPSILON) {
             final double coeff = (sigma * sigma) / (a * a);
             final double exp1 = Math.exp(-a * (t - s));
@@ -115,24 +114,23 @@ public class HullWhiteForwardProcess extends ForwardMeasureProcess1D {
     }
 
     public double B(
-            final/* @Time */double t,
-            final/* @Time */double T) /* @ReadOnly */{
+            final/* @Time */ double t,
+            final/* @Time */ double T) /* @ReadOnly */ {
         return a > Constants.QL_EPSILON ? 1 / a * (1 - Math.exp(-a * (T - t))) : T - t;
     }
 
     //
     // extends StochasticProcess1D
     //
-
     @Override
-    public double x0() /* @ReadOnly */{
+    public double x0() /* @ReadOnly */ {
         return process.x0();
     }
 
     @Override
     public double drift(
-            final/* @Time */double t,
-            final double x) /* @ReadOnly */{
+            final/* @Time */ double t,
+            final double x) /* @ReadOnly */ {
         double alpha_drift = sigma * sigma / (2 * a) * (1 - Math.exp(-2 * a * t));
         final double shift = 0.0001;
         final double f = h.currentLink().forwardRate(t, t, Compounding.Continuous, Frequency.NoFrequency).rate();
@@ -144,32 +142,32 @@ public class HullWhiteForwardProcess extends ForwardMeasureProcess1D {
 
     @Override
     public double diffusion(
-            final/* @Time */double t,
-            final double x) /* @ReadOnly */{
+            final/* @Time */ double t,
+            final double x) /* @ReadOnly */ {
         return process.diffusion(t, x);
     }
 
     @Override
     public double expectation(
-            final/* @Time */double t0,
+            final/* @Time */ double t0,
             final double x0,
-            final/* @Time */double dt) /* @ReadOnly */{
+            final/* @Time */ double dt) /* @ReadOnly */ {
         return process.expectation(t0, x0, dt) + alpha(t0 + dt) - alpha(t0) * Math.exp(-a * dt) - M_T(t0, t0 + dt, T_);
     }
 
     @Override
     public double stdDeviation(
-            final/* @Time */double t0,
+            final/* @Time */ double t0,
             final double x0,
-            final/* @Time */double dt) /* @ReadOnly */{
+            final/* @Time */ double dt) /* @ReadOnly */ {
         return process.stdDeviation(t0, x0, dt);
     }
 
     @Override
     public double variance(
-            final/* @Time */double t0,
+            final/* @Time */ double t0,
             final double x0,
-            final/* @Time */double dt) /* @ReadOnly */{
+            final/* @Time */ double dt) /* @ReadOnly */ {
         return process.variance(t0, x0, dt);
     }
 

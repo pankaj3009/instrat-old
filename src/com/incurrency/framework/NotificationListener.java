@@ -9,5 +9,6 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public interface NotificationListener {
-    public void notificationReceived( NotificationEvent event );
+
+    public void notificationReceived(NotificationEvent event);
 }

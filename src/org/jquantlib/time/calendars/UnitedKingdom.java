@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -37,7 +36,8 @@ import static org.jquantlib.time.Weekday.Tuesday;
 
 /**
  *
- * United Kingdom calendars Public holidays (data from http://www.dti.gov.uk/er/bankhol.htm):
+ * United Kingdom calendars Public holidays (data from
+ * http://www.dti.gov.uk/er/bankhol.htm):
  * <ul>
  * <li>Saturdays</li>
  * <li>Sundays</li>
@@ -81,14 +81,38 @@ import static org.jquantlib.time.Weekday.Tuesday;
  *
  * @category calendars
  * @TODO add LIFFE
- * @test the correctness of the returned results is tested against a list of known holidays.
+ * @test the correctness of the returned results is tested against a list of
+ * known holidays.
  *
  * @author Srinivas Hasti TODO add LIFFE
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class UnitedKingdom extends Calendar {
+
+    //
+    // public constructors
+    //
+    public UnitedKingdom() {
+        this(Market.Settlement);
+    }
+
+    public UnitedKingdom(final Market market) {
+        switch (market) {
+            case Settlement:
+                impl = new SettlementImpl();
+                break;
+            case Exchange:
+                impl = new ExchangeImpl();
+                break;
+            case Metals:
+                impl = new MetalsImpl();
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
+        }
+    }
+
     /**
      * UK calendars
      *
@@ -98,46 +122,19 @@ public class UnitedKingdom extends Calendar {
          * Generic settlement calendar
          */
         Settlement,
-
         /**
          * London Stock Exchange calendar
          */
         Exchange,
-
         /**
          * London Metals Exchange calendar
          */
         Metals
-    };
-
-    //
-    // public constructors
-    //
-
-    public UnitedKingdom() {
-        this(Market.Settlement);
-    }
-
-    public UnitedKingdom(final Market market) {
-        switch (market) {
-        case Settlement:
-            impl = new SettlementImpl();
-            break;
-        case Exchange:
-            impl = new ExchangeImpl();
-            break;
-        case Metals:
-            impl = new MetalsImpl();
-            break;
-        default:
-            throw new LibraryException(UNKNOWN_MARKET);
-        }
     }
 
     //
     // private final inner classes
     //
-
     private final class SettlementImpl extends WesternImpl {
 
         @Override
@@ -153,7 +150,7 @@ public class UnitedKingdom extends Calendar {
             final int y = date.year();
             final int em = easterMonday(y);
             if (isWeekend(w)
-            // New Year's Day (possibly moved to Monday)
+                    // New Year's Day (possibly moved to Monday)
                     || ((d == 1 || ((d == 2 || d == 3) && w == Monday)) && m == January)
                     // Good Friday
                     || (dd == em - 3)
@@ -185,6 +182,7 @@ public class UnitedKingdom extends Calendar {
     }
 
     private final class ExchangeImpl extends WesternImpl {
+
         @Override
         public String name() {
             return "London stock exchange";
@@ -198,7 +196,7 @@ public class UnitedKingdom extends Calendar {
             final int y = date.year();
             final int em = easterMonday(y);
             if (isWeekend(w)
-            // New Year's Day (possibly moved to MONDAY)
+                    // New Year's Day (possibly moved to MONDAY)
                     || ((d == 1 || ((d == 2 || d == 3) && w == Monday)) && m == January)
                     // Good Friday
                     || (dd == em - 3)
@@ -230,6 +228,7 @@ public class UnitedKingdom extends Calendar {
     }
 
     private final class MetalsImpl extends WesternImpl {
+
         @Override
         public String name() {
             return "London metals exchange";
@@ -243,7 +242,7 @@ public class UnitedKingdom extends Calendar {
             final int y = date.year();
             final int em = easterMonday(y);
             if (isWeekend(w)
-            // New Year's Day (possibly moved to MONDAY)
+                    // New Year's Day (possibly moved to MONDAY)
                     || ((d == 1 || ((d == 2 || d == 3) && w == Monday)) && m == January)
                     // Good Friday
                     || (dd == em - 3)

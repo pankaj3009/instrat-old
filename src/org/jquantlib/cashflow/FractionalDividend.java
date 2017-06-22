@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.QL;
@@ -34,29 +33,29 @@ import org.jquantlib.time.JDate;
  */
 public class FractionalDividend extends Dividend {
 
-	protected double rate;
-	protected double nominal;
+    protected double rate;
+    protected double nominal;
 
-	public FractionalDividend(final double rate, final JDate date) {
-		super(date);
-		this.rate=rate;
-	}
+    public FractionalDividend(final double rate, final JDate date) {
+        super(date);
+        this.rate = rate;
+    }
 
-	public FractionalDividend(final double rate, final double nominal, final JDate date) {
-		super(date);
-		this.rate=rate;
-		this.nominal=nominal;
-	}
+    public FractionalDividend(final double rate, final double nominal, final JDate date) {
+        super(date);
+        this.rate = rate;
+        this.nominal = nominal;
+    }
 
-	@Override
-	public double amount(final double underlying) {
-		return rate*underlying;
-	}
+    @Override
+    public double amount(final double underlying) {
+        return rate * underlying;
+    }
 
-	@Override
-	public double amount() {
-		QL.require(!Double.isNaN(nominal) , "no nominal given"); // TODO: message
-		return rate*nominal;
-	}
+    @Override
+    public double amount() {
+        QL.require(!Double.isNaN(nominal), "no nominal given"); // TODO: message
+        return rate * nominal;
+    }
 
 }

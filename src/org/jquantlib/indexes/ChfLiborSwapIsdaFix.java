@@ -32,12 +32,11 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * 
- * ChfLiborSwapIsdaFix index base class
- * CHF Libor Swap indexes fixed by ISDA in cooperation with
- * Reuters and Intercapital Brokers at 11am London.
- * Annual 30/360 vs 6M Libor, 1Y vs 3M Libor. Reuters page ISDAFIX4 or CHFSFIX=.
- * 
+ *
+ * ChfLiborSwapIsdaFix index base class CHF Libor Swap indexes fixed by ISDA in
+ * cooperation with Reuters and Intercapital Brokers at 11am London. Annual
+ * 30/360 vs 6M Libor, 1Y vs 3M Libor. Reuters page ISDAFIX4 or CHFSFIX=.
+ *
  * Further info can be found at <http://www.isda.org/fix/isdafix.html> or
  * Reuters page ISDAFIX.
  *
@@ -46,21 +45,20 @@ import org.jquantlib.time.calendars.Target;
 public class ChfLiborSwapIsdaFix extends SwapIndex {
 
     public ChfLiborSwapIsdaFix(final Period tenor) {
-    	this(tenor, new Handle<YieldTermStructure>());
+        this(tenor, new Handle<YieldTermStructure>());
     }
-	
+
     public ChfLiborSwapIsdaFix(final Period tenor, final Handle<YieldTermStructure> h) {
-        super( "ChfLiborSwapIsdaFix",
+        super("ChfLiborSwapIsdaFix",
                 tenor,
                 2, // settlement days
                 new CHFCurrency(),
                 new Target(),
-                new Period(1,TimeUnit.Years),
+                new Period(1, TimeUnit.Years),
                 BusinessDayConvention.ModifiedFollowing,
                 new Thirty360(Thirty360.Convention.BondBasis),
-                tenor.gt(new Period(1,TimeUnit.Years)) ? new CHFLibor(new Period(6,TimeUnit.Months), h):
-                	 									 new CHFLibor(new Period(3,TimeUnit.Months), h)
-                		
-                );
-        }
+                tenor.gt(new Period(1, TimeUnit.Years)) ? new CHFLibor(new Period(6, TimeUnit.Months), h)
+                : new CHFLibor(new Period(3, TimeUnit.Months), h)
+        );
+    }
 }

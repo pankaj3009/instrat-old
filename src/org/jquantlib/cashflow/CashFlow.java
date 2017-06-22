@@ -19,12 +19,10 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.util.PolymorphicVisitor;
 import org.jquantlib.util.Visitor;
-
 
 /**
  * @author Srinivas Hasti
@@ -35,18 +33,16 @@ public abstract class CashFlow extends Event implements Comparable<CashFlow> {
     //
     // public abstract methods
     //
-
     /**
-	 * @return amount of the cash flow. The amount is not discounted, i.e., it is the actual amount paid at the cash flow date.
-	 */
-	public abstract double amount();
-
+     * @return amount of the cash flow. The amount is not discounted, i.e., it
+     * is the actual amount paid at the cash flow date.
+     */
+    public abstract double amount();
 
     //
     // implements Comparable
     //
-
-	@Override
+    @Override
     public int compareTo(final CashFlow c2) {
         if (date().lt(c2.date())) {
             return -1;
@@ -66,19 +62,17 @@ public abstract class CashFlow extends Event implements Comparable<CashFlow> {
         return 1;
     }
 
-
-	//
-	// implements PolymorphicVisitable
-	//
-
-	@Override
-	public void accept(final PolymorphicVisitor pv) {
-		final Visitor<CashFlow> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+    //
+    // implements PolymorphicVisitable
+    //
+    @Override
+    public void accept(final PolymorphicVisitor pv) {
+        final Visitor<CashFlow> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {
             super.accept(pv);
         }
-	}
+    }
 
 }

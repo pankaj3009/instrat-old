@@ -21,16 +21,14 @@ import java.util.List;
 /**
  * Response returned by KairosDB.
  */
-public class QueryResponse 
-{
-	private List<Queries> queries = new ArrayList<Queries>();
+public class QueryResponse {
 
-	public QueryResponse()
-	{
-	}
+    private List<Queries> queries = new ArrayList<Queries>();
 
-	public List<Queries> getQueries()
-	{
-		return queries;
-	}
+    public QueryResponse() {
+    }
+
+    public List<Queries> getQueries() {
+        return queries;
+    }
 }

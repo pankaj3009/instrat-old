@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2003 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.volatilities;
 
 import org.jquantlib.QL;
@@ -70,7 +69,6 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
     //
     // private fields
     //
-
     private final DayCounter dayCounter;
     private final JDate maxDate;
     private final JDate[] dates;
@@ -79,11 +77,9 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
     private Interpolation varianceCurve;
     private final Interpolation.Interpolator factory;
 
-
     //
     // public constructors
     //
-
     public BlackVarianceCurve(
             final JDate referenceDate,
             final JDate[] dates,
@@ -100,37 +96,35 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
             final boolean forceMonotoneVariance) {
         super(referenceDate);
 
-        QL.require(dates.length==blackVolCurve.length , "mismatch between date vector and black vol vector"); // TODO: message
+        QL.require(dates.length == blackVolCurve.length, "mismatch between date vector and black vol vector"); // TODO: message
         // cannot have dates[0]==referenceDate, since the
         // value of the volatility at dates[0] would be lost
         // (variance at referenceDate must be zero)
-        QL.require(dates[0].gt(referenceDate) , "cannot have dates[0] <= referenceDate"); // TODO: message
+        QL.require(dates[0].gt(referenceDate), "cannot have dates[0] <= referenceDate"); // TODO: message
 
         this.dayCounter = dayCounter;
         this.dates = dates.clone();
-        this.maxDate = dates[dates.length-1];
+        this.maxDate = dates[dates.length - 1];
 
-        variances = /*@Variance*/ new Array(this.dates.length+1);
-        times     = /*@Time*/     new Array(this.dates.length+1);
+        variances = /*@Variance*/ new Array(this.dates.length + 1);
+        times = /*@Time*/ new Array(this.dates.length + 1);
         variances.set(0, 0.0);
         times.set(0, 0.0);
-        for (int j=1; j<=blackVolCurve.length; j++) {
-            times.set(j, timeFromReference(this.dates[j-1]));
-            QL.require(times.get(j)>times.get(j-1) , "times must be sorted unique"); // TODO: message
-            final double value = times.get(j) * blackVolCurve[j-1]*blackVolCurve[j-1];
+        for (int j = 1; j <= blackVolCurve.length; j++) {
+            times.set(j, timeFromReference(this.dates[j - 1]));
+            QL.require(times.get(j) > times.get(j - 1), "times must be sorted unique"); // TODO: message
+            final double value = times.get(j) * blackVolCurve[j - 1] * blackVolCurve[j - 1];
             variances.set(j, value);
-            QL.require(variances.get(j)>=variances.get(j-1) || !forceMonotoneVariance , "variance must be non-decreasing"); // TODO: message
+            QL.require(variances.get(j) >= variances.get(j - 1) || !forceMonotoneVariance, "variance must be non-decreasing"); // TODO: message
         }
 
         // default: linear interpolation
         factory = new Linear();
     }
 
-
     //
     // public methods
     //
-
     public void setInterpolation() {
         this.setInterpolation(factory);
     }
@@ -142,11 +136,9 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
         notifyObservers();
     }
 
-
     //
     // Overrides TermStructure
     //
-
     @Override
     public final DayCounter dayCounter() {
         return dayCounter;
@@ -157,11 +149,9 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
         return maxDate;
     }
 
-
     //
     // Overrides BlackVolTermStrucure
     //
-
     @Override
     public final /*@Real*/ double minStrike() {
         return Double.NEGATIVE_INFINITY;
@@ -178,20 +168,20 @@ public class BlackVarianceCurve extends BlackVarianceTermStructure {
         if (t <= times.last()) {
             return varianceCurve.op(t);
         } else {
+
+
             // extrapolate with flat vol
             /*@Time*/ final double lastTime = times.last();  // TODO: probably an error here
             return varianceCurve.op(lastTime) * t / lastTime;
         }
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<BlackVarianceCurve> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<BlackVarianceCurve> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

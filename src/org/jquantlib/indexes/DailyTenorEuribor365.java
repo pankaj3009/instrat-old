@@ -30,8 +30,8 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * Daily Settlement Euribor index    
- * 
+ * Daily Settlement Euribor index
+ *
  * @author Tim Blackler
  */
 public class DailyTenorEuribor365 extends IborIndex {
@@ -40,19 +40,19 @@ public class DailyTenorEuribor365 extends IborIndex {
     // public constructors
     //
     public DailyTenorEuribor365(final int settlementDays) {
-    	this(settlementDays, new Handle<YieldTermStructure>());
+        this(settlementDays, new Handle<YieldTermStructure>());
     }
-	
+
     public DailyTenorEuribor365(final int settlementDays, final Handle<YieldTermStructure> h) {
         super("Euribor",
-                new Period(1,TimeUnit.Days),
+                new Period(1, TimeUnit.Days),
                 settlementDays, // settlement days
                 new EURCurrency(),
                 new Target(),
-                euriborConvention(new Period(1,TimeUnit.Days)),
-                euriborEOM(new Period(1,TimeUnit.Days)),
+                euriborConvention(new Period(1, TimeUnit.Days)),
+                euriborEOM(new Period(1, TimeUnit.Days)),
                 new Actual365Fixed(),
                 h);
-      }
+    }
 
 }

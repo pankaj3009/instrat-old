@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.interpolations;
 
 /**
@@ -46,11 +45,11 @@ package org.jquantlib.math.interpolations;
  */
 public interface Extrapolator {
 
-	/**
-	 * enable extrapolation in subsequent calls
-	 *
-	 * @category modifiers
-	 */
+    /**
+     * enable extrapolation in subsequent calls
+     *
+     * @category modifiers
+     */
     public void enableExtrapolation();
 
     /**

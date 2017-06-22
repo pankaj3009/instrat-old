@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.legacy.libormarkets;
 
 import java.util.ArrayList;
@@ -40,8 +39,9 @@ public abstract class LmCorrelationModel {
         this.size_ = size;
         this.arguments_ = new ArrayList<Parameter>(nArguments);
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
     }
 
@@ -58,25 +58,25 @@ public abstract class LmCorrelationModel {
     }
 
     public Matrix pseudoSqrt(
-    /* @Time */final double t, final Array x) {
+            /* @Time */final double t, final Array x) {
         return PseudoSqrt.pseudoSqrt(this.correlation(t, x), SalvagingAlgorithm.Spectral);
     }
 
-    public double correlation(final int i, final int j, /* @Time */final double t, final Array x) {
+    public double correlation(final int i, final int j, /* @Time */ final double t, final Array x) {
         // inefficient implementation, please overload in derived classes
         return correlation(t, x).get(i, j);
     }
 
-    public double correlation(final int i, final int j, /* @Time */final double t) {
+    public double correlation(final int i, final int j, /* @Time */ final double t) {
         // inefficient implementation, please overload in derived classes
         return correlation(t, new Array(j)).get(i, j);//ZH: Should be size j
     }
 
     public abstract Matrix correlation(
-    /* @Time */double t, final Array x);
+            /* @Time */double t, final Array x);
 
     public Matrix correlation(
-    /* @Time */final double t) {
+            /* @Time */final double t) {
         return correlation(t, new Array(0));//ZH:Default Null<Array>
     }
 

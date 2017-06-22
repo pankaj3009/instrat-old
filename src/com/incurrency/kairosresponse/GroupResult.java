@@ -15,20 +15,17 @@
  */
 package com.incurrency.kairosresponse;
 
+public class GroupResult {
 
-public class GroupResult
-{
-	private String name;
+    private String name;
 
     public GroupResult(String name) {
-    this.name=name;
+        this.name = name;
     }
 
-
-	public String getName()
-	{
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
     /**
      * @param name the name to set

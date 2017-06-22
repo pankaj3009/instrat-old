@@ -22,47 +22,42 @@ import java.util.Map;
 /**
  * Query Results. This is the results of a single query.
  */
-public class Results
-{
-	private String name;
-	private Map<String, List<String>> tags;
+public class Results {
 
-	@SerializedName("values")
-	private List<List<Object>> dataPoints;
+    private String name;
+    private Map<String, List<String>> tags;
 
-	@SerializedName("group_by")
-	private List<GroupResult> groupResults;
+    @SerializedName("values")
+    private List<List<Object>> dataPoints;
 
-	public Results(String name,
-	               Map<String, List<String>> tags,
-	               List<List<Object>>dataPoints,
-	               List<GroupResult> groupResults)
-	{
-		this.name = name;
-		this.tags = tags;
-		this.groupResults = groupResults;
-		this.dataPoints = dataPoints;
-	}
+    @SerializedName("group_by")
+    private List<GroupResult> groupResults;
 
-	public String getName()
-	{
-		return name;
-	}
+    public Results(String name,
+            Map<String, List<String>> tags,
+            List<List<Object>> dataPoints,
+            List<GroupResult> groupResults) {
+        this.name = name;
+        this.tags = tags;
+        this.groupResults = groupResults;
+        this.dataPoints = dataPoints;
+    }
 
-	public List<List<Object>> getDataPoints()
-	{
-		return dataPoints;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public Map<String, List<String>> getTags()
-	{
-		return tags;
-	}
+    public List<List<Object>> getDataPoints() {
+        return dataPoints;
+    }
 
-	public List<GroupResult> getGroupResults()
-	{
-		return groupResults;
-	}
+    public Map<String, List<String>> getTags() {
+        return tags;
+    }
+
+    public List<GroupResult> getGroupResults() {
+        return groupResults;
+    }
 
     /**
      * @param dataPoints the dataPoints to set

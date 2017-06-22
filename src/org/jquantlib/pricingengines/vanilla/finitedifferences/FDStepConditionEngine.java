@@ -48,7 +48,6 @@ public abstract class FDStepConditionEngine extends FDVanillaEngine {
     //
     // protected fields
     //
-
     protected StepCondition<Array> stepCondition;
     protected SampledCurve prices;
     protected TridiagonalOperator controlOperator;
@@ -66,7 +65,7 @@ public abstract class FDStepConditionEngine extends FDVanillaEngine {
 
     @Override
     protected void calculate(final Results results) {
-        final OneAssetOption.ResultsImpl r = (OneAssetOption.ResultsImpl)results;
+        final OneAssetOption.ResultsImpl r = (OneAssetOption.ResultsImpl) results;
         final Option.GreeksImpl greeks = r.greeks();
         // final Option.MoreGreeksImpl moreGreeks = r.moreGreeks();
         setGridLimits();
@@ -80,9 +79,9 @@ public abstract class FDStepConditionEngine extends FDVanillaEngine {
         final BoundaryConditionSet<BoundaryCondition<TridiagonalOperator>> bcSet = new BoundaryConditionSet<BoundaryCondition<TridiagonalOperator>>();
         final StepConditionSet<Array> conditionSet = new StepConditionSet<Array>();
 
-        prices =  new SampledCurve(intrinsicValues);
+        prices = new SampledCurve(intrinsicValues);
         controlPrices = new SampledCurve(intrinsicValues);
-        controlOperator =  new TridiagonalOperator(finiteDifferenceOperator);
+        controlOperator = new TridiagonalOperator(finiteDifferenceOperator);
         controlBCs.add(bcS.get(0));
         controlBCs.add(bcS.get(1));
 
@@ -99,14 +98,14 @@ public abstract class FDStepConditionEngine extends FDVanillaEngine {
         conditionSet.push_back(new NullCondition<Array>());
 
         final StandardSystemFiniteDifferenceModel model = new StandardSystemFiniteDifferenceModel(operatorSet, bcSet);
-        arraySet = model.rollback(arraySet, getResidualTime(),0.0, timeSteps, conditionSet);
+        arraySet = model.rollback(arraySet, getResidualTime(), 0.0, timeSteps, conditionSet);
 
         //TODO: code review: Verify use clone()
         prices.setValues(arraySet.get(0).clone());
         controlPrices.setValues(arraySet.get(1).clone());
 
         final StrikedTypePayoff striked_payoff = (StrikedTypePayoff) (payoff);
-        QL.require(striked_payoff != null , "non-striked payoff given"); // TODO: message
+        QL.require(striked_payoff != null, "non-striked payoff given"); // TODO: message
 
         final double variance = process.blackVolatility().currentLink().blackVariance(exerciseDate, striked_payoff.strike());
         final double dividendDiscount = process.dividendYield().currentLink().discount(exerciseDate);

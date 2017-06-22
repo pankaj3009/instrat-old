@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.distributions;
 
 import org.jquantlib.QL;
@@ -30,16 +29,18 @@ import org.jquantlib.math.Ops;
  * @author Richard Gomes
  * @author Dominik Holenstein
  */
-
 /**
- * The gamma distribution is a two-parameter family of continuous probability distributions.
+ * The gamma distribution is a two-parameter family of continuous probability
+ * distributions.
  * <p>
- * A gamma distribution is a general type of statistical distribution that is related to the beta
- * distribution and arises naturally in processes for which the waiting times between Poisson
- * distributed events are relevant.
+ * A gamma distribution is a general type of statistical distribution that is
+ * related to the beta distribution and arises naturally in processes for which
+ * the waiting times between Poisson distributed events are relevant.
  *
- * @see <a href="http://en.wikipedia.org/wiki/Gamma_distribution">Gamma Distribution</a>
- * @see <a href="http://mathworld.wolfram.com/GammaDistribution.html">Gamma Distribution on Wolfram MathWorld</a>
+ * @see <a href="http://en.wikipedia.org/wiki/Gamma_distribution">Gamma
+ * Distribution</a>
+ * @see <a href="http://mathworld.wolfram.com/GammaDistribution.html">Gamma
+ * Distribution on Wolfram MathWorld</a>
  *
  * @author Richard Gomes
  * @author Dominik Holenstein
@@ -51,40 +52,38 @@ public class GammaDistribution implements Ops.DoubleOp {
     //
     // private field
     //
-
     private final double a;
-
 
     //
     // public constructor
     //
-
-
     /**
-     * Intitializes <code>a_</code> and checks that <code>a_</code> is not smaller than 0.00.
+     * Intitializes <code>a_</code> and checks that <code>a_</code> is not
+     * smaller than 0.00.
+     *
      * @param a
      * @throws ArithmeticException if <code>a_</code> is smaller than 0.00
      */
     public GammaDistribution(final double a) {
-        QL.require(a >= 0.0 , "invalid parameter for gamma distribution"); // TODO: message
+        QL.require(a >= 0.0, "invalid parameter for gamma distribution"); // TODO: message
         this.a = a;
     }
-
 
     //
     // implements Ops.DoubleOp
     //
-
-
     /**
      * Computes the Gamma distribution.
+     *
      * @param x random variable
      * @return Gamma distribution of <code>x</code>
      */
     @Override
     public double op(final double x) /* Read-only */ {
 
-        if (x <= 0.0) return 0.0;
+        if (x <= 0.0) {
+            return 0.0;
+        }
 
         final double gln = new GammaFunction().logValue(a);
 
@@ -96,8 +95,9 @@ public class GammaDistribution implements Ops.DoubleOp {
                 ap += 1.0;
                 del *= x / ap;
                 sum += del;
-                if (Math.abs(del) < Math.abs(sum) * 3.0e-7)
+                if (Math.abs(del) < Math.abs(sum) * 3.0e-7) {
                     return sum * Math.exp(-x + a * Math.log(x) - gln);
+                }
             }
         } else {
             double b = x + 1.0 - a;
@@ -109,16 +109,19 @@ public class GammaDistribution implements Ops.DoubleOp {
                 b += 2.0;
                 d = an * d + b;
 
-                if (Math.abs(d) < Constants.QL_EPSILON)
+                if (Math.abs(d) < Constants.QL_EPSILON) {
                     d = Constants.QL_EPSILON;
+                }
                 c = b + an / c;
-                if (Math.abs(c) < Constants.QL_EPSILON)
+                if (Math.abs(c) < Constants.QL_EPSILON) {
                     c = Constants.QL_EPSILON;
+                }
                 d = 1.0 / d;
                 final double del = d * c;
                 h *= del;
-                if (Math.abs(del - 1.0) < Constants.QL_EPSILON)
+                if (Math.abs(del - 1.0) < Constants.QL_EPSILON) {
                     return h * Math.exp(-x + a * Math.log(x) - gln);
+                }
             }
         }
 
@@ -126,4 +129,3 @@ public class GammaDistribution implements Ops.DoubleOp {
     }
 
 }
-

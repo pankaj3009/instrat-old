@@ -9,5 +9,6 @@ package com.incurrency.framework;
  * @author admin
  */
 public interface OrderListener {
-    public void orderReceived( OrderBean event );
+
+    public void orderReceived(OrderBean event);
 }

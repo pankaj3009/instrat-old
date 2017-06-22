@@ -37,13 +37,14 @@ import org.jquantlib.util.Observer;
 
 /**
  * Liquid market instrument used during calibration
+ *
  * @author Praneet Tiwari
  */
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 // TODO: code review :: please verify against QL/C++ code
 public abstract class CalibrationHelper implements Observer, Observable {
 
-    protected double/* @Real */marketValue;
+    protected double/* @Real */ marketValue;
     protected Handle<Quote> volatility_;
     protected Handle<YieldTermStructure> termStructure_;
     protected PricingEngine engine_;
@@ -54,8 +55,9 @@ public abstract class CalibrationHelper implements Observer, Observable {
             final Handle<YieldTermStructure> termStructure,
             final boolean calibrateVolatility) {
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
         this.volatility_ = volatility;
         this.termStructure_ = termStructure;
@@ -70,38 +72,39 @@ public abstract class CalibrationHelper implements Observer, Observable {
 
     //TODO: code review
     // abstract double blackPrice (double /*@Volatility*/ volatility);
-
     // ! returns the actual price of the instrument (from volatility)
-    double/* @Real */marketValue() {
+    double/* @Real */ marketValue() {
         return marketValue;
     }
 
     // ! returns the price of the instrument according to the model
-    public abstract double /* @Real */modelValue();
+    public abstract double /* @Real */ modelValue();
 
     // ! returns the error resulting from the model valuation
-    public double /* @Real */calibrationError(){
-        if(calibrateVolatility_){
+    public double /* @Real */ calibrationError() {
+        if (calibrateVolatility_) {
             final double lowerPrice = blackPrice(0.001);
             final double upperPrice = blackPrice(10);
             final double modelPrice = modelValue();
 
             double implied;
-            if(modelPrice <= lowerPrice)
+            if (modelPrice <= lowerPrice) {
                 implied = 0.001;
-            else if(modelPrice >= upperPrice)
+            } else if (modelPrice >= upperPrice) {
                 implied = 10.0;
-            else
+            } else {
                 implied = impliedVolatility(modelPrice, 1e-12, 5000, 0.001, 10);
+            }
             return implied - volatility_.currentLink().value();
-        } else
-            return Math.abs(marketValue() - modelValue())/marketValue();
+        } else {
+            return Math.abs(marketValue() - modelValue()) / marketValue();
+        }
 
     }
 
     // ! Black volatility implied by the model
-    public double /* @Volatility */impliedVolatility(final double /* @Real */targetValue, final double /* @Real */accuracy,
-            final int /* @Size */maxEvaluations, final double /* @Volatility */minVol, final double /* @Volatility */maxVol){
+    public double /* @Volatility */ impliedVolatility(final double /* @Real */ targetValue, final double /* @Real */ accuracy,
+                    final int /* @Size */ maxEvaluations, final double /* @Volatility */ minVol, final double /* @Volatility */ maxVol) {
         final ImpliedVolatilityHelper f = new ImpliedVolatilityHelper(this, targetValue);
         final Brent solver = new Brent();
         solver.setMaxEvaluations(maxEvaluations);
@@ -112,23 +115,18 @@ public abstract class CalibrationHelper implements Observer, Observable {
         this.engine_ = engine;
     }
 
-
     //
     // public abstract methods
     //
-
     // TODO: code review :: please verify against QL/C++ code
     public abstract void addTimesTo(ArrayList<Time> times);
 
     // CalibrationHelper! Black price given a volatility
-    public abstract double /* @Real */blackPrice(double /* @Volatility */volatility);
-
-
+    public abstract double /* @Real */ blackPrice(double /* @Volatility */ volatility);
 
     //
     // implements Observer
     //
-
     //XXX:registerWith
     //    @Override
     //    public void registerWith(final Observable o) {
@@ -139,19 +137,15 @@ public abstract class CalibrationHelper implements Observer, Observable {
     //    public void unregisterWith(final Observable o) {
     //        o.deleteObserver(this);
     //    }
-
     @Override
     public void update() {
         marketValue = blackPrice(volatility_.currentLink().value());
         notifyObservers();
     }
 
-
-
     //
     // implements Observable
     //
-
     @Override
     public void addObserver(final Observer observer) {
         // TODO Auto-generated method stub
@@ -194,13 +188,15 @@ public abstract class CalibrationHelper implements Observer, Observable {
 
     }
 
-
     //
     // private inner classes
     //
-
     private class ImpliedVolatilityHelper implements Ops.DoubleOp {
-        public ImpliedVolatilityHelper(final CalibrationHelper helper, final double value){
+
+        private final CalibrationHelper helper_;
+        private final double value_;
+
+        public ImpliedVolatilityHelper(final CalibrationHelper helper, final double value) {
             this.helper_ = helper;
             this.value_ = value;
         }
@@ -208,9 +204,6 @@ public abstract class CalibrationHelper implements Observer, Observable {
         public double op(final double x) {
             return value_ - helper_.blackPrice(x);
         }
-
-        private final CalibrationHelper helper_;
-        private final double value_;
 
     }
 }

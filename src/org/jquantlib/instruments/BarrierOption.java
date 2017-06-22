@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2003, 2004 Neil Firth
  Copyright (C) 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2003, 2004, 2007 StatPro Italia srl
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.instruments;
 
 import org.jquantlib.QL;
@@ -61,34 +60,29 @@ public class BarrierOption extends OneAssetOption {
     //
     // protected fields
     //
-
     protected BarrierType barrierType;
     protected double barrier;
     protected double rebate;
 
-
     //
     // public constructors
     //
-
     public BarrierOption(
             final BarrierType barrierType,
-			final double barrier,
-			final double rebate,
-			final StrikedTypePayoff payoff,
-			final Exercise exercise) {
+            final double barrier,
+            final double rebate,
+            final StrikedTypePayoff payoff,
+            final Exercise exercise) {
 
-    	super(payoff, exercise);
-    	this.barrierType = barrierType;
-    	this.barrier = barrier;
-    	this.rebate = rebate;
+        super(payoff, exercise);
+        this.barrierType = barrierType;
+        this.barrier = barrier;
+        this.rebate = rebate;
     }
-
 
     //
     // overrides OneAssetStrikedOption
     //
-
     @Override
     public void setupArguments(final PricingEngine.Arguments arguments) {
         super.setupArguments(arguments);
@@ -98,7 +92,6 @@ public class BarrierOption extends OneAssetOption {
         a.barrier = barrier;
         a.rebate = rebate;
     }
-
 
 //
 //    //
@@ -127,14 +120,9 @@ public class BarrierOption extends OneAssetOption {
 //     * @author Richard Gomes
 //     */
 //    public interface Engine extends PricingEngine, Observer { /* marking interface */ }
-
-
     //
     // inner classes
     //
-
-
-
     /**
      * This class defines validation for option arguments
      *
@@ -149,55 +137,51 @@ public class BarrierOption extends OneAssetOption {
         //
         // public fields
         //
-
         // FIXME: public fields here is a bad design technique :(
         public BarrierType barrierType;
         public double barrier, rebate;
 
-
         //
         // public constructors
         //
-
         public ArgumentsImpl() {
             this.barrierType = BarrierType.Unknown;
             this.barrier = Constants.NULL_REAL;
             this.rebate = Constants.NULL_REAL;
         }
 
-
         //
         // public methods
         //
-
         /**
-         * This method performs additional validation of needed to conform to the barrier type.
-         * The validation is done by comparing the underlying price against the barrier type.
+         * This method performs additional validation of needed to conform to
+         * the barrier type. The validation is done by comparing the underlying
+         * price against the barrier type.
          *
-         * @see org.jquantlib.pricingengines.arguments.OneAssetStrikedOptionArguments#validate()
+         * @see
+         * org.jquantlib.pricingengines.arguments.OneAssetStrikedOptionArguments#validate()
          */
         @Override
         public void validate() {
             super.validate();
 
             switch (barrierType) {
-            case DownIn:
-            case UpIn:
-            case DownOut:
-            case UpOut:
-              break;
-            default:
-                throw new LibraryException(UNKNOWN_TYPE); // QA:[RG]::verified
-          }
+                case DownIn:
+                case UpIn:
+                case DownOut:
+                case UpOut:
+                    break;
+                default:
+                    throw new LibraryException(UNKNOWN_TYPE); // QA:[RG]::verified
+            }
 
-          QL.require(!Double.isNaN(barrier), "no barrier given"); // TODO: message
-          QL.require(!Double.isNaN(rebate), "no rebate given"); // TODO: message
+            QL.require(!Double.isNaN(barrier), "no barrier given"); // TODO: message
+            QL.require(!Double.isNaN(rebate), "no rebate given"); // TODO: message
         }
     }
 
-
-    static public class ResultsImpl extends OneAssetOption.ResultsImpl implements BarrierOption.Results { /* marking class */ }
-
+    static public class ResultsImpl extends OneAssetOption.ResultsImpl implements BarrierOption.Results {
+        /* marking class */ }
 
     /**
      * Barrier-option engine base class
@@ -211,19 +195,19 @@ public class BarrierOption extends OneAssetOption {
 
         protected EngineImpl() {
             super(new ArgumentsImpl(), new ResultsImpl());
-            this.a = (BarrierOption.ArgumentsImpl)arguments_;
+            this.a = (BarrierOption.ArgumentsImpl) arguments_;
         }
 
         protected boolean triggered(final /*@Real*/ double underlying) /* @ReadOnly */ {
             switch (a.barrierType) {
-              case DownIn:
-              case DownOut:
-                return underlying < a.barrier;
-              case UpIn:
-              case UpOut:
-                return underlying > a.barrier;
-              default:
-                throw new LibraryException("Unknown type"); // TODO: message
+                case DownIn:
+                case DownOut:
+                    return underlying < a.barrier;
+                case UpIn:
+                case UpOut:
+                    return underlying > a.barrier;
+                default:
+                    throw new LibraryException("Unknown type"); // TODO: message
             }
         }
 

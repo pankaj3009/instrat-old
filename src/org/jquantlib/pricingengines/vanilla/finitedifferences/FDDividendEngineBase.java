@@ -21,7 +21,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
  Copyright (C) 2007 StatPro Italia srl
 
@@ -38,7 +38,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.util.ArrayList;
@@ -55,7 +54,8 @@ import org.jquantlib.time.JDate;
 /**
  * Abstract base class for dividend engines
  *
- * @todo The dividend class really needs to be made more sophisticated to distinguish between fixed dividends and fractional dividends
+ * @todo The dividend class really needs to be made more sophisticated to
+ * distinguish between fixed dividends and fractional dividends
  *
  * @author Srinivas Hasti
  * @author Richard Gomes
@@ -66,7 +66,6 @@ public abstract class FDDividendEngineBase extends FDMultiPeriodEngine {
     //
     // public methods
     //
-
     public FDDividendEngineBase(
             final GeneralizedBlackScholesProcess process) {
         this(process, 100, 100, false);
@@ -93,15 +92,13 @@ public abstract class FDDividendEngineBase extends FDMultiPeriodEngine {
         super(process, timeSteps, gridPoints, timeDependent);
     }
 
-
     //
     // protected methods
     //
-
     @Override
-    protected void setupArguments(final Arguments  args) /* @ReadOnly */ {
+    protected void setupArguments(final Arguments args) /* @ReadOnly */ {
         QL.require(DividendVanillaOption.ArgumentsImpl.class.isAssignableFrom(args.getClass()), ReflectConstants.WRONG_ARGUMENT_TYPE); // QA:[RG]::verified
-        final DividendVanillaOption.ArgumentsImpl arguments = (DividendVanillaOption.ArgumentsImpl)args;
+        final DividendVanillaOption.ArgumentsImpl arguments = (DividendVanillaOption.ArgumentsImpl) args;
         final List<Event> events = new ArrayList<Event>(arguments.cashFlow.size());
         for (final Dividend cashFlow : arguments.cashFlow) {
             events.add(cashFlow);
@@ -110,8 +107,8 @@ public abstract class FDDividendEngineBase extends FDMultiPeriodEngine {
     }
 
     protected double getDividendAmount(final int i) /* @ReadOnly */ {
-        final Dividend dividend = (Dividend)(events.get(i));
-        if (dividend!=null) {
+        final Dividend dividend = (Dividend) (events.get(i));
+        if (dividend != null) {
             return dividend.amount();
         } else {
             return 0.0;
@@ -122,19 +119,17 @@ public abstract class FDDividendEngineBase extends FDMultiPeriodEngine {
         final double dividend = getDividendAmount(i);
         final JDate date = events.get(i).date();
         final double discount = process.riskFreeRate().currentLink().discount(date)
-                              / process.dividendYield().currentLink().discount(date);
+                / process.dividendYield().currentLink().discount(date);
         return dividend * discount;
     }
-
 
     //
     // protected abstract methods
     //
+    @Override
+    protected abstract void setGridLimits() /* @ReadOnly */;
 
     @Override
-    protected abstract void setGridLimits() /* @ReadOnly */ ;
-
-    @Override
-    protected abstract void executeIntermediateStep(int step) /* @ReadOnly */ ;
+    protected abstract void executeIntermediateStep(int step) /* @ReadOnly */;
 
 }

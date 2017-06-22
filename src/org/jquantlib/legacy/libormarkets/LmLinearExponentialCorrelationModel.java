@@ -22,8 +22,8 @@ import org.jquantlib.model.ConstantParameter;
  Caps/Swaptions Calibration,
  (<http://www.business.uts.edu.au/qfrc/conferences/qmf2001/Brigo_D.pdf>)
  */
-
 public class LmLinearExponentialCorrelationModel extends LmCorrelationModel {
+
     private Matrix corrMatrix_, pseudoSqrt_;
     private int factors_;
 
@@ -46,13 +46,13 @@ public class LmLinearExponentialCorrelationModel extends LmCorrelationModel {
     }
 
     @Override
-    public Matrix correlation(final /* @ Time */double time, final Array x) {
+    public Matrix correlation(final /* @ Time */ double time, final Array x) {
         // TODO: code review :: use of clone()
         return corrMatrix_;
     }
 
     @Override
-    public double correlation(final int i, final int j, /* @ Time */final double time, final Array x) {
+    public double correlation(final int i, final int j, /* @ Time */ final double time, final Array x) {
         return corrMatrix_.get(i, j);
     }
 
@@ -67,7 +67,7 @@ public class LmLinearExponentialCorrelationModel extends LmCorrelationModel {
     }
 
     @Override
-    public Matrix pseudoSqrt(final /* @ Time */double time, final Array x) {
+    public Matrix pseudoSqrt(final /* @ Time */ double time, final Array x) {
         // TODO: code review :: use of clone()
         return pseudoSqrt_;
     }

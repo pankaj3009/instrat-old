@@ -28,6 +28,7 @@ import org.jquantlib.math.optimization.EndCriteria.Type;
  * Levenberg-Marquardt optimization method
  * <p>
  * This implementation is based on MINPACK
+ *
  * @see http://www.netlib.org/minpack
  * @see http://www.netlib.org/cephes/linalg.tgz
  *
@@ -39,16 +40,18 @@ public class LevenbergMarquardt extends OptimizationMethod {
     private Integer info_;
 
     public LevenbergMarquardt() {
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
         this.epsfcn_ = 1.0e-8;
         this.xtol_ = 1.0e-8;
         this.gtol_ = 1.0e-8;
     }
 
-    public LevenbergMarquardt(final double epsfcn, final double xtol, final double gtol){
-        if (System.getProperty("EXPERIMENTAL") == null)
+    public LevenbergMarquardt(final double epsfcn, final double xtol, final double gtol) {
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
         this.epsfcn_ = epsfcn;
         this.xtol_ = xtol;
         this.gtol_ = gtol;
@@ -67,7 +70,7 @@ public class LevenbergMarquardt extends OptimizationMethod {
         final int m = ProblemData.getProblemData().initCostValues_.size();
         final int n = x_.size();
 
-        final Array  xx = new Array(0);
+        final Array xx = new Array(0);
         //TODO: correct?
         xx.addAssign(x_);
 
@@ -124,7 +127,7 @@ public class LevenbergMarquardt extends OptimizationMethod {
         P.setCurrentValue(x_);
 
         return ecType;
-        */
+         */
         return ecType;
     }
 
@@ -142,7 +145,7 @@ public class LevenbergMarquardt extends OptimizationMethod {
             std::copy(ProblemData::instance().initCostValues().begin(),
                       ProblemData::instance().initCostValues().end(), fvec);
         }
-        */
+         */
     }
 
     // TODO: this class is no longer used in newer releases, it seems there's a
@@ -158,33 +161,35 @@ public class LevenbergMarquardt extends OptimizationMethod {
         Problem* thisP_;
         Array initCostValues_;
     };
-    */
-    private static class ProblemData{
+     */
+    private static class ProblemData {
 
         static ProblemData p = null;
-        public static ProblemData getProblemData(){
-            if(p == null){
+
+        public static ProblemData getProblemData() {
+            if (p == null) {
                 p = new ProblemData();
             }
             return p;
         }
-
-        public Problem problem(){
-            return thisP_;
-        }
-        public Array initCostValues(){
-            return initCostValues_;
-        }
-        public void setProblem(final Problem problem){
-             this.thisP_ = problem;
-        }
-        public void setInitCostValues(final Array initCostValues){
-            this.initCostValues_ = initCostValues;
-        }
-
-
         private Problem thisP_;
         private Array initCostValues_;
+
+        public Problem problem() {
+            return thisP_;
+        }
+
+        public Array initCostValues() {
+            return initCostValues_;
+        }
+
+        public void setProblem(final Problem problem) {
+            this.thisP_ = problem;
+        }
+
+        public void setInitCostValues(final Array initCostValues) {
+            this.initCostValues_ = initCostValues;
+        }
 
     }
 }

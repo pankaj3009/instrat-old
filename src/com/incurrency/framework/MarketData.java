@@ -18,6 +18,8 @@ import javax.swing.JTable;
  */
 public class MarketData implements Runnable {
 
+    private static final Logger logger = Logger.getLogger(MarketData.class.getName());
+
 //    Thread t;
     private BeanConnection mIB;
     private int mStartPosition;
@@ -29,11 +31,11 @@ public class MarketData implements Runnable {
     public boolean mIsReqEnd = false;
     private List<BeanSymbol> symb = new ArrayList();
     private boolean snapshot = false;
-    private static final Logger logger = Logger.getLogger(MarketData.class.getName());
     private int rtrequets;
     private boolean onetime = false;
     private int connectionid;
-        private final String delimiter = "_";
+    private final String delimiter = "_";
+
     /*
      * Constructor()
      * 
@@ -42,8 +44,7 @@ public class MarketData implements Runnable {
      * pos: Start column where market  data will be updated
      *
      */
-
-    public MarketData(BeanConnection ib, int pos, int count, List<BeanSymbol> s, int rtrequests, boolean snapshot,boolean rtVolume) {
+    public MarketData(BeanConnection ib, int pos, int count, List<BeanSymbol> s, int rtrequests, boolean snapshot, boolean rtVolume) {
 
         this.mIB = ib;
         this.mStartPosition = pos;
@@ -67,28 +68,27 @@ public class MarketData implements Runnable {
         //      t=new Thread(this,threadName);
         //      t.start();
 
-
     }
 
     // Start the thread
     @Override
     public void run() {
         logger.log(Level.INFO, "500,MarketDataThreadStarted,{0}:{1}:{2}:{3}:{4}",
-                new Object[]{"Unknown",mIB.getAccountName(),"Unknown",-1,-1});
+                new Object[]{"Unknown", mIB.getAccountName(), "Unknown", -1, -1});
         int rowCount = mCount;
         /*
         if (rowCount <= mIB.getTickersLimit() && "N".compareTo(symb.get(0).getPreopen()) == 0) //if preopen for the first symbol="Y", then all symbols are assumed to be snapshot
         {
             getMktData(mStartPosition, mStartPosition + mCount, symb, snapshot);
         } else 
-        */
+         */
         {
 
             getMktData(mStartPosition, mStartPosition + mCount, symb, snapshot);
         }
-        
-                logger.log(Level.INFO, "500,MarketDataThreadEnded,{0}:{1}:{2}:{3}:{4}",
-                new Object[]{"Unknown",mIB.getAccountName(),"Unknown",-1,-1});
+
+        logger.log(Level.INFO, "500,MarketDataThreadEnded,{0}:{1}:{2}:{3}:{4}",
+                new Object[]{"Unknown", mIB.getAccountName(), "Unknown", -1, -1});
     }
 
     /*
@@ -108,14 +108,14 @@ public class MarketData implements Runnable {
                     contract.m_expiry = s.get(row).getExpiry();
                     contract.m_symbol = s.get(row).getBrokerSymbol();
                     contract.m_exchange = s.get(row).getExchange();
-                    if(s.get(row).getExchangeSymbol()!=null && s.get(row).getType().equals("STK")){
-                        contract.m_localSymbol=s.get(row).getExchangeSymbol();
+                    if (s.get(row).getExchangeSymbol() != null && s.get(row).getType().equals("STK")) {
+                        contract.m_localSymbol = s.get(row).getExchangeSymbol();
                     }
                     contract.m_primaryExch = s.get(row).getPrimaryexchange();
                     contract.m_secType = s.get(row).getType();
                     contract.m_currency = s.get(row).getCurrency();
                     int i = 0;
-                    while (isSnap && mIB.getWrapper().getOutstandingSnapshots()>= 80 - this.rtrequets && i < 20 && !contract.m_secType.equals("COMBO")) {
+                    while (isSnap && mIB.getWrapper().getOutstandingSnapshots() >= 80 - this.rtrequets && i < 20 && !contract.m_secType.equals("COMBO")) {
                         Thread.sleep(100);
                         i = i + 1;
                         if (i >= 20) { //trim snapshots after 2 seconds. 
@@ -123,8 +123,8 @@ public class MarketData implements Runnable {
                             i = 0;
                         }
                     }
-                    if(!contract.m_secType.equals("COMBO")){
-                              mIB.getWrapper().getMktData(s.get(row), isSnap);              
+                    if (!contract.m_secType.equals("COMBO")) {
+                        mIB.getWrapper().getMktData(s.get(row), isSnap);
                     }
 
                     if (isSnap) {
@@ -145,7 +145,7 @@ public class MarketData implements Runnable {
                      */
                     //System.out.println("Market Data Requested:" + symb.get(row).getSymbol());
                 } catch (Exception e) {
-                  //  System.out.println("### Error while getting market data for symbol " + mMktDataTB.getValueAt(row, 1));
+                    //  System.out.println("### Error while getting market data for symbol " + mMktDataTB.getValueAt(row, 1));
                     logger.log(Level.INFO, "101", e);
                 }
                 if (mStopThread) {
@@ -188,7 +188,7 @@ public class MarketData implements Runnable {
             mIB.getWrapper().requestDetails.remove(i);
         }
         }
-    */
+     */
     /**
      * @return the snapshot
      */

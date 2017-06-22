@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.volatilities;
 
 import org.jquantlib.QL;
@@ -58,7 +57,9 @@ import org.jquantlib.util.Visitor;
  * Local Volatility" in "Case Studies and Financial Modelling Course Notes," by
  * Jim Gatheral, Fall Term, 2003
  *
- * @see <a href="http://www.math.nyu.edu/fellows_fin_math/gatheral/Lecture1_Fall02.pdf">This article</a>
+ * @see
+ * <a href="http://www.math.nyu.edu/fellows_fin_math/gatheral/Lecture1_Fall02.pdf">This
+ * article</a>
  *
  * @author Richard Gomes
  */
@@ -77,8 +78,8 @@ public class LocalVolSurface extends LocalVolTermStructure {
             final Handle<? extends Quote> underlying) {
 
         super(blackTS.currentLink().calendar(),
-              blackTS.currentLink().businessDayConvention(),
-              blackTS.currentLink().dayCounter());
+                blackTS.currentLink().businessDayConvention(),
+                blackTS.currentLink().dayCounter());
 
         this.blackTS_ = blackTS;
         this.riskFreeTS_ = riskFreeTS;
@@ -98,8 +99,8 @@ public class LocalVolSurface extends LocalVolTermStructure {
             final /*@Real*/ double underlying) {
 
         super(blackTS.currentLink().calendar(),
-              blackTS.currentLink().businessDayConvention(),
-              blackTS.currentLink().dayCounter());
+                blackTS.currentLink().businessDayConvention(),
+                blackTS.currentLink().dayCounter());
 
         this.blackTS_ = blackTS;
         this.riskFreeTS_ = riskFreeTS;
@@ -111,11 +112,9 @@ public class LocalVolSurface extends LocalVolTermStructure {
         this.dividendTS_.addObserver(this);
     }
 
-
     //
     // Overrides LocalVolTermStructure
     //
-
     @Override
     public final JDate referenceDate() {
         return this.blackTS_.currentLink().referenceDate();
@@ -143,8 +142,8 @@ public class LocalVolSurface extends LocalVolTermStructure {
 
     @Override
     protected final /*@Volatility*/ double localVolImpl(
-            final /*@Time*/ double time,
-            final /*@Real*/ double underlyingLevel) {
+                    final /*@Time*/ double time,
+                    final /*@Real*/ double underlyingLevel) {
 
         // obtain local copies of objects
         final Quote u = underlying_.currentLink();
@@ -152,7 +151,8 @@ public class LocalVolSurface extends LocalVolTermStructure {
         final YieldTermStructure rTS = riskFreeTS_.currentLink();
         final BlackVolTermStructure bTS = blackTS_.currentLink();
 
-        final double forwardValue = u.value() * ( dTS.discount(time, true) / rTS.discount(time, true) );
+        final double forwardValue = u.value() * (dTS.discount(time, true) / rTS.discount(time, true));
+
 
         // strike derivatives
         /*@Real*/ double strike;
@@ -165,11 +165,12 @@ public class LocalVolSurface extends LocalVolTermStructure {
         dy = ((y != 0.0) ? y * 0.000001 : 0.000001);
         strikep = strike * Math.exp(dy);
         strikem = strike / Math.exp(dy);
-        w = bTS.blackVariance(time,  strike, true);
+        w = bTS.blackVariance(time, strike, true);
         wp = bTS.blackVariance(time, strikep, true);
         wm = bTS.blackVariance(time, strikem, true);
         dwdy = (wp - wm) / (2.0 * dy);
         d2wdy2 = (wp - 2.0 * w + wm) / (dy * dy);
+
 
         // time derivative
         /*@Time*/ final double t = time;
@@ -177,45 +178,42 @@ public class LocalVolSurface extends LocalVolTermStructure {
         double wpt, wmt, dwdt;
         if (t == 0.0) {
             dt = 0.0001;
-            wpt = bTS.blackVariance(/*@Time*/ (t + dt), strike, true);
-            QL.require(wpt >= w , "decreasing variance at strike"); // TODO: message
+            wpt = bTS.blackVariance(/*@Time*/(t + dt), strike, true);
+            QL.require(wpt >= w, "decreasing variance at strike"); // TODO: message
             dwdt = (wpt - w) / dt;
         } else {
             dt = Math.min(0.0001, t / 2.0);
-            wpt = bTS.blackVariance(/*@Time*/ (t + dt), strike, true);
-            wmt = bTS.blackVariance(/*@Time*/ (t - dt), strike, true);
-            QL.ensure(wpt >= w , "decreasing variance at strike"); // TODO: message
-            QL.ensure(w >= wmt , "decreasing variance at strike"); // TODO: message
+            wpt = bTS.blackVariance(/*@Time*/(t + dt), strike, true);
+            wmt = bTS.blackVariance(/*@Time*/(t - dt), strike, true);
+            QL.ensure(wpt >= w, "decreasing variance at strike"); // TODO: message
+            QL.ensure(w >= wmt, "decreasing variance at strike"); // TODO: message
             dwdt = (wpt - wmt) / (2.0 * dt);
         }
 
-        if (dwdy == 0.0 && d2wdy2 == 0.0)
+        if (dwdy == 0.0 && d2wdy2 == 0.0) {
             return Math.sqrt(dwdt);
-        else {
+        } else {
             final double den1 = 1.0 - y / w * dwdy;
             final double den2 = 0.25 * (-0.25 - 1.0 / w + y * y / w / w) * dwdy * dwdy;
             final double den3 = 0.5 * d2wdy2;
             final double den = den1 + den2 + den3;
             final double result = dwdt / den;
-            QL.ensure(result >= 0.0 , "negative local vol^2 at strike); the black vol surface is not smooth enough"); // TODO: message
+            QL.ensure(result >= 0.0, "negative local vol^2 at strike); the black vol surface is not smooth enough"); // TODO: message
             return Math.sqrt(result);
 
             // TODO: code review :: please verify against QL/C++ code
-
             // commented out at original source QuantLib
             // return std::sqrt(dwdt / (1.0 - y/w*dwdy +
             // 0.25*(-0.25 - 1.0/w + y*y/w/w)*dwdy*dwdy + 0.5*d2wdy2));
         }
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<LocalVolSurface> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<LocalVolSurface> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

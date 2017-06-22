@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.model.volatility;
 
 import java.util.Iterator;
@@ -53,7 +52,7 @@ import org.jquantlib.time.TimeSeries;
  */
 public class SimpleLocalEstimator {
 
-	private final /* @Real */ double yearFraction ;
+    private final /* @Real */ double yearFraction;
 
     public SimpleLocalEstimator(final /*@Real*/ double y) {
         this.yearFraction = y;
@@ -62,14 +61,14 @@ public class SimpleLocalEstimator {
     public TimeSeries<Double> calculate(final TimeSeries<Double> quotes) {
         final TimeSeries<Double> retval = new TimeSeries<Double>(Double.class);
         final Iterator<JDate> dates = quotes.navigableKeySet().iterator();
-    	double prev = quotes.get(dates.next());
-    	while (dates.hasNext()) {
-    	    final JDate date = dates.next();
-            final double curr = quotes.get(date) ;
-            final double value = Math.abs(Math.log(curr/prev))/Math.sqrt(yearFraction) ;
+        double prev = quotes.get(dates.next());
+        while (dates.hasNext()) {
+            final JDate date = dates.next();
+            final double curr = quotes.get(date);
+            final double value = Math.abs(Math.log(curr / prev)) / Math.sqrt(yearFraction);
             retval.put(date, value);
             prev = curr;
-    	}
+        }
         return retval;
     }
 

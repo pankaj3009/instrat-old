@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import org.jquantlib.QL;
@@ -53,8 +52,8 @@ import org.jquantlib.time.JDate;
 /**
  * Term structure with added spread on the instantaneous forward rate
  *
- * @note This term structure will remain linked to the original structure, i.e., any changes in the latter will be reflected in this
- *       structure as well.
+ * @note This term structure will remain linked to the original structure, i.e.,
+ * any changes in the latter will be reflected in this structure as well.
  *
  * @category yieldtermstructures
  *
@@ -65,15 +64,12 @@ public class ForwardSpreadedTermStructure extends ForwardRateStructure {
     //
     // private fields
     //
-
     private final Handle<YieldTermStructure> originalCurve;
     private final Handle<Quote> spread;
-
 
     //
     // public constructors
     //
-
     public ForwardSpreadedTermStructure(final Handle<YieldTermStructure> h, final Handle<Quote> spread) {
         QL.validateExperimentalMode();
 
@@ -84,11 +80,9 @@ public class ForwardSpreadedTermStructure extends ForwardRateStructure {
         this.spread.addObserver(this);
     }
 
-
     //
     // overrides TermStructure
     //
-
     @Override
     public DayCounter dayCounter() {
         return originalCurve.currentLink().dayCounter();
@@ -114,11 +108,9 @@ public class ForwardSpreadedTermStructure extends ForwardRateStructure {
         return originalCurve.currentLink().maxTime();
     }
 
-
     //
     // overrides ForwardRateStructure
     //
-
     @Override
     protected double forwardImpl(final double t) {
         return originalCurve.currentLink().forwardRate(

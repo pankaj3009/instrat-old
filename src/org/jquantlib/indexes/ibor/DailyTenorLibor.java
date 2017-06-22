@@ -18,7 +18,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
 
@@ -34,8 +34,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.indexes.ibor;
 
 import org.jquantlib.QL;
@@ -59,30 +58,31 @@ import org.jquantlib.time.calendars.UnitedKingdom.Market;
  * <p>
  * LIBOR fixed by BBA.
  *
- * @see <a href="http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1414">http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1414</a>
+ * @see
+ * <a href="http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1414">http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1414</a>
  */
 public class DailyTenorLibor extends IborIndex {
 
-	public DailyTenorLibor(
-	        final String familyName,
-			final int settlementDays,
-			final Currency currency,
-			final Calendar financialCenterCalendar,
-			final DayCounter dayCounter,
-			final Handle<YieldTermStructure> h) { 
-    	super(familyName,
-    		  new Period(1,TimeUnit.Days),
-    		  settlementDays,
-    		  currency,
-              new JointCalendar(new UnitedKingdom(Market.Exchange), 
-    				  new Target(),
-    				  JointCalendarRule.JoinBusinessDays),
-    		  liborConvention(new Period(1,TimeUnit.Days)),
-    		  liborEOM(new Period(1,TimeUnit.Days)),
-    		  dayCounter,
-    		  h);
-    	
-		QL.require(!currency.eq(new EURCurrency()), "for EUR Libor dedicated EurLibor constructor must be used");
-		
-	}	
+    public DailyTenorLibor(
+            final String familyName,
+            final int settlementDays,
+            final Currency currency,
+            final Calendar financialCenterCalendar,
+            final DayCounter dayCounter,
+            final Handle<YieldTermStructure> h) {
+        super(familyName,
+                new Period(1, TimeUnit.Days),
+                settlementDays,
+                currency,
+                new JointCalendar(new UnitedKingdom(Market.Exchange),
+                        new Target(),
+                        JointCalendarRule.JoinBusinessDays),
+                liborConvention(new Period(1, TimeUnit.Days)),
+                liborEOM(new Period(1, TimeUnit.Days)),
+                dayCounter,
+                h);
+
+        QL.require(!currency.eq(new EURCurrency()), "for EUR Libor dedicated EurLibor constructor must be used");
+
+    }
 }

@@ -31,7 +31,7 @@ import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
 
 /**
- * 
+ *
  * @author Praneet Tiwari
  */
 // ! Term-structure consistent model class
@@ -41,8 +41,9 @@ import org.jquantlib.util.Observer;
  * \ingroup shortrate
  */
 public class TermStructureConsistentModelClass implements Observable {
-    
+
     private DefaultObservable delegatedObservable = new DefaultObservable(this);
+    private Handle<YieldTermStructure> termStructure_;
 
     public TermStructureConsistentModelClass(final Handle<YieldTermStructure> termStructure) {
         termStructure_ = (termStructure);
@@ -51,8 +52,6 @@ public class TermStructureConsistentModelClass implements Observable {
     public final Handle<YieldTermStructure> termStructure() {
         return termStructure_;
     }
-
-    private Handle<YieldTermStructure> termStructure_;
 
     @Override
     public void addObserver(Observer observer) {

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003 Ferdinando Ametrano
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures;
 
 import org.jquantlib.QL;
@@ -64,13 +63,11 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     //
     // See the TermStructure documentation for issues regarding constructors.
     //
-
     /**
      * 'default' constructor
      * <p>
-     * @warning term structures initialized by means of this
-     *          constructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public LocalVolTermStructure() {
         this(new Calendar(), BusinessDayConvention.Following, new DayCounter());
@@ -79,9 +76,8 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     /**
      * 'default' constructor
      * <p>
-     * @warning term structures initialized by means of this
-     *          constructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public LocalVolTermStructure(final Calendar cal) {
         this(cal, BusinessDayConvention.Following, new DayCounter());
@@ -90,9 +86,8 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     /**
      * 'default' constructor
      * <p>
-     * @warning term structures initialized by means of this
-     *          constructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public LocalVolTermStructure(
             final Calendar cal,
@@ -103,9 +98,8 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     /**
      * 'default' constructor
      * <p>
-     * @warning term structures initialized by means of this
-     *          constructor must manage their own reference date
-     *          by overriding the referenceDate() method.
+     * @warning term structures initialized by means of this constructor must
+     * manage their own reference date by overriding the referenceDate() method.
      */
     public LocalVolTermStructure(
             final Calendar cal,
@@ -115,14 +109,14 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     }
 
     /**
-     *  initialize with a fixed reference date
+     * initialize with a fixed reference date
      */
     public LocalVolTermStructure(final JDate referenceDate) {
         this(referenceDate, new Calendar(), BusinessDayConvention.Following, new DayCounter());
     }
 
     /**
-     *  initialize with a fixed reference date
+     * initialize with a fixed reference date
      */
     public LocalVolTermStructure(
             final JDate referenceDate,
@@ -131,7 +125,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     }
 
     /**
-     *  initialize with a fixed reference date
+     * initialize with a fixed reference date
      */
     public LocalVolTermStructure(
             final JDate referenceDate,
@@ -141,7 +135,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     }
 
     /**
-     *  initialize with a fixed reference date
+     * initialize with a fixed reference date
      */
     public LocalVolTermStructure(
             final JDate referenceDate,
@@ -155,7 +149,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
      * calculate the reference date based on the global evaluation date
      */
     public LocalVolTermStructure(
-            /*@Natural*/ final int settlementDays,
+            /*@Natural*/final int settlementDays,
             final Calendar cal) {
         this(settlementDays, cal, BusinessDayConvention.Following, new DayCounter());
     }
@@ -164,7 +158,7 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
      * calculate the reference date based on the global evaluation date
      */
     public LocalVolTermStructure(
-            /*@Natural*/ final int settlementDays,
+            /*@Natural*/final int settlementDays,
             final Calendar cal,
             final BusinessDayConvention bdc) {
         this(settlementDays, cal, bdc, new DayCounter());
@@ -174,16 +168,14 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
      * calculate the reference date based on the global evaluation date
      */
     public LocalVolTermStructure(
-            /*@Natural*/ final int settlementDays,
+            /*@Natural*/final int settlementDays,
             final Calendar cal,
             final BusinessDayConvention bdc,
             final DayCounter dc) {
         super(settlementDays, cal, bdc, dc);
     }
 
-
     //! \name Local Volatility
-
     public final /*@Volatility*/ double localVol(final JDate d, final /*@Real*/ double underlyingLevel, final boolean extrapolate) {
         /*@Time*/ final double t = timeFromReference(d);
         checkRange(t, underlyingLevel, extrapolate);
@@ -199,7 +191,6 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
         return localVolImpl(t, underlyingLevel);
     }
 
-
     /**
      * @return the minimum strike for which the term structure can return vols
      */
@@ -212,10 +203,6 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     @Override
     public abstract /*@Real*/ double maxStrike();
 
-
-
-
-
     //
     // Calculations
     //
@@ -224,29 +211,24 @@ public abstract class LocalVolTermStructure extends VolatilityTermStructure impl
     //        range check has already been performed; therefore, they must
     //        assume that extrapolation is required.
     //
-    
     /**
      * Local Vol calculation
      */
     protected abstract /*@Volatility*/ double localVolImpl(final /*@Time*/ double t, final /*@Real*/ double strike);
 
-
-
     private final void checkRange(final /*@Time*/ double t, final /*@Real*/ double strike, final boolean extrapolate) {
         super.checkRange(t, extrapolate);
         /*@Real*/ final double minStrike = minStrike();
         /*@Real*/ final double maxStrike = maxStrike();
-        QL.require(extrapolate||allowsExtrapolation()||(strike>=minStrike&&strike<=maxStrike) , "strike is outside curve domain"); // TODO: message
+        QL.require(extrapolate || allowsExtrapolation() || (strike >= minStrike && strike <= maxStrike), "strike is outside curve domain"); // TODO: message
     }
 
-    
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<LocalVolTermStructure> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<LocalVolTermStructure> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

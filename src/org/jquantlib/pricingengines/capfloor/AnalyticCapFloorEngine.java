@@ -2,21 +2,17 @@ package org.jquantlib.pricingengines.capfloor;
 
 import org.jquantlib.QL;
 
+public class AnalyticCapFloorEngine {
 
-public class AnalyticCapFloorEngine{
-    
+    public AnalyticCapFloorEngine() {
+        QL.validateExperimentalMode();
+    }
 
-	public AnalyticCapFloorEngine() {
-		QL.validateExperimentalMode();
-	}
-	
-      //public AnalyticCapFloorEngine(final AffineModel model){
+    //public AnalyticCapFloorEngine(final AffineModel model){
 //        : GenericModelEngine<AffineModel,
 //                             CapFloor::arguments,
 //                             CapFloor::results >(model)
 //        {}
-   //   }
- //      void calculate(){}
-    
-
+    //   }
+    //      void calculate(){}
 }

@@ -30,52 +30,51 @@ public class OrderForm extends javax.swing.JFrame {
     /**
      * Creates new form OrderForm
      */
-    
     String strategy;
     int connection;
     String symbol;
     int quantity;
     int symbolid;
     EnumOrderSide side;
-    int internalOrderId=0;
-    int internalOrderIdEntry=0;
+    int internalOrderId = 0;
+    int internalOrderIdEntry = 0;
     EnumOrderReason notify;
     OrderBean ob;
-    
-        private static final Logger logger = Logger.getLogger(OrderForm.class.getName());
 
-    public OrderForm(String symbol,int size, String strategy,int connection, EnumOrderSide side,int ibOrderID,EnumOrderReason notification) {
+    private static final Logger logger = Logger.getLogger(OrderForm.class.getName());
+
+    public OrderForm(String symbol, int size, String strategy, int connection, EnumOrderSide side, int ibOrderID, EnumOrderReason notification) {
         initComponents();
-        this.strategy=strategy;
-        this.connection=connection;
-        this.symbol=symbol;
-        this.quantity=size;
-        this.side=side;
+        this.strategy = strategy;
+        this.connection = connection;
+        this.symbol = symbol;
+        this.quantity = size;
+        this.side = side;
         this.comboType.setSelectedIndex(2);
-        this.notify=notification;
+        this.notify = notification;
 //        String[] symbolComponents;
 //        symbolComponents=symbol.split("_");
-        int id=Utilities.getIDFromDisplayName(Parameters.symbol,symbol);
-        symbolid=id;
+        int id = Utilities.getIDFromDisplayName(Parameters.symbol, symbol);
+        symbolid = id;
         this.lblSymbol.setText(symbol);
         this.lblSide.setText(side.toString());
-        if(ibOrderID>0){ //retrieve orders
-            String key="OQ:"+ibOrderID+":"+Parameters.connection.get(connection).getAccountName()+":"+strategy+":"+symbol+":"+symbol;
-            OrderQueueKey oqk=new OrderQueueKey(key);
-            ob=Parameters.connection.get(connection).getOrderBean(oqk);
-            if(ob!=null){
-            internalOrderId=ob.getInternalOrderID();
-            internalOrderIdEntry=ob.getOrderIDForSquareOff();
+        if (ibOrderID > 0) { //retrieve orders
+            String key = "OQ:" + ibOrderID + ":" + Parameters.connection.get(connection).getAccountName() + ":" + strategy + ":" + symbol + ":" + symbol;
+            OrderQueueKey oqk = new OrderQueueKey(key);
+            ob = Parameters.connection.get(connection).getOrderBean(oqk);
+            if (ob != null) {
+                internalOrderId = ob.getInternalOrderID();
+                internalOrderIdEntry = ob.getOrderIDForSquareOff();
             }
         }
-        if(id>=0){
-        this.txtLimitPrice.setText(Double.toString(Parameters.symbol.get(id).getLastPrice()));
-        if(Parameters.symbol.get(id).getType().equals("COMBO")){
-            this.txtTriggerPrice.setText("0");
-            this.txtTriggerPrice.setEnabled(false);
-        }else{
-        this.txtTriggerPrice.setText(Double.toString(Parameters.symbol.get(id).getLastPrice()));
-        }
+        if (id >= 0) {
+            this.txtLimitPrice.setText(Double.toString(Parameters.symbol.get(id).getLastPrice()));
+            if (Parameters.symbol.get(id).getType().equals("COMBO")) {
+                this.txtTriggerPrice.setText("0");
+                this.txtTriggerPrice.setEnabled(false);
+            } else {
+                this.txtTriggerPrice.setText(Double.toString(Parameters.symbol.get(id).getLastPrice()));
+            }
         }
     }
 
@@ -259,7 +258,7 @@ public class OrderForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cmdCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdCloseActionPerformed
-                dispose(); //Destroy the JFrame object
+        dispose(); //Destroy the JFrame object
     }//GEN-LAST:event_cmdCloseActionPerformed
 
     private void cmdPlaceOrderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdPlaceOrderActionPerformed
@@ -278,60 +277,59 @@ public class OrderForm extends javax.swing.JFrame {
         maxSlippage = s.getMaxSlippageExit();
         if (oms != null) {
 //                internalOrderId=s.getInternalOrderID();
-                HashMap<String,Object> order=new HashMap<>();
-                if(ob==null){
-                    ob=new OrderBean();
-                    int internalorderid = TradingUtil.getInternalOrderID();
-                    ob.setInternalOrderID(internalorderid);
-                    ob.setParentInternalOrderID(internalorderid);
-                    if (side.equals(EnumOrderSide.COVER) || side.equals(EnumOrderSide.SELL)) {
-                        ob.setOrderIDForSquareOff(oms.ParentInternalOrderIDForSquareOff(Parameters.connection.get(connection), ob));
-                    }
-                    ob.setChildDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
-                    ob.setParentDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
-                    ob.setOrderSide(side);
-                    ob.setLimitPrice(Double.valueOf(this.txtLimitPrice.getText()));
-                    ob.setTriggerPrice(Double.valueOf(this.txtTriggerPrice.getText()));
-                    ob.setOrderType(EnumOrderType.valueOf(comboType.getSelectedItem().toString()));
-                    ob.setOriginalOrderSize(Math.abs(quantity));
-                    ob.setOrderReference(s.getStrategy());
-                    ob.setOrderStage(EnumOrderStage.INIT);
-                    ob.setOrderReason(EnumOrderReason.UNDEFINED);
-                    //order attributes
-                    ob.setDisplaySize(Utilities.getInt(s.getOrderAttributes().get("displaysize"),0));
-                    ob.setValue(Utilities.getInt(s.getOrderAttributes().get("value"),0));
-                    ob.setMaxPermissibleImpactCost(Utilities.getDouble(s.getOrderAttributes().get("thresholdimpactcost"),0));
-                    ob.setLinkDelay(Utilities.getInt(s.getOrderAttributes().get("delay"),1));
-                    ob.setImproveProbability(Utilities.getDouble(s.getOrderAttributes().get("improveprob"),1));
-                    ob.setOrdersPerMinute(Utilities.getInt(s.getOrderAttributes().get("orderspermin"),1));
-                    ob.setImproveAmount(Utilities.getInt(s.getOrderAttributes().get("improveamt"),1));
-                    ob.setStickyPeriod(Utilities.getInt(s.getOrderAttributes().get("stickyperiod"),0));
-                    ob.setFatFingerWindow(Utilities.getInt(s.getOrderAttributes().get("fatfingerwindow"),120));
-                    ob.setScale(Boolean.FALSE);
-
+            HashMap<String, Object> order = new HashMap<>();
+            if (ob == null) {
+                ob = new OrderBean();
+                int internalorderid = TradingUtil.getInternalOrderID();
+                ob.setInternalOrderID(internalorderid);
+                ob.setParentInternalOrderID(internalorderid);
+                if (side.equals(EnumOrderSide.COVER) || side.equals(EnumOrderSide.SELL)) {
+                    ob.setOrderIDForSquareOff(oms.ParentInternalOrderIDForSquareOff(Parameters.connection.get(connection), ob));
                 }
+                ob.setChildDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
+                ob.setParentDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
+                ob.setOrderSide(side);
+                ob.setLimitPrice(Double.valueOf(this.txtLimitPrice.getText()));
+                ob.setTriggerPrice(Double.valueOf(this.txtTriggerPrice.getText()));
+                ob.setOrderType(EnumOrderType.valueOf(comboType.getSelectedItem().toString()));
+                ob.setOriginalOrderSize(Math.abs(quantity));
+                ob.setOrderReference(s.getStrategy());
+                ob.setOrderStage(EnumOrderStage.INIT);
+                ob.setOrderReason(EnumOrderReason.UNDEFINED);
+                //order attributes
+                ob.setDisplaySize(Utilities.getInt(s.getOrderAttributes().get("displaysize"), 0));
+                ob.setValue(Utilities.getInt(s.getOrderAttributes().get("value"), 0));
+                ob.setMaxPermissibleImpactCost(Utilities.getDouble(s.getOrderAttributes().get("thresholdimpactcost"), 0));
+                ob.setLinkDelay(Utilities.getInt(s.getOrderAttributes().get("delay"), 1));
+                ob.setImproveProbability(Utilities.getDouble(s.getOrderAttributes().get("improveprob"), 1));
+                ob.setOrdersPerMinute(Utilities.getInt(s.getOrderAttributes().get("orderspermin"), 1));
+                ob.setImproveAmount(Utilities.getInt(s.getOrderAttributes().get("improveamt"), 1));
+                ob.setStickyPeriod(Utilities.getInt(s.getOrderAttributes().get("stickyperiod"), 0));
+                ob.setFatFingerWindow(Utilities.getInt(s.getOrderAttributes().get("fatfingerwindow"), 120));
+                ob.setScale(Boolean.FALSE);
+
+            }
 //                if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
-                        s.exit(ob);
-                        dispose();
+            s.exit(ob);
+            dispose();
 //                    } else {
 //                        oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy());
 //                        s.exit(ob);
 //                        dispose();
 //                    }
-                    
 
         }
     }//GEN-LAST:event_cmdPlaceOrderActionPerformed
 
     private void cmdCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdCancelActionPerformed
-               ExecutionManager oms;
+        ExecutionManager oms;
         int strategyIndex = MainAlgorithm.getStrategies().indexOf(strategy);
         Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
         oms = s.getOms();
         if (oms != null) {
-                 oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, strategy);
-                 dispose();
-           }
+            oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, strategy);
+            dispose();
+        }
     }//GEN-LAST:event_cmdCancelActionPerformed
 
     private void txtTriggerPriceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTriggerPriceActionPerformed
@@ -341,7 +339,7 @@ public class OrderForm extends javax.swing.JFrame {
     private void comboTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboTypeActionPerformed
         JComboBox comboBox = (JComboBox) evt.getSource();
         String type = comboBox.getSelectedItem().toString();
-        switch (type){
+        switch (type) {
             case "MKT":
                 this.txtLimitPrice.setText("0");
                 this.txtTriggerPrice.setText("0");
@@ -358,17 +356,18 @@ public class OrderForm extends javax.swing.JFrame {
                 break;
             default:
                 break;
-                
+
         }
     }//GEN-LAST:event_comboTypeActionPerformed
 
-    public void setVisiblePlaceOrder(boolean state){
+    public void setVisiblePlaceOrder(boolean state) {
         cmdPlaceOrder.setVisible(state);
     }
-    
-    public void setVisibleCancelOrder(boolean state){
+
+    public void setVisibleCancelOrder(boolean state) {
         cmdCancel.setVisible(state);
     }
+
     /**
      * @param args the command line arguments
      */
@@ -386,7 +385,8 @@ public class OrderForm extends javax.swing.JFrame {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-        logger.log(Level.SEVERE,null,ex);        }
+            logger.log(Level.SEVERE, null, ex);
+        }
         //</editor-fold>
 
         /* Create and display the form */

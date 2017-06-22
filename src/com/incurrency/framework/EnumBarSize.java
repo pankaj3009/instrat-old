@@ -8,6 +8,7 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumBarSize { ANNUAL,MONTHLY,WEEKLY,DAILY,ONEMINUTE,FIVEMINUTE,FIVESECOND,ONESECOND,UNDEFINED
-    
+public enum EnumBarSize {
+    ANNUAL, MONTHLY, WEEKLY, DAILY, ONEMINUTE, FIVEMINUTE, FIVESECOND, ONESECOND, UNDEFINED
+
 }

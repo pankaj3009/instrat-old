@@ -32,26 +32,27 @@ package org.jquantlib.methods.lattices;
  */
 public abstract class Tree {
 
-	private final int columns;
+    private final int columns;
 
-	abstract public double underlying(int i, int index);
-	abstract public int size(int i);
-	abstract public int descendant(int i, int index, int branch);
-	abstract public double probability(int i, int index, int branch);
+    protected Tree(final int columns) {
+        this.columns = columns;
+    }
 
-	protected Tree(final int columns) {
-		this.columns = columns;
-	}
+    abstract public double underlying(int i, int index);
 
-	protected final int columns() {
-		return columns;
-	}
+    abstract public int size(int i);
 
+    abstract public int descendant(int i, int index, int branch);
 
-	//
-	// protected enums
-	//
+    abstract public double probability(int i, int index, int branch);
 
+    protected final int columns() {
+        return columns;
+    }
+
+    //
+    // protected enums
+    //
     protected enum Branches {
         BINOMIAL(2),
         TRINOMIAL(3);

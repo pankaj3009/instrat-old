@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2005 Sercan Atalik
 
  QuantLib is free software: you can redistribute it and/or modify it
@@ -28,7 +28,6 @@
  <quantlib-dev@lists.sf.net>. The license is also available online at
  <http://quantlib.org/license.shtml>.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -64,14 +63,12 @@ import static org.jquantlib.time.Weekday.Sunday;
  * @author Renjith Nair
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class Turkey extends Calendar {
 
     //
     // public constructors
     //
-
     public Turkey() {
         impl = new TurkeyImpl();
     }
@@ -79,7 +76,6 @@ public class Turkey extends Calendar {
     //
     // private final inner classes
     //
-
     private final class TurkeyImpl extends Impl {
 
         @Override
@@ -100,7 +96,7 @@ public class Turkey extends Calendar {
             final int y = date.year();
 
             if (isWeekend(w)
-            // New Year's Day
+                    // New Year's Day
                     || (d == 1 && m == January)
                     // 23 nisan / National Holiday
                     || (d == 23 && m == April)
@@ -117,21 +113,21 @@ public class Turkey extends Calendar {
             if (y == 2004) {
                 // kurban
                 if ((m == February && d <= 4)
-                // ramazan
+                        // ramazan
                         || (m == November && d >= 14 && d <= 16)) {
                     return false;
                 }
             } else if (y == 2005) {
                 // kurban
                 if ((m == January && d >= 19 && d <= 21)
-                // ramazan
+                        // ramazan
                         || (m == November && d >= 2 && d <= 5)) {
                     return false;
                 }
             } else if (y == 2006) {
                 // kurban
                 if ((m == January && d >= 9 && d <= 13)
-                // ramazan
+                        // ramazan
                         || (m == October && d >= 23 && d <= 25)
                         // kurban
                         || (m == December && d >= 30)) {
@@ -140,7 +136,7 @@ public class Turkey extends Calendar {
             } else if (y == 2007) {
                 // kurban
                 if ((m == January && d <= 4)
-                // ramazan
+                        // ramazan
                         || (m == October && d >= 11 && d <= 14)
                         // kurban
                         || (m == December && d >= 19 && d <= 23)) {
@@ -149,7 +145,7 @@ public class Turkey extends Calendar {
             } else if (y == 2008) {
                 // ramazan
                 if ((m == September && d >= 29) || (m == October && d <= 2)
-                // kurban
+                        // kurban
                         || (m == December && d >= 7 && d <= 11)) {
                     return false;
                 }

@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -33,8 +33,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import org.jquantlib.instruments.DividendVanillaOption;
@@ -43,8 +42,10 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 /**
  * Finite-differences pricing engine for dividend European options
  *
- * @test the correctness of the returned greeks is tested by reproducing numerical derivatives.
- * @test the invariance of the results upon addition of null dividends is tested.
+ * @test the correctness of the returned greeks is tested by reproducing
+ * numerical derivatives.
+ * @test the invariance of the results upon addition of null dividends is
+ * tested.
  *
  * @category vanillaengines
  *
@@ -57,8 +58,7 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
     TODO:: typedef FDEngineAdapter<FDDividendEngineMerton73, DividendVanillaOption::engine> FDDividendEuropeanEngineMerton73;
 
     TODO:: typedef FDEngineAdapter<FDDividendEngineShiftScale, DividendVanillaOption::engine> FDDividendEuropeanEngineShiftScale;
-*/
-
+ */
 //typedef FDEngineAdapter<FDDividendEngine, DividendVanillaOption::engine> FDDividendEuropeanEngine;
 public class FDDividendEuropeanEngine
         extends FDEngineAdapter<FDDividendEngine, DividendVanillaOption.Engine>
@@ -67,7 +67,6 @@ public class FDDividendEuropeanEngine
     //
     // public constructors
     //
-
     public FDDividendEuropeanEngine(final GeneralizedBlackScholesProcess process) {
         this(process, 100, 100, false);
     }
@@ -94,31 +93,9 @@ public class FDDividendEuropeanEngine
         super.impl = new Impl(this);
     }
 
-
-    //
-    // private inner classes
-    //
-
-    private class Impl extends DividendVanillaOption.EngineImpl {
-
-        private final FDDividendEuropeanEngine engine;
-
-        private Impl(final FDDividendEuropeanEngine engine) {
-            this.engine = engine;
-        }
-
-        @Override
-        public void calculate() {
-            // calls FDEngineAdapter#calculate()
-            engine.calculate();
-        }
-    }
-
-
     //
     // implements OneAssetOption.Engine
     //
-
     @Override
     public Arguments getArguments() {
         return super.impl.getArguments();
@@ -134,13 +111,10 @@ public class FDDividendEuropeanEngine
         super.impl.reset();
     }
 
-
 //    @Override
 //XXX::OBS    public void update(final Observable o, final Object arg) {
 //        super.impl.update(o, arg);
 //    }
-
-
 //    //
 //    // implements Observer
 //    //
@@ -192,5 +166,22 @@ public class FDDividendEuropeanEngine
 //    public void notifyObservers(final Object arg) {
 //        super.impl.notifyObservers(arg);
 //    }
+    //
+    // private inner classes
+    //
+    private class Impl extends DividendVanillaOption.EngineImpl {
+
+        private final FDDividendEuropeanEngine engine;
+
+        private Impl(final FDDividendEuropeanEngine engine) {
+            this.engine = engine;
+        }
+
+        @Override
+        public void calculate() {
+            // calls FDEngineAdapter#calculate()
+            engine.calculate();
+        }
+    }
 
 }

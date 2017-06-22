@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2007 Ferdinando Ametrano
  Copyright (C) 2007 Fran�ois du Vignaud
  Copyright (C) 2001, 2002, 2003 Nicolas Di C�sar�
@@ -38,7 +38,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.optimization;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -52,22 +51,21 @@ import org.jquantlib.math.matrixutilities.Array;
  *
  * @author Ueli Hofstetter
  */
-@QualityAssurance(quality=Quality.Q3_DOCUMENTATION, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = "Richard Gomes")
 public class Problem {
 
     //
     // protected fields
     //
-
     /**
      * Unconstrained cost function.
      */
-    protected CostFunction  costFunction_;
+    protected CostFunction costFunction_;
 
     /**
      * Constraint
      */
-    protected Constraint  constraint_;
+    protected Constraint constraint_;
 
     /**
      * current value of the local minimum
@@ -75,7 +73,8 @@ public class Problem {
     protected Array currentValue_;
 
     /**
-     * function and gradient norm values at the curentValue_ (i.e. the last step)
+     * function and gradient norm values at the curentValue_ (i.e. the last
+     * step)
      */
     protected double functionValue_;
 
@@ -88,26 +87,22 @@ public class Problem {
 
     protected int gradientEvaluation_;
 
-
     //
     // public constructors
     //
-
-    public Problem(final CostFunction  costFunction, final Constraint  constraint) {
+    public Problem(final CostFunction costFunction, final Constraint constraint) {
         this(costFunction, constraint, new Array(0));//ZH: Verified QL097
     }
 
-    public Problem(final CostFunction  costFunction, final Constraint  constraint, final Array  initialValue) {
+    public Problem(final CostFunction costFunction, final Constraint constraint, final Array initialValue) {
         this.costFunction_ = costFunction;
         this.constraint_ = constraint;
         this.currentValue_ = initialValue.clone();
     }
 
-
     //
     // public methods
     //
-
     /**
      * @warning it does not reset the current minimum to any initial value
      */
@@ -121,7 +116,7 @@ public class Problem {
     /**
      * Call cost function computation and increment evaluation counter
      */
-    public double value(final Array  x) {
+    public double value(final Array x) {
         functionEvaluation_++;
         return costFunction_.value(x);
     }
@@ -129,7 +124,7 @@ public class Problem {
     /**
      * Call cost values computation and increment evaluation counter
      */
-    public Array values(final Array  x) {
+    public Array values(final Array x) {
         functionEvaluation_++;
         return costFunction_.values(x);
     }
@@ -137,7 +132,7 @@ public class Problem {
     /**
      * Call cost function gradient computation and increment evaluation counter
      */
-    public void gradient(final Array  grad_f, final Array  x) {
+    public void gradient(final Array grad_f, final Array x) {
         gradientEvaluation_++;
         costFunction_.gradient(grad_f, x);
     }
@@ -145,7 +140,7 @@ public class Problem {
     /**
      * Call cost function computation and it gradient
      */
-    public double valueAndGradient(final Array  grad_f, final Array  x) {
+    public double valueAndGradient(final Array grad_f, final Array x) {
         functionEvaluation_++;
         gradientEvaluation_++;
         return costFunction_.valueAndGradient(grad_f, x);
@@ -154,25 +149,25 @@ public class Problem {
     /**
      * Constraint
      */
-    public Constraint  constraint() /* @ReadOnly */ {
+    public Constraint constraint() /* @ReadOnly */ {
         return this.constraint_;
     }
 
     /**
      * Cost function
      */
-    public CostFunction  costFunction() /* @ReadOnly */ {
+    public CostFunction costFunction() /* @ReadOnly */ {
         return this.costFunction_;
     }
 
-    public void setCurrentValue(final Array  currentValue) {
+    public void setCurrentValue(final Array currentValue) {
         this.currentValue_ = currentValue;
     }
 
     /**
      * current value of the local minimum
      */
-    public final Array  currentValue() /* @ReadOnly */ {
+    public final Array currentValue() /* @ReadOnly */ {
         return this.currentValue_;
     }
 

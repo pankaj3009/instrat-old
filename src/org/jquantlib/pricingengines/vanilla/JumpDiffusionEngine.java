@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -37,7 +37,7 @@
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
 
-/*
+ /*
  Copyright (C) 2004 Ferdinando Ametrano
  Copyright (C) 2007 StatPro Italia srl
 
@@ -54,7 +54,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.pricingengines.vanilla;
 
 import org.jquantlib.QL;
@@ -87,21 +86,18 @@ public class JumpDiffusionEngine extends VanillaOption.EngineImpl {
     private static final double DEFAULT_RELATIVE_ACCURACY = 1e-4;
     private static final int DEFAULT_MAX_ITERATIONS = 100;
 
-
     //
     // private final fields
     //
-
     final private Merton76Process process;
     final private VanillaOption.ArgumentsImpl A;
-    final private VanillaOption.ResultsImpl   R;
+    final private VanillaOption.ResultsImpl R;
 
     private final Option.GreeksImpl greeks;
     private final Option.MoreGreeksImpl moreGreeks;
 
     private final double relativeAccuracy;
     private final int maxIterations;
-
 
     public JumpDiffusionEngine(
             final Merton76Process process) {
@@ -120,46 +116,45 @@ public class JumpDiffusionEngine extends VanillaOption.EngineImpl {
             final int maxIterations) {
         this.maxIterations = maxIterations;
         this.relativeAccuracy = relativeAccuracy;
-        this.A = (VanillaOption.ArgumentsImpl)arguments_;
-        this.R = (VanillaOption.ResultsImpl)results_;
+        this.A = (VanillaOption.ArgumentsImpl) arguments_;
+        this.R = (VanillaOption.ResultsImpl) results_;
         this.greeks = R.greeks();
         this.moreGreeks = R.moreGreeks();
         this.process = process;
         this.process.addObserver(this);
     }
 
-
     @Override
     public void calculate() {
-        final double /* @Real */jumpSquareVol =
-            process.logJumpVolatility().currentLink().value() * process.logJumpVolatility().currentLink().value();
-        final double /* @Real */muPlusHalfSquareVol = process.logMeanJump().currentLink().value() + 0.5 * jumpSquareVol;
+        final double /* @Real */ jumpSquareVol
+                = process.logJumpVolatility().currentLink().value() * process.logJumpVolatility().currentLink().value();
+        final double /* @Real */ muPlusHalfSquareVol = process.logMeanJump().currentLink().value() + 0.5 * jumpSquareVol;
 
         // mean jump size
-        final double /* @Real */k = Math.exp(muPlusHalfSquareVol) - 1.0;
-        final double /* @Real */lambda = (k + 1.0) * process.jumpIntensity().currentLink().value();
+        final double /* @Real */ k = Math.exp(muPlusHalfSquareVol) - 1.0;
+        final double /* @Real */ lambda = (k + 1.0) * process.jumpIntensity().currentLink().value();
 
         // dummy strike
-        final double /* @Real */variance = process.blackVolatility().currentLink().blackVariance(A.exercise.lastDate(), 1.0);
+        final double /* @Real */ variance = process.blackVolatility().currentLink().blackVariance(A.exercise.lastDate(), 1.0);
 
         final DayCounter voldc = process.blackVolatility().currentLink().dayCounter();
         final Calendar volcal = process.blackVolatility().currentLink().calendar();
         final JDate volRefDate = process.blackVolatility().currentLink().referenceDate();
-        final double /* @Time */t = voldc.yearFraction(volRefDate, A.exercise.lastDate());
-        final double /* @Rate */riskFreeRate = -Math.log(process.riskFreeRate().currentLink().discount(A.exercise.lastDate())) / t;
+        final double /* @Time */ t = voldc.yearFraction(volRefDate, A.exercise.lastDate());
+        final double /* @Rate */ riskFreeRate = -Math.log(process.riskFreeRate().currentLink().discount(A.exercise.lastDate())) / t;
         final JDate rateRefDate = process.riskFreeRate().currentLink().referenceDate();
 
         final PoissonDistribution p = new PoissonDistribution(lambda * t);
 
         final Handle<? extends Quote> stateVariable = process.stateVariable();
         final Handle<YieldTermStructure> dividendTS = process.dividendYield();
-        final RelinkableHandle<YieldTermStructure> riskFreeTS =
-            new RelinkableHandle<YieldTermStructure>(process.riskFreeRate().currentLink());
-        final RelinkableHandle<BlackVolTermStructure> volTS =
-            new RelinkableHandle<BlackVolTermStructure>(process.blackVolatility().currentLink());
+        final RelinkableHandle<YieldTermStructure> riskFreeTS
+                = new RelinkableHandle<YieldTermStructure>(process.riskFreeRate().currentLink());
+        final RelinkableHandle<BlackVolTermStructure> volTS
+                = new RelinkableHandle<BlackVolTermStructure>(process.blackVolatility().currentLink());
 
-        final GeneralizedBlackScholesProcess bsProcess =
-            new GeneralizedBlackScholesProcess(stateVariable, dividendTS, riskFreeTS, volTS);
+        final GeneralizedBlackScholesProcess bsProcess
+                = new GeneralizedBlackScholesProcess(stateVariable, dividendTS, riskFreeTS, volTS);
 
         final AnalyticEuropeanEngine baseEngine = new AnalyticEuropeanEngine(bsProcess);
 
@@ -180,12 +175,11 @@ public class JumpDiffusionEngine extends VanillaOption.EngineImpl {
         greeks.rho = 0.0;
         greeks.dividendRho = 0.0;
 
-
         double /* @Real */ r, v, weight, lastContribution = 1.0;
         double /* @Real */ theta_correction;
 
         int i;
-        for (i = 0; lastContribution > relativeAccuracy && i < maxIterations || i < (int)(lambda*t); i++) {
+        for (i = 0; lastContribution > relativeAccuracy && i < maxIterations || i < (int) (lambda * t); i++) {
 
             // constant vol/rate assumption. It should be relaxed
             v = Math.sqrt((variance + i * jumpSquareVol) / t);
@@ -203,10 +197,10 @@ public class JumpDiffusionEngine extends VanillaOption.EngineImpl {
             greeks.vega += weight * (Math.sqrt(variance / t) / v) * baseResults.greeks().vega;
             // theta modified
             theta_correction = baseResults.greeks().vega * ((i * jumpSquareVol) / (2.0 * v * t * t)) + baseResults.greeks().rho * i
-            * muPlusHalfSquareVol / (t * t);
+                    * muPlusHalfSquareVol / (t * t);
             greeks.theta += weight * (baseResults.greeks().theta + theta_correction + lambda * baseResults.value);
             if (i != 0) {
-                greeks.theta -= (p.op(i-1) * lambda * baseResults.value);
+                greeks.theta -= (p.op(i - 1) * lambda * baseResults.value);
             }
             // end theta calculation
             greeks.rho += weight * baseResults.greeks().rho;
@@ -235,7 +229,7 @@ public class JumpDiffusionEngine extends VanillaOption.EngineImpl {
             lastContribution *= weight;
         }
 
-        QL.ensure(i < maxIterations , "accuracy not reached"); // TODO: message
+        QL.ensure(i < maxIterations, "accuracy not reached"); // TODO: message
     }
 
 }

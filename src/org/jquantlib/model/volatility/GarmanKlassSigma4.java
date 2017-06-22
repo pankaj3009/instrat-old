@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.model.volatility;
 
 import org.jquantlib.math.IntervalPrice;
@@ -46,17 +45,17 @@ import org.jquantlib.math.IntervalPrice;
  */
 public class GarmanKlassSigma4 extends GarmanKlassAbstract {
 
-	public GarmanKlassSigma4(final double y) {
-		super(y);
-	}
+    public GarmanKlassSigma4(final double y) {
+        super(y);
+    }
 
-	@Override
-	protected double calculatePoint(final IntervalPrice p) {
-		final double u = Math.log(p.high() / p.open());
-		final double d = Math.log(p.low() / p.open());
-		final double c = Math.log(p.close() / p.open());
-		final double r = 0.511 * (u - d) * (u - d) - 0.019 * (c * (u + d) - 2 * u * d) - 0.383 * c * c;
-		return r;
-	}
+    @Override
+    protected double calculatePoint(final IntervalPrice p) {
+        final double u = Math.log(p.high() / p.open());
+        final double d = Math.log(p.low() / p.open());
+        final double c = Math.log(p.close() / p.open());
+        final double r = 0.511 * (u - d) * (u - d) - 0.019 * (c * (u + d) - 2 * u * d) - 0.383 * c * c;
+        return r;
+    }
 
 }

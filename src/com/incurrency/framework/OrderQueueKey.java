@@ -11,6 +11,49 @@ package com.incurrency.framework;
  */
 public class OrderQueueKey {
 
+    private String accountName;
+    private String strategy;
+    private String parentDisplayName;
+    private String childDisplayName;
+    private int parentorderidint;
+    private int childorderidint;
+    private int externalorderid;
+
+    public OrderQueueKey(String accountName, String strategy, String parentDisplayName, String childDisplayName, int parentorderidint, int childorderidint) {
+        this.accountName = accountName;
+        this.strategy = strategy;
+        this.parentDisplayName = parentDisplayName;
+        this.childDisplayName = childDisplayName;
+        this.parentorderidint = parentorderidint;
+        this.childorderidint = childorderidint;
+    }
+
+    public OrderQueueKey(String oqk) {
+        String[] splitValue = oqk.split(":");
+        //splitValue[0] will always be OQ
+        switch (splitValue.length) {
+            case 6:
+                this.externalorderid = Utilities.getInt(splitValue[1], -1);
+                this.accountName = splitValue[2];
+                this.strategy = splitValue[3];
+                this.parentDisplayName = splitValue[4];
+                this.childDisplayName = splitValue[5];
+                break;
+            case 8:
+                this.externalorderid = Utilities.getInt(splitValue[1], -1);
+                this.accountName = splitValue[2];
+                this.strategy = splitValue[3];
+                this.parentDisplayName = splitValue[4];
+                this.childDisplayName = splitValue[5];
+                this.parentorderidint = Utilities.getInt(splitValue[6], -1);
+                this.childorderidint = Utilities.getInt(splitValue[7], -1);
+                break;
+            default:
+                this.accountName = "UNDEFINED";
+                break;
+        }
+    }
+
     /**
      * @return the externalorderid
      */
@@ -51,49 +94,6 @@ public class OrderQueueKey {
      */
     public void setAccountName(String accountName) {
         this.accountName = accountName;
-    }
-
-    private String accountName;
-    private String strategy;
-    private String parentDisplayName;
-    private String childDisplayName;
-    private int parentorderidint;
-    private int childorderidint;
-    private int externalorderid;
-
-    public OrderQueueKey(String accountName, String strategy, String parentDisplayName,String childDisplayName, int parentorderidint,int childorderidint) {
-        this.accountName = accountName;
-        this.strategy = strategy;
-        this.parentDisplayName = parentDisplayName;
-        this.childDisplayName=childDisplayName;
-        this.parentorderidint=parentorderidint;
-        this.childorderidint=childorderidint;
-    }
-
-    public OrderQueueKey(String oqk) {
-        String[] splitValue = oqk.split(":");
-        //splitValue[0] will always be OQ
-        switch (splitValue.length) {
-            case 6:
-                this.externalorderid=Utilities.getInt(splitValue[1],-1);
-                this.accountName = splitValue[2];
-                this.strategy = splitValue[3];
-                this.parentDisplayName = splitValue[4];
-                this.childDisplayName=splitValue[5];
-                break;
-            case 8:
-                this.externalorderid=Utilities.getInt(splitValue[1],-1);
-                this.accountName = splitValue[2];
-                this.strategy = splitValue[3];
-                this.parentDisplayName = splitValue[4];
-                this.childDisplayName=splitValue[5];
-                this.parentorderidint=Utilities.getInt(splitValue[6],-1);
-                this.childorderidint=Utilities.getInt(splitValue[7],-1);
-                break;            
-            default:
-                this.accountName="UNDEFINED";
-                break;
-        }
     }
 
     /**

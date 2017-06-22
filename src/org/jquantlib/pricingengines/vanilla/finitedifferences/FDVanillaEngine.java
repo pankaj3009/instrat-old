@@ -39,11 +39,15 @@ import org.jquantlib.time.JDate;
 /**
  * Finite-differences pricing engine for BSM one asset options
  * <p>
- * The name is a misnomer as this is a base class for any finite difference scheme.  Its main job is to handle grid layout.
+ * The name is a misnomer as this is a base class for any finite difference
+ * scheme. Its main job is to handle grid layout.
  *
  * @author Srinivas Hasti
  */
 public class FDVanillaEngine {
+
+    //private double gridLogSpacing; //Not used
+    private final static/* Real */ double safetyZoneFactor = 1.1;
     protected GeneralizedBlackScholesProcess process;
     protected /* @Size */ int timeSteps, gridPoints;
     protected boolean timeDependent;
@@ -55,10 +59,6 @@ public class FDVanillaEngine {
     protected List<BoundaryCondition<TridiagonalOperator>> bcS;
     // temporaries
     protected /* Real */ double sMin, center, sMax;
-
-    //private double gridLogSpacing; //Not used
-    private final static/* Real */double safetyZoneFactor = 1.1;
-
 
     //
     // public constructors
@@ -72,20 +72,16 @@ public class FDVanillaEngine {
         bcS = new Vector<BoundaryCondition<TridiagonalOperator>>();
     }
 
-
     //
     // public methods
     //
-
     public Array grid() {
         return intrinsicValues.grid();
     }
 
-
     //
     // protected methods
     //
-
     protected void setGridLimits() {
         setGridLimits(process.stateVariable().currentLink().value(), getResidualTime());
         ensureStrikeInGrid();
@@ -98,18 +94,23 @@ public class FDVanillaEngine {
         requiredGridValue = ((StrikedTypePayoff) (payoff)).strike();
     }
 
-    protected void setGridLimits(/* Real */final double center, /* Time */final double t) {
-        QL.require(center > 0.0 , "negative or null underlying given"); // TODO: message
+    protected void setGridLimits(/* Real */final double center, /* Time */ final double t) {
+        QL.require(center > 0.0, "negative or null underlying given"); // TODO: message
         this.center = center;
-        /* Size */final int newGridPoints = safeGridPoints(gridPoints, t);
-        if (newGridPoints > intrinsicValues.size())
+        /* Size */
+        final int newGridPoints = safeGridPoints(gridPoints, t);
+        if (newGridPoints > intrinsicValues.size()) {
             intrinsicValues = new SampledCurve(newGridPoints);
+        }
 
-        /* Real */final double volSqrtTime = Math.sqrt(process.blackVolatility().currentLink().blackVariance(t, center));
+        /* Real */
+        final double volSqrtTime = Math.sqrt(process.blackVolatility().currentLink().blackVariance(t, center));
 
         // the prefactor fine tunes performance at small volatilities
-        /* Real */final double prefactor = 1.0 + 0.02 / volSqrtTime;
-        /* Real */final double minMaxFactor = Math.exp(4.0 * prefactor * volSqrtTime);
+        /* Real */
+        final double prefactor = 1.0 + 0.02 / volSqrtTime;
+        /* Real */
+        final double minMaxFactor = Math.exp(4.0 * prefactor * volSqrtTime);
         sMin = center / minMaxFactor; // underlying grid min value
         sMax = center * minMaxFactor; // underlying grid max value
     }
@@ -117,9 +118,11 @@ public class FDVanillaEngine {
     protected void ensureStrikeInGrid() {
         // ensure strike is included in the grid
         final StrikedTypePayoff striked_payoff = (StrikedTypePayoff) (payoff);
-        if (striked_payoff == null)
+        if (striked_payoff == null) {
             return;
-        /* Real */final double requiredGridValue = striked_payoff.strike();
+        }
+        /* Real */
+        final double requiredGridValue = striked_payoff.strike();
 
         if (sMin > requiredGridValue / safetyZoneFactor) {
             sMin = requiredGridValue / safetyZoneFactor;
@@ -145,27 +148,27 @@ public class FDVanillaEngine {
     protected void initializeBoundaryConditions() {
 
         bcS.add(new NeumannBC(
-                intrinsicValues.value(1)- intrinsicValues.value(0),
+                intrinsicValues.value(1) - intrinsicValues.value(0),
                 NeumannBC.Side.Lower));
 
         bcS.add(new NeumannBC(
-                intrinsicValues.value(intrinsicValues.size() - 1)- intrinsicValues.value(intrinsicValues.size() - 2),
+                intrinsicValues.value(intrinsicValues.size() - 1) - intrinsicValues.value(intrinsicValues.size() - 2),
                 NeumannBC.Side.Upper));
     }
 
-    protected/* Time */double getResidualTime() {
+    protected/* Time */ double getResidualTime() {
         return process.time(exerciseDate);
     }
 
     // safety check to be sure we have enough grid points.
-    protected/* Size */int safeGridPoints(/* Size */final int gridPoints,
-            /* Time */final double residualTime) {
+    protected/* Size */ int safeGridPoints(/* Size */final int gridPoints,
+                    /* Time */ final double residualTime) {
         final int minGridPoints = 10;
         final int minGridPointsPerYear = 2;
         return Math.max(
                 gridPoints,
                 residualTime > 1.0
-                ? (int) ((minGridPoints + (residualTime - 1.0) * minGridPointsPerYear))
+                        ? (int) ((minGridPoints + (residualTime - 1.0) * minGridPointsPerYear))
                         : minGridPoints);
     }
 

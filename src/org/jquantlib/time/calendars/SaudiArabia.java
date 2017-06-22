@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -44,7 +43,8 @@ import static org.jquantlib.time.Weekday.Thursday;
  * <li>Fridays</li>
  * <li>National Day of Saudi Arabia, September 23rd</li>
  * <p>
- * Other holidays for which no rule is given (data available for 2004-2005 only:)
+ * Other holidays for which no rule is given (data available for 2004-2005
+ * only:)
  * </p>
  * <li>Eid Al-Adha</li>
  * <li>Eid Al-Fitr</li>
@@ -52,10 +52,26 @@ import static org.jquantlib.time.Weekday.Thursday;
  *
  * @author Richard Gomes
  */
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+public class SaudiArabia extends Calendar {
 
-public class SaudiArabia extends Calendar{
+    //
+    // public constructors
+    //
+    public SaudiArabia() {
+        this(Market.Tadawul);
+    }
+
+    public SaudiArabia(final Market m) {
+        switch (m) {
+            case Tadawul:
+                impl = new TadawulImpl();
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
+        }
+    }
 
     public static enum Market {
         /**
@@ -64,58 +80,39 @@ public class SaudiArabia extends Calendar{
         Tadawul
     }
 
-
-    //
-    // public constructors
-    //
-
-    public SaudiArabia() {
-	   this(Market.Tadawul);
-    }
-
-    public SaudiArabia(final Market m) {
-        switch (m) {
-          case Tadawul:
-            impl = new TadawulImpl();
-            break;
-          default:
-              throw new LibraryException(UNKNOWN_MARKET);
-        }
-    }
-
-
     //
     // private final inner classes
     //
-
     private final class TadawulImpl extends Impl {
-		@Override
-		public String name() { return "Tadawul"; }
 
-		@Override
-		public boolean isWeekend(final Weekday w) {
-		   return w == Thursday || w == Friday;
-		}
+        @Override
+        public String name() {
+            return "Tadawul";
+        }
 
-		@Override
-		public boolean isBusinessDay(final JDate date)  {
-			final Weekday w = date.weekday();
-			final int d = date.dayOfMonth();
-			final Month m = date.month();
-			final int y = date.year();
-			if (isWeekend(w)
-					// National Day
-					|| (d == 23 && m == September)
-					// Eid Al-Adha
-					|| (d >= 1 && d <= 6 && m == February && y == 2004)
-					|| (d >= 21 && d <= 25 && m == January && y == 2005)
-					// Eid Al-Fitr
-					|| (d >= 25 && d <= 29 && m == November && y == 2004)
-					|| (d >= 14 && d <= 18 && m == November && y == 2005)) {
+        @Override
+        public boolean isWeekend(final Weekday w) {
+            return w == Thursday || w == Friday;
+        }
+
+        @Override
+        public boolean isBusinessDay(final JDate date) {
+            final Weekday w = date.weekday();
+            final int d = date.dayOfMonth();
+            final Month m = date.month();
+            final int y = date.year();
+            if (isWeekend(w)
+                    // National Day
+                    || (d == 23 && m == September)
+                    // Eid Al-Adha
+                    || (d >= 1 && d <= 6 && m == February && y == 2004)
+                    || (d >= 21 && d <= 25 && m == January && y == 2005)
+                    // Eid Al-Fitr
+                    || (d >= 25 && d <= 29 && m == November && y == 2004)
+                    || (d >= 14 && d <= 18 && m == November && y == 2005)) {
                 return false;
             }
-			return true;
-		}
+            return true;
+        }
     }
- }
-
+}

@@ -19,7 +19,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
  Copyright (C) 2007 StatPro Italia srl
 
@@ -35,10 +35,8 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
-
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,29 +60,23 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
  */
 public abstract class FDMultiPeriodEngine extends FDVanillaEngine {
 
-
     //
     // protected fields
     //
-
     protected List<Event> events;
     protected List<Double> stoppingTimes;
     protected SampledCurve prices;
     protected StepCondition<Array> stepCondition;
     protected StandardFiniteDifferenceModel model;
 
-
     //
     // final protected fields
     //
-
     final private int timeStepPerPeriod;
-
 
     //
     // public constructors
     //
-
     public FDMultiPeriodEngine(final GeneralizedBlackScholesProcess process) {
         this(process, 100, 100, false);
     }
@@ -95,33 +87,27 @@ public abstract class FDMultiPeriodEngine extends FDVanillaEngine {
         this.timeStepPerPeriod = timeSteps;
     }
 
-
     //
     // public methods
     //
-
     public void setupArguments(final Arguments args, final List<Event> schedule) {
         super.setupArguments(args);
         events = schedule;
         stoppingTimes.clear();
         final int n = schedule.size();
-        for (int i = 0; i<n; i++) {
+        for (int i = 0; i < n; i++) {
             stoppingTimes.add(process.time(events.get(i).date()));
         }
     }
 
-
     //
     // abstract methods
     //
-
     protected abstract void executeIntermediateStep(int step);
-
 
     //
     // protected methods
     //
-
     protected double getDividendTime(final int i) {
         return stoppingTimes.get(i);
     }
@@ -134,18 +120,16 @@ public abstract class FDMultiPeriodEngine extends FDVanillaEngine {
         stepCondition = new NullCondition<Array>();
     }
 
-
     //
     // overrides FDVanillaEngine
     //
-
     @Override
     protected void setupArguments(final Arguments a) {
         super.setupArguments(a);
         final OneAssetOption.ArgumentsImpl args = (OneAssetOption.ArgumentsImpl) a;
         events.clear();
         final int n = args.exercise.size();
-        for (int i=0; i<n; ++i) {
+        for (int i = 0; i < n; ++i) {
             stoppingTimes.add(process.time(args.exercise.date(i)));
         }
     }
@@ -185,12 +169,12 @@ public abstract class FDMultiPeriodEngine extends FDVanillaEngine {
 
             if (dateNumber >= 2) {
                 for (int j = 1; j < dateNumber; j++) {
-                    QL.require(getDividendTime(j - 1) < getDividendTime(j) , "dates must be in strictly increasing order"); // TODO: message
+                    QL.require(getDividendTime(j - 1) < getDividendTime(j), "dates must be in strictly increasing order"); // TODO: message
                 }
             }
         }
 
-        double dt = getResidualTime() / (timeStepPerPeriod*(dateNumber+1));
+        double dt = getResidualTime() / (timeStepPerPeriod * (dateNumber + 1));
 
         // Ensure that dt is always smaller than the first non-zero date
         if (firstNonZeroDate <= dt) {

@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -38,7 +37,8 @@ import static org.jquantlib.time.Month.September;
 import org.jquantlib.time.Weekday;
 
 /**
- * Mexican calendars Holidays for the Mexican stock exchange (data from <http://www.bmv.com.mx/>):
+ * Mexican calendars Holidays for the Mexican stock exchange (data from
+ * <http://www.bmv.com.mx/>):
  * <ul>
  * <li>Saturdays</li>
  * <li>Sundays</li>
@@ -59,39 +59,36 @@ import org.jquantlib.time.Weekday;
  * @author Q Boiler
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class Mexico extends Calendar {
-
-    public enum Market {
-        /**
-         * Mexican stock exchange
-         */
-        BMV
-    };
 
     //
     // public constructors
     //
-
     public Mexico() {
         this(Market.BMV);
     }
 
     public Mexico(final Market m) {
         switch (m) {
-        case BMV:
-            impl = new BmvImpl();
-            break;
-        default:
-            throw new LibraryException(UNKNOWN_MARKET);
+            case BMV:
+                impl = new BmvImpl();
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
         }
+    }
+
+    public enum Market {
+        /**
+         * Mexican stock exchange
+         */
+        BMV
     }
 
     //
     // private final inner classes
     //
-
     private final class BmvImpl extends WesternImpl {
 
         @Override

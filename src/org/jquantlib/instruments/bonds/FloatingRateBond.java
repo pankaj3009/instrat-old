@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2007 Ferdinando Ametrano
  Copyright (C) 2007 Chiara Fornarola
 
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.instruments.bonds;
 
 import org.jquantlib.QL;
@@ -55,7 +54,6 @@ import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 import org.jquantlib.time.Schedule;
 
-
 /**
  * floating-rate bond (possibly capped and/or floored)
  *
@@ -66,139 +64,140 @@ import org.jquantlib.time.Schedule;
  */
 //TEST: calculations are tested by checking results against cached values.
 public class FloatingRateBond extends Bond {
-	public FloatingRateBond(
-	        final int settlementDays,
-			final double faceAmount,
-			final Schedule schedule,
-			final IborIndex index,
-			final DayCounter paymentDayCounter,
-			final BusinessDayConvention paymentConvention,
-			final int fixingDays,
-			final Array gearings,
-			final Array spreads,
-			final Array caps,
-			final Array floors,
-			final boolean inArrears,
-			final double redemption,
-			final JDate issueDate) {
 
-		super(settlementDays, schedule.calendar(), issueDate);
-		maturityDate_ = schedule.endDate().clone();
+    public FloatingRateBond(
+            final int settlementDays,
+            final double faceAmount,
+            final Schedule schedule,
+            final IborIndex index,
+            final DayCounter paymentDayCounter,
+            final BusinessDayConvention paymentConvention,
+            final int fixingDays,
+            final Array gearings,
+            final Array spreads,
+            final Array caps,
+            final Array floors,
+            final boolean inArrears,
+            final double redemption,
+            final JDate issueDate) {
 
-		cashflows_ = new IborLeg(schedule, index)
-						.withNotionals(faceAmount)
-						.withPaymentDayCounter(paymentDayCounter)
-						.withPaymentAdjustment(paymentConvention)
-						.withFixingDays(fixingDays)
-						.withGearings(gearings)
-						.withSpreads(spreads)
-						.withCaps(caps)
-						.withFloors(floors)
-						.inArrears(inArrears).Leg();
+        super(settlementDays, schedule.calendar(), issueDate);
+        maturityDate_ = schedule.endDate().clone();
 
-		addRedemptionsToCashflows(new double[]{redemption});
+        cashflows_ = new IborLeg(schedule, index)
+                .withNotionals(faceAmount)
+                .withPaymentDayCounter(paymentDayCounter)
+                .withPaymentAdjustment(paymentConvention)
+                .withFixingDays(fixingDays)
+                .withGearings(gearings)
+                .withSpreads(spreads)
+                .withCaps(caps)
+                .withFloors(floors)
+                .inArrears(inArrears).Leg();
 
-		QL.ensure(!cashflows().isEmpty(), "bond with no cashflows!");
-		QL.ensure(redemptions_.size() == 1, "multiple redemptions created");
-		index.addObserver(this);
-	}
+        addRedemptionsToCashflows(new double[]{redemption});
 
-	public FloatingRateBond(
-	        final int settlementDays,
-			final double faceAmount,
-			final Schedule schedule,
-			final IborIndex index,
-			final DayCounter accrualDayCounter) {
-		this(settlementDays, faceAmount, schedule,index, accrualDayCounter, 
-				BusinessDayConvention.Following, Constants.NULL_INTEGER, 
-				new Array(new double[] { 1.0 }), new Array(new double[] { 0.0 }), 
-				new Array(0), new Array(0), false, 100.0, new JDate());
+        QL.ensure(!cashflows().isEmpty(), "bond with no cashflows!");
+        QL.ensure(redemptions_.size() == 1, "multiple redemptions created");
+        index.addObserver(this);
+    }
 
-	}
+    public FloatingRateBond(
+            final int settlementDays,
+            final double faceAmount,
+            final Schedule schedule,
+            final IborIndex index,
+            final DayCounter accrualDayCounter) {
+        this(settlementDays, faceAmount, schedule, index, accrualDayCounter,
+                BusinessDayConvention.Following, Constants.NULL_INTEGER,
+                new Array(new double[]{1.0}), new Array(new double[]{0.0}),
+                new Array(0), new Array(0), false, 100.0, new JDate());
 
-	public FloatingRateBond(final int settlementDays,
-							final double faceAmount,
-							final JDate startDate,
-							final JDate maturityDate,
-							final Frequency couponFrequency,
-							final Calendar calendar,
-							final Handle<IborIndex> index,
-							final DayCounter accrualDayCounter,
-							final BusinessDayConvention accrualConvention,
-							final BusinessDayConvention paymentConvention,
-							final int fixingDays,
-							final Array gearings,
-							final Array spreads,
-							final Array caps,
-							final Array floors,
-							final boolean inArrears,
-							final double redemption,
-							final JDate issueDate,
-							final JDate stubDate,
-							final DateGeneration.Rule rule,
-							final boolean endOfMonth) {
-		super(settlementDays, calendar, issueDate);
+    }
 
-		maturityDate_ = maturityDate.clone();
+    public FloatingRateBond(final int settlementDays,
+            final double faceAmount,
+            final JDate startDate,
+            final JDate maturityDate,
+            final Frequency couponFrequency,
+            final Calendar calendar,
+            final Handle<IborIndex> index,
+            final DayCounter accrualDayCounter,
+            final BusinessDayConvention accrualConvention,
+            final BusinessDayConvention paymentConvention,
+            final int fixingDays,
+            final Array gearings,
+            final Array spreads,
+            final Array caps,
+            final Array floors,
+            final boolean inArrears,
+            final double redemption,
+            final JDate issueDate,
+            final JDate stubDate,
+            final DateGeneration.Rule rule,
+            final boolean endOfMonth) {
+        super(settlementDays, calendar, issueDate);
 
-		JDate firstDate = null, nextToLastDate = null;
-		switch (rule) {
-			case Backward:
-				firstDate = new JDate();
-				nextToLastDate = stubDate;
-				break;
-			case Forward:
-				firstDate = stubDate;
-				nextToLastDate = new JDate();
-				break;
-			case Zero:
-			case ThirdWednesday:
-			case Twentieth:
-			case TwentiethIMM:
-				QL.error("stub date (" + stubDate + ") not allowed with " +
-					rule + " DateGeneration::Rule");
-			default:
-			QL.error("unknown DateGeneration::Rule (" + rule + ")");
-		}
+        maturityDate_ = maturityDate.clone();
 
-		Schedule schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency),
-								calendar_, accrualConvention, accrualConvention,
-								rule, endOfMonth, firstDate, nextToLastDate);
+        JDate firstDate = null, nextToLastDate = null;
+        switch (rule) {
+            case Backward:
+                firstDate = new JDate();
+                nextToLastDate = stubDate;
+                break;
+            case Forward:
+                firstDate = stubDate;
+                nextToLastDate = new JDate();
+                break;
+            case Zero:
+            case ThirdWednesday:
+            case Twentieth:
+            case TwentiethIMM:
+                QL.error("stub date (" + stubDate + ") not allowed with "
+                        + rule + " DateGeneration::Rule");
+            default:
+                QL.error("unknown DateGeneration::Rule (" + rule + ")");
+        }
 
-		cashflows_ = new IborLeg(schedule, index.currentLink())
-						.withNotionals(faceAmount)
-						.withPaymentDayCounter(accrualDayCounter)
-						.withPaymentAdjustment(paymentConvention)
-						.withFixingDays(fixingDays)
-						.withGearings(gearings)
-						.withSpreads(spreads)
-						.withCaps(caps)
-						.withFloors(floors)
-						.inArrears(inArrears).Leg();
+        Schedule schedule = new Schedule(startDate, maturityDate_, new Period(couponFrequency),
+                calendar_, accrualConvention, accrualConvention,
+                rule, endOfMonth, firstDate, nextToLastDate);
 
-		addRedemptionsToCashflows(new double[] {redemption });
+        cashflows_ = new IborLeg(schedule, index.currentLink())
+                .withNotionals(faceAmount)
+                .withPaymentDayCounter(accrualDayCounter)
+                .withPaymentAdjustment(paymentConvention)
+                .withFixingDays(fixingDays)
+                .withGearings(gearings)
+                .withSpreads(spreads)
+                .withCaps(caps)
+                .withFloors(floors)
+                .inArrears(inArrears).Leg();
 
-		QL.ensure(!cashflows().isEmpty(), "bond with no cashflows!");
-		QL.ensure(redemptions_.size() == 1, "multiple redemptions created");
+        addRedemptionsToCashflows(new double[]{redemption});
 
-		index.addObserver(this);
-	}
+        QL.ensure(!cashflows().isEmpty(), "bond with no cashflows!");
+        QL.ensure(redemptions_.size() == 1, "multiple redemptions created");
 
-	public FloatingRateBond(
-	        final int settlementDays,
-			final double faceAmount,
-			final JDate startDate,
-			final JDate maturityDate,
-			final Frequency couponFrequency,
-			final Calendar calendar,
-			final Handle<IborIndex> index,
-			final DayCounter accrualDayCounter) {
-		this(settlementDays, faceAmount, startDate, maturityDate,
-				couponFrequency, calendar, index,
-				accrualDayCounter, BusinessDayConvention.Following, BusinessDayConvention.Following,
-				Constants.NULL_INTEGER, new Array(new double[] { 1.0 }),
-				new Array(new double[] { 0.0 }), new Array(0), new Array(0),
-				false, 100.0, new JDate(), new JDate(),
-				DateGeneration.Rule.Backward, false);
-	}
+        index.addObserver(this);
+    }
+
+    public FloatingRateBond(
+            final int settlementDays,
+            final double faceAmount,
+            final JDate startDate,
+            final JDate maturityDate,
+            final Frequency couponFrequency,
+            final Calendar calendar,
+            final Handle<IborIndex> index,
+            final DayCounter accrualDayCounter) {
+        this(settlementDays, faceAmount, startDate, maturityDate,
+                couponFrequency, calendar, index,
+                accrualDayCounter, BusinessDayConvention.Following, BusinessDayConvention.Following,
+                Constants.NULL_INTEGER, new Array(new double[]{1.0}),
+                new Array(new double[]{0.0}), new Array(0), new Array(0),
+                false, 100.0, new JDate(), new JDate(),
+                DateGeneration.Rule.Backward, false);
+    }
 }

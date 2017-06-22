@@ -53,7 +53,7 @@ public class ConvertibleBondOption extends OneAssetOption {
     private final ConvertibleBond bond_;
     private final double conversionRatio_;
     private final CallabilitySchedule callability_;
-    private final DividendSchedule  dividends_;
+    private final DividendSchedule dividends_;
     private final Handle<Quote> creditSpread_;
     private final Leg cashflows_;
     private final DayCounter dayCounter_;
@@ -63,18 +63,18 @@ public class ConvertibleBondOption extends OneAssetOption {
     private final double redemption_;
 
     public ConvertibleBondOption(final ConvertibleBond bond,
-                                 final Exercise exercise,
-                                 final double conversionRatio,
-                                 final DividendSchedule dividends,
-                                 final CallabilitySchedule callability,
-                                 final Handle<Quote> creditSpread,
-                                 final Leg cashflows,
-                                 final DayCounter dayCounter,
-                                 final Schedule schedule,
-                                 final JDate issueDate,
-                                 final int  settlementDays,
-                                 final double redemption) {
-        super(new PlainVanillaPayoff(Option.Type.Call,bond.faceAmount()/100.0 * redemption/conversionRatio), exercise);
+            final Exercise exercise,
+            final double conversionRatio,
+            final DividendSchedule dividends,
+            final CallabilitySchedule callability,
+            final Handle<Quote> creditSpread,
+            final Leg cashflows,
+            final DayCounter dayCounter,
+            final Schedule schedule,
+            final JDate issueDate,
+            final int settlementDays,
+            final double redemption) {
+        super(new PlainVanillaPayoff(Option.Type.Call, bond.faceAmount() / 100.0 * redemption / conversionRatio), exercise);
         this.bond_ = bond;
         this.conversionRatio_ = conversionRatio;
         this.callability_ = callability;
@@ -92,11 +92,11 @@ public class ConvertibleBondOption extends OneAssetOption {
     public void setupArguments(final PricingEngine.Arguments args) {
 
         super.setupArguments(args);
-        
+
         QL.require(ConvertibleBondOption.ArgumentsImpl.class.isAssignableFrom(args.getClass()), ReflectConstants.WRONG_ARGUMENT_TYPE); // QA:[RG]::verified
-        final ConvertibleBondOption.ArgumentsImpl moreArgs = args instanceof ConvertibleBondOption.ArgumentsImpl 
-                                                        ? (ConvertibleBondOption.ArgumentsImpl)args
-                                                        : null;
+        final ConvertibleBondOption.ArgumentsImpl moreArgs = args instanceof ConvertibleBondOption.ArgumentsImpl
+                ? (ConvertibleBondOption.ArgumentsImpl) args
+                : null;
         QL.require(moreArgs != null, "wrong argument type");
 
         moreArgs.conversionRatio = conversionRatio_;
@@ -114,26 +114,26 @@ public class ConvertibleBondOption extends OneAssetOption {
         //moreArgs.callabilityTypes.reserve(n);
         //moreArgs.callabilityPrices.reserve(n);
         //moreArgs.callabilityTriggers.reserve(n);
-        
-        for (int i=0; i<n; i++) {
+        for (int i = 0; i < n; i++) {
             if (!callability_.get(i).hasOccurred(settlement)) {
-                
+
                 moreArgs.callabilityTypes.add(callability_.get(i).type());
                 moreArgs.callabilityDates.add(callability_.get(i).date());
                 moreArgs.callabilityPrices.add(callability_.get(i).price().amount());
-                
-                if (callability_.get(i).price().type() == Callability.Price.Type.Clean ) {
-                    final int lastIdx = moreArgs.callabilityPrices.size()-1;
-                    final double d = moreArgs.callabilityPrices.get(lastIdx) +
-                                bond_.accruedAmount(callability_.get(i).date());
+
+                if (callability_.get(i).price().type() == Callability.Price.Type.Clean) {
+                    final int lastIdx = moreArgs.callabilityPrices.size() - 1;
+                    final double d = moreArgs.callabilityPrices.get(lastIdx)
+                            + bond_.accruedAmount(callability_.get(i).date());
                     moreArgs.callabilityPrices.set(lastIdx, d);
                 }
                 final Object obj = callability_.get(i);
-                final SoftCallability softCall = obj instanceof SoftCallability ? (SoftCallability)obj : null;
-                if (softCall != null)
+                final SoftCallability softCall = obj instanceof SoftCallability ? (SoftCallability) obj : null;
+                if (softCall != null) {
                     moreArgs.callabilityTriggers.add(softCall.trigger());
-                else
+                } else {
                     moreArgs.callabilityTriggers.add(Constants.NULL_REAL);
+                }
             }
         }
 
@@ -141,7 +141,7 @@ public class ConvertibleBondOption extends OneAssetOption {
 
         moreArgs.couponDates.clear();
         moreArgs.couponAmounts.clear();
-        for (int i=0; i<cashflows.size()-1; i++) {
+        for (int i = 0; i < cashflows.size() - 1; i++) {
             if (!cashflows.get(i).hasOccurred(settlement)) {
                 moreArgs.couponDates.add(cashflows.get(i).date());
                 moreArgs.couponAmounts.add(cashflows.get(i).amount());
@@ -150,7 +150,7 @@ public class ConvertibleBondOption extends OneAssetOption {
 
         moreArgs.dividends.clear();
         moreArgs.dividendDates.clear();
-        for (int i=0; i<dividends_.size(); i++) {
+        for (int i = 0; i < dividends_.size(); i++) {
             if (!dividends_.get(i).hasOccurred(settlement)) {
                 moreArgs.dividends.add(dividends_.get(i));
                 moreArgs.dividendDates.add(dividends_.get(i).date());
@@ -164,22 +164,9 @@ public class ConvertibleBondOption extends OneAssetOption {
         moreArgs.redemption = redemption_;
     }
 
-
-    //
-    // ????? inner interfaces
-    //
-
-    public interface Arguments extends OneAssetOption.Arguments { /* marking interface */ }
-
-    public interface Results extends Instrument.Results, Option.Greeks, Option.MoreGreeks { /* marking interface */ }
-
-
-
     //
     // ????? inner classes
     //
-
-
     static public class ArgumentsImpl extends OneAssetOption.ArgumentsImpl implements Arguments {
 
         public double conversionRatio;
@@ -230,7 +217,6 @@ public class ConvertibleBondOption extends OneAssetOption {
 
     }
 
-
     static public class ResultsImpl extends OneAssetOption.ResultsImpl {
 
         @Override
@@ -240,7 +226,6 @@ public class ConvertibleBondOption extends OneAssetOption {
 
     }
 
-
     static public abstract class EngineImpl
             extends GenericEngine<ConvertibleBondOption.ArgumentsImpl, ConvertibleBondOption.ResultsImpl> {
 
@@ -249,5 +234,14 @@ public class ConvertibleBondOption extends OneAssetOption {
         }
 
     }
+    //
+    // ????? inner interfaces
+    //
+
+    public interface Arguments extends OneAssetOption.Arguments {
+        /* marking interface */ }
+
+    public interface Results extends Instrument.Results, Option.Greeks, Option.MoreGreeks {
+        /* marking interface */ }
 
 }

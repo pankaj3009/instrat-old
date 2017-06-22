@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.quotes;
 
 import org.jquantlib.QL;
@@ -28,26 +27,22 @@ import org.jquantlib.lang.annotation.QualityAssurance.Quality;
 import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.math.Constants;
 
-
 /**
  * Market element returning a stored value
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Richard Gomes"})
 public class SimpleQuote extends Quote {
 
     //
     // private fields
     //
-
     private double value;
-
 
     //
     // public constructors
     //
-
     public SimpleQuote() {
         this(Constants.NULL_REAL);
     }
@@ -60,11 +55,9 @@ public class SimpleQuote extends Quote {
         this.value = d;
     }
 
-
     //
     // public methods
     //
-
     public double setValue() {
         return setValue(Constants.NULL_REAL);
     }
@@ -85,24 +78,20 @@ public class SimpleQuote extends Quote {
         setValue(Constants.NULL_REAL);
     }
 
-
     //
     // overrides Object
     //
-
     @Override
     public String toString() {
         return String.valueOf(value);
     }
 
-
     //
     // implements Quote
     //
-
     @Override
     public final double value() /* @ReadOnly */ {
-        QL.require(isValid() , "invalid simple quote: no value available"); // TODO: message
+        QL.require(isValid(), "invalid simple quote: no value available"); // TODO: message
         return value;
     }
 

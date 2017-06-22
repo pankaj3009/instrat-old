@@ -30,13 +30,12 @@ import org.jquantlib.math.Ops;
  */
 public final class GreaterThanPredicate implements Ops.BinaryDoublePredicate {
 
-	//
+    //
     // implements BinaryDoublePredicate
     //
-
-	@Override
-	public boolean op(final double a, final double b) {
-		return a > b;
-	}
+    @Override
+    public boolean op(final double a, final double b) {
+        return a > b;
+    }
 
 }

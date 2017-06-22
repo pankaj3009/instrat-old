@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.processes;
 
 /**
@@ -27,10 +26,13 @@ package org.jquantlib.processes;
  * <p>
  * This class describes the stochastic process governed by
  * <p>
- * <p>{@latex[ dS(t, S) = \mu S dt + \sigma S dW_t }
- * 
+ * <p>
+ * {
+ *
+ * @latex[ dS(t, S) = \mu S dt + \sigma S dW_t }
+ *
  * @category processes
- * 
+ *
  * @author Ueli Hofstetter
  */
 public class GeometricBrownianMotionProcess extends StochasticProcess1D {

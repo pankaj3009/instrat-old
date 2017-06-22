@@ -21,6 +21,8 @@ import java.util.logging.Logger;
  */
 public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListener {
 
+    private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
+
     private final String delimiter = "_";
     BeanConnection c;
     int id;
@@ -36,7 +38,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     //private final Object syncObject = new Object();
 //    private Drop sync;
     private LimitedQueue recentOrders;
-    private static final Logger logger = Logger.getLogger(OrderTypeRel.class.getName());
     boolean recalculate = true;
     SimpleDateFormat loggingFormat = new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
     int orderspermin = 1;
@@ -59,7 +60,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             this.ticksize = ticksize;
             orderspermin = event.getOrdersPerMinute();
             improveprob = event.getImproveProbability();
-            improveamt = event.getImproveAmount()* this.ticksize;
+            improveamt = event.getImproveAmount() * this.ticksize;
             fatFingerWindow = event.getFatFingerWindow();
             stickyperiod = event.getStickyPeriod();
             recentOrders = new LimitedQueue(orderspermin);
@@ -78,7 +79,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             limitPrice = event.getLimitPrice();
             this.oms = oms;
             Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + orderid + ".csv",
-                    new String[]{"Condition", "bid", "ask", "lastprice", "recentorderssize", "calculatedprice", "priorlimitprice", "newlimitprice","orderstatus","random", "improveprob"}, Algorithm.timeZone, true);
+                    new String[]{"Condition", "bid", "ask", "lastprice", "recentorderssize", "calculatedprice", "priorlimitprice", "newlimitprice", "orderstatus", "random", "improveprob"}, Algorithm.timeZone, true);
         } catch (Exception evt) {
             logger.log(Level.SEVERE, null, evt);
         }
@@ -88,7 +89,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     public void run() {
         try {
             logger.log(Level.INFO, "501,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}",
-                    new Object[]{oms.orderReference, c.getAccountName(), ob.getChildDisplayName(), ob.getInternalOrderID(),ob.getExternalOrderID(), ob.getLimitPrice()});
+                    new Object[]{oms.orderReference, c.getAccountName(), ob.getChildDisplayName(), ob.getInternalOrderID(), ob.getExternalOrderID(), ob.getLimitPrice()});
             RedisSubscribe.tes.addBidAskListener(this);
             RedisSubscribe.tes.addOrderStatusListener(this);
             for (BeanConnection c1 : Parameters.connection) {
@@ -173,54 +174,54 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 if (recalculate) {
                     BeanSymbol s = Parameters.symbol.get(id);
                     internalOrderIDEntry = ob.getOrderIDForSquareOff();
-                        limitPrice = ob.getLimitPrice();
-                        double newLimitPrice = limitPrice;
-                        plp = limitPrice;
-                        switch (side) {
-                            case BUY:
-                            case COVER:
-                                recalculate = false;
-                                double bidPrice = s.getBidPrice();
-                                double askPrice = s.getAskPrice();
-                                double calculatedPrice = 0;
-                                int bidSize = s.getBidSize();
-                                switch (s.getType()) {
-                                    case "OPT":
-                                        s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
-                                        if (underlyingTradePriceExists(s, 1) && s.getCdte() > 0) {
-                                            calculatedPrice = s.getOptionProcess().NPV();
-                                            calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
-                                        } else if (s.getCdte() == 0) {
-                                            Double strike = Utilities.getDouble(s.getOption(), 0);
-                                            if (s.getRight().equals("CALL")) {
-                                                calculatedPrice = s.getUnderlying().value() - strike;
-                                            } else {
-                                                calculatedPrice = strike - s.getUnderlying().value();
-                                            }
-                                            calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
-                                            if (calculatedPrice <= 0 || strike == 0 || s.getUnderlying().value() == 0) {
-                                                calculatedPrice = 0;
-                                            }
+                    limitPrice = ob.getLimitPrice();
+                    double newLimitPrice = limitPrice;
+                    plp = limitPrice;
+                    switch (side) {
+                        case BUY:
+                        case COVER:
+                            recalculate = false;
+                            double bidPrice = s.getBidPrice();
+                            double askPrice = s.getAskPrice();
+                            double calculatedPrice = 0;
+                            int bidSize = s.getBidSize();
+                            switch (s.getType()) {
+                                case "OPT":
+                                    s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
+                                    if (underlyingTradePriceExists(s, 1) && s.getCdte() > 0) {
+                                        calculatedPrice = s.getOptionProcess().NPV();
+                                        calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                    } else if (s.getCdte() == 0) {
+                                        Double strike = Utilities.getDouble(s.getOption(), 0);
+                                        if (s.getRight().equals("CALL")) {
+                                            calculatedPrice = s.getUnderlying().value() - strike;
+                                        } else {
+                                            calculatedPrice = strike - s.getUnderlying().value();
                                         }
-                                        if (calculatedPrice == 0) { //underlying does not have a price. No recalculation.
-                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                                    new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                        recentOrders.size()}, Algorithm.timeZone, true);
-                                            return;
+                                        calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                        if (calculatedPrice <= 0 || strike == 0 || s.getUnderlying().value() == 0) {
+                                            calculatedPrice = 0;
                                         }
-                                        break;
-                                    default:
-                                        calculatedPrice = bidPrice;
-                                        if (calculatedPrice == 0) {
-                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                                    new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                        recentOrders.size()}, Algorithm.timeZone, true);
-                                            return;
-                                        }
-                                        break;
-                                }
+                                    }
+                                    if (calculatedPrice == 0) { //underlying does not have a price. No recalculation.
+                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
+                                                new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                                    recentOrders.size()}, Algorithm.timeZone, true);
+                                        return;
+                                    }
+                                    break;
+                                default:
+                                    calculatedPrice = bidPrice;
+                                    if (calculatedPrice == 0) {
+                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
+                                                new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                                    recentOrders.size()}, Algorithm.timeZone, true);
+                                        return;
+                                    }
+                                    break;
+                            }
 
-                                /* Low Price--------High Price
+                            /* Low Price--------High Price
                                          * (1) BP - LP - CP : Do Nothing. We are the best bid
                                          * (2) LP - BP - CP : Change to Best Bid
                                          * (3) BP - CP - LP : Change to Best Bid  
@@ -229,128 +230,128 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                          * CP - LP - BP : Second Best Bid
                                          * Fat Finger protection
                                          * BP-CP / CP > +5% stay at CP.
-                                 */
-                                if (bidPrice == 0 || fatfinger) {
-                                    fatfinger = true;
-                                    if (fatFingerStart == Long.MAX_VALUE) {
-                                        fatFingerStart = new Date().getTime();
-                                    }
-                                    if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000) {
-                                        if (bidPrice > 0) {
-                                            if (Math.abs(plp - bidPrice) > 10 * ticksize) {//if we are more than 10 ticks away from bidprice
-                                                newLimitPrice = bidPrice - Math.abs(improveamt);
-                                            } else {
-                                                newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));
-                                            }
-                                        } else {
-                                            newLimitPrice = Utilities.roundTo(0.8 * calculatedPrice, ticksize);
-                                        }
-                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                                new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
-                                    }
-                                } else {
-                                    fatfinger = false;
+                             */
+                            if (bidPrice == 0 || fatfinger) {
+                                fatfinger = true;
+                                if (fatFingerStart == Long.MAX_VALUE) {
+                                    fatFingerStart = new Date().getTime();
                                 }
-
-                                if (!fatfinger) {
-                                    fatfinger = false;
-                                    fatFingerStart = Long.MAX_VALUE;
-                                }
-
-                                if (!fatfinger) {
-                                    if (bidPrice <= plp && plp <= calculatedPrice) {
-                                        //do nothing, we are the best bid
-                                        bestPrice = true;
-                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && bidSize == ob.getCurrentOrderSize()) {
-                                            newLimitPrice = plp - Math.abs(improveamt);
-                                        }
-                                    } else if (calculatedPrice >= bidPrice && bidPrice != plp) {
-                                        //Change to Best Bid
-                                        if (Math.abs(plp - bidPrice) > 10 * ticksize) {
-                                            newLimitPrice = bidPrice + Math.abs(improveamt);
+                                if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000) {
+                                    if (bidPrice > 0) {
+                                        if (Math.abs(plp - bidPrice) > 10 * ticksize) {//if we are more than 10 ticks away from bidprice
+                                            newLimitPrice = bidPrice - Math.abs(improveamt);
                                         } else {
-                                            newLimitPrice = plp + improveamt;
+                                            newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));
                                         }
                                     } else {
-                                        //Change to second best bid
-                                        if(Math.abs(plp - bidPrice) > 10 * ticksize){
-                                            newLimitPrice = bidPrice-Math.abs(improveamt);                                            
-                                        }else{
-                                            newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));                                            
-                                        }
-                                    }
-                                    double random = Math.random();
-                                    if (random > improveprob) {//no improvement, therefore worsen price
-                                        if (!bestPrice) { //if not bestprice, bring to bidprice incrementally
-                                            newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));
-                                        } else if (bestPrice) { //if bestprice, be defensive and worsen price in a single tick
-                                            newLimitPrice = bidPrice - Math.abs(improveamt);
-                                        }
+                                        newLimitPrice = Utilities.roundTo(0.8 * calculatedPrice, ticksize);
                                     }
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                            new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), random, improveprob}, Algorithm.timeZone, true);
+                                            new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
                                 }
+                            } else {
+                                fatfinger = false;
+                            }
 
-                                if (newLimitPrice != plp && ob.getOrderStatus() != EnumOrderStatus.SUBMITTED) {
-                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                            new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
-                                    recentOrders.add(new Date().getTime());
-                                    ob.setLimitPrice(newLimitPrice);
-                                    ob.setOrderStage(EnumOrderStage.AMEND);
-                                    ob.setSpecifiedBrokerAccount(c.getAccountName());
-                                    String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
-                                    logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
-                                    //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-                                    oms.orderReceived(ob);
+                            if (!fatfinger) {
+                                fatfinger = false;
+                                fatFingerStart = Long.MAX_VALUE;
+                            }
 
+                            if (!fatfinger) {
+                                if (bidPrice <= plp && plp <= calculatedPrice) {
+                                    //do nothing, we are the best bid
+                                    bestPrice = true;
+                                    if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && bidSize == ob.getCurrentOrderSize()) {
+                                        newLimitPrice = plp - Math.abs(improveamt);
+                                    }
+                                } else if (calculatedPrice >= bidPrice && bidPrice != plp) {
+                                    //Change to Best Bid
+                                    if (Math.abs(plp - bidPrice) > 10 * ticksize) {
+                                        newLimitPrice = bidPrice + Math.abs(improveamt);
+                                    } else {
+                                        newLimitPrice = plp + improveamt;
+                                    }
+                                } else {
+                                    //Change to second best bid
+                                    if (Math.abs(plp - bidPrice) > 10 * ticksize) {
+                                        newLimitPrice = bidPrice - Math.abs(improveamt);
+                                    } else {
+                                        newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));
+                                    }
                                 }
-                                break;
-                            case SHORT:
-                            case SELL:
-                                recalculate = false;
-                                bidPrice = s.getBidPrice();
-                                askPrice = s.getAskPrice();
-                                int askSize = s.getAskSize();
-                                calculatedPrice = 0;
-                                switch (s.getType()) {
-                                    case "OPT":
-                                        s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
-                                        if (underlyingTradePriceExists(s, 1) && s.getCdte() > 0) {
-                                            calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
-                                            calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
-                                        } else if (s.getCdte() == 0) {
-                                            Double strike = Utilities.getDouble(s.getOption(), 0);
-                                            if (s.getRight().equals("CALL")) {
-                                                calculatedPrice = s.getUnderlying().value() - strike;
-                                            } else {
-                                                calculatedPrice = strike - s.getUnderlying().value();
-                                            }
-                                            calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
-                                            if (calculatedPrice <= 0 || strike == 0 || s.getUnderlying().value() == 0) {
-                                                calculatedPrice = 0;
-                                            }
-                                        }
-                                        if (calculatedPrice == 0) {
-                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                                    new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                        recentOrders.size()}, Algorithm.timeZone, true);
-                                            return;
-                                        }
-                                        break;
-                                    default:
-                                        calculatedPrice = bidPrice;
-                                        if (calculatedPrice == 0) {
-                                            Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                                    new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                        recentOrders.size()}, Algorithm.timeZone, true);
-                                        }
-                                        break;
+                                double random = Math.random();
+                                if (random > improveprob) {//no improvement, therefore worsen price
+                                    if (!bestPrice) { //if not bestprice, bring to bidprice incrementally
+                                        newLimitPrice = Math.min(bidPrice - Math.abs(improveamt), plp + Math.abs(improveamt));
+                                    } else if (bestPrice) { //if bestprice, be defensive and worsen price in a single tick
+                                        newLimitPrice = bidPrice - Math.abs(improveamt);
+                                    }
                                 }
+                                Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
+                                        new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                            recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getOrderStatus(), random, improveprob}, Algorithm.timeZone, true);
+                            }
 
-                                /*
+                            if (newLimitPrice != plp && ob.getOrderStatus() != EnumOrderStatus.SUBMITTED) {
+                                Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
+                                        new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                            recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
+                                recentOrders.add(new Date().getTime());
+                                ob.setLimitPrice(newLimitPrice);
+                                ob.setOrderStage(EnumOrderStage.AMEND);
+                                ob.setSpecifiedBrokerAccount(c.getAccountName());
+                                String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
+                                logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
+                                //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
+                                oms.orderReceived(ob);
+
+                            }
+                            break;
+                        case SHORT:
+                        case SELL:
+                            recalculate = false;
+                            bidPrice = s.getBidPrice();
+                            askPrice = s.getAskPrice();
+                            int askSize = s.getAskSize();
+                            calculatedPrice = 0;
+                            switch (s.getType()) {
+                                case "OPT":
+                                    s.getUnderlying().setValue(Parameters.symbol.get(underlyingid).getLastPrice());
+                                    if (underlyingTradePriceExists(s, 1) && s.getCdte() > 0) {
+                                        calculatedPrice = Parameters.symbol.get(id).getOptionProcess().NPV();
+                                        calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                    } else if (s.getCdte() == 0) {
+                                        Double strike = Utilities.getDouble(s.getOption(), 0);
+                                        if (s.getRight().equals("CALL")) {
+                                            calculatedPrice = s.getUnderlying().value() - strike;
+                                        } else {
+                                            calculatedPrice = strike - s.getUnderlying().value();
+                                        }
+                                        calculatedPrice = Utilities.roundTo(calculatedPrice, ticksize);
+                                        if (calculatedPrice <= 0 || strike == 0 || s.getUnderlying().value() == 0) {
+                                            calculatedPrice = 0;
+                                        }
+                                    }
+                                    if (calculatedPrice == 0) {
+                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
+                                                new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                                    recentOrders.size()}, Algorithm.timeZone, true);
+                                        return;
+                                    }
+                                    break;
+                                default:
+                                    calculatedPrice = bidPrice;
+                                    if (calculatedPrice == 0) {
+                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
+                                                new Object[]{"ZeroCalculatedPriceExit", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                                    recentOrders.size()}, Algorithm.timeZone, true);
+                                    }
+                                    break;
+                            }
+
+                            /*
                                          * CP - LP - AP : Do Nothing. We are the best ask
                                          * CP - AP - LP : Change to Best Ask
                                          * LP - CP - AP : Change to Best Ask
@@ -359,86 +360,85 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                          * AP - LP - CP : Second Best Ask
                                          * Fat Finger protection
                                          * CP - AP / CP > +5% stay at CP.
-                                 */
-                                if (askPrice == 0 || fatfinger) {
-                                    fatfinger = true;
-                                    if (fatFingerStart == Long.MAX_VALUE) {
-                                        fatFingerStart = new Date().getTime();
-                                    }
-                                    if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000) {
-                                        if (askPrice > 0) {
-                                            if (Math.abs(plp - askPrice) > 10 * ticksize) {//if we are more than 10 ticks away from bidprice
-                                                newLimitPrice = askPrice + Math.abs(improveamt);
-                                            } else {
-                                                newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
-                                            }
-                                        } else {
-                                            newLimitPrice = Utilities.roundTo(1.2 * calculatedPrice, ticksize);
-                                        }
-                                        Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                                new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                    recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
-                                    } else {
-                                        fatfinger = false;
-                                    }
+                             */
+                            if (askPrice == 0 || fatfinger) {
+                                fatfinger = true;
+                                if (fatFingerStart == Long.MAX_VALUE) {
+                                    fatFingerStart = new Date().getTime();
                                 }
-
-                                if (!fatfinger) {
-                                    fatfinger = false;
-                                    fatFingerStart = Long.MAX_VALUE;
-                                }
-
-                                if (!fatfinger) {
-                                    if (calculatedPrice <= plp && plp <= askPrice) {
-                                        //do nothing, we are the best ask
-                                        bestPrice = true;
-                                        if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && askSize == ob.getCurrentOrderSize()) {
-                                            newLimitPrice = plp + Math.abs(improveamt);
-                                        }
-                                    } else if (calculatedPrice <= askPrice && askPrice != plp) {
-                                        //Change to Best Ask
-                                        if (Math.abs(plp - askPrice) > 10 * ticksize) {
-                                            newLimitPrice = askPrice - Math.abs(improveamt);
-                                        } else {
-                                            newLimitPrice = plp - improveamt;
-                                        }
-                                    } else {
-                                        //Change to second best ask
-                                        if (Math.abs(plp - askPrice) > 10 * ticksize) {
+                                if ((new Date().getTime() - fatFingerStart) > fatFingerWindow * 1000) {
+                                    if (askPrice > 0) {
+                                        if (Math.abs(plp - askPrice) > 10 * ticksize) {//if we are more than 10 ticks away from bidprice
                                             newLimitPrice = askPrice + Math.abs(improveamt);
                                         } else {
                                             newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
                                         }
+                                    } else {
+                                        newLimitPrice = Utilities.roundTo(1.2 * calculatedPrice, ticksize);
                                     }
-                                    double random = Math.random();
-                                    if (random > improveprob) {
-                                        if (!bestPrice) {
-                                            newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
-                                        } else if (bestPrice) {
-                                            newLimitPrice = askPrice + Math.abs(improveamt);
-                                        }
-                                    }
-                                    Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID+".csv",
-                                            new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getOrderStatus(),random, improveprob}, Algorithm.timeZone, true);
-                                }
-                                if (newLimitPrice != plp && ob.getOrderStatus() != EnumOrderStatus.SUBMITTED) {
                                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
-                                            new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
-                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice,ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
-                                    recentOrders.add(new Date().getTime());
-                                    ob.setLimitPrice(newLimitPrice);
-                                    ob.setOrderStage(EnumOrderStage.AMEND);
-                                    ob.setSpecifiedBrokerAccount(c.getAccountName());
-                                    String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
-                                    logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
-                                    //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
-                                    oms.orderReceived(ob);
+                                            new Object[]{"FatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                                recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
+                                } else {
+                                    fatfinger = false;
                                 }
-                                break;
-                        }
+                            }
 
-                    
+                            if (!fatfinger) {
+                                fatfinger = false;
+                                fatFingerStart = Long.MAX_VALUE;
+                            }
+
+                            if (!fatfinger) {
+                                if (calculatedPrice <= plp && plp <= askPrice) {
+                                    //do nothing, we are the best ask
+                                    bestPrice = true;
+                                    if (recentOrders.size() > 0 && (new Date().getTime() - (Long) recentOrders.getLast()) > stickyperiod * 1000 && askSize == ob.getCurrentOrderSize()) {
+                                        newLimitPrice = plp + Math.abs(improveamt);
+                                    }
+                                } else if (calculatedPrice <= askPrice && askPrice != plp) {
+                                    //Change to Best Ask
+                                    if (Math.abs(plp - askPrice) > 10 * ticksize) {
+                                        newLimitPrice = askPrice - Math.abs(improveamt);
+                                    } else {
+                                        newLimitPrice = plp - improveamt;
+                                    }
+                                } else {
+                                    //Change to second best ask
+                                    if (Math.abs(plp - askPrice) > 10 * ticksize) {
+                                        newLimitPrice = askPrice + Math.abs(improveamt);
+                                    } else {
+                                        newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
+                                    }
+                                }
+                                double random = Math.random();
+                                if (random > improveprob) {
+                                    if (!bestPrice) {
+                                        newLimitPrice = Math.max(askPrice + Math.abs(improveamt), plp - Math.abs(improveamt));
+                                    } else if (bestPrice) {
+                                        newLimitPrice = askPrice + Math.abs(improveamt);
+                                    }
+                                }
+                                Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
+                                        new Object[]{"NoFatFinger", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                            recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getOrderStatus(), random, improveprob}, Algorithm.timeZone, true);
+                            }
+                            if (newLimitPrice != plp && ob.getOrderStatus() != EnumOrderStatus.SUBMITTED) {
+                                Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
+                                        new Object[]{"PlacingOrder", bidPrice, askPrice, Parameters.symbol.get(id).getLastPrice(),
+                                            recentOrders.size(), calculatedPrice, plp, newLimitPrice, ob.getOrderStatus(), 0, 0}, Algorithm.timeZone, true);
+                                recentOrders.add(new Date().getTime());
+                                ob.setLimitPrice(newLimitPrice);
+                                ob.setOrderStage(EnumOrderStage.AMEND);
+                                ob.setSpecifiedBrokerAccount(c.getAccountName());
+                                String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
+                                logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
+                                //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
+                                oms.orderReceived(ob);
+                            }
+                            break;
+                    }
+
                 }
             }
         } catch (Exception ex) {
@@ -447,15 +447,15 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     }
 
     @Override
-    public synchronized void orderStatusReceived(OrderStatusEvent event) {        
-        try {            
-                if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && ob.getParentSymbolID() == id) {
-                    if (!completed.get() && (event.getRemaining() == 0 || event.getStatus().equals("Cancelled") || event.getStatus().equals("Inactive"))) {
-                        completed.set(Boolean.TRUE);
-                        sync.offer("FINISHED", 1, TimeUnit.SECONDS);
-                    }
+    public synchronized void orderStatusReceived(OrderStatusEvent event) {
+        try {
+            if (this.c.equals(event.getC()) && event.getOrderID() == externalOrderID && ob.getParentSymbolID() == id) {
+                if (!completed.get() && (event.getRemaining() == 0 || event.getStatus().equals("Cancelled") || event.getStatus().equals("Inactive"))) {
+                    completed.set(Boolean.TRUE);
+                    sync.offer("FINISHED", 1, TimeUnit.SECONDS);
                 }
-            
+            }
+
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }

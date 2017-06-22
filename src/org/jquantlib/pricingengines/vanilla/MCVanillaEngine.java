@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2003, 2004, 2005, 2007 StatPro Italia srl
 
@@ -34,8 +34,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines.vanilla;
 
 /**
@@ -52,7 +51,6 @@ public class MCVanillaEngine /*extends McSimulation<MC extends Variate, RNG exte
     }
 
 }
-
 
 //template <template <class> class MC, class RNG,
 //class S = Statistics, class Inst = VanillaOption>

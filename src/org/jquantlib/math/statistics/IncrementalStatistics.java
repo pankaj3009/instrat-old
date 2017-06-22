@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.statistics;
 
 import org.jquantlib.QL;
@@ -47,32 +46,30 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 import org.jquantlib.math.Constants;
 import org.jquantlib.math.matrixutilities.Array;
 
-
 /**
  * Statistics tool based on incremental accumulation
  * <p>
- * It can accumulate a set of data and return statistics (e.g: mean,
- * variance, skewness, kurtosis, error estimation, etc.)
+ * It can accumulate a set of data and return statistics (e.g: mean, variance,
+ * skewness, kurtosis, error estimation, etc.)
  * <p>
  * @warning high moments are numerically unstable for high
- *          average/standardDeviation ratios.
- *          
+ * average/standardDeviation ratios.
+ *
  * @author Ueli Hofstetter
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q4_UNIT, reviewers = { "Richard Gomes" }, version = Version.V097)
+@QualityAssurance(quality = Quality.Q4_UNIT, reviewers = {"Richard Gomes"}, version = Version.V097)
 public class IncrementalStatistics extends GenericRiskStatistics {
 
-    private static final String UNSUFFICIENT_SAMPLE_WEIGHT    = "sampleWeight_=0, unsufficient";
-    private static final String UNSUFFICIENT_SAMPLE_NUMBER    = "sample number <=1, unsufficient";
-    private static final String UNSUFFICIENT_SAMPLE_NUMBER_2  = "sample number <=2, unsufficient";
-    private static final String UNSUFFICIENT_SAMPLE_NUMBER_3  = "sample number <=3, unsufficient";
-    private static final String NEGATIVE_VARIANCE             = "negative variance";
-    private static final String EMPTY_SAMPLE_SET              = "empty sample set";
+    private static final String UNSUFFICIENT_SAMPLE_WEIGHT = "sampleWeight_=0, unsufficient";
+    private static final String UNSUFFICIENT_SAMPLE_NUMBER = "sample number <=1, unsufficient";
+    private static final String UNSUFFICIENT_SAMPLE_NUMBER_2 = "sample number <=2, unsufficient";
+    private static final String UNSUFFICIENT_SAMPLE_NUMBER_3 = "sample number <=3, unsufficient";
+    private static final String NEGATIVE_VARIANCE = "negative variance";
+    private static final String EMPTY_SAMPLE_SET = "empty sample set";
     private static final String MAX_NUMBER_OF_SAMPLES_REACHED = "maximum number of samples reached";
-    private static final String INCOMPATIBLE_ARRAY_SIZES      = "incompatible array sizes";
+    private static final String INCOMPATIBLE_ARRAY_SIZES = "incompatible array sizes";
 
-    
     protected /*@Size*/ int sampleNumber_;
     protected /*@Size*/ int downsideSampleNumber_;
     protected /*@Real*/ double sampleWeight_, downsideSampleWeight_;
@@ -80,17 +77,14 @@ public class IncrementalStatistics extends GenericRiskStatistics {
     protected /*@Real*/ double cubicSum_, fourthPowerSum_;
     protected /*@Real*/ double min_, max_;
 
-
     public IncrementalStatistics() {
-    	super();
+        super();
         reset();
     }
 
-    
     //
     // public methods
     //
-    
     /**
      * number of samples collected
      */
@@ -108,60 +102,62 @@ public class IncrementalStatistics extends GenericRiskStatistics {
     }
 
     /**
-     * returns the mean, defined as
-     * {@latex[ \langle x \rangle = \frac{\sum w_i x_i}{\sum w_i}. }
+     * returns the mean, defined as {
+     *
+     * @latex[ \langle x \rangle = \frac{\sum w_i x_i}{\sum w_i}. }
      */
     @Override
     public /*@Real*/ double mean() /*@ReadOnly*/ {
-        QL.require(sampleWeight_>0.0, UNSUFFICIENT_SAMPLE_WEIGHT);
-        return sum_/sampleWeight_;
+        QL.require(sampleWeight_ > 0.0, UNSUFFICIENT_SAMPLE_WEIGHT);
+        return sum_ / sampleWeight_;
     }
 
     /**
-     * returns the variance, defined as
-     * {@latex[ \frac{N}{N-1} \left\langle \left(
-     *      x-\langle x \rangle \right)^2 \right\rangle. }
+     * returns the variance, defined as {
+     *
+     * @latex[ \frac{N}{N-1} \left\langle \left( x-\langle x \rangle \right)^2
+     * \right\rangle. }
      */
     @Override
     public /*@Real*/ double variance() /*@ReadOnly*/ {
-        QL.require(sampleWeight_>0.0, UNSUFFICIENT_SAMPLE_WEIGHT);
-        QL.require(sampleNumber_>1, UNSUFFICIENT_SAMPLE_NUMBER);
+        QL.require(sampleWeight_ > 0.0, UNSUFFICIENT_SAMPLE_WEIGHT);
+        QL.require(sampleNumber_ > 1, UNSUFFICIENT_SAMPLE_NUMBER);
 
         /*@Real*/ double m = mean();
-        /*@Real*/ double v = quadraticSum_/sampleWeight_;
-        v -= m*m;
-        v *= sampleNumber_/(sampleNumber_-1.0);
+        /*@Real*/ double v = quadraticSum_ / sampleWeight_;
+        v -= m * m;
+        v *= sampleNumber_ / (sampleNumber_ - 1.0);
 
         QL.ensure(v >= 0.0, NEGATIVE_VARIANCE);
         return v;
     }
 
-    
     /**
-     * returns the standard deviation {@latex$ \sigma }, defined as the
-     * square root of the variance.
+     * returns the standard deviation {
+     *
+     * @latex$ \sigma }, defined as the square root of the variance.
      */
     @Override
     public /*@Real*/ double standardDeviation() /*@ReadOnly*/ {
         return Math.sqrt(variance());
     }
 
-
     /**
-     * returns the error estimate {@latex$ \epsilon }, defined as the
-     * square root of the ratio of the variance to the number of
-     * samples.
+     * returns the error estimate {
+     *
+     * @latex$ \epsilon }, defined as the square root of the ratio of the
+     * variance to the number of samples.
      */
     @Override
     public /*@Real*/ double errorEstimate() /*@ReadOnly*/ {
         /*@Real*/ double var = variance();
         QL.require(samples() > 0, EMPTY_SAMPLE_SET);
-        return Math.sqrt(var/samples());
+        return Math.sqrt(var / samples());
     }
 
     /**
-     * returns the downside deviation, defined as the
-     * square root of the downside variance.
+     * returns the downside deviation, defined as the square root of the
+     * downside variance.
      */
     @Override
     public /*@Real*/ double downsideDeviation() /*@ReadOnly*/ {
@@ -169,80 +165,85 @@ public class IncrementalStatistics extends GenericRiskStatistics {
     }
 
     /**
-     * returns the downside variance, defined as
-     * {@latex[ \frac{N}{N-1} \times \frac{ \sum_{i=1}^{N}
-     *      \theta \times x_i^{2}}{ \sum_{i=1}^{N} w_i} },
-     *  where {@latex$ \theta } = 0 if x > 0 and
-     *  {@latex$ \theta } =1 if x <0
+     * returns the downside variance, defined as {
+     *
+     * @latex[ \frac{N}{N-1} \times \frac{ \sum_{i=1}^{N} \theta \times
+     * x_i^{2}}{ \sum_{i=1}^{N} w_i} }, where {
+     * @latex$ \theta } = 0 if x > 0 and {
+     * @latex$ \theta } =1 if x <0
      */
     @Override
     public /*@Real*/ double downsideVariance() /*@ReadOnly*/ {
-        if (downsideSampleWeight_==0.0) {
-            QL.require(sampleWeight_>0.0, UNSUFFICIENT_SAMPLE_WEIGHT);
+        if (downsideSampleWeight_ == 0.0) {
+            QL.require(sampleWeight_ > 0.0, UNSUFFICIENT_SAMPLE_WEIGHT);
             return 0.0;
         }
 
-        QL.require(downsideSampleNumber_>1, "sample number below zero <=1, unsufficient");
+        QL.require(downsideSampleNumber_ > 1, "sample number below zero <=1, unsufficient");
 
-        return (downsideSampleNumber_/(downsideSampleNumber_-1.0))*
-            (downsideQuadraticSum_ /downsideSampleWeight_);
+        return (downsideSampleNumber_ / (downsideSampleNumber_ - 1.0))
+                * (downsideQuadraticSum_ / downsideSampleWeight_);
     }
 
     /**
-     * returns the skewness, defined as
-     * {@latex[ \frac{N^2}{(N-1)(N-2)} \frac{\left\langle \left(
-     *    x-\langle x \rangle \right)^3 \right\rangle}{\sigma^3}. }
-     *  The above evaluates to 0 for a Gaussian distribution.
+     * returns the skewness, defined as {
+     *
+     * @latex[ \frac{N^2}{(N-1)(N-2)} \frac{\left\langle \left( x-\langle x
+     * \rangle \right)^3 \right\rangle}{\sigma^3}. } The above evaluates to 0
+     * for a Gaussian distribution.
      */
     @Override
     public /*@Real*/ double skewness() /*@ReadOnly*/ {
-        QL.require(sampleNumber_>2, UNSUFFICIENT_SAMPLE_NUMBER_2);
+        QL.require(sampleNumber_ > 2, UNSUFFICIENT_SAMPLE_NUMBER_2);
         /*@Real*/ double s = standardDeviation();
 
-        if (s==0.0) return 0.0;
+        if (s == 0.0) {
+            return 0.0;
+        }
 
         /*@Real*/ double m = mean();
-        /*@Real*/ double result = cubicSum_/sampleWeight_;
-        result -= 3.0*m*(quadraticSum_/sampleWeight_);
-        result += 2.0*m*m*m;
-        result /= s*s*s;
-        result *= sampleNumber_/(sampleNumber_-1.0);
-        result *= sampleNumber_/(sampleNumber_-2.0);
+        /*@Real*/ double result = cubicSum_ / sampleWeight_;
+        result -= 3.0 * m * (quadraticSum_ / sampleWeight_);
+        result += 2.0 * m * m * m;
+        result /= s * s * s;
+        result *= sampleNumber_ / (sampleNumber_ - 1.0);
+        result *= sampleNumber_ / (sampleNumber_ - 2.0);
         return result;
     }
 
-    
     /**
-     * returns the excess kurtosis, defined as
-     * {@latex[ \frac{N^2(N+1)}{(N-1)(N-2)(N-3)}
-     *      \frac{\left\langle \left(x-\langle x \rangle \right)^4
-     *      \right\rangle}{\sigma^4} - \frac{3(N-1)^2}{(N-2)(N-3)}. }
-     *  The above evaluates to 0 for a Gaussian distribution.
+     * returns the excess kurtosis, defined as {
+     *
+     * @latex[ \frac{N^2(N+1)}{(N-1)(N-2)(N-3)} \frac{\left\langle
+     * \left(x-\langle x \rangle \right)^4 \right\rangle}{\sigma^4} -
+     * \frac{3(N-1)^2}{(N-2)(N-3)}. } The above evaluates to 0 for a Gaussian
+     * distribution.
      */
     @Override
     public /*@Real*/ double kurtosis() /*@ReadOnly*/ {
-        QL.require(sampleNumber_>3, UNSUFFICIENT_SAMPLE_NUMBER_3);
+        QL.require(sampleNumber_ > 3, UNSUFFICIENT_SAMPLE_NUMBER_3);
 
         /*@Real*/ double m = mean();
         /*@Real*/ double v = variance();
 
-        /*@Real*/ double c = (sampleNumber_-1.0)/(sampleNumber_-2.0);
-        c *= (sampleNumber_-1.0)/(sampleNumber_-3.0);
+        /*@Real*/ double c = (sampleNumber_ - 1.0) / (sampleNumber_ - 2.0);
+        c *= (sampleNumber_ - 1.0) / (sampleNumber_ - 3.0);
         c *= 3.0;
 
-        if (v==0) return c;
+        if (v == 0) {
+            return c;
+        }
 
-        /*@Real*/ double result = fourthPowerSum_/sampleWeight_;
-        result -= 4.0*m*(cubicSum_/sampleWeight_);
-        result += 6.0*m*m*(quadraticSum_/sampleWeight_);
-        result -= 3.0*m*m*m*m;
-        result /= v*v;
-        result *= sampleNumber_/(sampleNumber_-1.0);
-        result *= sampleNumber_/(sampleNumber_-2.0);
-        result *= (sampleNumber_+1.0)/(sampleNumber_-3.0);
+        /*@Real*/ double result = fourthPowerSum_ / sampleWeight_;
+        result -= 4.0 * m * (cubicSum_ / sampleWeight_);
+        result += 6.0 * m * m * (quadraticSum_ / sampleWeight_);
+        result -= 3.0 * m * m * m * m;
+        result /= v * v;
+        result *= sampleNumber_ / (sampleNumber_ - 1.0);
+        result *= sampleNumber_ / (sampleNumber_ - 2.0);
+        result *= (sampleNumber_ + 1.0) / (sampleNumber_ - 3.0);
 
-
-        return result-c;
+        return result - c;
     }
 
     /**
@@ -253,7 +254,6 @@ public class IncrementalStatistics extends GenericRiskStatistics {
         QL.require(samples() > 0, EMPTY_SAMPLE_SET);
         return min_;
     }
-
 
     /**
      * returns the maximum sample value
@@ -269,11 +269,11 @@ public class IncrementalStatistics extends GenericRiskStatistics {
      */
     @Override
     public void addSequence(final double[] datum) {
-	    for (int i=0; i<datum.length; i++) {
-	    	add(datum[i]);
-	    }
+        for (int i = 0; i < datum.length; i++) {
+            add(datum[i]);
+        }
     }
-    
+
     /**
      * adds a sequence of data to the set, each with its weight
      * <p>
@@ -281,9 +281,9 @@ public class IncrementalStatistics extends GenericRiskStatistics {
      */
     @Override
     public void addSequence(final double[] datum, final double[] weights) {
-        QL.require(datum.length==weights.length, INCOMPATIBLE_ARRAY_SIZES);
-        for (int i=0; i<datum.length; i++) {
-        	add(datum[i], weights[i]);
+        QL.require(datum.length == weights.length, INCOMPATIBLE_ARRAY_SIZES);
+        for (int i = 0; i < datum.length; i++) {
+            add(datum[i], weights[i]);
         }
     }
 
@@ -292,11 +292,11 @@ public class IncrementalStatistics extends GenericRiskStatistics {
      */
     @Override
     public void addSequence(final Array datum) {
-	    for (int i=0; i<datum.size(); i++) {
-	    	add(datum.get(i));
-	    }
+        for (int i = 0; i < datum.size(); i++) {
+            add(datum.get(i));
+        }
     }
-    
+
     /**
      * adds a sequence of data to the set, each with its weight
      * <p>
@@ -304,12 +304,11 @@ public class IncrementalStatistics extends GenericRiskStatistics {
      */
     @Override
     public void addSequence(final Array datum, final Array weights) {
-        QL.require(datum.size()==weights.size(), INCOMPATIBLE_ARRAY_SIZES);
-        for (int i=0; i<datum.size(); i++) {
-        	add(datum.get(i), weights.get(i));
+        QL.require(datum.size() == weights.size(), INCOMPATIBLE_ARRAY_SIZES);
+        for (int i = 0; i < datum.size(); i++) {
+            add(datum.get(i), weights.get(i));
         }
     }
-
 
     /**
      * adds a datum to the set, possibly with a weight
@@ -318,12 +317,12 @@ public class IncrementalStatistics extends GenericRiskStatistics {
      */
     @Override
     public void add(final /*@Real*/ double value) {
-    	add(value, 1.0);
+        add(value, 1.0);
     }
-    
+
     @Override
     public void add(final /*@Real*/ double value, final /*@Real*/ double weight) {
-        QL.require(weight>=0.0, "negative weight not allowed");
+        QL.require(weight >= 0.0, "negative weight not allowed");
 
         /*@Size*/ int oldSamples = sampleNumber_;
         sampleNumber_++;
@@ -331,11 +330,11 @@ public class IncrementalStatistics extends GenericRiskStatistics {
 
         sampleWeight_ += weight;
 
-        /*@Real*/ double temp = weight*value;
+        /*@Real*/ double temp = weight * value;
         sum_ += temp;
         temp *= value;
         quadraticSum_ += temp;
-        if (value<0.0) {
+        if (value < 0.0) {
             downsideQuadraticSum_ += temp;
             downsideSampleNumber_++;
             downsideSampleWeight_ += weight;
@@ -351,9 +350,7 @@ public class IncrementalStatistics extends GenericRiskStatistics {
             max_ = Math.max(value, max_);
         }
     }
-        
-        
-        
+
     /**
      * resets the data to a null set
      */

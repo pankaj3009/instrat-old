@@ -20,29 +20,27 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time;
-
 
 /**
  * Container for historical data
  * <p>
- * This class acts as a generic repository for a set of historical data.
- * Any single datum can be accessed through its date, while
- * sets of consecutive data can be accessed through iterators.
+ * This class acts as a generic repository for a set of historical data. Any
+ * single datum can be accessed through its date, while sets of consecutive data
+ * can be accessed through iterators.
  * <p>
- * This class is intended to keep closest compatibility with QuantLib/C++ as possible, being
- * nothing more than a shortcut to class {@link Series}, where the first parametric type is
- * fixed as {@link Date}.
+ * This class is intended to keep closest compatibility with QuantLib/C++ as
+ * possible, being nothing more than a shortcut to class {@link Series}, where
+ * the first parametric type is fixed as {@link Date}.
  *
  * @see Series
  *
  * @author Richard Gomes
  */
-public class TimeSeries<V> extends Series<JDate,V> { 
-	
-	public TimeSeries(final Class<V> classV) {
-		super(JDate.class, classV);
-	}
-	
+public class TimeSeries<V> extends Series<JDate, V> {
+
+    public TimeSeries(final Class<V> classV) {
+        super(JDate.class, classV);
+    }
+
 }

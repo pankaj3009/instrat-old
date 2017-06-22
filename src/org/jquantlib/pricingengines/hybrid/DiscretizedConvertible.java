@@ -17,7 +17,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2005, 2006 Theo Boafo
  Copyright (C) 2006, 2007 StatPro Italia srl
 
@@ -33,8 +33,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines.hybrid;
 
 import java.util.ArrayList;
@@ -61,17 +60,16 @@ import org.jquantlib.util.Std;
 
 /**
  * Discretized Convertible
- * 
+ *
  * @author Zahid Hussain
  *
  */
-@QualityAssurance(quality=Quality.Q3_DOCUMENTATION, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = "Richard Gomes")
 public class DiscretizedConvertible extends DiscretizedAsset {
 
     //
     // protected fields
     //
-    
     protected Array conversionProbability;
     protected Array spreadAdjustedRate;
     protected Array dividendValues;
@@ -79,103 +77,121 @@ public class DiscretizedConvertible extends DiscretizedAsset {
     //
     // private fields
     //
-    
     private final ConvertibleBondOption.ArgumentsImpl arguments;
     private final GeneralizedBlackScholesProcess process;
-    private final List< /* @Time */ Double > stoppingTimes;
-    private final List< /* @Time */ Double > callabilityTimes;
-    private final List< /* @Time */ Double > couponTimes;
-    private final List< /* @Time */ Double > dividendTimes;
-
+    private final List< /* @Time */ Double> stoppingTimes;
+    private final List< /* @Time */ Double> callabilityTimes;
+    private final List< /* @Time */ Double> couponTimes;
+    private final List< /* @Time */ Double> dividendTimes;
 
     //
     // public constructors
     //
-    
     public DiscretizedConvertible(final ConvertibleBondOption.ArgumentsImpl arguments,
-                                  final GeneralizedBlackScholesProcess process,
-                                  final TimeGrid grid) {
+            final GeneralizedBlackScholesProcess process,
+            final TimeGrid grid) {
         this.arguments = arguments;
-        this.process = process; 
+        this.process = process;
 
-       dividendValues = new Array(this.arguments.dividends.size()).fill(0.0);
+        dividendValues = new Array(this.arguments.dividends.size()).fill(0.0);
 
-       final JDate settlementDate = this.process.riskFreeRate().currentLink().referenceDate();
-       for (int i=0; i<this.arguments.dividends.size(); i++) {
-           if (this.arguments.dividends.get(i).date().ge(settlementDate)) {
-               final double value =  this.arguments.dividends.get(i).amount() *
-                                this.process.riskFreeRate().currentLink().discount(
-                                            this.arguments.dividends.get(i).date());
-               dividendValues.set(i, value);
-           }
-       }
+        final JDate settlementDate = this.process.riskFreeRate().currentLink().referenceDate();
+        for (int i = 0; i < this.arguments.dividends.size(); i++) {
+            if (this.arguments.dividends.get(i).date().ge(settlementDate)) {
+                final double value = this.arguments.dividends.get(i).amount()
+                        * this.process.riskFreeRate().currentLink().discount(
+                                this.arguments.dividends.get(i).date());
+                dividendValues.set(i, value);
+            }
+        }
 
-       final DayCounter dayCounter = this.process.riskFreeRate().currentLink().dayCounter();
-       final JDate bondSettlement = this.arguments.settlementDate;
+        final DayCounter dayCounter = this.process.riskFreeRate().currentLink().dayCounter();
+        final JDate bondSettlement = this.arguments.settlementDate;
 
-       stoppingTimes = new ArrayList<Double>(this.arguments.exercise.dates().size());
-       for (int i=0; i<this.arguments.exercise.dates().size(); ++i)
-           stoppingTimes.add(dayCounter.yearFraction(bondSettlement,
-                                       this.arguments.exercise.date(i)));
+        stoppingTimes = new ArrayList<Double>(this.arguments.exercise.dates().size());
+        for (int i = 0; i < this.arguments.exercise.dates().size(); ++i) {
+            stoppingTimes.add(dayCounter.yearFraction(bondSettlement,
+                    this.arguments.exercise.date(i)));
+        }
 
-       callabilityTimes = new ArrayList<Double>(this.arguments.callabilityDates.size());
-       for (int i=0; i<this.arguments.callabilityDates.size(); ++i)
-           callabilityTimes.add(dayCounter.yearFraction(bondSettlement,
-                                       this.arguments.callabilityDates.get(i)));
+        callabilityTimes = new ArrayList<Double>(this.arguments.callabilityDates.size());
+        for (int i = 0; i < this.arguments.callabilityDates.size(); ++i) {
+            callabilityTimes.add(dayCounter.yearFraction(bondSettlement,
+                    this.arguments.callabilityDates.get(i)));
+        }
 
-       couponTimes = new ArrayList<Double>(this.arguments.couponDates.size());
-       for (int i=0; i<this.arguments.couponDates.size(); ++i)
-           couponTimes.add(dayCounter.yearFraction(bondSettlement,
-                                       this.arguments.couponDates.get(i)));
+        couponTimes = new ArrayList<Double>(this.arguments.couponDates.size());
+        for (int i = 0; i < this.arguments.couponDates.size(); ++i) {
+            couponTimes.add(dayCounter.yearFraction(bondSettlement,
+                    this.arguments.couponDates.get(i)));
+        }
 
-       dividendTimes = new ArrayList<Double>(this.arguments.dividendDates.size());
-       for (int i=0; i<this.arguments.dividendDates.size(); ++i)
-           dividendTimes.add(dayCounter.yearFraction(bondSettlement,
-                                       this.arguments.dividendDates.get(i)));
+        dividendTimes = new ArrayList<Double>(this.arguments.dividendDates.size());
+        for (int i = 0; i < this.arguments.dividendDates.size(); ++i) {
+            dividendTimes.add(dayCounter.yearFraction(bondSettlement,
+                    this.arguments.dividendDates.get(i)));
+        }
 
-       if (!grid.empty()) {
-           // adjust times to grid
-           for (int i=0; i<stoppingTimes.size(); i++)
-               stoppingTimes.set(i, grid.closestTime(stoppingTimes.get(i)));
-           for (int i=0; i<couponTimes.size(); i++)
-               couponTimes.set(i, grid.closestTime(couponTimes.get(i)));
-           for (int i=0; i<callabilityTimes.size(); i++)
-               callabilityTimes.set(i, grid.closestTime(callabilityTimes.get(i)));
-           for (int i=0; i<dividendTimes.size(); i++)
-               dividendTimes.set(i,grid.closestTime(dividendTimes.get(i)));
-       }
-   }
-
+        if (!grid.empty()) {
+            // adjust times to grid
+            for (int i = 0; i < stoppingTimes.size(); i++) {
+                stoppingTimes.set(i, grid.closestTime(stoppingTimes.get(i)));
+            }
+            for (int i = 0; i < couponTimes.size(); i++) {
+                couponTimes.set(i, grid.closestTime(couponTimes.get(i)));
+            }
+            for (int i = 0; i < callabilityTimes.size(); i++) {
+                callabilityTimes.set(i, grid.closestTime(callabilityTimes.get(i)));
+            }
+            for (int i = 0; i < dividendTimes.size(); i++) {
+                dividendTimes.set(i, grid.closestTime(dividendTimes.get(i)));
+            }
+        }
+    }
 
     //
     // public final methods
     //
-    
-    public final Array conversionProbability()                  { return conversionProbability; }
-    public final Array spreadAdjustedRate()                     { return spreadAdjustedRate; }
-    public final Array dividendValues()                         { return dividendValues; }
-    public final void setConversionProbability(final Array a)   { conversionProbability = a; }
-    public final void setSpreadAdjustedRate(final Array a)      { spreadAdjustedRate = a; }
-    public final void setDividendValues(final Array a)          { dividendValues = a; }
-    
-    
+    public final Array conversionProbability() {
+        return conversionProbability;
+    }
+
+    public final Array spreadAdjustedRate() {
+        return spreadAdjustedRate;
+    }
+
+    public final Array dividendValues() {
+        return dividendValues;
+    }
+
+    public final void setConversionProbability(final Array a) {
+        conversionProbability = a;
+    }
+
+    public final void setSpreadAdjustedRate(final Array a) {
+        spreadAdjustedRate = a;
+    }
+
+    public final void setDividendValues(final Array a) {
+        dividendValues = a;
+    }
+
     //
     // public methods
     //
-    
     @Override
     public List<Double> mandatoryTimes() {
-        
+
         final List<Double> result = new ArrayList<Double>();
         Std.copy(stoppingTimes, 0, stoppingTimes.size(), result);
-        Std.copy(callabilityTimes, 0, callabilityTimes.size(),result);
+        Std.copy(callabilityTimes, 0, callabilityTimes.size(), result);
         Std.copy(couponTimes, 0, couponTimes.size(), result);
         return result;
     }
 
     public void applyConvertibility() {
         final Array grid = adjustedGrid();
-        for (int j=0; j<values_.size(); j++) {
+        for (int j = 0; j < values_.size(); j++) {
             final double payoff = this.arguments.conversionRatio * grid.get(j);
             if (values_.get(j) <= payoff) {
                 values_.set(j, payoff);
@@ -185,50 +201,50 @@ public class DiscretizedConvertible extends DiscretizedAsset {
     }
 
     public void applyCallability(final int i, final boolean convertible) {
-        int  j;
+        int j;
         final Array grid = adjustedGrid();
         final Callability.Type Call = Callability.Type.Call;
         final Callability.Type Put = Callability.Type.Put;
         switch (this.arguments.callabilityTypes.get(i)) {
-          case Call:
-            if (this.arguments.callabilityTriggers.get(i) != Constants.NULL_REAL) {
-                final double conversionValue =
-                    this.arguments.redemption/this.arguments.conversionRatio;
-                final double trigger =
-                    conversionValue*this.arguments.callabilityTriggers.get(i);
-                for (j=0; j<values_.size(); j++) {
-                    // the callability is conditioned by the trigger...
-                    if (grid.get(j) >= trigger) {
-                        // ...and might trigger conversion
-                        values_.set(j, 
-                            Math.min(Math.max(this.arguments.callabilityPrices.get(i),
-                                              this.arguments.conversionRatio*grid.get(j)),
-                                     values_.get(j)));
+            case Call:
+                if (this.arguments.callabilityTriggers.get(i) != Constants.NULL_REAL) {
+                    final double conversionValue
+                            = this.arguments.redemption / this.arguments.conversionRatio;
+                    final double trigger
+                            = conversionValue * this.arguments.callabilityTriggers.get(i);
+                    for (j = 0; j < values_.size(); j++) {
+                        // the callability is conditioned by the trigger...
+                        if (grid.get(j) >= trigger) {
+                            // ...and might trigger conversion
+                            values_.set(j,
+                                    Math.min(Math.max(this.arguments.callabilityPrices.get(i),
+                                            this.arguments.conversionRatio * grid.get(j)),
+                                            values_.get(j)));
+                        }
+                    }
+                } else if (convertible) {
+                    for (j = 0; j < values_.size(); j++) {
+                        // exercising the callability might trigger conversion
+                        values_.set(j,
+                                Math.min(Math.max(this.arguments.callabilityPrices.get(i),
+                                        this.arguments.conversionRatio * grid.get(j)),
+                                        values_.get(j)));
+                    }
+                } else {
+                    for (j = 0; j < values_.size(); j++) {
+                        values_.set(j, Math.min(this.arguments.callabilityPrices.get(j),
+                                values_.get(j)));
                     }
                 }
-            } else if (convertible) {
-                for (j=0; j<values_.size(); j++) {
-                    // exercising the callability might trigger conversion
-                    values_.set(j, 
-                        Math.min(Math.max(this.arguments.callabilityPrices.get(i),
-                                          this.arguments.conversionRatio*grid.get(j)),
-                                 values_.get(j)));
+                break;
+            case Put:
+                for (j = 0; j < values_.size(); j++) {
+                    values_.set(j, Math.max(values_.get(j),
+                            this.arguments.callabilityPrices.get(i)));
                 }
-            } else {
-                for (j=0; j<values_.size(); j++) {
-                    values_.set(j, Math.min(this.arguments.callabilityPrices.get(j),
-                                          values_.get(j)));
-                }
-            }
-            break;
-          case Put:
-            for (j=0; j<values_.size(); j++) {
-                values_.set(j, Math.max(values_.get(j),
-                                      this.arguments.callabilityPrices.get(i)));
-            }
-            break;
-          default:
-            QL.error("unknown callability type");
+                break;
+            default:
+                QL.error("unknown callability type");
         }
     }
 
@@ -240,59 +256,56 @@ public class DiscretizedConvertible extends DiscretizedAsset {
         final double t = time();
         final Array grid = method().grid(t);
         // add back all dividend amounts in the future
-        for (int i=0; i<this.arguments.dividends.size(); i++) {
+        for (int i = 0; i < this.arguments.dividends.size(); i++) {
             final double dividendTime = dividendTimes.get(i);
-            if (dividendTime >= t || Closeness.isCloseEnough(dividendTime,t)) {
-               final Dividend d = this.arguments.dividends.get(i);
-                for (int j=0; j<grid.size(); j++) {
+            if (dividendTime >= t || Closeness.isCloseEnough(dividendTime, t)) {
+                final Dividend d = this.arguments.dividends.get(i);
+                for (int j = 0; j < grid.size(); j++) {
                     double v = grid.get(j);
                     v += d.amount(v);
-                    grid.set(j,v);// += d->amount(grid[j]);
+                    grid.set(j, v);// += d->amount(grid[j]);
                 }
             }
         }
         return grid;
     }
 
-    
     //
     // overrides DiscretizedAsset
     //
-    
     /**
      * This method should initialize the asset values to an {@link Array} of the
      * given size and with values depending on the particular asset.
      */
     @Override
     public void reset(final int size) {
-            // Set to bond redemption values
-            values_ = new Array(size).fill(this.arguments.redemption);
+        // Set to bond redemption values
+        values_ = new Array(size).fill(this.arguments.redemption);
 
-            // coupon amounts should be added when adjusting
-            // values_ = Array(size, this.arguments.cashFlows.back()->amount());
+        // coupon amounts should be added when adjusting
+        // values_ = Array(size, this.arguments.cashFlows.back()->amount());
+        conversionProbability = new Array(size).fill(0.0);
+        spreadAdjustedRate = new Array(size).fill(0.0);
 
-            conversionProbability = new Array(size).fill(0.0);
-            spreadAdjustedRate = new Array(size).fill(0.0);
+        final DayCounter rfdc = this.process.riskFreeRate().currentLink().dayCounter();
 
-            final DayCounter rfdc  = this.process.riskFreeRate().currentLink().dayCounter();
+        // this takes care of convertibility and conversion probabilities
+        adjustValues();
 
-            // this takes care of convertibility and conversion probabilities
-            adjustValues();
+        final double creditSpread = this.arguments.creditSpread.currentLink().value();
 
-            final double creditSpread = this.arguments.creditSpread.currentLink().value();
+        final JDate exercise = this.arguments.exercise.lastDate();
 
-            final JDate exercise = this.arguments.exercise.lastDate();
+        final double riskFreeRate
+                = this.process.riskFreeRate().currentLink().zeroRate(exercise, rfdc,
+                        Compounding.Continuous, Frequency.NoFrequency).rate();
 
-            final double riskFreeRate =
-                this.process.riskFreeRate().currentLink().zeroRate(exercise, rfdc,
-                                                   Compounding.Continuous, Frequency.NoFrequency).rate();
-
-            // Calculate blended discount rate to be used on roll back.
-            for (int j=0; j<values_.size(); j++) {
-               spreadAdjustedRate.set(j,
-                   conversionProbability.get(j) * riskFreeRate +
-                   (1-conversionProbability.get(j))*(riskFreeRate + creditSpread));
-            }
+        // Calculate blended discount rate to be used on roll back.
+        for (int j = 0; j < values_.size(); j++) {
+            spreadAdjustedRate.set(j,
+                    conversionProbability.get(j) * riskFreeRate
+                    + (1 - conversionProbability.get(j)) * (riskFreeRate + creditSpread));
+        }
     }
 
     @Override
@@ -300,39 +313,45 @@ public class DiscretizedConvertible extends DiscretizedAsset {
         final Exercise.Type American = Exercise.Type.American;
         final Exercise.Type European = Exercise.Type.European;
         final Exercise.Type Bermudan = Exercise.Type.Bermudan;
-        
+
         boolean convertible = false;
         switch (this.arguments.exercise.type()) {
-          case American:
-            if (time() <= stoppingTimes.get(1) && time() >= stoppingTimes.get(0))
-                convertible = true;
-            break;
-          case European:
-            if (isOnTime(stoppingTimes.get(0)))
-                convertible = true;
-            break;
-          case Bermudan:
-            for (int i=0; i<stoppingTimes.size(); ++i) {
-                if (isOnTime(stoppingTimes.get(i)))
+            case American:
+                if (time() <= stoppingTimes.get(1) && time() >= stoppingTimes.get(0)) {
                     convertible = true;
+                }
+                break;
+            case European:
+                if (isOnTime(stoppingTimes.get(0))) {
+                    convertible = true;
+                }
+                break;
+            case Bermudan:
+                for (int i = 0; i < stoppingTimes.size(); ++i) {
+                    if (isOnTime(stoppingTimes.get(i))) {
+                        convertible = true;
+                    }
+                }
+                break;
+            default:
+                QL.error("invalid option type");
+        }
+
+        for (int i = 0; i < callabilityTimes.size(); i++) {
+            if (isOnTime(callabilityTimes.get(i))) {
+                applyCallability(i, convertible);
             }
-            break;
-          default:
-            QL.error("invalid option type");
         }
 
-        for (int i=0; i<callabilityTimes.size(); i++) {
-            if (isOnTime(callabilityTimes.get(i)))
-                applyCallability(i,convertible);
-        }
-
-        for (int i=0; i<couponTimes.size(); i++) {
-            if (isOnTime(couponTimes.get(i)))
+        for (int i = 0; i < couponTimes.size(); i++) {
+            if (isOnTime(couponTimes.get(i))) {
                 addCoupon(i);
+            }
         }
 
-        if (convertible)
+        if (convertible) {
             applyConvertibility();
+        }
     }
 
 }

@@ -36,43 +36,43 @@ import org.jquantlib.processes.StochasticProcess1D;
  */
 public class Tian extends BinomialTree {
 
-	protected double up;
-	protected double down;
-	protected double pu;
-	protected double pd;
+    protected double up;
+    protected double down;
+    protected double pu;
+    protected double pd;
 
-	public Tian(
+    public Tian(
             final StochasticProcess1D process,
             final @Time double end,
             final @NonNegative int steps,
             final @Unused @Real double strike) {
-		super(process, end, steps);
+        super(process, end, steps);
 
-		final double q = Math.exp(process.variance(0.0, x0, dt));
-		final double r = Math.exp(driftPerStep) * Math.sqrt(q);
+        final double q = Math.exp(process.variance(0.0, x0, dt));
+        final double r = Math.exp(driftPerStep) * Math.sqrt(q);
 
-		up = 0.5 * r * q * (q + 1 + Math.sqrt(q * q + 2 * q - 3));
-		down = 0.5 * r * q * (q + 1 - Math.sqrt(q * q + 2 * q - 3));
+        up = 0.5 * r * q * (q + 1 + Math.sqrt(q * q + 2 * q - 3));
+        down = 0.5 * r * q * (q + 1 - Math.sqrt(q * q + 2 * q - 3));
 
-		pu = (r - down) / (up - down);
-		pd = 1.0 - pu;
+        pu = (r - down) / (up - down);
+        pd = 1.0 - pu;
 
-		// doesn't work
-		// treeCentering_ = (up_+down_)/2.0;
-		// up_ = up_-treeCentering_;
-
-		if (pu < 0.0 || pu > 1.0)
+        // doesn't work
+        // treeCentering_ = (up_+down_)/2.0;
+        // up_ = up_-treeCentering_;
+        if (pu < 0.0 || pu > 1.0) {
             throw new IllegalStateException("negative probablity");
-	}
+        }
+    }
 
-	@Override
-	public double probability(final int i, final int index, final int branch) {
-		return (branch == 1 ? pu : pd);
-	}
+    @Override
+    public double probability(final int i, final int index, final int branch) {
+        return (branch == 1 ? pu : pd);
+    }
 
-	@Override
-	public double underlying(final int i, final int index) {
-		return x0 * Math.pow(down, i - index) * Math.pow(up, index);
-	}
+    @Override
+    public double underlying(final int i, final int index) {
+        return x0 * Math.pow(down, i - index) * Math.pow(up, index);
+    }
 
 }

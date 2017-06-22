@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2005, 2007 StatPro Italia srl
 
  QuantLib is free software: you can redistribute it and/or modify it
@@ -28,7 +28,6 @@
  <quantlib-dev@lists.sf.net>. The license is also available online at
  <http://quantlib.org/license.shtml>.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -46,7 +45,8 @@ import org.jquantlib.time.Weekday;
 import static org.jquantlib.time.Weekday.Monday;
 
 /**
- * ! Holidays for the Ukrainian stock exchange (data from <http://www.ukrse.kiev.ua/eng/>):
+ * ! Holidays for the Ukrainian stock exchange (data from
+ * <http://www.ukrse.kiev.ua/eng/>):
  * <ul>
  * <li>Saturdays</li>
  * <li>Sundays</li>
@@ -64,20 +64,12 @@ import static org.jquantlib.time.Weekday.Monday;
  *
  * @author Renjith Nair
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class Ukraine extends Calendar {
-    public static enum Market {
-        /**
-         * Ukrainian Stock Exchange
-         */
-        USE
-    }
 
     //
     // public constructors
     //
-
     public Ukraine() {
         this(Market.USE);
     }
@@ -86,10 +78,16 @@ public class Ukraine extends Calendar {
         impl = new UseImpl();
     }
 
+    public static enum Market {
+        /**
+         * Ukrainian Stock Exchange
+         */
+        USE
+    }
+
     //
     // private final inner classes
     //
-
     private final class UseImpl extends OrthodoxImpl {
 
         @Override
@@ -105,7 +103,7 @@ public class Ukraine extends Calendar {
             final int y = date.year();
             final int em = easterMonday(y);
             if (isWeekend(w)
-            // New Year's Day (possibly moved to Monday)
+                    // New Year's Day (possibly moved to Monday)
                     || ((d == 1 || ((d == 2 || d == 3) && w == Monday)) && m == January)
                     // Orthodox Christmas
                     || ((d == 7 || ((d == 8 || d == 9) && w == Monday)) && m == January)

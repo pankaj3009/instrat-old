@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2004, 2005 StatPro Italia srl
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.lattices;
 
 import org.jquantlib.instruments.DiscretizedAsset;
@@ -56,7 +55,6 @@ public abstract class Lattice {
     //
     // public constructors
     //
-
     public Lattice(final TimeGrid t) {
         this.t = t;
     }
@@ -64,11 +62,9 @@ public abstract class Lattice {
     //
     // public methods
     //
-
     public TimeGrid timeGrid() {
         return t;
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////
     //
@@ -79,44 +75,44 @@ public abstract class Lattice {
     // the corresponding methods of DiscretizedAsset instead.
     //
     ////////////////////////////////////////////////////////////////////////////////////
-
     //
     // abstract methods
     //
-
     /**
      * initialize an asset at the given time.
      */
     public abstract void initialize(final DiscretizedAsset asset, final /* Time */ double time);
 
     /**
-     * Roll back an asset until the given time, performing any needed adjustment.
+     * Roll back an asset until the given time, performing any needed
+     * adjustment.
      */
-    public abstract void rollback(final DiscretizedAsset asset, final /* Time */double to);
+    public abstract void rollback(final DiscretizedAsset asset, final /* Time */ double to);
 
     /**
-     * Roll back an asset until the given time, but do not perform the final adjustment.
+     * Roll back an asset until the given time, but do not perform the final
+     * adjustment.
      * <p>
-     * @warning In version 0.3.7 and earlier, this method was called rollAlmostBack and performed pre-adjustment.
-     * This is no longer true; when migrating your code, you'll have to replace calls such as:
-     * <pre>
+     * @warning In version 0.3.7 and earlier, this method was called
+     * rollAlmostBack and performed pre-adjustment. This is no longer true; when
+     * migrating your code, you'll have to replace calls such as:      <pre>
      * method->rollAlmostBack(asset,t);
-     * </pre>
-     * with the two statements:
+     * </pre> with the two statements:
      * <pre>
      * method->partialRollback(asset,t);
      * asset->preAdjustValues();
      * </pre>
      */
-    public abstract void partialRollback(final DiscretizedAsset asset, final /* Time */double to);
+    public abstract void partialRollback(final DiscretizedAsset asset, final /* Time */ double to);
 
     /**
      * computes the present value of an asset.
      */
-    public abstract/* Real */double presentValue(DiscretizedAsset asset);
+    public abstract/* Real */ double presentValue(DiscretizedAsset asset);
 
     /**
      * This is smelly, but we need it. We'll rethink it later.
+     *
      * @param t
      * @return
      */

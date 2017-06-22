@@ -25,9 +25,9 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 /**
  * This class conditionally extends other classes
  * <p>
- * <pre>
- * FDDividendEngine------------|
- * FDDividendEngineMerton73----|
+ * <
+ * pre>
+ * FDDividendEngine------------| FDDividendEngineMerton73----|
  * FDDividenEngineShiftScale---|
  * FDStepConditionEngine-------|o---FDAmericanCondition
  * </pre>
@@ -38,8 +38,7 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
  * @author Richard Gomes
  */
 //TODO: http://bugs.jquantlib.org/view.php?id=425
-public class FDAmericanCondition
-        <T                            /* TODO: should be:: T extends FDDividendEngineBase & FDStepConditionEngine */ >
+public class FDAmericanCondition<T /* TODO: should be:: T extends FDDividendEngineBase & FDStepConditionEngine */>
         extends FDStepConditionEngine /* TODO: should be:: implements FDDividendEngineBase, FDStepConditionEngine */ {
 
     public FDAmericanCondition(final GeneralizedBlackScholesProcess process) {

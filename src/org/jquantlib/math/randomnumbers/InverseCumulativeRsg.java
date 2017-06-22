@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.randomnumbers;
 
 import org.jquantlib.methods.montecarlo.Sample;
@@ -45,28 +44,27 @@ import org.jquantlib.methods.montecarlo.Sample;
 /**
  * Inverse cumulative random sequence generator
  * <p>
- * It uses a sequence of uniform deviate in (0, 1) as the source of cumulative distribution values. Then an inverse cumulative
- * distribution is used to calculate the distribution deviate.
- * 
+ * It uses a sequence of uniform deviate in (0, 1) as the source of cumulative
+ * distribution values. Then an inverse cumulative distribution is used to
+ * calculate the distribution deviate.
+ *
  * The uniform deviate sequence is supplied by USG.
- * 
+ *
  * @author Richard Gomes
  */
-
 //TODO: why USG and not RSG? What's the difference between URSG and RSG??
 public class InverseCumulativeRsg<USG extends UniformRandomSequenceGenerator, IC extends InverseCumulative>
-            implements UniformRandomSequenceGenerator {
+        implements UniformRandomSequenceGenerator {
 
-    private final /*@NonNegative*/ int  dimension;
-    private final USG                   ursg;
-    
-    private Sample<double[]>            sequence;
-    private IC                          ic;
-    private double                      weight;
-    
+    private final /*@NonNegative*/ int dimension;
+    private final USG ursg;
+
+    private Sample<double[]> sequence;
+    private IC ic;
+    private double weight;
 
     public InverseCumulativeRsg(final USG ursg) {
-        if (System.getProperty("EXPERIMENTAL")==null) {
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
         }
         this.ursg = ursg;
@@ -81,13 +79,11 @@ public class InverseCumulativeRsg<USG extends UniformRandomSequenceGenerator, IC
         this.ic = ic;
     }
 
-
     //
     // implements UniformRandomSequenceGenerator
     //
-
     @Override
-    public/*@NonNegative*/int dimension() /* @ReadOnly */{
+    public/*@NonNegative*/ int dimension() /* @ReadOnly */ {
         return this.dimension;
     }
 
@@ -96,18 +92,20 @@ public class InverseCumulativeRsg<USG extends UniformRandomSequenceGenerator, IC
     public long[] nextInt32Sequence() /* @ReadOnly */ {
         throw new UnsupportedOperationException(); //TODO: message
     }
-    
+
     /**
      * @return next sample from the Gaussian distribution
      */
     @Override
     public Sample<double[]> nextSequence() /* @ReadOnly */ {
-        if (System.getProperty("EXPERIMENTAL")==null) throw new UnsupportedOperationException("Work in progress");
-        
+        if (System.getProperty("EXPERIMENTAL") == null) {
+            throw new UnsupportedOperationException("Work in progress");
+        }
+
         Sample<double[]> sample = this.ursg.nextSequence();
         double[] v = sample.value();
         this.weight = sample.weight();
-        
+
         double[] d = new double[this.dimension];
         for (int i = 0; i < this.dimension; i++) {
             d[i] = this.ic.op(v[i]);

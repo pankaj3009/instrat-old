@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2004 Walter Penschke
@@ -36,13 +36,11 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.randomnumbers;
 
 import java.lang.reflect.Constructor;
 import org.jquantlib.QL;
 import org.jquantlib.lang.exceptions.LibraryException;
-
 
 /**
  *
@@ -56,7 +54,6 @@ public class GenericLowDiscrepancy<RSG extends UniformRandomSequenceGenerator, I
     //
     // static private fields
     //
-
     //
     // FIXME:: code review :: it's not clear how should this variable be used.
     // Declared as private final till we discover what's the trick with it.
@@ -75,26 +72,21 @@ public class GenericLowDiscrepancy<RSG extends UniformRandomSequenceGenerator, I
     // This can change as soon as we find what's the trick with it.
     //
     static final private GenericLowDiscrepancy icInstance = null;
-    
-    
-    
-    
-    private Class<? extends UniformRandomSequenceGenerator>	classRSG;
-    private Class<? extends InverseCumulative>				classIC;
-    
 
+    private Class<? extends UniformRandomSequenceGenerator> classRSG;
+    private Class<? extends InverseCumulative> classIC;
 
     protected InverseCumulativeRsg<RSG, IC> makeSequenceGenerator(
-    	    final Class<? extends UniformRandomSequenceGenerator>	classRSG,
-    	    final Class<? extends InverseCumulative>				classIC,
-            final /*@NonNegative*/ int dimension, 
+            final Class<? extends UniformRandomSequenceGenerator> classRSG,
+            final Class<? extends InverseCumulative> classIC,
+            final /*@NonNegative*/ int dimension,
             final /*@NonNegative*/ long seed) {
 
         QL.validateExperimentalMode();
 
         this.classRSG = classRSG;
         this.classIC = classIC;
-        
+
         // instantiate a RandomSequenceGenerator given its generic type (first generic parameter)
         final RSG rsg;
         try {
@@ -110,7 +102,7 @@ public class GenericLowDiscrepancy<RSG extends UniformRandomSequenceGenerator, I
         try {
             // obtain IC Class from second generic parameter
             final Constructor<IC> c;
-            if (icInstance!=null) {
+            if (icInstance != null) {
                 c = (Constructor<IC>) classIC.getConstructor(rsg.getClass(), classIC.getClass());
                 ic = c.newInstance(rsg, icInstance);
             } else {

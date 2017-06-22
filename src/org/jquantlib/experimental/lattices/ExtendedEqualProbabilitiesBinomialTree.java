@@ -18,9 +18,9 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
-*/
+ */
 
-/*
+ /*
 Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
 Copyright (C) 2003 Ferdinando Ametrano
 Copyright (C) 2005 StatPro Italia srl
@@ -38,8 +38,7 @@ copy of the license along with this program; if not, please email
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.experimental.lattices;
 
 import org.jquantlib.processes.StochasticProcess1D;
@@ -53,48 +52,41 @@ import org.jquantlib.processes.StochasticProcess1D;
  */
 public abstract class ExtendedEqualProbabilitiesBinomialTree extends ExtendedBinomialTree /*<T>*/ {
 
+    //
+    // protected fields
+    //
+    protected double up;
 
-   //
-   // protected fields
-   //
+    //
+    // public methods
+    //
+    public ExtendedEqualProbabilitiesBinomialTree(
+            final StochasticProcess1D process,
+            final /* @Time */ double end,
+            final int steps) {
 
-   protected double up;
+        super(process, end, steps);
+    }
 
+    @Override
+    public double underlying(final int i, final int index) /* @ReadOnly */ {
+        /*@Time*/ final double stepTime = i * dt;
+        final long j = 2 * index - i;
+        // exploiting the forward value tree centering
+        return x0 * Math.exp(i * driftStep(stepTime) + j * upStep(stepTime));
+    }
 
-   //
-   // public methods
-   //
+    @Override
+    public double probability(final int i, final int ref, final int branch) /* @ReadOnly */ {
+        return 0.5;
+    }
 
-   public ExtendedEqualProbabilitiesBinomialTree(
-           final StochasticProcess1D process,
-           final /* @Time */ double end,
-           final int steps) {
-
-       super(process, end, steps);
-   }
-
-   @Override
-   public double underlying(final int i, final int index) /* @ReadOnly */ {
-       /*@Time*/ final double stepTime = i*dt;
-       final long j = 2*index - i;
-       // exploiting the forward value tree centering
-       return x0*Math.exp(i*driftStep(stepTime) + j*upStep(stepTime));
-   }
-
-   @Override
-   public double probability(final int i, final int ref, final int branch) /* @ReadOnly */ {
-       return 0.5;
-   }
-
-
-
-   //
-   // protected abstract methods
-   //
-
-   /**
-    * The tree dependent up move term at time stepTime
-    */
-   protected abstract /*@Real*/ double upStep(/*@Time*/ double stepTime) /* @ReadOnly */;
+    //
+    // protected abstract methods
+    //
+    /**
+     * The tree dependent up move term at time stepTime
+     */
+    protected abstract /*@Real*/ double upStep(/*@Time*/double stepTime) /* @ReadOnly */;
 
 }

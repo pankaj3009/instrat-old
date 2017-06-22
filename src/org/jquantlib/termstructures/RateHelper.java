@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures;
 
 import org.jquantlib.quotes.Handle;
@@ -28,21 +27,24 @@ import org.jquantlib.quotes.Quote;
 /**
  * Base helper class for yield-curve bootstrapping
  * <p>
- * This class provides an abstraction for the instruments used to bootstrap a term structure. It is advised that a rate helper for
- * an instrument contains an instance of the actual instrument class to ensure consistency between the algorithms used during
- * bootstrapping and later instrument pricing. This is not yet fully enforced in the available rate helpers, though - only
- * SwapRateHelper and FixedCouponBondHelper contain their corresponding instrument for the time being.
+ * This class provides an abstraction for the instruments used to bootstrap a
+ * term structure. It is advised that a rate helper for an instrument contains
+ * an instance of the actual instrument class to ensure consistency between the
+ * algorithms used during bootstrapping and later instrument pricing. This is
+ * not yet fully enforced in the available rate helpers, though - only
+ * SwapRateHelper and FixedCouponBondHelper contain their corresponding
+ * instrument for the time being.
  *
  * @author Srinivas Hasti
  * @author Richard Gomes
  */
-public abstract class RateHelper extends BootstrapHelper <YieldTermStructure> {
+public abstract class RateHelper extends BootstrapHelper<YieldTermStructure> {
 
-    public RateHelper (final Handle <Quote> quote) {
-        super (quote);
+    public RateHelper(final Handle<Quote> quote) {
+        super(quote);
     }
 
-    public RateHelper (final double quote) {
-        super (quote);
+    public RateHelper(final double quote) {
+        super(quote);
     }
 }

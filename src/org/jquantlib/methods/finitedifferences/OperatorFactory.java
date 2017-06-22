@@ -26,22 +26,23 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public class OperatorFactory {
-	
-	public static TridiagonalOperator getOperator(
-			GeneralizedBlackScholesProcess process, Array grid,
-			double residualTime, boolean timeDependent) {
-		if (timeDependent)
-			return new BSMTermOperator(grid, process, residualTime);
-		else
-			return new BSMOperator(grid, process, residualTime);
-	}
-	//TODO: finish; This is not required for Mar 1st release.
-	/*
+
+    public static TridiagonalOperator getOperator(
+            GeneralizedBlackScholesProcess process, Array grid,
+            double residualTime, boolean timeDependent) {
+        if (timeDependent) {
+            return new BSMTermOperator(grid, process, residualTime);
+        } else {
+            return new BSMOperator(grid, process, residualTime);
+        }
+    }
+    //TODO: finish; This is not required for Mar 1st release.
+    /*
 	 * public static TridiagonalOperator getOperator( const
 	 * boost::shared_ptr<OneFactorModel::ShortRateDynamics> &process, const
 	 * Array &grid) { return OneFactorOperator(grid, process); }
-	 */
+     */
 }

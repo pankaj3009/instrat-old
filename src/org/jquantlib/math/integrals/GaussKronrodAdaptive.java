@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2005, 2008 Klaus Spanderen
  Copyright (C) 2007 StatPro Italia srl
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.integrals;
 
 import org.jquantlib.QL;
@@ -46,14 +45,18 @@ import org.jquantlib.math.Ops;
 /**
  * Integral of a 1-dimensional function using the Gauss-Kronrod methods
  * <p>
- * This class provide a non-adaptive integration procedure which uses fixed Gauss-Kronrod abscissae to sample the integrand at a
- * maximum of 87 points. It is provided for fast integration of smooth functions.
+ * This class provide a non-adaptive integration procedure which uses fixed
+ * Gauss-Kronrod abscissae to sample the integrand at a maximum of 87 points. It
+ * is provided for fast integration of smooth functions.
  * <p>
- * This function applies the Gauss-Kronrod 10-point, 21-point, 43-point and 87-point integration rules in succession until an
- * estimate of the integral of f over (a, b) is achieved within the desired absolute and relative error limits, epsabs and epsrel.
- * The function returns the final approximation, result, an estimate of the absolute error, abserr and the number of function
- * evaluations used, neval. The Gauss-Kronrod rules are designed in such a way that each rule uses all the results of its
- * predecessors, in order to minimize the total number of function evaluations.
+ * This function applies the Gauss-Kronrod 10-point, 21-point, 43-point and
+ * 87-point integration rules in succession until an estimate of the integral of
+ * f over (a, b) is achieved within the desired absolute and relative error
+ * limits, epsabs and epsrel. The function returns the final approximation,
+ * result, an estimate of the absolute error, abserr and the number of function
+ * evaluations used, neval. The Gauss-Kronrod rules are designed in such a way
+ * that each rule uses all the results of its predecessors, in order to minimize
+ * the total number of function evaluations.
  *
  * @author Ueli Hofstetter
  */
@@ -65,7 +68,7 @@ public class GaussKronrodAdaptive extends KronrodIntegral {
         0.417959183673469,
         0.381830050505119,
         0.279705391489277,
-        0.129484966168870 };
+        0.129484966168870};
     // weights for 15-point Gauss-Kronrod integration
     private static final double k15w[] = {
         0.209482141084728,
@@ -75,7 +78,7 @@ public class GaussKronrodAdaptive extends KronrodIntegral {
         0.140653259715525,
         0.104790010322250,
         0.063092092629979,
-        0.022935322010529 };
+        0.022935322010529};
     // abscissae (evaluation points)
     // for 15-point Gauss-Kronrod integration
     private static final double k15t[] = {
@@ -86,11 +89,11 @@ public class GaussKronrodAdaptive extends KronrodIntegral {
         0.741531185599394,
         0.864864423359769,
         0.949107912342758,
-        0.991455371120813 };
+        0.991455371120813};
 
     public GaussKronrodAdaptive(final double absoluteAccuracy, final int maxEvaluations) {
         super(absoluteAccuracy, maxEvaluations);
-        QL.require(maxEvaluations >= 15 , "required maxEvaluations must be >= 15"); // TODO: message
+        QL.require(maxEvaluations >= 15, "required maxEvaluations must be >= 15"); // TODO: message
     }
 
     @Override
@@ -137,15 +140,11 @@ public class GaussKronrodAdaptive extends KronrodIntegral {
         // error is <= k15 - g7
         // if error is larger than tolerance then split the interval
         // in two and integrate recursively
-        if (Math.abs(k15 - g7) < tolerance)
+        if (Math.abs(k15 - g7) < tolerance) {
             return k15;
-        else {
-            QL.require(numberOfEvaluations() + 30 <= maxEvaluations() , "maximum number of function evaluations exceeded"); // TODO: message
+        } else {
+            QL.require(numberOfEvaluations() + 30 <= maxEvaluations(), "maximum number of function evaluations exceeded"); // TODO: message
             return integrateRecursively(f, a, center, tolerance / 2) + integrateRecursively(f, center, b, tolerance / 2);
         }
     }
 }
-
-
-
-

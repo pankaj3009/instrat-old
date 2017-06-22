@@ -28,57 +28,45 @@ import org.jquantlib.methods.montecarlo.Sample;
 /**
  * Sobol low-discrepancy sequence generator
  * <p>
- * A Gray code counter and bitwise operations are used for very
- * fast sequence generation.
+ * A Gray code counter and bitwise operations are used for very fast sequence
+ * generation.
  * <p>
- * The implementation relies on primitive polynomials modulo two
- * from the book "Monte Carlo Methods in Finance" by Peter
- * Jaeckel.
+ * The implementation relies on primitive polynomials modulo two from the book
+ * "Monte Carlo Methods in Finance" by Peter Jaeckel.
  * <p>
- * 21 200 primitive polynomials modulo two are provided in QuantLib.
- * Jaeckel has calculated 8 129 334 polynomials: if you need that many
- * dimensions you can replace the primitivepolynomials.c file included
- * in QuantLib with the one provided in the CD of the "Monte Carlo
- * Methods in Finance" book.
+ * 21 200 primitive polynomials modulo two are provided in QuantLib. Jaeckel has
+ * calculated 8 129 334 polynomials: if you need that many dimensions you can
+ * replace the primitivepolynomials.c file included in QuantLib with the one
+ * provided in the CD of the "Monte Carlo Methods in Finance" book.
  * <p>
- * The choice of initialization numbers (also know as free direction
- * integers) is crucial for the homogeneity properties of the sequence.
- * Sobol defines two homogeneity properties: Property A and Property A'.
+ * The choice of initialization numbers (also know as free direction integers)
+ * is crucial for the homogeneity properties of the sequence. Sobol defines two
+ * homogeneity properties: Property A and Property A'.
  * <p>
- * The unit initialization numbers suggested in "Numerical
- * Recipes in C", 2nd edition, by Press, Teukolsky, Vetterling,
- * and Flannery (section 7.7) fail the test for Property A even
- * for low dimensions.
+ * The unit initialization numbers suggested in "Numerical Recipes in C", 2nd
+ * edition, by Press, Teukolsky, Vetterling, and Flannery (section 7.7) fail the
+ * test for Property A even for low dimensions.
  * <p>
- * Bratley and Fox published coefficients of the free direction
- * integers up to dimension 40, crediting unpublished work of
- * Sobol' and Levitan. See Bratley, P., Fox, B.L. (1988)
- * "Algorithm 659: Implementing Sobol's quasirandom sequence
- * generator," ACM Transactions on Mathematical Software
- * 14:88-100. These values satisfy Property A for d<=20 and d =
- * 23, 31, 33, 34, 37; Property A' holds for d<=6.
- * <p>
- * Jaeckel provides in his book (section 8.3) initialization
- * numbers up to dimension 32. Coefficients for d<=8 are the same
- * as in Bradley-Fox, so Property A' holds for d<=6 but Property
- * A holds for d<=32.
- * <p>
- * The implementation of Lemieux, Cieslak, and Luttmer includes
- * coefficients of the free direction integers up to dimension
- * 360.  Coefficients for d<=40 are the same as in Bradley-Fox.
- * For dimension 40<d<=360 the coefficients have
- * been calculated as optimal values based on the "resolution"
- * criterion. See "RandQMC user's guide - A package for
- * randomized quasi-Monte Carlo methods in C," by C. Lemieux,
- * M. Cieslak, and K. Luttmer, version JANUARY 13 2004, and
- * references cited there
- * (http://www.math.ucalgary.ca/~lemieux/randqmc.html).
- * The values up to d<=360 has been provided to the QuantLib team by
- * Christiane Lemieux, private communication, September 2004.
- * <p>
- * For more info on Sobol' sequences see also "Monte Carlo
- * Methods in Financial Engineering," by P. Glasserman, 2004,
- * Springer, section 5.2.3
+ * Bratley and Fox published coefficients of the free direction integers up to
+ * dimension 40, crediting unpublished work of Sobol' and Levitan. See Bratley,
+ * P., Fox, B.L. (1988) "Algorithm 659: Implementing Sobol's quasirandom
+ * sequence generator," ACM Transactions on Mathematical Software 14:88-100.
+ * These values satisfy Property A for d<=20 and d = 23, 31, 33, 34, 37;
+ * Property A' holds for d<=6. <p>
+ * Jaeckel provides in his book (section 8.3) initialization numbers up to
+ * dimension 32. Coefficients for d<=8 are the same as in Bradley-Fox, so
+ * Property A' holds for d<=6 but Property A holds for d<=32. <p>
+ * The implementation of Lemieux, Cieslak, and Luttmer includes coefficients of
+ * the free direction integers up to dimension 360. Coefficients for d<=40 are
+ * the same as in Bradley-Fox. For dimension 40<d<=360 the coefficients have
+ * been calculated as optimal values based on the "resolution" criterion. See
+ * "RandQMC user's guide - A package for randomized quasi-Monte Carlo methods in
+ * C," by C. Lemieux, M. Cieslak, and K. Luttmer, version JANUARY 13 2004, and
+ * references cited there (http://www.math.ucalgary.ca/~lemieux/randqmc.html).
+ * The values up to d<=360 has been provided to the QuantLib team by Christiane
+ * Lemieux, private communication, September 2004. <p>
+ * For more info on Sobol' sequences see also "Monte Carlo Methods in Financial
+ * Engineering," by P. Glasserman, 2004, Springer, section 5.2.3
  *
  * @author Dominik Holenstein
  * @author Q.Boiler
@@ -127,89 +115,6 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
     private static final long dim39SLinitializers[] = {1, 1, 3, 7, 31, 15, 45, 23, 0};
     private static final long dim40SLinitializers[] = {1, 3, 3, 9, 9, 25, 107, 39, 0};
 
-    private final long[][] SLinitializers = {
-            dim02SLinitializers,
-            dim03SLinitializers,
-            dim04SLinitializers,
-            dim05SLinitializers,
-            dim06SLinitializers,
-            dim07SLinitializers,
-            dim08SLinitializers,
-            dim09SLinitializers,
-            dim10SLinitializers,
-            dim11SLinitializers,
-            dim12SLinitializers,
-            dim13SLinitializers,
-            dim14SLinitializers,
-            dim15SLinitializers,
-            dim16SLinitializers,
-            dim17SLinitializers,
-            dim18SLinitializers,
-            dim19SLinitializers,
-            dim20SLinitializers,
-            dim21SLinitializers,
-            dim22SLinitializers,
-            dim23SLinitializers,
-            dim24SLinitializers,
-            dim25SLinitializers,
-            dim26SLinitializers,
-            dim27SLinitializers,
-            dim28SLinitializers,
-            dim29SLinitializers,
-            dim30SLinitializers,
-            dim31SLinitializers,
-            dim32SLinitializers,
-            dim33SLinitializers,
-            dim34SLinitializers,
-            dim35SLinitializers,
-            dim36SLinitializers,
-            dim37SLinitializers,
-            dim38SLinitializers,
-            dim39SLinitializers,
-            dim40SLinitializers
-    };
-
-    private final int sizeSLinitializers
-    = dim02SLinitializers.length
-    + dim03SLinitializers.length
-    + dim04SLinitializers.length
-    + dim05SLinitializers.length
-    + dim06SLinitializers.length
-    + dim07SLinitializers.length
-    + dim08SLinitializers.length
-    + dim09SLinitializers.length
-    + dim10SLinitializers.length
-    + dim11SLinitializers.length
-    + dim12SLinitializers.length
-    + dim13SLinitializers.length
-    + dim14SLinitializers.length
-    + dim15SLinitializers.length
-    + dim16SLinitializers.length
-    + dim17SLinitializers.length
-    + dim18SLinitializers.length
-    + dim19SLinitializers.length
-    + dim20SLinitializers.length
-    + dim21SLinitializers.length
-    + dim22SLinitializers.length
-    + dim23SLinitializers.length
-    + dim24SLinitializers.length
-    + dim25SLinitializers.length
-    + dim26SLinitializers.length
-    + dim27SLinitializers.length
-    + dim28SLinitializers.length
-    + dim29SLinitializers.length
-    + dim30SLinitializers.length
-    + dim31SLinitializers.length
-    + dim32SLinitializers.length
-    + dim33SLinitializers.length
-    + dim34SLinitializers.length
-    + dim35SLinitializers.length
-    + dim36SLinitializers.length
-    + dim37SLinitializers.length
-    + dim38SLinitializers.length
-    + dim39SLinitializers.length
-    + dim40SLinitializers.length;
-
     // coefficients of the free direction integers as given in "Monte Carlo Methods in Finance", by Peter Jaeckel, section 8.3
     private static final long dim09initializers[] = {1, 3, 7, 7, 21, 0};
     private static final long dim10initializers[] = {1, 1, 5, 11, 27, 0};
@@ -235,73 +140,6 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
     private static final long dim30initializers[] = {1, 1, 1, 15, 5, 49, 59, 0};
     private static final long dim31initializers[] = {1, 3, 5, 15, 17, 19, 21, 0};
     private static final long dim32initializers[] = {1, 1, 7, 11, 13, 29, 3, 0};
-    private final long[][] initializers = {
-            dim02SLinitializers,
-            dim03SLinitializers,
-            dim04SLinitializers,
-            dim05SLinitializers,
-            dim06SLinitializers,
-            dim07SLinitializers,
-            dim08SLinitializers,
-            dim09initializers,
-            dim10initializers,
-            dim11initializers,
-            dim12initializers,
-            dim13initializers,
-            dim14initializers,
-            dim15initializers,
-            dim16initializers,
-            dim17initializers,
-            dim18initializers,
-            dim19initializers,
-            dim20initializers,
-            dim21initializers,
-            dim22initializers,
-            dim23initializers,
-            dim24initializers,
-            dim25initializers,
-            dim26initializers,
-            dim27initializers,
-            dim28initializers,
-            dim29initializers,
-            dim30initializers,
-            dim31initializers,
-            dim32initializers
-    };
-
-    private final int sizeInitializers
-    = dim02SLinitializers.length
-    + dim03SLinitializers.length
-    + dim04SLinitializers.length
-    + dim05SLinitializers.length
-    + dim06SLinitializers.length
-    + dim07SLinitializers.length
-    + dim08SLinitializers.length
-    + dim09initializers.length
-    + dim10initializers.length
-    + dim11initializers.length
-    + dim12initializers.length
-    + dim13initializers.length
-    + dim14initializers.length
-    + dim15initializers.length
-    + dim16initializers.length
-    + dim17initializers.length
-    + dim18initializers.length
-    + dim19initializers.length
-    + dim20initializers.length
-    + dim21initializers.length
-    + dim22initializers.length
-    + dim23initializers.length
-    + dim24initializers.length
-    + dim25initializers.length
-    + dim26initializers.length
-    + dim27initializers.length
-    + dim28initializers.length
-    + dim29initializers.length
-    + dim30initializers.length
-    + dim31initializers.length
-    + dim32initializers.length;
-
 
     // Lemieux coefficients of the free direction integers as given in Christiane Lemieux, private communication, September 2004
     private static final long dim041Linitializers[] = {1, 1, 3, 13, 7, 35, 61, 91, 0};
@@ -987,408 +825,540 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
         dim360Linitializers
     };
 
-    private final int sizeLinitializers
-    = dim02SLinitializers.length
-    + dim03SLinitializers.length
-    + dim04SLinitializers.length
-    + dim05SLinitializers.length
-    + dim06SLinitializers.length
-    + dim07SLinitializers.length
-    + dim08SLinitializers.length
-    + dim09SLinitializers.length
-    + dim10SLinitializers.length
-    + dim11SLinitializers.length
-    + dim12SLinitializers.length
-    + dim13SLinitializers.length
-    + dim14SLinitializers.length
-    + dim15SLinitializers.length
-    + dim16SLinitializers.length
-    + dim17SLinitializers.length
-    + dim18SLinitializers.length
-    + dim19SLinitializers.length
-    + dim20SLinitializers.length
-    + dim21SLinitializers.length
-    + dim22SLinitializers.length
-    + dim23SLinitializers.length
-    + dim24SLinitializers.length
-    + dim25SLinitializers.length
-    + dim26SLinitializers.length
-    + dim27SLinitializers.length
-    + dim28SLinitializers.length
-    + dim29SLinitializers.length
-    + dim30SLinitializers.length
-    + dim31SLinitializers.length
-    + dim32SLinitializers.length
-    + dim33SLinitializers.length
-    + dim34SLinitializers.length
-    + dim35SLinitializers.length
-    + dim36SLinitializers.length
-    + dim37SLinitializers.length
-    + dim38SLinitializers.length
-    + dim39SLinitializers.length
-    + dim40SLinitializers.length
-    + dim041Linitializers.length
-    + dim042Linitializers.length
-    + dim043Linitializers.length
-    + dim044Linitializers.length
-    + dim045Linitializers.length
-    + dim046Linitializers.length
-    + dim047Linitializers.length
-    + dim048Linitializers.length
-    + dim049Linitializers.length
-    + dim050Linitializers.length
-    + dim051Linitializers.length
-    + dim052Linitializers.length
-    + dim053Linitializers.length
-    + dim054Linitializers.length
-    + dim055Linitializers.length
-    + dim056Linitializers.length
-    + dim057Linitializers.length
-    + dim058Linitializers.length
-    + dim059Linitializers.length
-    + dim060Linitializers.length
-    + dim061Linitializers.length
-    + dim062Linitializers.length
-    + dim063Linitializers.length
-    + dim064Linitializers.length
-    + dim065Linitializers.length
-    + dim066Linitializers.length
-    + dim067Linitializers.length
-    + dim068Linitializers.length
-    + dim069Linitializers.length
-    + dim070Linitializers.length
-    + dim071Linitializers.length
-    + dim072Linitializers.length
-    + dim073Linitializers.length
-    + dim074Linitializers.length
-    + dim075Linitializers.length
-    + dim076Linitializers.length
-    + dim077Linitializers.length
-    + dim078Linitializers.length
-    + dim079Linitializers.length
-    + dim080Linitializers.length
-    + dim081Linitializers.length
-    + dim082Linitializers.length
-    + dim083Linitializers.length
-    + dim084Linitializers.length
-    + dim085Linitializers.length
-    + dim086Linitializers.length
-    + dim087Linitializers.length
-    + dim088Linitializers.length
-    + dim089Linitializers.length
-    + dim090Linitializers.length
-    + dim091Linitializers.length
-    + dim092Linitializers.length
-    + dim093Linitializers.length
-    + dim094Linitializers.length
-    + dim095Linitializers.length
-    + dim096Linitializers.length
-    + dim097Linitializers.length
-    + dim098Linitializers.length
-    + dim099Linitializers.length
-    + dim100Linitializers.length
-    + dim101Linitializers.length
-    + dim102Linitializers.length
-    + dim103Linitializers.length
-    + dim104Linitializers.length
-    + dim105Linitializers.length
-    + dim106Linitializers.length
-    + dim107Linitializers.length
-    + dim108Linitializers.length
-    + dim109Linitializers.length
-    + dim110Linitializers.length
-    + dim111Linitializers.length
-    + dim112Linitializers.length
-    + dim113Linitializers.length
-    + dim114Linitializers.length
-    + dim115Linitializers.length
-    + dim116Linitializers.length
-    + dim117Linitializers.length
-    + dim118Linitializers.length
-    + dim119Linitializers.length
-    + dim120Linitializers.length
-    + dim121Linitializers.length
-    + dim122Linitializers.length
-    + dim123Linitializers.length
-    + dim124Linitializers.length
-    + dim125Linitializers.length
-    + dim126Linitializers.length
-    + dim127Linitializers.length
-    + dim128Linitializers.length
-    + dim129Linitializers.length
-    + dim130Linitializers.length
-    + dim131Linitializers.length
-    + dim132Linitializers.length
-    + dim133Linitializers.length
-    + dim134Linitializers.length
-    + dim135Linitializers.length
-    + dim136Linitializers.length
-    + dim137Linitializers.length
-    + dim138Linitializers.length
-    + dim139Linitializers.length
-    + dim140Linitializers.length
-    + dim141Linitializers.length
-    + dim142Linitializers.length
-    + dim143Linitializers.length
-    + dim144Linitializers.length
-    + dim145Linitializers.length
-    + dim146Linitializers.length
-    + dim147Linitializers.length
-    + dim148Linitializers.length
-    + dim149Linitializers.length
-    + dim150Linitializers.length
-    + dim151Linitializers.length
-    + dim152Linitializers.length
-    + dim153Linitializers.length
-    + dim154Linitializers.length
-    + dim155Linitializers.length
-    + dim156Linitializers.length
-    + dim157Linitializers.length
-    + dim158Linitializers.length
-    + dim159Linitializers.length
-    + dim160Linitializers.length
-    + dim161Linitializers.length
-    + dim162Linitializers.length
-    + dim163Linitializers.length
-    + dim164Linitializers.length
-    + dim165Linitializers.length
-    + dim166Linitializers.length
-    + dim167Linitializers.length
-    + dim168Linitializers.length
-    + dim169Linitializers.length
-    + dim170Linitializers.length
-    + dim171Linitializers.length
-    + dim172Linitializers.length
-    + dim173Linitializers.length
-    + dim174Linitializers.length
-    + dim175Linitializers.length
-    + dim176Linitializers.length
-    + dim177Linitializers.length
-    + dim178Linitializers.length
-    + dim179Linitializers.length
-    + dim180Linitializers.length
-    + dim181Linitializers.length
-    + dim182Linitializers.length
-    + dim183Linitializers.length
-    + dim184Linitializers.length
-    + dim185Linitializers.length
-    + dim186Linitializers.length
-    + dim187Linitializers.length
-    + dim188Linitializers.length
-    + dim189Linitializers.length
-    + dim190Linitializers.length
-    + dim191Linitializers.length
-    + dim192Linitializers.length
-    + dim193Linitializers.length
-    + dim194Linitializers.length
-    + dim195Linitializers.length
-    + dim196Linitializers.length
-    + dim197Linitializers.length
-    + dim198Linitializers.length
-    + dim199Linitializers.length
-    + dim200Linitializers.length
-    + dim201Linitializers.length
-    + dim202Linitializers.length
-    + dim203Linitializers.length
-    + dim204Linitializers.length
-    + dim205Linitializers.length
-    + dim206Linitializers.length
-    + dim207Linitializers.length
-    + dim208Linitializers.length
-    + dim209Linitializers.length
-    + dim210Linitializers.length
-    + dim211Linitializers.length
-    + dim212Linitializers.length
-    + dim213Linitializers.length
-    + dim214Linitializers.length
-    + dim215Linitializers.length
-    + dim216Linitializers.length
-    + dim217Linitializers.length
-    + dim218Linitializers.length
-    + dim219Linitializers.length
-    + dim220Linitializers.length
-    + dim221Linitializers.length
-    + dim222Linitializers.length
-    + dim223Linitializers.length
-    + dim224Linitializers.length
-    + dim225Linitializers.length
-    + dim226Linitializers.length
-    + dim227Linitializers.length
-    + dim228Linitializers.length
-    + dim229Linitializers.length
-    + dim230Linitializers.length
-    + dim231Linitializers.length
-    + dim232Linitializers.length
-    + dim233Linitializers.length
-    + dim234Linitializers.length
-    + dim235Linitializers.length
-    + dim236Linitializers.length
-    + dim237Linitializers.length
-    + dim238Linitializers.length
-    + dim239Linitializers.length
-    + dim240Linitializers.length
-    + dim241Linitializers.length
-    + dim242Linitializers.length
-    + dim243Linitializers.length
-    + dim244Linitializers.length
-    + dim245Linitializers.length
-    + dim246Linitializers.length
-    + dim247Linitializers.length
-    + dim248Linitializers.length
-    + dim249Linitializers.length
-    + dim250Linitializers.length
-    + dim251Linitializers.length
-    + dim252Linitializers.length
-    + dim253Linitializers.length
-    + dim254Linitializers.length
-    + dim255Linitializers.length
-    + dim256Linitializers.length
-    + dim257Linitializers.length
-    + dim258Linitializers.length
-    + dim259Linitializers.length
-    + dim260Linitializers.length
-    + dim261Linitializers.length
-    + dim262Linitializers.length
-    + dim263Linitializers.length
-    + dim264Linitializers.length
-    + dim265Linitializers.length
-    + dim266Linitializers.length
-    + dim267Linitializers.length
-    + dim268Linitializers.length
-    + dim269Linitializers.length
-    + dim270Linitializers.length
-    + dim271Linitializers.length
-    + dim272Linitializers.length
-    + dim273Linitializers.length
-    + dim274Linitializers.length
-    + dim275Linitializers.length
-    + dim276Linitializers.length
-    + dim277Linitializers.length
-    + dim278Linitializers.length
-    + dim279Linitializers.length
-    + dim280Linitializers.length
-    + dim281Linitializers.length
-    + dim282Linitializers.length
-    + dim283Linitializers.length
-    + dim284Linitializers.length
-    + dim285Linitializers.length
-    + dim286Linitializers.length
-    + dim287Linitializers.length
-    + dim288Linitializers.length
-    + dim289Linitializers.length
-    + dim290Linitializers.length
-    + dim291Linitializers.length
-    + dim292Linitializers.length
-    + dim293Linitializers.length
-    + dim294Linitializers.length
-    + dim295Linitializers.length
-    + dim296Linitializers.length
-    + dim297Linitializers.length
-    + dim298Linitializers.length
-    + dim299Linitializers.length
-    + dim300Linitializers.length
-    + dim301Linitializers.length
-    + dim302Linitializers.length
-    + dim303Linitializers.length
-    + dim304Linitializers.length
-    + dim305Linitializers.length
-    + dim306Linitializers.length
-    + dim307Linitializers.length
-    + dim308Linitializers.length
-    + dim309Linitializers.length
-    + dim310Linitializers.length
-    + dim311Linitializers.length
-    + dim312Linitializers.length
-    + dim313Linitializers.length
-    + dim314Linitializers.length
-    + dim315Linitializers.length
-    + dim316Linitializers.length
-    + dim317Linitializers.length
-    + dim318Linitializers.length
-    + dim319Linitializers.length
-    + dim320Linitializers.length
-    + dim321Linitializers.length
-    + dim322Linitializers.length
-    + dim323Linitializers.length
-    + dim324Linitializers.length
-    + dim325Linitializers.length
-    + dim326Linitializers.length
-    + dim327Linitializers.length
-    + dim328Linitializers.length
-    + dim329Linitializers.length
-    + dim330Linitializers.length
-    + dim331Linitializers.length
-    + dim332Linitializers.length
-    + dim333Linitializers.length
-    + dim334Linitializers.length
-    + dim335Linitializers.length
-    + dim336Linitializers.length
-    + dim337Linitializers.length
-    + dim338Linitializers.length
-    + dim339Linitializers.length
-    + dim340Linitializers.length
-    + dim341Linitializers.length
-    + dim342Linitializers.length
-    + dim343Linitializers.length
-    + dim344Linitializers.length
-    + dim345Linitializers.length
-    + dim346Linitializers.length
-    + dim347Linitializers.length
-    + dim348Linitializers.length
-    + dim349Linitializers.length
-    + dim350Linitializers.length
-    + dim351Linitializers.length
-    + dim352Linitializers.length
-    + dim353Linitializers.length
-    + dim354Linitializers.length
-    + dim355Linitializers.length
-    + dim356Linitializers.length
-    + dim357Linitializers.length
-    + dim358Linitializers.length
-    + dim359Linitializers.length
-    + dim360Linitializers.length;
-
-    //
-    // public enums
-    //
-    public enum DirectionIntegers {
-        Unit, Jaeckel, SobolLevitan, SobolLevitanLemieux
-    }
-
-
     //
     // constants
     //
-
     /**
      * BITS = 8*sizeof(unsigned long) = 64
      */
     private static final int BITS = 64;
 
     /**
-     *  1/(2^bits_) (written as (1/2)/(2^(bits_-1)) to avoid long overflow)
+     * 1/(2^bits_) (written as (1/2)/(2^(bits_-1)) to avoid long overflow)
      */
-    private static final double NORMALIZATION_FACTOR = 0.5 / (1 << (BITS-1));
-
+    private static final double NORMALIZATION_FACTOR = 0.5 / (1 << (BITS - 1));
+    private final long[][] SLinitializers = {
+        dim02SLinitializers,
+        dim03SLinitializers,
+        dim04SLinitializers,
+        dim05SLinitializers,
+        dim06SLinitializers,
+        dim07SLinitializers,
+        dim08SLinitializers,
+        dim09SLinitializers,
+        dim10SLinitializers,
+        dim11SLinitializers,
+        dim12SLinitializers,
+        dim13SLinitializers,
+        dim14SLinitializers,
+        dim15SLinitializers,
+        dim16SLinitializers,
+        dim17SLinitializers,
+        dim18SLinitializers,
+        dim19SLinitializers,
+        dim20SLinitializers,
+        dim21SLinitializers,
+        dim22SLinitializers,
+        dim23SLinitializers,
+        dim24SLinitializers,
+        dim25SLinitializers,
+        dim26SLinitializers,
+        dim27SLinitializers,
+        dim28SLinitializers,
+        dim29SLinitializers,
+        dim30SLinitializers,
+        dim31SLinitializers,
+        dim32SLinitializers,
+        dim33SLinitializers,
+        dim34SLinitializers,
+        dim35SLinitializers,
+        dim36SLinitializers,
+        dim37SLinitializers,
+        dim38SLinitializers,
+        dim39SLinitializers,
+        dim40SLinitializers
+    };
+    private final int sizeSLinitializers
+            = dim02SLinitializers.length
+            + dim03SLinitializers.length
+            + dim04SLinitializers.length
+            + dim05SLinitializers.length
+            + dim06SLinitializers.length
+            + dim07SLinitializers.length
+            + dim08SLinitializers.length
+            + dim09SLinitializers.length
+            + dim10SLinitializers.length
+            + dim11SLinitializers.length
+            + dim12SLinitializers.length
+            + dim13SLinitializers.length
+            + dim14SLinitializers.length
+            + dim15SLinitializers.length
+            + dim16SLinitializers.length
+            + dim17SLinitializers.length
+            + dim18SLinitializers.length
+            + dim19SLinitializers.length
+            + dim20SLinitializers.length
+            + dim21SLinitializers.length
+            + dim22SLinitializers.length
+            + dim23SLinitializers.length
+            + dim24SLinitializers.length
+            + dim25SLinitializers.length
+            + dim26SLinitializers.length
+            + dim27SLinitializers.length
+            + dim28SLinitializers.length
+            + dim29SLinitializers.length
+            + dim30SLinitializers.length
+            + dim31SLinitializers.length
+            + dim32SLinitializers.length
+            + dim33SLinitializers.length
+            + dim34SLinitializers.length
+            + dim35SLinitializers.length
+            + dim36SLinitializers.length
+            + dim37SLinitializers.length
+            + dim38SLinitializers.length
+            + dim39SLinitializers.length
+            + dim40SLinitializers.length;
+    private final long[][] initializers = {
+        dim02SLinitializers,
+        dim03SLinitializers,
+        dim04SLinitializers,
+        dim05SLinitializers,
+        dim06SLinitializers,
+        dim07SLinitializers,
+        dim08SLinitializers,
+        dim09initializers,
+        dim10initializers,
+        dim11initializers,
+        dim12initializers,
+        dim13initializers,
+        dim14initializers,
+        dim15initializers,
+        dim16initializers,
+        dim17initializers,
+        dim18initializers,
+        dim19initializers,
+        dim20initializers,
+        dim21initializers,
+        dim22initializers,
+        dim23initializers,
+        dim24initializers,
+        dim25initializers,
+        dim26initializers,
+        dim27initializers,
+        dim28initializers,
+        dim29initializers,
+        dim30initializers,
+        dim31initializers,
+        dim32initializers
+    };
+    private final int sizeInitializers
+            = dim02SLinitializers.length
+            + dim03SLinitializers.length
+            + dim04SLinitializers.length
+            + dim05SLinitializers.length
+            + dim06SLinitializers.length
+            + dim07SLinitializers.length
+            + dim08SLinitializers.length
+            + dim09initializers.length
+            + dim10initializers.length
+            + dim11initializers.length
+            + dim12initializers.length
+            + dim13initializers.length
+            + dim14initializers.length
+            + dim15initializers.length
+            + dim16initializers.length
+            + dim17initializers.length
+            + dim18initializers.length
+            + dim19initializers.length
+            + dim20initializers.length
+            + dim21initializers.length
+            + dim22initializers.length
+            + dim23initializers.length
+            + dim24initializers.length
+            + dim25initializers.length
+            + dim26initializers.length
+            + dim27initializers.length
+            + dim28initializers.length
+            + dim29initializers.length
+            + dim30initializers.length
+            + dim31initializers.length
+            + dim32initializers.length;
+    private final int sizeLinitializers
+            = dim02SLinitializers.length
+            + dim03SLinitializers.length
+            + dim04SLinitializers.length
+            + dim05SLinitializers.length
+            + dim06SLinitializers.length
+            + dim07SLinitializers.length
+            + dim08SLinitializers.length
+            + dim09SLinitializers.length
+            + dim10SLinitializers.length
+            + dim11SLinitializers.length
+            + dim12SLinitializers.length
+            + dim13SLinitializers.length
+            + dim14SLinitializers.length
+            + dim15SLinitializers.length
+            + dim16SLinitializers.length
+            + dim17SLinitializers.length
+            + dim18SLinitializers.length
+            + dim19SLinitializers.length
+            + dim20SLinitializers.length
+            + dim21SLinitializers.length
+            + dim22SLinitializers.length
+            + dim23SLinitializers.length
+            + dim24SLinitializers.length
+            + dim25SLinitializers.length
+            + dim26SLinitializers.length
+            + dim27SLinitializers.length
+            + dim28SLinitializers.length
+            + dim29SLinitializers.length
+            + dim30SLinitializers.length
+            + dim31SLinitializers.length
+            + dim32SLinitializers.length
+            + dim33SLinitializers.length
+            + dim34SLinitializers.length
+            + dim35SLinitializers.length
+            + dim36SLinitializers.length
+            + dim37SLinitializers.length
+            + dim38SLinitializers.length
+            + dim39SLinitializers.length
+            + dim40SLinitializers.length
+            + dim041Linitializers.length
+            + dim042Linitializers.length
+            + dim043Linitializers.length
+            + dim044Linitializers.length
+            + dim045Linitializers.length
+            + dim046Linitializers.length
+            + dim047Linitializers.length
+            + dim048Linitializers.length
+            + dim049Linitializers.length
+            + dim050Linitializers.length
+            + dim051Linitializers.length
+            + dim052Linitializers.length
+            + dim053Linitializers.length
+            + dim054Linitializers.length
+            + dim055Linitializers.length
+            + dim056Linitializers.length
+            + dim057Linitializers.length
+            + dim058Linitializers.length
+            + dim059Linitializers.length
+            + dim060Linitializers.length
+            + dim061Linitializers.length
+            + dim062Linitializers.length
+            + dim063Linitializers.length
+            + dim064Linitializers.length
+            + dim065Linitializers.length
+            + dim066Linitializers.length
+            + dim067Linitializers.length
+            + dim068Linitializers.length
+            + dim069Linitializers.length
+            + dim070Linitializers.length
+            + dim071Linitializers.length
+            + dim072Linitializers.length
+            + dim073Linitializers.length
+            + dim074Linitializers.length
+            + dim075Linitializers.length
+            + dim076Linitializers.length
+            + dim077Linitializers.length
+            + dim078Linitializers.length
+            + dim079Linitializers.length
+            + dim080Linitializers.length
+            + dim081Linitializers.length
+            + dim082Linitializers.length
+            + dim083Linitializers.length
+            + dim084Linitializers.length
+            + dim085Linitializers.length
+            + dim086Linitializers.length
+            + dim087Linitializers.length
+            + dim088Linitializers.length
+            + dim089Linitializers.length
+            + dim090Linitializers.length
+            + dim091Linitializers.length
+            + dim092Linitializers.length
+            + dim093Linitializers.length
+            + dim094Linitializers.length
+            + dim095Linitializers.length
+            + dim096Linitializers.length
+            + dim097Linitializers.length
+            + dim098Linitializers.length
+            + dim099Linitializers.length
+            + dim100Linitializers.length
+            + dim101Linitializers.length
+            + dim102Linitializers.length
+            + dim103Linitializers.length
+            + dim104Linitializers.length
+            + dim105Linitializers.length
+            + dim106Linitializers.length
+            + dim107Linitializers.length
+            + dim108Linitializers.length
+            + dim109Linitializers.length
+            + dim110Linitializers.length
+            + dim111Linitializers.length
+            + dim112Linitializers.length
+            + dim113Linitializers.length
+            + dim114Linitializers.length
+            + dim115Linitializers.length
+            + dim116Linitializers.length
+            + dim117Linitializers.length
+            + dim118Linitializers.length
+            + dim119Linitializers.length
+            + dim120Linitializers.length
+            + dim121Linitializers.length
+            + dim122Linitializers.length
+            + dim123Linitializers.length
+            + dim124Linitializers.length
+            + dim125Linitializers.length
+            + dim126Linitializers.length
+            + dim127Linitializers.length
+            + dim128Linitializers.length
+            + dim129Linitializers.length
+            + dim130Linitializers.length
+            + dim131Linitializers.length
+            + dim132Linitializers.length
+            + dim133Linitializers.length
+            + dim134Linitializers.length
+            + dim135Linitializers.length
+            + dim136Linitializers.length
+            + dim137Linitializers.length
+            + dim138Linitializers.length
+            + dim139Linitializers.length
+            + dim140Linitializers.length
+            + dim141Linitializers.length
+            + dim142Linitializers.length
+            + dim143Linitializers.length
+            + dim144Linitializers.length
+            + dim145Linitializers.length
+            + dim146Linitializers.length
+            + dim147Linitializers.length
+            + dim148Linitializers.length
+            + dim149Linitializers.length
+            + dim150Linitializers.length
+            + dim151Linitializers.length
+            + dim152Linitializers.length
+            + dim153Linitializers.length
+            + dim154Linitializers.length
+            + dim155Linitializers.length
+            + dim156Linitializers.length
+            + dim157Linitializers.length
+            + dim158Linitializers.length
+            + dim159Linitializers.length
+            + dim160Linitializers.length
+            + dim161Linitializers.length
+            + dim162Linitializers.length
+            + dim163Linitializers.length
+            + dim164Linitializers.length
+            + dim165Linitializers.length
+            + dim166Linitializers.length
+            + dim167Linitializers.length
+            + dim168Linitializers.length
+            + dim169Linitializers.length
+            + dim170Linitializers.length
+            + dim171Linitializers.length
+            + dim172Linitializers.length
+            + dim173Linitializers.length
+            + dim174Linitializers.length
+            + dim175Linitializers.length
+            + dim176Linitializers.length
+            + dim177Linitializers.length
+            + dim178Linitializers.length
+            + dim179Linitializers.length
+            + dim180Linitializers.length
+            + dim181Linitializers.length
+            + dim182Linitializers.length
+            + dim183Linitializers.length
+            + dim184Linitializers.length
+            + dim185Linitializers.length
+            + dim186Linitializers.length
+            + dim187Linitializers.length
+            + dim188Linitializers.length
+            + dim189Linitializers.length
+            + dim190Linitializers.length
+            + dim191Linitializers.length
+            + dim192Linitializers.length
+            + dim193Linitializers.length
+            + dim194Linitializers.length
+            + dim195Linitializers.length
+            + dim196Linitializers.length
+            + dim197Linitializers.length
+            + dim198Linitializers.length
+            + dim199Linitializers.length
+            + dim200Linitializers.length
+            + dim201Linitializers.length
+            + dim202Linitializers.length
+            + dim203Linitializers.length
+            + dim204Linitializers.length
+            + dim205Linitializers.length
+            + dim206Linitializers.length
+            + dim207Linitializers.length
+            + dim208Linitializers.length
+            + dim209Linitializers.length
+            + dim210Linitializers.length
+            + dim211Linitializers.length
+            + dim212Linitializers.length
+            + dim213Linitializers.length
+            + dim214Linitializers.length
+            + dim215Linitializers.length
+            + dim216Linitializers.length
+            + dim217Linitializers.length
+            + dim218Linitializers.length
+            + dim219Linitializers.length
+            + dim220Linitializers.length
+            + dim221Linitializers.length
+            + dim222Linitializers.length
+            + dim223Linitializers.length
+            + dim224Linitializers.length
+            + dim225Linitializers.length
+            + dim226Linitializers.length
+            + dim227Linitializers.length
+            + dim228Linitializers.length
+            + dim229Linitializers.length
+            + dim230Linitializers.length
+            + dim231Linitializers.length
+            + dim232Linitializers.length
+            + dim233Linitializers.length
+            + dim234Linitializers.length
+            + dim235Linitializers.length
+            + dim236Linitializers.length
+            + dim237Linitializers.length
+            + dim238Linitializers.length
+            + dim239Linitializers.length
+            + dim240Linitializers.length
+            + dim241Linitializers.length
+            + dim242Linitializers.length
+            + dim243Linitializers.length
+            + dim244Linitializers.length
+            + dim245Linitializers.length
+            + dim246Linitializers.length
+            + dim247Linitializers.length
+            + dim248Linitializers.length
+            + dim249Linitializers.length
+            + dim250Linitializers.length
+            + dim251Linitializers.length
+            + dim252Linitializers.length
+            + dim253Linitializers.length
+            + dim254Linitializers.length
+            + dim255Linitializers.length
+            + dim256Linitializers.length
+            + dim257Linitializers.length
+            + dim258Linitializers.length
+            + dim259Linitializers.length
+            + dim260Linitializers.length
+            + dim261Linitializers.length
+            + dim262Linitializers.length
+            + dim263Linitializers.length
+            + dim264Linitializers.length
+            + dim265Linitializers.length
+            + dim266Linitializers.length
+            + dim267Linitializers.length
+            + dim268Linitializers.length
+            + dim269Linitializers.length
+            + dim270Linitializers.length
+            + dim271Linitializers.length
+            + dim272Linitializers.length
+            + dim273Linitializers.length
+            + dim274Linitializers.length
+            + dim275Linitializers.length
+            + dim276Linitializers.length
+            + dim277Linitializers.length
+            + dim278Linitializers.length
+            + dim279Linitializers.length
+            + dim280Linitializers.length
+            + dim281Linitializers.length
+            + dim282Linitializers.length
+            + dim283Linitializers.length
+            + dim284Linitializers.length
+            + dim285Linitializers.length
+            + dim286Linitializers.length
+            + dim287Linitializers.length
+            + dim288Linitializers.length
+            + dim289Linitializers.length
+            + dim290Linitializers.length
+            + dim291Linitializers.length
+            + dim292Linitializers.length
+            + dim293Linitializers.length
+            + dim294Linitializers.length
+            + dim295Linitializers.length
+            + dim296Linitializers.length
+            + dim297Linitializers.length
+            + dim298Linitializers.length
+            + dim299Linitializers.length
+            + dim300Linitializers.length
+            + dim301Linitializers.length
+            + dim302Linitializers.length
+            + dim303Linitializers.length
+            + dim304Linitializers.length
+            + dim305Linitializers.length
+            + dim306Linitializers.length
+            + dim307Linitializers.length
+            + dim308Linitializers.length
+            + dim309Linitializers.length
+            + dim310Linitializers.length
+            + dim311Linitializers.length
+            + dim312Linitializers.length
+            + dim313Linitializers.length
+            + dim314Linitializers.length
+            + dim315Linitializers.length
+            + dim316Linitializers.length
+            + dim317Linitializers.length
+            + dim318Linitializers.length
+            + dim319Linitializers.length
+            + dim320Linitializers.length
+            + dim321Linitializers.length
+            + dim322Linitializers.length
+            + dim323Linitializers.length
+            + dim324Linitializers.length
+            + dim325Linitializers.length
+            + dim326Linitializers.length
+            + dim327Linitializers.length
+            + dim328Linitializers.length
+            + dim329Linitializers.length
+            + dim330Linitializers.length
+            + dim331Linitializers.length
+            + dim332Linitializers.length
+            + dim333Linitializers.length
+            + dim334Linitializers.length
+            + dim335Linitializers.length
+            + dim336Linitializers.length
+            + dim337Linitializers.length
+            + dim338Linitializers.length
+            + dim339Linitializers.length
+            + dim340Linitializers.length
+            + dim341Linitializers.length
+            + dim342Linitializers.length
+            + dim343Linitializers.length
+            + dim344Linitializers.length
+            + dim345Linitializers.length
+            + dim346Linitializers.length
+            + dim347Linitializers.length
+            + dim348Linitializers.length
+            + dim349Linitializers.length
+            + dim350Linitializers.length
+            + dim351Linitializers.length
+            + dim352Linitializers.length
+            + dim353Linitializers.length
+            + dim354Linitializers.length
+            + dim355Linitializers.length
+            + dim356Linitializers.length
+            + dim357Linitializers.length
+            + dim358Linitializers.length
+            + dim359Linitializers.length
+            + dim360Linitializers.length;
 
     //
     // private fields
     //
-
     private final /*@Size*/ int dimensionality;
 
-    private final long[]       integerSequence;
-    private final long[][]     directionIntegers;
+    private final long[] integerSequence;
+    private final long[][] directionIntegers;
 
-    private Sample<double[]>   sequence;
-    private long               sequenceCounter;
-    private boolean            firstDraw;
-
+    private Sample<double[]> sequence;
+    private long sequenceCounter;
+    private boolean firstDraw;
 
     //
     // public constructors
     //
-
     /**
      * dimensionality must be <= PPMT_MAX_DIM
      */
@@ -1402,35 +1372,34 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
 
     public SobolRsg(final int dimensionality, final long seed, final DirectionIntegers direction) {
 
-        if (System.getProperty("EXPERIMENTAL")==null) {
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
         }
 
-        QL.require(dimensionality > 0 , "dimensionality must be greater than 0"); // TODO: message
+        QL.require(dimensionality > 0, "dimensionality must be greater than 0"); // TODO: message
 
         // In QuantLib/C++ PrimitivePolinomials is initialized in a template given its maximum dimensionality
         // defined via macros. In Java we allocate at runtime.
         final PrimitivePolynomials pp = new PrimitivePolynomials();
 
-        QL.require(dimensionality <= pp.getPpmtMaxDim() , "dimensionality exceeds available primitive polynomials module two"); // TODO: message
+        QL.require(dimensionality <= pp.getPpmtMaxDim(), "dimensionality exceeds available primitive polynomials module two"); // TODO: message
 
         this.dimensionality = dimensionality;
         this.sequenceCounter = 0;
         this.firstDraw = true;
 
         this.directionIntegers = new long[this.dimensionality][BITS];
-        this.integerSequence   = new long[this.dimensionality];
-
+        this.integerSequence = new long[this.dimensionality];
 
         // initializes coefficient array of the k-th primitive polynomial
         // and degree of the k-th primitive polynomial
         final long[] degree = new long[this.dimensionality];
-        final long[] ppmt   = new long[this.dimensionality];
+        final long[] ppmt = new long[this.dimensionality];
 
         // degree 0 is not used
-        ppmt[0]=0;
-        degree[0]=0;
-        for (int k=1, index=0, currentDegree=1; k < this.dimensionality; k++, index++) {
+        ppmt[0] = 0;
+        degree[0] = 0;
+        for (int k = 1, index = 0, currentDegree = 1; k < this.dimensionality; k++, index++) {
             ppmt[k] = pp.get(currentDegree - 1, index);
             if (ppmt[k] == -1) {
                 ++currentDegree;
@@ -1440,7 +1409,6 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
             degree[k] = currentDegree;
         }
 
-
         // initializes bits_ direction integers for each dimension
         // and store them into directionIntegers_[dimensionality_][bits_]
         //
@@ -1448,76 +1416,73 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
         // the first degree_[k] direction integers can be chosen freely
         // provided that only the l leftmost bits can be non-zero, and
         // that the l-th leftmost bit must be set
-
         // degenerate (no free direction integers) first dimension
-        for (int j=0; j < BITS; j++) {
-            directionIntegers[0][j] = (1 << (BITS-j-1));
+        for (int j = 0; j < BITS; j++) {
+            directionIntegers[0][j] = (1 << (BITS - j - 1));
         }
 
         int maxTabulated = 0;
         // dimensions from 2 (k=1) to maxTabulated (k=maxTabulated-1) included
         // are initialized from tabulated coefficients
         switch (direction) {
-        case Unit:
-            maxTabulated = this.dimensionality;
-            for (int k = 1; k < maxTabulated; k++) {
-                for (int l = 1; l <= degree[k]; l++) {
-                    // FIXME: Translate these two lines
-                    // TODO: Code Review is this correct.
-                    directionIntegers[k][l-1] = 1L;
-                    directionIntegers[k][l-1] <<= (BITS-l);
+            case Unit:
+                maxTabulated = this.dimensionality;
+                for (int k = 1; k < maxTabulated; k++) {
+                    for (int l = 1; l <= degree[k]; l++) {
+                        // FIXME: Translate these two lines
+                        // TODO: Code Review is this correct.
+                        directionIntegers[k][l - 1] = 1L;
+                        directionIntegers[k][l - 1] <<= (BITS - l);
+                    }
                 }
-            }
-            break;
-        case Jaeckel:
-            // maxTabulated = 32;
-            maxTabulated = sizeInitializers/(Long.SIZE/8) + 1;
-            for (int k = 1; k < Math.min(this.dimensionality, maxTabulated); k++) {
-                int j = 0;
-                // 0UL marks coefficients' end for a given dimension
-                while (initializers[k-1][j] != 0) {
-                    // FIXME: Translate these two lines
-                    directionIntegers[k][j] = initializers[k-1][j];
-                    directionIntegers[k][j] <<= (BITS-j-1);
-                    j++;
+                break;
+            case Jaeckel:
+                // maxTabulated = 32;
+                maxTabulated = sizeInitializers / (Long.SIZE / 8) + 1;
+                for (int k = 1; k < Math.min(this.dimensionality, maxTabulated); k++) {
+                    int j = 0;
+                    // 0UL marks coefficients' end for a given dimension
+                    while (initializers[k - 1][j] != 0) {
+                        // FIXME: Translate these two lines
+                        directionIntegers[k][j] = initializers[k - 1][j];
+                        directionIntegers[k][j] <<= (BITS - j - 1);
+                        j++;
+                    }
                 }
-            }
-            break;
-        case SobolLevitan:
-            // maxTabulated = 40;
-            maxTabulated = sizeSLinitializers/(Long.SIZE/8) + 1;
-            for (int k = 1; k < Math.min(this.dimensionality, maxTabulated); k++) {
-                int j = 0;
-                // 0UL marks coefficients' end for a given dimension
-                while (SLinitializers[k - 1][j] != 0) {
-                    // FIXME: Translate these two lines
-                    directionIntegers[k][j] = SLinitializers[k - 1][j];
-                    directionIntegers[k][j] <<= (BITS - j - 1);
-                    j++;
+                break;
+            case SobolLevitan:
+                // maxTabulated = 40;
+                maxTabulated = sizeSLinitializers / (Long.SIZE / 8) + 1;
+                for (int k = 1; k < Math.min(this.dimensionality, maxTabulated); k++) {
+                    int j = 0;
+                    // 0UL marks coefficients' end for a given dimension
+                    while (SLinitializers[k - 1][j] != 0) {
+                        // FIXME: Translate these two lines
+                        directionIntegers[k][j] = SLinitializers[k - 1][j];
+                        directionIntegers[k][j] <<= (BITS - j - 1);
+                        j++;
+                    }
                 }
-            }
-            break;
-        case SobolLevitanLemieux:
-            maxTabulated = 360;
-            maxTabulated = sizeLinitializers/(Long.SIZE/8) + 1;
-            for (int k = 1; k < Math.min(this.dimensionality, maxTabulated); k++) {
-                int j = 0;
-                // 0UL marks coefficients' end for a given dimension
-                while (Linitializers[k - 1][j] != 0L) {
-                    // FIXME: Translate these two lines
-                    directionIntegers[k][j] = Linitializers[k - 1][j];
-                    directionIntegers[k][j] <<= (BITS - j - 1);
-                    j++;
+                break;
+            case SobolLevitanLemieux:
+                maxTabulated = 360;
+                maxTabulated = sizeLinitializers / (Long.SIZE / 8) + 1;
+                for (int k = 1; k < Math.min(this.dimensionality, maxTabulated); k++) {
+                    int j = 0;
+                    // 0UL marks coefficients' end for a given dimension
+                    while (Linitializers[k - 1][j] != 0L) {
+                        // FIXME: Translate these two lines
+                        directionIntegers[k][j] = Linitializers[k - 1][j];
+                        directionIntegers[k][j] <<= (BITS - j - 1);
+                        j++;
+                    }
                 }
-            }
-            break;
-        default:
-            break;
+                break;
+            default:
+                break;
         }
 
-
         // random initialization for higher dimensions
-
         // FIXME: Check maxTabulated below: How is it initialized?
         if (this.dimensionality > maxTabulated) {
             final MersenneTwisterUniformRng uniformRng = new MersenneTwisterUniformRng(seed);
@@ -1536,12 +1501,10 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
 
                     // iterate until the direction integer is odd
                     // that is it has the rightmost bit set
-
                     // shifting bits_-l bits to the left
                     // we are guaranteed that the l-th leftmost bit
                     // is set, and only the first l leftmost bit
                     // can be non-zero
-
                     // FIXME: Translate this line
                     directionIntegers[k][l - 1] <<= (BITS - l);
                 }
@@ -1554,7 +1517,7 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
             final int gk = (int) degree[k];
             for (int l = gk; l < BITS; l++) {
                 // eq. 8.19 "Monte Carlo Methods in Finance" by P. Jaeckel
-                long n = (directionIntegers[k][l-gk] >> gk); // FIXME: unsigned long
+                long n = (directionIntegers[k][l - gk] >> gk); // FIXME: unsigned long
 
                 // a[k][j] are the coefficients of the monomials in ppmt[k]
                 // The highest order coefficient a[k][0] is not actually
@@ -1574,7 +1537,6 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
 
                 // a[k][gk] is always set, so directionIntegers_[k][l-gk]
                 // will always enter
-
                 // FIXME: Correct these two lines regarding directionIntegers_
                 n ^= directionIntegers[k][l - gk];
                 directionIntegers[k][l] = n;
@@ -1616,14 +1578,12 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
         //				}
         //			}
         //		}
-
         // initialize Sobol integer/double vectors
         // first draw
-        for (int k=0; k<this.dimensionality; k++) {
+        for (int k = 0; k < this.dimensionality; k++) {
             integerSequence[k] = directionIntegers[k][0];
         }
     }
-
 
     // skip to the n-th sample in the low-discrepancy sequence
     private void skipTo(final /*@NonNegative*/ long skip) {
@@ -1631,7 +1591,7 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
         final long ops = (long) (Math.log(n) / Constants.M_LN2) + 1;
 
         // Convert to Gray code
-        final long gray = n ^ (n>>1);
+        final long gray = n ^ (n >> 1);
 
         // FIXME: Correct the following for loop regarding directionIntegers_ .
         for (int k = 0; k < this.dimensionality; k++) {
@@ -1645,11 +1605,9 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
         sequenceCounter = skip;
     }
 
-
     //
     // implements UniformRandomSequenceGenerator
     //
-
     @Override
     public int dimension() /* @Read-only */ {
         return this.dimensionality;
@@ -1675,7 +1633,10 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
         long n = sequenceCounter;
         // Find rightmost zero bit of n
         int j = 0;
-        while ((n & 1) != 0) { n >>= 1; j++; }
+        while ((n & 1) != 0) {
+            n >>= 1;
+            j++;
+        }
         for (int k = 0; k < this.dimensionality; k++) {
             // XOR the appropriate direction number into each component of
             // the integer sequence to obtain a new Sobol integer for that
@@ -1687,7 +1648,7 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
 
     @Override
     public final Sample<double[]> nextSequence() /* @ReadOnly */ {
-        final long[]   v = nextInt32Sequence();
+        final long[] v = nextInt32Sequence();
         final double[] d = new double[this.dimensionality];
 
         // normalize to get a double in (0,1)
@@ -1702,6 +1663,13 @@ public class SobolRsg implements UniformRandomSequenceGenerator {
     @Override
     public final Sample<double[]> lastSequence() /* @Read-only*/ {
         return sequence;
+    }
+
+    //
+    // public enums
+    //
+    public enum DirectionIntegers {
+        Unit, Jaeckel, SobolLevitan, SobolLevitanLemieux
     }
 
 }

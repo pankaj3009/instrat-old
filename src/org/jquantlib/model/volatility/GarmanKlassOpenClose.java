@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.model.volatility;
 
 import java.util.Iterator;
@@ -46,8 +45,8 @@ import org.jquantlib.time.JDate;
 import org.jquantlib.time.TimeSeries;
 
 /**
- * This template factors out common functionality found in classes which rely on the difference between the previous day's close
- * price and today's open price.
+ * This template factors out common functionality found in classes which rely on
+ * the difference between the previous day's close price and today's open price.
  *
  * @author Anand Mani
  * @author Richard Gomes
@@ -57,25 +56,22 @@ public class GarmanKlassOpenClose<T extends GarmanKlassAbstract> implements Loca
     //
     // private fields
     //
-
     private final double f;
     private final double a;
     private T delegate;
 
-	private final Class<? extends GarmanKlassAbstract> classT;
+    private final Class<? extends GarmanKlassAbstract> classT;
 
-    
     //
     // public constructors
     //
-
     @SuppressWarnings("unchecked")
     public GarmanKlassOpenClose(
-    		final Class<? extends GarmanKlassAbstract> classT,
-    		final double y, 
-    		final double marketOpenFraction, 
-    		final double a) {
-		this.classT = classT;
+            final Class<? extends GarmanKlassAbstract> classT,
+            final double y,
+            final double marketOpenFraction,
+            final double a) {
+        this.classT = classT;
         this.delegate = null;
         try {
             delegate = (T) classT.getConstructor(double.class).newInstance(y);
@@ -89,7 +85,6 @@ public class GarmanKlassOpenClose<T extends GarmanKlassAbstract> implements Loca
     //
     // implements LocalVolatilityEstimator
     //
-
     @Override
     public TimeSeries<Double> calculate(final TimeSeries<IntervalPrice> quotes) {
         final TimeSeries<Double> retval = new TimeSeries<Double>(Double.class);
@@ -102,7 +97,7 @@ public class GarmanKlassOpenClose<T extends GarmanKlassAbstract> implements Loca
             final double c0 = Math.log(prev.close());
             final double o1 = Math.log(curr.open());
             final double sigma2 = this.a * (o1 - c0) * (o1 - c0) / this.f + (1 - this.a) * delegate.calculatePoint(curr) / (1 - this.f);
-            retval.put(date, Math.sqrt(sigma2 / delegate.getYearFraction()) );
+            retval.put(date, Math.sqrt(sigma2 / delegate.getYearFraction()));
             prev = curr;
         }
         return retval;

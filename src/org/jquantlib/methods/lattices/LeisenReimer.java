@@ -37,16 +37,17 @@ import org.jquantlib.processes.StochasticProcess1D;
  */
 public class LeisenReimer extends BinomialTree {
 
-	protected double up, down, pu, pd;
+    protected double up, down, pu, pd;
 
-	public LeisenReimer(
+    public LeisenReimer(
             final StochasticProcess1D process,
             final @Time double end,
             final @NonNegative int steps,
             final @Real double strike) {
-	    super(process, end, steps);
-        if (strike <= 0.0)
+        super(process, end, steps);
+        if (strike <= 0.0) {
             throw new IllegalArgumentException("strike must be positive");
+        }
 
         final int oddSteps = (steps % 2 > 0 ? steps : steps + 1);
         final double variance = process.variance(0.0, x0, end);
@@ -59,37 +60,37 @@ public class LeisenReimer extends BinomialTree {
         down = (ermqdt - pu * up) / (1.0 - pu);
     }
 
-	@Override
+    @Override
     public double underlying(final int i, final int index) {
-        final int j =  i - index;
+        final int j = i - index;
         final double d = j;
         return x0 * Math.pow(down, d) * Math.pow(up, (index));
     }
 
-	@Override
+    @Override
     public double probability(final int n, final int m, final int branch) {
-		return (branch == 1 ? pu : pd);
-	}
+        return (branch == 1 ? pu : pd);
+    }
 
-	/**
-	 * Given an odd integer n and a real number z it returns p such that:
-	 * <pre>
-	 * 1 - CumulativeBinomialDistribution((n-1)/2, n, p) = CumulativeNormalDistribution(z)
-	 * </pre>
-	 * where n must be odd
-	 */
-	// TODO: code review :: please verify against QL/C++ code
-	// Possibly create a math-utilities class and move into there.
-	private double PeizerPrattMethod2Inversion(final double z, final int n) {
+    /**
+     * Given an odd integer n and a real number z it returns p such that:
+     * <pre>
+     * 1 - CumulativeBinomialDistribution((n-1)/2, n, p) = CumulativeNormalDistribution(z)
+     * </pre> where n must be odd
+     */
+    // TODO: code review :: please verify against QL/C++ code
+    // Possibly create a math-utilities class and move into there.
+    private double PeizerPrattMethod2Inversion(final double z, final int n) {
 
-		if (! (n % 2 != 0) )
+        if (!(n % 2 != 0)) {
             throw new IllegalArgumentException("n must be an odd number");
+        }
 
-		double result = (z / (n + 1.0 / 3.0 + 0.1 / (n + 1.0)));
-		result *= result;
-		result = Math.exp(-result * (n + 1.0 / 6.0));
-		result = 0.5 + (z > 0 ? 1 : -1) * Math.sqrt((0.25 * (1.0 - result)));
-		return result;
-	}
+        double result = (z / (n + 1.0 / 3.0 + 0.1 / (n + 1.0)));
+        result *= result;
+        result = Math.exp(-result * (n + 1.0 / 6.0));
+        result = 0.5 + (z > 0 ? 1 : -1) * Math.sqrt((0.25 * (1.0 - result)));
+        return result;
+    }
 
 }

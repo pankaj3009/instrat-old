@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.processes;
 
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -42,10 +41,6 @@ public class HestonProcess extends StochasticProcess {
     private final Handle<YieldTermStructure> riskFreeRate_, dividendYield_;
     private final Handle<Quote> s0_;
     private final RelinkableHandle<Quote> v0_, kappa_, theta_, sigma_, rho_;
-
-    private enum Discretization {
-        PartialTruncation, FullTruncation, Reflection, ExactVariance
-    };
 
     private final Discretization discretization_;
 
@@ -78,7 +73,6 @@ public class HestonProcess extends StochasticProcess {
         // TODO: code review :: super(new EulerDiscretization());
         // Seems like constructor which takes a Discretization must belong to
         // StochasticProcess and not StochasticProcess1D
-
         if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
         }
@@ -94,7 +88,6 @@ public class HestonProcess extends StochasticProcess {
         this.discretization_ = (d);
 
         // TODO: code review :: please verify against QL/C++ code
-
         this.riskFreeRate_.addObserver(this);
         this.dividendYield_.addObserver(this);
         this.s0_.addObserver(this);
@@ -146,14 +139,12 @@ public class HestonProcess extends StochasticProcess {
         return riskFreeRate_;
     }
 
-
     //
     // Overrides StochasticProcess
     //
-
     @Override
     public Array initialValues() {
-        return new Array( new double[] { s0v_, v0v_ } );
+        return new Array(new double[]{s0v_, v0v_});
     }
 
     @Override
@@ -162,7 +153,7 @@ public class HestonProcess extends StochasticProcess {
     }
 
     @Override
-    public final/* @Time */double time(final JDate d) {
+    public final/* @Time */ double time(final JDate d) {
         return riskFreeRate_.currentLink().dayCounter().yearFraction(riskFreeRate_.currentLink().referenceDate(), d);
     }
 
@@ -170,17 +161,17 @@ public class HestonProcess extends StochasticProcess {
     public Array drift(/* Time */final double t, final Array x) {
         final double x1 = x.get(1);
         final double vol = (x1 > 0.0)
-        ? Math.sqrt(x1)
+                ? Math.sqrt(x1)
                 : (discretization_ == Discretization.PartialTruncation)
-                ? -Math.sqrt(-x1)
+                        ? -Math.sqrt(-x1)
                         : 0.0;
 
-                final double[] result = new double[2];
-                result[0] = riskFreeRate_.currentLink().forwardRate(t, t, Compounding.Continuous).rate()
+        final double[] result = new double[2];
+        result[0] = riskFreeRate_.currentLink().forwardRate(t, t, Compounding.Continuous).rate()
                 - dividendYield_.currentLink().forwardRate(t, t, Compounding.Continuous).rate() - 0.5 * vol * vol;
 
-                result[1] = kappav_ * (thetav_ - ((discretization_ == Discretization.PartialTruncation) ? x1 : vol * vol));
-                return new Array(result);
+        result[1] = kappav_ * (thetav_ - ((discretization_ == Discretization.PartialTruncation) ? x1 : vol * vol));
+        return new Array(result);
     }
 
     @Override
@@ -190,18 +181,18 @@ public class HestonProcess extends StochasticProcess {
          */
         final double x1 = x.get(1);
         final double vol = (x1 > 0.0)
-        ? Math.sqrt(x1)
+                ? Math.sqrt(x1)
                 : (discretization_ == Discretization.Reflection)
-                ? -Math.sqrt(-x1)
+                        ? -Math.sqrt(-x1)
                         : 0.0;
-                final double sigma2 = sigmav_ * vol;
+        final double sigma2 = sigmav_ * vol;
 
-                final Matrix result = new Matrix(2, 2);
-                result.set(0, 0, vol);
-                result.set(0, 1, 0.0);
-                result.set(1, 0, rhov_ * sigma2);
-                result.set(1, 1, sqrhov_ * sigma2);
-                return result;
+        final Matrix result = new Matrix(2, 2);
+        result.set(0, 0, vol);
+        result.set(0, 1, 0.0);
+        result.set(1, 0, rhov_ * sigma2);
+        result.set(1, 1, sqrhov_ * sigma2);
+        return result;
     }
 
     @Override
@@ -213,7 +204,7 @@ public class HestonProcess extends StochasticProcess {
     }
 
     @Override
-    public Array evolve(/* @Time */final double t0, final Array x0, /* @Time */final double dt, final Array dw) {
+    public Array evolve(/* @Time */final double t0, final Array x0, /* @Time */ final double dt, final Array dw) {
         final double[] retVal = new double[2];
         double ncp, df, p, dy;
         double vol, vol2, mu, nu;
@@ -235,7 +226,7 @@ public class HestonProcess extends StochasticProcess {
                 vol = (x01 > 0.0) ? Math.sqrt(x01) : 0.0;
                 vol2 = sigmav_ * vol;
                 mu = riskFreeRate_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate()
-                - dividendYield_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate() - 0.5 * vol * vol;
+                        - dividendYield_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate() - 0.5 * vol * vol;
                 nu = kappav_ * (thetav_ - x01);
 
                 retVal[0] = x00 * Math.exp(mu * dt + vol * dw0 * sdt);
@@ -245,7 +236,7 @@ public class HestonProcess extends StochasticProcess {
                 vol = (x01 > 0.0) ? Math.sqrt(x01) : 0.0;
                 vol2 = sigmav_ * vol;
                 mu = riskFreeRate_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate()
-                - dividendYield_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate() - 0.5 * vol * vol;
+                        - dividendYield_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate() - 0.5 * vol * vol;
                 nu = kappav_ * (thetav_ - vol * vol);
 
                 retVal[0] = x00 * Math.exp(mu * dt + vol * dw0 * sdt);
@@ -255,7 +246,7 @@ public class HestonProcess extends StochasticProcess {
                 vol = Math.sqrt(Math.abs(x01));
                 vol2 = sigmav_ * vol;
                 mu = riskFreeRate_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate()
-                - dividendYield_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate() - 0.5 * vol * vol;
+                        - dividendYield_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate() - 0.5 * vol * vol;
                 nu = kappav_ * (thetav_ - vol * vol);
 
                 retVal[0] = x00 * Math.exp(mu * dt + vol * dw0 * sdt);
@@ -269,7 +260,7 @@ public class HestonProcess extends StochasticProcess {
                 // "QuantLib code is very high quatlity"
                 vol = (x01 > 0.0) ? Math.sqrt(x01) : 0.0;
                 mu = riskFreeRate_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate()
-                - dividendYield_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate() - 0.5 * vol * vol;
+                        - dividendYield_.currentLink().forwardRate(t0, t0, Compounding.Continuous).rate() - 0.5 * vol * vol;
 
                 df = 4 * thetav_ * kappav_ / (sigmav_ * sigmav_);
                 ncp = 4 * kappav_ * Math.exp(-kappav_ * dt) / (sigmav_ * sigmav_ * (1 - Math.exp(-kappav_ * dt))) * x01;
@@ -294,7 +285,11 @@ public class HestonProcess extends StochasticProcess {
                 throw new LibraryException("unknown discretization schema"); // TODO: message
         }
 
-        return new Array( retVal );
+        return new Array(retVal);
+    }
+
+    private enum Discretization {
+        PartialTruncation, FullTruncation, Reflection, ExactVariance
     }
 
 }

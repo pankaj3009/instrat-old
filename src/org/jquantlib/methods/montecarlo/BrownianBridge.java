@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 // ===========================================================================
 // NOTE: The following copyright notice applies to the original code,
 //
@@ -54,28 +53,30 @@ import org.jquantlib.time.TimeGrid;
 /**
  * Builds Wiener process paths using Gaussian variates
  * <p>
- * This class generates normalized (i.e., unit-variance) paths as sequences of variations. In order to obtain the actual path of the
- * underlying, the returned variations must be multiplied by the integrated variance (including time) over the corresponding time
- * step.
+ * This class generates normalized (i.e., unit-variance) paths as sequences of
+ * variations. In order to obtain the actual path of the underlying, the
+ * returned variations must be multiplied by the integrated variance (including
+ * time) over the corresponding time step.
  *
  * @author Richard Gomes
  */
 public class BrownianBridge {
 
-    private final /* @NonNegative */int size_;
-    private final /* @Time */double[] t_;
-    private final /* @Real */double[] sqrtdt_;
-    private final /* @NonNegative */int[] bridgeIndex_, leftIndex_, rightIndex_;
-    private final /* @Real */double[] leftWeight_, rightWeight_, stdDev_;
+    private final /* @NonNegative */ int size_;
+    private final /* @Time */ double[] t_;
+    private final /* @Real */ double[] sqrtdt_;
+    private final /* @NonNegative */ int[] bridgeIndex_, leftIndex_, rightIndex_;
+    private final /* @Real */ double[] leftWeight_, rightWeight_, stdDev_;
 
     /**
      * unit-time path
      *
      * @param steps
      */
-    public BrownianBridge(final/* @NonNegative */int steps) {
-        if (System.getProperty("EXPERIMENTAL")==null)
+    public BrownianBridge(final/* @NonNegative */ int steps) {
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
         this.size_ = steps;
         this.t_ = new double[this.size_];
         this.sqrtdt_ = new double[this.size_];
@@ -97,11 +98,12 @@ public class BrownianBridge {
     /**
      * generic times
      *
-     * @note the starting time of the path is assumed to be 0 and must not be included
+     * @note the starting time of the path is assumed to be 0 and must not be
+     * included
      *
      * @param times
      */
-    public BrownianBridge(final/* @Time */double[] times) {
+    public BrownianBridge(final/* @Time */ double[] times) {
         this.size_ = times.length;
         this.t_ = Arrays.copyOfRange(times, 0, this.size_);
         this.sqrtdt_ = new double[this.size_];
@@ -196,11 +198,11 @@ public class BrownianBridge {
         }
     }
 
-    public/* @NonNegative */int size() /* @ReadOnly */{
+    public/* @NonNegative */ int size() /* @ReadOnly */ {
         return size_;
     }
 
-    public final/* @Time */double[] times() /* @ReadOnly */{
+    public final/* @Time */ double[] times() /* @ReadOnly */ {
         return t_;
     }
 
@@ -215,11 +217,13 @@ public class BrownianBridge {
     // ArrayIndexOutOfBoundsException which can be easily avoided.
     // -- Richard Gomes
     //
-    public void transform(final double[] input, final double[] output) /* @ReadOnly */{
-        if (input == null || input.length == 0)
+    public void transform(final double[] input, final double[] output) /* @ReadOnly */ {
+        if (input == null || input.length == 0) {
             throw new IllegalArgumentException("invalid sequence");
-        if (input.length != size_)
+        }
+        if (input.length != size_) {
             throw new IllegalArgumentException("incompatible sequence size");
+        }
         // We use output to store the path...
         output[size_ - 1] = stdDev_[0] * input[0];
         for (int i = 1; i < size_; ++i) {

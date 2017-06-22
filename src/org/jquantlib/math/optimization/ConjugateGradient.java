@@ -20,9 +20,9 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
+ /* -*- mode: c++; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- */
 
-/*
+ /*
  Copyright (C) 2006 Ferdinando Ametrano
  Copyright (C) 2001, 2002, 2003 Nicolas Di Cesare
 
@@ -38,11 +38,11 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 
-/*! \file conjugategradient.hpp
+ /*! \file conjugategradient.hpp
     \brief Conjugate gradient optimization method
-*/
+ */
 package org.jquantlib.math.optimization;
 
 import org.jquantlib.math.matrixutilities.Array;
@@ -54,20 +54,18 @@ import org.jquantlib.math.optimization.EndCriteria.Type;
     Search direction \f$ d_i = - f'(x_i) + c_i*d_{i-1} \f$
     where \f$ c_i = ||f'(x_i)||^2/||f'(x_{i-1})||^2 \f$
     and \f$ d_1 = - f'(x_1) \f$
-*/
-
+ */
 public class ConjugateGradient extends LineSearchBasedMethod {
 
-    public ConjugateGradient(){
+    public ConjugateGradient() {
         throw new UnsupportedOperationException("Work in progress");
     }
-
 
     public ConjugateGradient(final LineSearch lineSearch) {
         if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
         }
-        if(lineSearch == null){
+        if (lineSearch == null) {
 
         }
     }
@@ -95,20 +93,21 @@ public class ConjugateGradient extends LineSearchBasedMethod {
         final double t = 1.0;
         // Set gradient g at the size of the optimization problem search direction.
         final int sz = lineSearch_.searchDirection().size();
-        Array g = new Array(sz); Array d = new Array(sz); final Array sddiff = new Array(sz);
+        Array g = new Array(sz);
+        Array d = new Array(sz);
+        final Array sddiff = new Array(sz);
         // Initialize cost function and gradient g
         P.setFunctionValue(P.valueAndGradient(g, x_));
         lineSearch_.setSearchDirection(g.mul(-1));
         P.setGradientNormValue(g.dotProduct(g));
         // Loop over iterations
-        do{
+        do {
             // Linesearch
             // FIXME: what are we doing here?
             //t = (*lineSearch_)(P, ecType, endCriteria, t);
             // don't throw: it can fail just because maxIterations exceeded
             //QL_REQUIRE(lineSearch_->succeed(), "line-search failed!");
-            if (lineSearch_.succeed_)
-            {
+            if (lineSearch_.succeed_) {
                 // Updates
                 d = lineSearch_.searchDirection();
                 // New point
@@ -142,11 +141,10 @@ public class ConjugateGradient extends LineSearchBasedMethod {
                 // Increase interation number"
                 ++iterationNumber_;
             } else {
-                done=true;
+                done = true;
             }
         } while (!done);
         P.setCurrentValue(x_);
         return ecType;
-        }
     }
-
+}

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2005, 2006 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,14 +36,12 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures;
 
 import org.jquantlib.daycounters.DayCounter;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
-
 
 /**
  * Interest rate term structure
@@ -53,8 +51,9 @@ import org.jquantlib.time.Period;
 public abstract interface YieldTermStructure extends TermStructure {
 
     /**
-     * Return the implied zero-yield rate for a given date or time. In the former case, the time is calculated as a
-     * fraction of year from the reference date.
+     * Return the implied zero-yield rate for a given date or time. In the
+     * former case, the time is calculated as a fraction of year from the
+     * reference date.
      * <p>
      * The resulting interest rate has the required day-counting rule.
      *
@@ -66,8 +65,9 @@ public abstract interface YieldTermStructure extends TermStructure {
             final Compounding comp);
 
     /**
-     * Return the implied zero-yield rate for a given date or time. In the former case, the time is calculated as a
-     * fraction of year from the reference date.
+     * Return the implied zero-yield rate for a given date or time. In the
+     * former case, the time is calculated as a fraction of year from the
+     * reference date.
      * <p>
      * The resulting interest rate has the required day-counting rule.
      *
@@ -80,8 +80,9 @@ public abstract interface YieldTermStructure extends TermStructure {
             final Frequency freq);
 
     /**
-     * Return the implied zero-yield rate for a given date or time. In the former case, the time is calculated as a
-     * fraction of year from the reference date.
+     * Return the implied zero-yield rate for a given date or time. In the
+     * former case, the time is calculated as a fraction of year from the
+     * reference date.
      * <p>
      * The resulting interest rate has the required day-counting rule.
      *
@@ -95,8 +96,9 @@ public abstract interface YieldTermStructure extends TermStructure {
             boolean extrapolate);
 
     /**
-     * Return the implied zero-yield rate for a given date or time. In the former case, the time is calculated as a
-     * fraction of year from the reference date.
+     * Return the implied zero-yield rate for a given date or time. In the
+     * former case, the time is calculated as a fraction of year from the
+     * reference date.
      * <p>
      * The resulting interest rate has the same day-counting rule used by the
      * term structure. The same rule should be used for calculating the passed
@@ -105,16 +107,16 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @category zero yield rates
      */
     public abstract InterestRate zeroRate(
-            final/*@Time*/double time,
+            final/*@Time*/ double time,
             final Compounding comp,
             final Frequency freq,
             boolean extrapolate);
 
     /**
-     * Returns the implied forward interest rate between two dates
-     * or times. In the former case, times are calculated as fractions of year
-     * from the reference date. The resulting interest rate has the required
-     * day-counting rule.
+     * Returns the implied forward interest rate between two dates or times. In
+     * the former case, times are calculated as fractions of year from the
+     * reference date. The resulting interest rate has the required day-counting
+     * rule.
      * <p>
      * Dates are not adjusted for holidays
      *
@@ -127,10 +129,10 @@ public abstract interface YieldTermStructure extends TermStructure {
             final Compounding comp);
 
     /**
-     * Returns the implied forward interest rate between two dates
-     * or times. In the former case, times are calculated as fractions of year
-     * from the reference date. The resulting interest rate has the required
-     * day-counting rule.
+     * Returns the implied forward interest rate between two dates or times. In
+     * the former case, times are calculated as fractions of year from the
+     * reference date. The resulting interest rate has the required day-counting
+     * rule.
      *
      * @category forward rates
      *
@@ -144,10 +146,10 @@ public abstract interface YieldTermStructure extends TermStructure {
             final Frequency freq);
 
     /**
-     * Returns the implied forward interest rate between two dates
-     * or times. In the former case, times are calculated as fractions of year
-     * from the reference date. The resulting interest rate has the required
-     * day-counting rule.
+     * Returns the implied forward interest rate between two dates or times. In
+     * the former case, times are calculated as fractions of year from the
+     * reference date. The resulting interest rate has the required day-counting
+     * rule.
      *
      * @category forward rates
      *
@@ -162,43 +164,43 @@ public abstract interface YieldTermStructure extends TermStructure {
             boolean extrapolate);
 
     /**
-     * Returns the implied forward interest rate between two dates
-     * or times. In the former case, times are calculated as fractions of year
-     * from the reference date. The resulting interest rate has the required
-     * day-counting rule.
+     * Returns the implied forward interest rate between two dates or times. In
+     * the former case, times are calculated as fractions of year from the
+     * reference date. The resulting interest rate has the required day-counting
+     * rule.
      *
      * @category forward rates
      *
      * @see YieldTermStructure#forwardRate(Date, Date, DayCounter,
-     *      org.jquantlib.termstructures.InterestRate.Compounding, Frequency)
+     * org.jquantlib.termstructures.InterestRate.Compounding, Frequency)
      */
     public abstract InterestRate forwardRate(
-            final/*@Time*/double t1,
-            final/*@Time*/double t2,
+            final/*@Time*/ double t1,
+            final/*@Time*/ double t2,
             final Compounding comp);
 
     /**
-     * Returns the implied forward interest rate between two dates
-     * or times. In the former case, times are calculated as fractions of year
-     * from the reference date. The resulting interest rate has the required
-     * day-counting rule.
+     * Returns the implied forward interest rate between two dates or times. In
+     * the former case, times are calculated as fractions of year from the
+     * reference date. The resulting interest rate has the required day-counting
+     * rule.
      *
      * @category forward rates
      *
      * @see YieldTermStructure#forwardRate(Date, Date, DayCounter,
-     *      org.jquantlib.termstructures.InterestRate.Compounding, Frequency)
+     * org.jquantlib.termstructures.InterestRate.Compounding, Frequency)
      */
     public abstract InterestRate forwardRate(
-            final/* @Time */double t1,
-            final/* @Time */double t2,
+            final/* @Time */ double t1,
+            final/* @Time */ double t2,
             final Compounding comp,
             final Frequency freq);
 
     /**
-     * Returns the implied forward interest rate between two dates
-     * or times. In the former case, times are calculated as fractions of year
-     * from the reference date. The resulting interest rate has the required
-     * day-counting rule.
+     * Returns the implied forward interest rate between two dates or times. In
+     * the former case, times are calculated as fractions of year from the
+     * reference date. The resulting interest rate has the required day-counting
+     * rule.
      * <p>
      * The resulting interest rate has the same day-counting rule used by the
      * term structure. The same rule should be used for the calculating the
@@ -207,17 +209,17 @@ public abstract interface YieldTermStructure extends TermStructure {
      * @category forward rates
      */
     public abstract InterestRate forwardRate(
-            final/* @Time */double time1,
-            final/* @Time */double time2,
+            final/* @Time */ double time1,
+            final/* @Time */ double time2,
             final Compounding comp,
             final Frequency freq,
             boolean extrapolate);
 
     /**
-     * Returns the implied forward interest rate between two dates
-     * or times. In the former case, times are calculated as fractions of year
-     * from the reference date. The resulting interest rate has the required
-     * day-counting rule.
+     * Returns the implied forward interest rate between two dates or times. In
+     * the former case, times are calculated as fractions of year from the
+     * reference date. The resulting interest rate has the required day-counting
+     * rule.
      *
      * @category forward rates
      *
@@ -244,94 +246,103 @@ public abstract interface YieldTermStructure extends TermStructure {
             boolean extrapolate);
 
     /**
-     * Returns the discount factor for a given date or time. In the
-     * former case, the double is calculated as a fraction of year from the
-     * reference date.
+     * Returns the discount factor for a given date or time. In the former case,
+     * the double is calculated as a fraction of year from the reference date.
      *
      * @category discount factors
      */
-    public abstract/* @DiscountFactor */double discount(final JDate d);
+    public abstract/* @DiscountFactor */ double discount(final JDate d);
 
     /**
-     * Returns the discount factor for a given date or time. In the
-     * former case, the double is calculated as a fraction of year from the
-     * reference date.
+     * Returns the discount factor for a given date or time. In the former case,
+     * the double is calculated as a fraction of year from the reference date.
      *
      * @category discount factors
      *
-     * @see org.jquantlib.termstructures.YieldTermStructureImpl#discount(org.jquantlib.time.Date, boolean)
+     * @see
+     * org.jquantlib.termstructures.YieldTermStructureImpl#discount(org.jquantlib.time.Date,
+     * boolean)
      */
-    public abstract/* @DiscountFactor */double discount(final JDate d, boolean extrapolate);
+    public abstract/* @DiscountFactor */ double discount(final JDate d, boolean extrapolate);
 
     /**
-     * Returns the discount factor for a given date or time. In the
-     * former case, the double is calculated as a fraction of year from the
-     * reference date.
+     * Returns the discount factor for a given date or time. In the former case,
+     * the double is calculated as a fraction of year from the reference date.
      * <p>
      * The same day-counting rule used by the term structure should be used for
      * calculating the passed double t.
      *
      * @category discount factors
      */
-    public abstract/* @DiscountFactor */double discount(final/* @Time */double t);
+    public abstract/* @DiscountFactor */ double discount(final/* @Time */ double t);
 
     /**
-     * Returns the discount factor for a given date or time. In the
-     * former case, the double is calculated as a fraction of year from the
-     * reference date.
+     * Returns the discount factor for a given date or time. In the former case,
+     * the double is calculated as a fraction of year from the reference date.
      *
      * @category discount factors
      *
-     * @see org.jquantlib.termstructures.YieldTermStructureImpl#discount(double, boolean)
+     * @see org.jquantlib.termstructures.YieldTermStructureImpl#discount(double,
+     * boolean)
      */
-    public abstract/* @DiscountFactor */double discount(final/* @Time */double t, boolean extrapolate);
+    public abstract/* @DiscountFactor */ double discount(final/* @Time */ double t, boolean extrapolate);
 
     /**
-     * Returns the implied par rate for a given sequence of payments at the given dates or times. In the former case, times are
-     * calculated as fractions of year from the reference date.
+     * Returns the implied par rate for a given sequence of payments at the
+     * given dates or times. In the former case, times are calculated as
+     * fractions of year from the reference date.
      *
      * @category par rates
      *
-     * @note though somewhat related to a swap rate, this method is not to be used for the fair rate of a real swap, since it does
-     *       not take into account all the market conventions' details. The correct way to evaluate such rate is to instantiate a
-     *       SimpleSwap with the correct conventions, pass it the term structure and call the swap's fairRate() method.
+     * @note though somewhat related to a swap rate, this method is not to be
+     * used for the fair rate of a real swap, since it does not take into
+     * account all the market conventions' details. The correct way to evaluate
+     * such rate is to instantiate a SimpleSwap with the correct conventions,
+     * pass it the term structure and call the swap's fairRate() method.
      */
-    public abstract/* @Rate */double parRate(int tenor, final JDate startDate, final Frequency freq, boolean extrapolate);
+    public abstract/* @Rate */ double parRate(int tenor, final JDate startDate, final Frequency freq, boolean extrapolate);
 
     /**
-     * Returns the implied par rate for a given sequence of payments at the given dates or times. In the former case, times are
-     * calculated as fractions of year from the reference date.
+     * Returns the implied par rate for a given sequence of payments at the
+     * given dates or times. In the former case, times are calculated as
+     * fractions of year from the reference date.
      *
      * @category par rates
      *
-     * @note though somewhat related to a swap rate, this method is not to be used for the fair rate of a real swap, since it does
-     *       not take into account all the market conventions' details. The correct way to evaluate such rate is to instantiate a
-     *       SimpleSwap with the correct conventions, pass it the term structure and call the swap's fairRate() method.
+     * @note though somewhat related to a swap rate, this method is not to be
+     * used for the fair rate of a real swap, since it does not take into
+     * account all the market conventions' details. The correct way to evaluate
+     * such rate is to instantiate a SimpleSwap with the correct conventions,
+     * pass it the term structure and call the swap's fairRate() method.
      *
      * @param dates
      * @param freq
      * @param extrapolate
-     * @return the first date in the vector must equal the start date; the following dates must equal the payment dates.
+     * @return the first date in the vector must equal the start date; the
+     * following dates must equal the payment dates.
      *
      * @see YieldTermStructure#parRate(int, Date, Frequency, boolean)
      */
-    public abstract/* @Rate */double parRate(final JDate[] dates, final Frequency freq, boolean extrapolate);
+    public abstract/* @Rate */ double parRate(final JDate[] dates, final Frequency freq, boolean extrapolate);
 
     /**
-     * Returns the implied par rate for a given sequence of payments at the given dates or times. In the former case, times are
-     * calculated as fractions of year from the reference date.
+     * Returns the implied par rate for a given sequence of payments at the
+     * given dates or times. In the former case, times are calculated as
+     * fractions of year from the reference date.
      *
      * @category par rates
      *
-     * @note though somewhat related to a swap rate, this method is not to be used for the fair rate of a real swap, since it does
-     *       not take into account all the market conventions' details. The correct way to evaluate such rate is to instantiate a
-     *       SimpleSwap with the correct conventions, pass it the term structure and call the swap's fairRate() method.
+     * @note though somewhat related to a swap rate, this method is not to be
+     * used for the fair rate of a real swap, since it does not take into
+     * account all the market conventions' details. The correct way to evaluate
+     * such rate is to instantiate a SimpleSwap with the correct conventions,
+     * pass it the term structure and call the swap's fairRate() method.
      *
      * @return the first double in the vector must equal the start time; the
-     *         following times must equal the payment times.
+     * following times must equal the payment times.
      *
      * @see YieldTermStructure#parRate(int, Date, Frequency, boolean)
      */
-    public abstract/* @Rate */double parRate(final/* @Time */double[] times, final Frequency frequency, boolean extrapolate);
+    public abstract/* @Rate */ double parRate(final/* @Time */ double[] times, final Frequency frequency, boolean extrapolate);
 
 }

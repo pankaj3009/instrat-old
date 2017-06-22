@@ -19,20 +19,20 @@ public class OHLCV implements Comparable {
     private String oi;
     private String symbol;
     private String dayvolume;
-    
-    public OHLCV(long time){
-        this.time=time;
+
+    public OHLCV(long time) {
+        this.time = time;
     }
 
-    public OHLCV(long time,String close,String symbol){
-        this.time=time;
-        this.close=close;
-        this.symbol=symbol;
+    public OHLCV(long time, String close, String symbol) {
+        this.time = time;
+        this.close = close;
+        this.symbol = symbol;
     }
-    
-    public OHLCV(long time,String symbol){
-        this.time=time;
-        this.symbol=symbol;
+
+    public OHLCV(long time, String symbol) {
+        this.time = time;
+        this.symbol = symbol;
     }
 
     /**
@@ -121,14 +121,14 @@ public class OHLCV implements Comparable {
 
     @Override
     public int compareTo(Object o) {
-        OHLCV other=(OHLCV)o;
-        if(this.symbol.compareTo(other.symbol)<0){
+        OHLCV other = (OHLCV) o;
+        if (this.symbol.compareTo(other.symbol) < 0) {
             return -1;
         }
-        if(this.symbol.compareTo(other.symbol)>0){
+        if (this.symbol.compareTo(other.symbol) > 0) {
             return 1;
         }
-        return 0;        
+        return 0;
     }
 
     /**
@@ -173,5 +173,4 @@ public class OHLCV implements Comparable {
         this.dayvolume = dayvolume;
     }
 
-   
 }

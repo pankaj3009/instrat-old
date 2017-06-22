@@ -19,7 +19,7 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,31 +34,29 @@ When applicable, the original copyright notice follows this notice.
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.model;
 
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.optimization.NoConstraint;
 
 /**
- * Parameter which is always zero {@latex$ a(t) = 0 }
+ * Parameter which is always zero {
+ *
+ * @latex$ a(t) = 0 }
  *
  * @author Praneet Tiwari
  */
 //FIXME: refactor
-
 public class NullParameter extends Parameter {
 
     public NullParameter() {
         super(0, new Impl(), new NoConstraint());
     }
 
-
     //
     // protected inner classes
     //
-
     static protected class Impl implements Parameter.Impl {
 
         @Override

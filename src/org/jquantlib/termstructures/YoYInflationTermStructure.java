@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2005, 2006, 2007 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,7 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.termstructures;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -49,68 +49,63 @@ import org.jquantlib.time.JDate;
 import org.jquantlib.time.Period;
 
 /**
- * 
+ *
  * Base class for year-on-year inflation term structures.
- * 
+ *
  * @author Tim Blackler
  *
  */
-
 public abstract class YoYInflationTermStructure extends InflationTermStructure {
 
-	
     public YoYInflationTermStructure(final DayCounter dayCounter,
-						    		  final Period lag,
-						    		  final Frequency frequency,
-						    		  final @Rate double baseYoYRate,
-						    		  final Handle<YieldTermStructure> yTS) {
-    	super(lag, frequency, baseYoYRate, yTS, dayCounter);
-    	
-    }
+            final Period lag,
+            final Frequency frequency,
+            final @Rate double baseYoYRate,
+            final Handle<YieldTermStructure> yTS) {
+        super(lag, frequency, baseYoYRate, yTS, dayCounter);
 
+    }
 
     public YoYInflationTermStructure(final JDate referenceDate,
-									  final Calendar calendar,
-									  final DayCounter dayCounter,
-						  		  	  final Period lag,
-									  final Frequency frequency,
-									  final @Rate double baseYoYRate,
-									  final Handle<YieldTermStructure> yTS) {
+            final Calendar calendar,
+            final DayCounter dayCounter,
+            final Period lag,
+            final Frequency frequency,
+            final @Rate double baseYoYRate,
+            final Handle<YieldTermStructure> yTS) {
 
-    	super(referenceDate, lag, frequency, baseYoYRate, yTS, calendar, dayCounter);
+        super(referenceDate, lag, frequency, baseYoYRate, yTS, calendar, dayCounter);
     }
-    
-    
+
     public YoYInflationTermStructure(final @Natural int settlementDays,
-	    							  final Calendar calendar,
-	    							  final DayCounter dayCounter,
-	    							  final Period lag,
-	    							  final Frequency frequency,
-	    							  final @Rate double baseYoYRate,
-	    							  final Handle<YieldTermStructure> yTS) {
-    	
-    	super(settlementDays, calendar, lag, frequency,baseYoYRate, yTS, dayCounter);
-    }  
-    
-    
-    public /*@Rate*/ double yoyRate(final JDate date) {
-    	return this.yoyRate(date, false);
+            final Calendar calendar,
+            final DayCounter dayCounter,
+            final Period lag,
+            final Frequency frequency,
+            final @Rate double baseYoYRate,
+            final Handle<YieldTermStructure> yTS) {
+
+        super(settlementDays, calendar, lag, frequency, baseYoYRate, yTS, dayCounter);
     }
-    
+
+    public /*@Rate*/ double yoyRate(final JDate date) {
+        return this.yoyRate(date, false);
+    }
+
     public /*@Rate*/ double yoyRate(final JDate date,
-            						 final boolean extrapolate) {
-    	this.checkRange(date, extrapolate);
-    	return this.yoyRate(timeFromReference(date));
+                    final boolean extrapolate) {
+        this.checkRange(date, extrapolate);
+        return this.yoyRate(timeFromReference(date));
     }
 
     public /*@Rate*/ double yoyRate(final @Time double time) {
-    	return this.yoyRate(time, false);
+        return this.yoyRate(time, false);
     }
-    
+
     public /*@Rate*/ double yoyRate(final @Time double time,
-            						 final boolean extrapolate) {
-    	this.checkRange(time, extrapolate);
-    	return this.yoyRateImpl(time);
+                    final boolean extrapolate) {
+        this.checkRange(time, extrapolate);
+        return this.yoyRateImpl(time);
     }
 
     protected abstract /*@Rate*/ double yoyRateImpl(@Time double time);

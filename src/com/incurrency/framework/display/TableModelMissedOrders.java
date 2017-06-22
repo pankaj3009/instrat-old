@@ -21,12 +21,13 @@ import javax.swing.table.AbstractTableModel;
  */
 public class TableModelMissedOrders extends AbstractTableModel {
 
+    private static final Logger logger = Logger.getLogger(TableModelMissedOrders.class.getName());
+
     private String[] headers = {"Strategy", "Symbol", "EffectiveFrom", "Side", "Size", "OrderType", "Market"};
     int delay = 1000; //milliseconds
     MainAlgorithm m;
     int display = 0;
     private boolean comboDisplay;
-    private static final Logger logger = Logger.getLogger(TableModelMissedOrders.class.getName());
     ArrayList<OrderBean> orders;
 
     ActionListener taskPerformer = new ActionListener() {

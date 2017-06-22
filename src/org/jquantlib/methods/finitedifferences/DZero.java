@@ -23,11 +23,11 @@ package org.jquantlib.methods.finitedifferences;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public class DZero extends TridiagonalOperator {
 
-    public DZero(int gridPoints, /* Real */double h) {
+    public DZero(int gridPoints, /* Real */ double h) {
         super(gridPoints);
         setFirstRow(-1 / h, 1 / h); // linear extrapolation
         setMidRows(-1 / (2 * h), 0.0, 1 / (2 * h));

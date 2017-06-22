@@ -36,19 +36,17 @@ public final class Constant implements Ops.DoubleOp {
         this.value = value;
     }
 
-
     //
     // implements Ops.DoubleOp
     //
-
     /**
      * @param a is always discarded
      * @return a constant value whatever parameter is received
      */
-	@Override
-	public double op(final double a) {
-	    // parameter is discarded and a constant value is returned
-		return value;
-	}
+    @Override
+    public double op(final double a) {
+        // parameter is discarded and a constant value is returned
+        return value;
+    }
 
 }

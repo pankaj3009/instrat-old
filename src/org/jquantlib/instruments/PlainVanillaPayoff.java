@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2007 StatPro Italia srl
@@ -37,8 +37,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.instruments;
 
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -48,11 +47,16 @@ import org.jquantlib.util.Visitor;
 /**
  * Plain-vanilla payoff
  * <p>
- * Pays off nothing if the underlying asset price {@latex$ S_{T}} finishes below/above the strike price {@latex$ K}, or pays
- * out a the difference between the asset price {@latex$ S_{T}} and the strike price {@latex$ K} if the underlying asset finishes
- * above/below the strike price.
+ * Pays off nothing if the underlying asset price {
  *
- * @see <a href="http://www.in-the-money.com/artandpap/Binary%20Options.doc">Binary Options</a>
+ * @latex$ S_{T}} finishes below/above the strike price {
+ * @latex$ K}, or pays out a the difference between the asset price {
+ * @latex$ S_{T}} and the strike price {
+ * @latex$ K} if the underlying asset finishes above/below the strike price.
+ *
+ * @see
+ * <a href="http://www.in-the-money.com/artandpap/Binary%20Options.doc">Binary
+ * Options</a>
  *
  * @author Richard Gomes
  */
@@ -61,47 +65,50 @@ public class PlainVanillaPayoff extends StrikedTypePayoff {
     //
     // public constructors
     //
-
-	public PlainVanillaPayoff(final Option.Type type, final /*@Real*/ double strike) {
-		super(type, strike);
-	}
+    public PlainVanillaPayoff(final Option.Type type, final /*@Real*/ double strike) {
+        super(type, strike);
+    }
 
     //
     // Overrides Payoff
     //
-
     @Override
     public String name() /* @ReadOnly */ {
         return "Vanilla";
     }
 
-	/**
-     * Pays off nothing if the underlying asset price {@latex$ S_{T}} finishes below/above the strike price {@latex$ K}, or pays
-     * out a the difference between the asset price {@latex$ S_{T}} and the strike price {@latex$ K} if the underlying asset finishes
-     * above/below the strike price.
-     * <li>CALL Option: {@latex$ \max(S_{T}-K,0)}</li>
-     * <li>PUT Option:  {@latex$ \max(K-S_{T},0)}</li>
-     * where {@latex$ S_{T}} is the asset price at maturity and {@latex$ K} is the strike price.
-	 */
-	@Override
+    /**
+     * Pays off nothing if the underlying asset price {
+     *
+     * @latex$ S_{T}} finishes below/above the strike price {
+     * @latex$ K}, or pays out a the difference between the asset price {
+     * @latex$ S_{T}} and the strike price {
+     * @latex$ K} if the underlying asset finishes above/below the strike price.
+     * <li>CALL Option: {
+     * @latex$ \max(S_{T}-K,0)}</li>
+     * <li>PUT Option: {
+     * @latex$ \max(K-S_{T},0)}</li>
+     * where {
+     * @latex$ S_{T}} is the asset price at maturity and {
+     * @latex$ K} is the strike price.
+     */
+    @Override
     public final double get(final double price) /* @ReadOnly */ {
-    	if (type==Option.Type.Call) {
+        if (type == Option.Type.Call) {
             return Math.max(price - strike, 0.0);
-        } else if (type==Option.Type.Put) {
+        } else if (type == Option.Type.Put) {
             return Math.max(strike - price, 0.0);
         } else {
             throw new LibraryException(UNKNOWN_OPTION_TYPE); // QA:[RG]::verified
         }
     }
 
-
-	//
+    //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<PlainVanillaPayoff> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<PlainVanillaPayoff> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -31,8 +30,8 @@ import org.jquantlib.util.Visitor;
 /**
  * Coupon accruing over a fixed period
  * <p>
- * This class implements part of the CashFlow interface but it is still abstract and provides derived classes with methods for
- * accrual period calculations.
+ * This class implements part of the CashFlow interface but it is still abstract
+ * and provides derived classes with methods for accrual period calculations.
  *
  * @author Ueli Hofstetter
  * @author Daniel Kong
@@ -43,7 +42,6 @@ public abstract class Coupon extends CashFlow {
     //
     // protected fields
     //
-
     protected double nominal;
     protected JDate paymentDate_;
     protected JDate accrualStartDate_;
@@ -51,15 +49,13 @@ public abstract class Coupon extends CashFlow {
     protected JDate refPeriodStart_;
     protected JDate refPeriodEnd_;
 
-
     //
     // public constructors
     //
-
     public Coupon(final double nominal,
             final JDate paymentDate,
             final JDate accrualStartDate,
-            final JDate accrualEndDate){
+            final JDate accrualEndDate) {
         this(nominal, paymentDate, accrualStartDate, accrualEndDate, new JDate(), new JDate());
     }
 
@@ -68,7 +64,7 @@ public abstract class Coupon extends CashFlow {
             final JDate accrualStartDate,
             final JDate accrualEndDate,
             final JDate refPeriodStart,
-            final JDate refPeriodEnd){
+            final JDate refPeriodEnd) {
         this.nominal = nominal;
         this.paymentDate_ = paymentDate.clone();
         this.accrualStartDate_ = accrualStartDate.clone();
@@ -77,31 +73,27 @@ public abstract class Coupon extends CashFlow {
         this.refPeriodEnd_ = refPeriodEnd.clone();
     }
 
-
     //
     // public abstract methods
     //
-
     public abstract /*Rate*/ double rate();
 
     public abstract DayCounter dayCounter();
 
     public abstract double accruedAmount(final JDate date);
 
-
     //
     // public methods
     //
-
-    public double nominal(){
+    public double nominal() {
         return nominal;
     }
 
-    public JDate accrualStartDate(){
+    public JDate accrualStartDate() {
         return accrualStartDate_;
     }
 
-    public JDate accrualEndDate(){
+    public JDate accrualEndDate() {
         return accrualEndDate_;
     }
 
@@ -125,24 +117,20 @@ public abstract class Coupon extends CashFlow {
                 accrualEndDate_);
     }
 
-
     //
     // implements Event
     //
-
     @Override
     public JDate date() {
         return paymentDate_.clone();
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<Coupon> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<Coupon> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

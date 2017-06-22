@@ -31,36 +31,33 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * 
- * EurLiborSwapIsdaFixB index base class
- * EUR Libor Swap indexes fixed by ISDA in cooperation with
- * Reuters and Intercapital Brokers at 10am London.
- * Annual 30/360 vs 6M Libor, 1Y vs 3M Libor.
- * Reuters page ISDAFIX2 or EURSFIXLB=.
- * 
+ *
+ * EurLiborSwapIsdaFixB index base class EUR Libor Swap indexes fixed by ISDA in
+ * cooperation with Reuters and Intercapital Brokers at 10am London. Annual
+ * 30/360 vs 6M Libor, 1Y vs 3M Libor. Reuters page ISDAFIX2 or EURSFIXLB=.
+ *
  * Further info can be found at <http://www.isda.org/fix/isdafix.html> or
  * Reuters page ISDAFIX.
- * 
+ *
  * @author Tim Blackler
  */
 public class EurLiborSwapIsdaFixB extends SwapIndex {
 
     public EurLiborSwapIsdaFixB(final Period tenor) {
-    	this(tenor, new Handle<YieldTermStructure>());
+        this(tenor, new Handle<YieldTermStructure>());
     }
-	
+
     public EurLiborSwapIsdaFixB(final Period tenor, final Handle<YieldTermStructure> h) {
-        super( "EurLiborSwapIsdaFixB",
+        super("EurLiborSwapIsdaFixB",
                 tenor,
                 2, // settlement days
                 new EURCurrency(),
                 new Target(),
-                new Period(1,TimeUnit.Years),
+                new Period(1, TimeUnit.Years),
                 BusinessDayConvention.ModifiedFollowing,
                 new Thirty360(Thirty360.Convention.BondBasis),
-                tenor.gt(new Period(1,TimeUnit.Years)) ? new EURLibor(new Period(6,TimeUnit.Months), h):
-                	 									 new EURLibor(new Period(3,TimeUnit.Months), h)
-                		
-                );
-        }
+                tenor.gt(new Period(1, TimeUnit.Years)) ? new EURLibor(new Period(6, TimeUnit.Months), h)
+                : new EURLibor(new Period(3, TimeUnit.Months), h)
+        );
+    }
 }

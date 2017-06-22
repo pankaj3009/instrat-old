@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -44,7 +43,8 @@ import static org.jquantlib.time.Month.September;
 import org.jquantlib.time.Weekday;
 
 /**
- * Indonesian calendars Holidays for the Jakarta stock exchange (data from <http://www.jsx.co.id/>):
+ * Indonesian calendars Holidays for the Jakarta stock exchange (data from
+ * <http://www.jsx.co.id/>):
  * <ul>
  * <li>Saturdays</li>
  * <li>Sundays</li>
@@ -55,7 +55,8 @@ import org.jquantlib.time.Weekday;
  * <li>Christmas, December 25th</li>
  * </ul>
  *
- * Other holidays for which no rule is given (data available for 2005-2008 only:)
+ * Other holidays for which no rule is given (data available for 2005-2008
+ * only:)
  * <ul>
  * <li>Idul Adha</li>
  * <li>Ied Adha</li>
@@ -78,16 +79,32 @@ import org.jquantlib.time.Weekday;
  * @author Jia Jia
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class Indonesia extends Calendar {
+
+    //
+    // public constructors
+    //
+    public Indonesia() {
+        this(Market.BEJ);
+    }
+
+    public Indonesia(final Market market) {
+        switch (market) {
+            case BEJ:
+            case JSX:
+                impl = new BejImpl();
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
+        }
+    }
 
     public static enum Market {
         /**
          * Jakarta stock exchange
          */
         BEJ,
-
         /**
          * Jakarta stock exchange
          */
@@ -95,29 +112,8 @@ public class Indonesia extends Calendar {
     }
 
     //
-    // public constructors
-    //
-
-    public Indonesia() {
-        this(Market.BEJ);
-    }
-
-    public Indonesia(final Market market) {
-        switch (market) {
-        case BEJ:
-        case JSX:
-            impl = new BejImpl();
-            break;
-        default:
-            throw new LibraryException(UNKNOWN_MARKET);
-        }
-    }
-
-
-    //
     // private final inner classes
     //
-
     private final class BejImpl extends WesternImpl {
 
         @Override
@@ -135,7 +131,7 @@ public class Indonesia extends Calendar {
             final int em = easterMonday(y);
 
             if (isWeekend(w)
-            // New Year's Day
+                    // New Year's Day
                     || (d == 1 && m == January)
                     // Good Friday
                     || (dd == em - 3)
@@ -149,8 +145,8 @@ public class Indonesia extends Calendar {
             }
             if (y == 2005) {
                 if (// Idul Adha
-                (d == 21 && m == January)
-                // Imlek
+                        (d == 21 && m == January)
+                        // Imlek
                         || (d == 9 && m == February)
                         // Moslem's New Year Day
                         || (d == 10 && m == February)
@@ -171,8 +167,8 @@ public class Indonesia extends Calendar {
             }
             if (y == 2006) {
                 if (// Idul Adha
-                (d == 10 && m == January)
-                // Moslem's New Year Day
+                        (d == 10 && m == January)
+                        // Moslem's New Year Day
                         || (d == 31 && m == January)
                         // Nyepi
                         || (d == 30 && m == March)
@@ -189,7 +185,7 @@ public class Indonesia extends Calendar {
             }
             if (y == 2007) {
                 if (// Nyepi
-                (d == 19 && m == March)
+                        (d == 19 && m == March)
                         // Waisak
                         || (d == 1 && m == June)
                         // Ied Adha
@@ -202,8 +198,8 @@ public class Indonesia extends Calendar {
             }
             if (y == 2007) {
                 if (// Islamic New Year
-                ((d == 10 || d == 11) && m == January)
-                // Chinese New Year
+                        ((d == 10 || d == 11) && m == January)
+                        // Chinese New Year
                         || ((d == 7 || d == 8) && m == February)
                         // Saka's New Year
                         || (d == 7 && m == March)
@@ -228,12 +224,10 @@ public class Indonesia extends Calendar {
             }
 
             // New holidays: QL97 has only upto year 2007 ////
-
             if (y == 2008) {
-                if (
-                // Islamic New Year 1429 H
-                (d == 10 && m == January)
-                // National Leave
+                if ( // Islamic New Year 1429 H
+                        (d == 10 && m == January)
+                        // National Leave
                         || (d == 11 && m == January)
                         // Chinese New Year
                         || (d == 7 && m == February)
@@ -263,10 +257,9 @@ public class Indonesia extends Calendar {
                 }
             }
             if (y == 2009) {
-                if (
-                // Public Holiday
-                (d == 2 && m == January)
-                // Chinese New Year
+                if ( // Public Holiday
+                        (d == 2 && m == January)
+                        // Chinese New Year
                         || (d == 26 && m == January)
                         // Saka's New Year
                         || (d == 26 && m == March)

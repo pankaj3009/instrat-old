@@ -19,32 +19,31 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.util;
 
 /**
  * Mimicks std::pair
- * 
- * @see <a href="http://www.sgi.com/tech/stl/pair.html">std::pair</a> 
- * 
+ *
+ * @see <a href="http://www.sgi.com/tech/stl/pair.html">std::pair</a>
+ *
  * @author Richard Gomes
  */
 public class Pair<T1, T2> {
 
-	private final T1 first;
-	private final T2 second;
+    private final T1 first;
+    private final T2 second;
 
-	public Pair(final T1 first, final T2 second) {
-		this.first = first;
-		this.second = second;
-	}
+    public Pair(final T1 first, final T2 second) {
+        this.first = first;
+        this.second = second;
+    }
 
-	public T1 first() {
-		return first;
-	}
+    public T1 first() {
+        return first;
+    }
 
-	public T2 second() {
-		return second;
-	}
+    public T2 second() {
+        return second;
+    }
 
 }

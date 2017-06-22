@@ -21,8 +21,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
-
 import org.jquantlib.instruments.Option;
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.util.Observable;
@@ -31,9 +29,9 @@ import org.jquantlib.util.Observable;
  * Affine model class
  * <p>
  * Base class for analytically tractable models.
- * 
+ *
  * @category shortrate
- * 
+ *
  * @author Praneet Tiwari
  */
 public interface AffineModel extends Observable {
@@ -41,10 +39,10 @@ public interface AffineModel extends Observable {
     /**
      * Implied discount curve
      */
-    public /* @DiscountFactor */ double discount(/* @Time */ double t) /* @ReadOnly */;
+    public /* @DiscountFactor */ double discount(/* @Time */double t) /* @ReadOnly */;
 
     public double discountBond(
-            /* @Time */ double now,
+            /* @Time */double now,
             /* @Time */ double maturity,
             Array factors) /* @ReadOnly */;
 

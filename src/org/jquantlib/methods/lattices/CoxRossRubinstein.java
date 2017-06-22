@@ -38,19 +38,20 @@ import org.jquantlib.processes.StochasticProcess1D;
  */
 public class CoxRossRubinstein extends EqualJumpsBinomialTree {
 
-	public CoxRossRubinstein(
-			final StochasticProcess1D process,
-			final @Time double end,
-			final @NonNegative int steps,
-			final @Unused @Real double strike) {
-		super(process, end, steps);
+    public CoxRossRubinstein(
+            final StochasticProcess1D process,
+            final @Time double end,
+            final @NonNegative int steps,
+            final @Unused @Real double strike) {
+        super(process, end, steps);
 
-		dx = process.stdDeviation(0.0, x0, dt);
-		pu = 0.5 + 0.5 * driftPerStep / dx;
-		pd = 1.0 - pu;
+        dx = process.stdDeviation(0.0, x0, dt);
+        pu = 0.5 + 0.5 * driftPerStep / dx;
+        pd = 1.0 - pu;
 
-		if (pu < 0.0 || pu > 1.0)
+        if (pu < 0.0 || pu > 1.0) {
             throw new IllegalStateException("negative probability");
-	}
+        }
+    }
 
 }

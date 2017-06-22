@@ -22,37 +22,36 @@ public class DateUtil {
     private static final long MILLI_SEC_PER_DAY = 1000 * 60 * 60 * 24;
     private static final Logger logger = Logger.getLogger(DateUtil.class.getName());
     public final static long SECOND_MILLIS = 1000;
-    public final static long MINUTE_MILLIS = SECOND_MILLIS*60;
-    public final static long HOUR_MILLIS = MINUTE_MILLIS*60;
-    public final static long DAY_MILLIS = HOUR_MILLIS*24;
-    public final static long YEAR_MILLIS = DAY_MILLIS*365;
-    
-    
+    public final static long MINUTE_MILLIS = SECOND_MILLIS * 60;
+    public final static long HOUR_MILLIS = MINUTE_MILLIS * 60;
+    public final static long DAY_MILLIS = HOUR_MILLIS * 24;
+    public final static long YEAR_MILLIS = DAY_MILLIS * 365;
+
     public static long getCurrentTime() {
         return System.currentTimeMillis();
     }
-    
+
     /**
-     * 
+     *
      * @param date in format "yyyy-MM-dd"
      * @param outputFormat
-     * @return 
+     * @return
      */
-    public static String getNextBusinessDay(String date,String outputFormat){
-        SimpleDateFormat sdfOutput= new SimpleDateFormat(outputFormat);
-        JDate today=DateParser.parseISO(date);
-        JDate tomorrow=today.add(1);
-        tomorrow=Algorithm.ind.adjust(tomorrow, BusinessDayConvention.Following);
-        String tomorrowString=(sdfOutput.format(tomorrow.isoDate()));
+    public static String getNextBusinessDay(String date, String outputFormat) {
+        SimpleDateFormat sdfOutput = new SimpleDateFormat(outputFormat);
+        JDate today = DateParser.parseISO(date);
+        JDate tomorrow = today.add(1);
+        tomorrow = Algorithm.ind.adjust(tomorrow, BusinessDayConvention.Following);
+        String tomorrowString = (sdfOutput.format(tomorrow.isoDate()));
         return tomorrowString;
-        
+
     }
- 
+
     /**
-     * 
+     *
      * @param date in format "yyyy-MM-dd"
      * @param outputFormat
-     * @return 
+     * @return
      */
     public static String getPriorBusinessDay(String date, String outputFormat, int ref) {
         String reference = date;
@@ -66,67 +65,73 @@ public class DateUtil {
         }
         return reference;
     }
- 
+
     /**
-     * Duration is passed in minutes.The function returns the starttime of the next bar
-     * @param duration 
+     * Duration is passed in minutes.The function returns the starttime of the
+     * next bar
+     *
+     * @param duration
      */
-    public static long getNextPeriodStartTime(EnumBarSize barSize){
-        long currenttime=getCurrentTime();
-        Calendar calNow=Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
+    public static long getNextPeriodStartTime(EnumBarSize barSize) {
+        long currenttime = getCurrentTime();
+        Calendar calNow = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
         calNow.setTimeInMillis(currenttime);
-        long out=Long.MAX_VALUE;
-        switch(barSize){
+        long out = Long.MAX_VALUE;
+        switch (barSize) {
             case ONEMINUTE:
                 calNow.add(Calendar.MINUTE, 1);
                 calNow.set(Calendar.SECOND, 0);
                 calNow.set(Calendar.MILLISECOND, 0);
-                out=Utilities.nextGoodDay(calNow.getTime(), 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true).getTime();
+                out = Utilities.nextGoodDay(calNow.getTime(), 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true).getTime();
                 break;
             default:
                 break;
         }
         return out;
     }
-    
-        /**
+
+    /**
      * Get the seconds difference
      */
-    public static int secondsDiff( Date earlierDate, Date laterDate )
-    {
-        if( earlierDate == null || laterDate == null ) return 0;
-        
-        return (int)((laterDate.getTime()/SECOND_MILLIS) - (earlierDate.getTime()/SECOND_MILLIS));
+    public static int secondsDiff(Date earlierDate, Date laterDate) {
+        if (earlierDate == null || laterDate == null) {
+            return 0;
+        }
+
+        return (int) ((laterDate.getTime() / SECOND_MILLIS) - (earlierDate.getTime() / SECOND_MILLIS));
     }
 
     /**
      * Get the minutes difference
      */
-    public static int minutesDiff( Date earlierDate, Date laterDate )
-    {
-        if( earlierDate == null || laterDate == null ) return 0;
-        
-        return (int)((laterDate.getTime()/MINUTE_MILLIS) - (earlierDate.getTime()/MINUTE_MILLIS));
+    public static int minutesDiff(Date earlierDate, Date laterDate) {
+        if (earlierDate == null || laterDate == null) {
+            return 0;
+        }
+
+        return (int) ((laterDate.getTime() / MINUTE_MILLIS) - (earlierDate.getTime() / MINUTE_MILLIS));
     }
-    
+
     /**
      * Get the hours difference
      */
-    public static int hoursDiff( Date earlierDate, Date laterDate )
-    {
-        if( earlierDate == null || laterDate == null ) return 0;
-        
-        return (int)((laterDate.getTime()/HOUR_MILLIS) - (earlierDate.getTime()/HOUR_MILLIS));
+    public static int hoursDiff(Date earlierDate, Date laterDate) {
+        if (earlierDate == null || laterDate == null) {
+            return 0;
+        }
+
+        return (int) ((laterDate.getTime() / HOUR_MILLIS) - (earlierDate.getTime() / HOUR_MILLIS));
     }
-    
+
     /**
      * Get the days difference
      */
-    public static int daysDiff( Date earlierDate, Date laterDate )
-    {
-        if( earlierDate == null || laterDate == null ) return 0;
-        
-        return (int)((laterDate.getTime()/DAY_MILLIS) - (earlierDate.getTime()/DAY_MILLIS));
+    public static int daysDiff(Date earlierDate, Date laterDate) {
+        if (earlierDate == null || laterDate == null) {
+            return 0;
+        }
+
+        return (int) ((laterDate.getTime() / DAY_MILLIS) - (earlierDate.getTime() / DAY_MILLIS));
     }
 
     public static String toTimeString(long time) {
@@ -154,11 +159,11 @@ public class DateUtil {
         String date = getFormatedDate(format, timeMS, tz);
         return date;
     }
-    
-    public static Date getFormattedDate(String date,String format, String timeZone){
-        SimpleDateFormat sdf=new SimpleDateFormat(format);
-        Calendar c=Calendar.getInstance(TimeZone.getTimeZone(timeZone));
-        Date d=new Date(0);
+
+    public static Date getFormattedDate(String date, String format, String timeZone) {
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        Calendar c = Calendar.getInstance(TimeZone.getTimeZone(timeZone));
+        Date d = new Date(0);
         try {
             d = sdf.parse(date);
         } catch (ParseException ex) {
@@ -167,7 +172,7 @@ public class DateUtil {
         c.setTime(d);
         return c.getTime();
     }
-    
+
     // Get  date in given format and timezone
     public static String getFormatedDate(String format, long timeMS, TimeZone tmz) {
         SimpleDateFormat sdf = new SimpleDateFormat(format);
@@ -193,20 +198,20 @@ public class DateUtil {
         try {
             TimeZone tz;
             SimpleDateFormat sdf1 = new SimpleDateFormat(format);
-            if("".compareTo(timeZone)==0){
-                tz=TimeZone.getDefault();
-            }else{
-                tz=TimeZone.getTimeZone(timeZone);
+            if ("".compareTo(timeZone) == 0) {
+                tz = TimeZone.getDefault();
+            } else {
+                tz = TimeZone.getTimeZone(timeZone);
             }
             sdf1.setTimeZone(tz);
             dt = sdf1.parse(date);
-            
+
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
         return dt;
     }
-    
+
     public static Date addDays(Date date, int days) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
@@ -222,25 +227,25 @@ public class DateUtil {
     }
 
     public static Date timeToDate(String time) {
-        Date startDate=MainAlgorithm.strategyInstances.size()>0?MainAlgorithm.strategyInstances.get(0).getStartDate():TradingUtil.getAlgoDate();
-        String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", startDate.getTime(),TimeZone.getTimeZone(MainAlgorithm.strategyInstances.get(0).getTimeZone()));
+        Date startDate = MainAlgorithm.strategyInstances.size() > 0 ? MainAlgorithm.strategyInstances.get(0).getStartDate() : TradingUtil.getAlgoDate();
+        String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", startDate.getTime(), TimeZone.getTimeZone(MainAlgorithm.strategyInstances.get(0).getTimeZone()));
         time = currDateStr + " " + time;
         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", time);
 
     }
-    
-    public static Date timeToDate(String time,String timeZone){
-        Date startDate=MainAlgorithm.strategyInstances.size()>0?MainAlgorithm.strategyInstances.get(0).getStartDate():TradingUtil.getAlgoDate();
-        String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", startDate.getTime(),TimeZone.getTimeZone(timeZone));
+
+    public static Date timeToDate(String time, String timeZone) {
+        Date startDate = MainAlgorithm.strategyInstances.size() > 0 ? MainAlgorithm.strategyInstances.get(0).getStartDate() : TradingUtil.getAlgoDate();
+        String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", startDate.getTime(), TimeZone.getTimeZone(timeZone));
         time = currDateStr + " " + time;
         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", time);
 
     }
-    
+
     //Testing routine
-    public static void main(String args[]){
-        String out=DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss",TradingUtil.getAlgoDate().getTime(),TimeZone.getTimeZone("GMT-4:00"));
+    public static void main(String args[]) {
+        String out = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone("GMT-4:00"));
         System.out.println(out);
-        
+
     }
 }

@@ -27,20 +27,19 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * 2-weeks Euribor index    
- * 
+ * 2-weeks Euribor index
+ *
  * @author Srinivas Hasti
  */
 public class Euribor2W extends Euribor {
 
-
     //
     // public constructors
     //
-
     public Euribor2W() {
-    	this(new Handle<YieldTermStructure>());
+        this(new Handle<YieldTermStructure>());
     }
+
     public Euribor2W(final Handle<YieldTermStructure> h) {
         super(new Period(2, TimeUnit.Weeks), h);
     }

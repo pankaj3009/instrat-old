@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
  Copyright (C) 2005, 2006 Theo Boafo
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.cashflow;
 
 import org.jquantlib.QL;
@@ -48,37 +47,33 @@ import org.jquantlib.time.JDate;
  */
 public class Callability extends Event {
 
-	public enum Type { Call, Put }
+    private final Price price;
+    private final Type type;
+    private final JDate date;
 
-	private final Price price;
-	private final Type type;
-	private final JDate date;
+    public Callability(final Price price, final Type type, final JDate date) {
+        this.price = price;
+        this.type = type;
+        this.date = date;
+    }
 
-	public Callability(final Price price, final Type type, final JDate date){
-        this.price=price;
-        this.type=type;
-        this.date=date;
-	}
+    @Override
+    public JDate date() {
+        return date;
+    }
 
-	@Override
-	public JDate date() {
-		return date;
-	}
+    public Price price() {
+        return price;
+    }
 
-	public Price price(){
-		return price;
-	}
+    public Type type() {
+        return type;
+    }
 
-	public Type type(){
-		return type;
-	}
+    public static class Price {
 
-	public static class Price {
-
-		public enum Type{ Dirty, Clean }
-
-		private final double amount;
-		private Type type;
+        private final double amount;
+        private Type type;
 
         public Price() {
             amount = 0.0;
@@ -90,7 +85,7 @@ public class Callability extends Event {
         }
 
         public double amount() {
-            QL.require(!Double.isNaN(amount) , "no amount given"); // TODO: message
+            QL.require(!Double.isNaN(amount), "no amount given"); // TODO: message
             return amount;
         }
 
@@ -98,6 +93,14 @@ public class Callability extends Event {
             return type;
         }
 
-	}
+        public enum Type {
+            Dirty, Clean
+        }
+
+    }
+
+    public enum Type {
+        Call, Put
+    }
 
 }

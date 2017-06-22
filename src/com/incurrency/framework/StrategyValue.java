@@ -9,6 +9,7 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public class StrategyValue {
+
     private String strategy;
     private Integer value;
 
@@ -39,5 +40,5 @@ public class StrategyValue {
     public void setValue(int value) {
         this.value = value;
     }
-    
+
 }

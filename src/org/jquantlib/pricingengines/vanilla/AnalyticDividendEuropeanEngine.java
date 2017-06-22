@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2004 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
-
 package org.jquantlib.pricingengines.vanilla;
 
 import org.jquantlib.QL;
@@ -65,21 +63,18 @@ public class AnalyticDividendEuropeanEngine extends DividendVanillaOption.Engine
     //
     // private final fields
     //
-
     private final GeneralizedBlackScholesProcess process;
     private final DividendVanillaOption.ArgumentsImpl a;
-    private final DividendVanillaOption.ResultsImpl   r;
+    private final DividendVanillaOption.ResultsImpl r;
     private final Option.GreeksImpl greeks;
     private final Option.MoreGreeksImpl moreGreeks;
-
 
     //
     // public constructors
     //
-
     public AnalyticDividendEuropeanEngine(final GeneralizedBlackScholesProcess process) {
-        this.a = (DividendVanillaOption.ArgumentsImpl)arguments_;
-        this.r = (DividendVanillaOption.ResultsImpl)results_;
+        this.a = (DividendVanillaOption.ArgumentsImpl) arguments_;
+        this.r = (DividendVanillaOption.ResultsImpl) results_;
         this.greeks = r.greeks();
         this.moreGreeks = r.moreGreeks();
         this.process = process;
@@ -95,11 +90,11 @@ public class AnalyticDividendEuropeanEngine extends DividendVanillaOption.Engine
         QL.require(a.exercise.type() == Exercise.Type.European, "not an European option"); // TODO: message
 
         final StrikedTypePayoff payoff = (StrikedTypePayoff) a.payoff;
-        QL.require(payoff!=null, "non-striked payoff given"); // TODO: message
+        QL.require(payoff != null, "non-striked payoff given"); // TODO: message
 
         final JDate settlementDate = process.riskFreeRate().currentLink().referenceDate();
         double riskless = 0.0;
-        for (int i=0; i<a.cashFlow.size(); i++) {
+        for (int i = 0; i < a.cashFlow.size(); i++) {
             final CashFlow cashflow = a.cashFlow.get(i);
             if (cashflow.date().gt(settlementDate)) {
                 riskless += cashflow.amount() * process.riskFreeRate().currentLink().discount(cashflow.date());
@@ -120,7 +115,7 @@ public class AnalyticDividendEuropeanEngine extends DividendVanillaOption.Engine
         greeks.delta = black.delta(spot);
         greeks.gamma = black.gamma(spot);
 
-        final DayCounter rfdc  = process.riskFreeRate().currentLink().dayCounter();
+        final DayCounter rfdc = process.riskFreeRate().currentLink().dayCounter();
         final DayCounter voldc = process.blackVolatility().currentLink().dayCounter();
         /*@Time*/ double t = voldc.yearFraction(process.blackVolatility().currentLink().referenceDate(), a.exercise.lastDate());
         greeks.vega = black.vega(t);
@@ -131,8 +126,8 @@ public class AnalyticDividendEuropeanEngine extends DividendVanillaOption.Engine
             final JDate d = cashflow.date();
             if (d.gt(settlementDate)) {
                 delta_theta -= cashflow.amount()
-                * process.riskFreeRate().currentLink().zeroRate(d, rfdc, Compounding.Continuous, Frequency.Annual).rate()
-                * process.riskFreeRate().currentLink().discount(d);
+                        * process.riskFreeRate().currentLink().zeroRate(d, rfdc, Compounding.Continuous, Frequency.Annual).rate()
+                        * process.riskFreeRate().currentLink().discount(d);
                 delta_rho += cashflow.amount() * process.time(d) * process.riskFreeRate().currentLink().discount(t);
             }
         }

@@ -12,15 +12,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-*/
+ */
 //package org.jwatter.util;
 
 /**
- * A class to wait until a condition becomes true. Periodically calls {@link #until()} and sleeps
- * for a specified amount of time if it returns false. If {@link #until()} does not return true
- * within the timeout, throws a {@link TimedOut} exception. If the timeout is 0, it may wait
- * forever, and a {@link TimedOut} exception is never thrown.
- * 
+ * A class to wait until a condition becomes true. Periodically calls {@link #until()}
+ * and sleeps for a specified amount of time if it returns false. If
+ * {@link #until()} does not return true within the timeout, throws a
+ * {@link TimedOut} exception. If the timeout is 0, it may wait forever, and a
+ * {@link TimedOut} exception is never thrown.
+ *
  * A concrete subclass must implement {@link #until()}.
  */
 public abstract class Waiting {
@@ -36,67 +37,60 @@ public abstract class Waiting {
     /**
      * Creates and instance with the default settings.
      */
-    public Waiting () {
+    public Waiting() {
         this(DEFAULT_TIMEOUT, DEFAULT_SLEEP, DEFAULT_TIMEOUT_MESSAGE);
     }
 
     /**
      * Creates an instance with the specified timeout message.
-     * 
-     * @param timeoutMessage
-     *        the message in the {@link TimedOut} exception
+     *
+     * @param timeoutMessage the message in the {@link TimedOut} exception
      */
-    public Waiting (String timeoutMessage) {
+    public Waiting(String timeoutMessage) {
         this(DEFAULT_TIMEOUT, DEFAULT_SLEEP, timeoutMessage);
     }
 
     /**
      * Creates an instance that waits at most the specified time.
-     * 
-     * @param timeout
-     *        the timeout in milliseconds.
+     *
+     * @param timeout the timeout in milliseconds.
      */
-    public Waiting (int timeout) {
+    public Waiting(int timeout) {
         this(DEFAULT_TIMEOUT, DEFAULT_SLEEP, DEFAULT_TIMEOUT_MESSAGE);
     }
 
     /**
      * Creates an instance that waits at most the specified time.
-     * 
-     * @param timeout
-     *        the timeout in milliseconds.
-     * @param timeoutMessage
-     *        the message in the {@link TimedOut} exception
+     *
+     * @param timeout the timeout in milliseconds.
+     * @param timeoutMessage the message in the {@link TimedOut} exception
      */
-    public Waiting (int timeout, String timeoutMessage) {
+    public Waiting(int timeout, String timeoutMessage) {
         this(timeout, DEFAULT_SLEEP, timeoutMessage);
     }
 
     /**
-     * Creates an instance that waits at most the specified time and checks the condition after the
-     * specified time.
-     * 
-     * @param timeout
-     *        the timeout in milliseconds
-     * @param sleep
-     *        the time to sleep between calling {@link #until()}, in milliseconds
+     * Creates an instance that waits at most the specified time and checks the
+     * condition after the specified time.
+     *
+     * @param timeout the timeout in milliseconds
+     * @param sleep the time to sleep between calling {@link #until()}, in
+     * milliseconds
      */
-    public Waiting (int timeout, int sleep) {
+    public Waiting(int timeout, int sleep) {
         this(timeout, sleep, DEFAULT_TIMEOUT_MESSAGE);
     }
 
     /**
-     * Creates an instance that waits at most the specified time and checks the condition after the
-     * specified time.
-     * 
-     * @param timeout
-     *        the timeout in milliseconds
-     * @param sleep
-     *        the time to sleep between calling {@link #until()}, in milliseconds
-     * @param timeoutMessage
-     *        the message in the {@link TimedOut} exception
+     * Creates an instance that waits at most the specified time and checks the
+     * condition after the specified time.
+     *
+     * @param timeout the timeout in milliseconds
+     * @param sleep the time to sleep between calling {@link #until()}, in
+     * milliseconds
+     * @param timeoutMessage the message in the {@link TimedOut} exception
      */
-    public Waiting (int timeout, int sleep, String timeoutMessage) {
+    public Waiting(int timeout, int sleep, String timeoutMessage) {
         this.timeout = timeout;
         this.sleep = sleep;
         this.timeoutMessage = timeoutMessage;
@@ -104,133 +98,126 @@ public abstract class Waiting {
 
     /**
      * Waits until {@link #until()} returns true.
-     * 
-     * @throws TimedOut
-     *         if {@link #until()} does not return true within in the timeout.
-     * @throws Exception
-     *         if {@link #until()} throws an exception
+     *
+     * @throws TimedOut if {@link #until()} does not return true within in the
+     * timeout.
+     * @throws Exception if {@link #until()} throws an exception
      */
-    public void waitUntil ()
+    public void waitUntil()
             throws TimedOut, Exception {
         waitUntil(this.timeout, this.sleep, this.timeoutMessage);
     }
 
     /**
      * Waits until {@link #until()} returns true.
-     * 
-     * @param timeoutMessage
-     *        the timeout message, overrides the message in the constructor
-     * @throws TimedOut
-     *         if {@link #until()} does not return true within the timeout
-     * @throws Exception
-     *         if {@link #until()} throws an exception
+     *
+     * @param timeoutMessage the timeout message, overrides the message in the
+     * constructor
+     * @throws TimedOut if {@link #until()} does not return true within the
+     * timeout
+     * @throws Exception if {@link #until()} throws an exception
      */
-    public void waitUntil (String timeoutMessage)
+    public void waitUntil(String timeoutMessage)
             throws TimedOut, Exception {
         waitUntil(this.timeout, this.sleep, timeoutMessage);
     }
 
     /**
      * Waits until {@link #until()} returns true.
-     * 
-     * @param timeout
-     *        the timeout in milliseconds, overrides the timeout in the constructor
-     * @throws TimedOut
-     *         if {@link #until()} does not return true within the timeout
-     * @throws Exception
-     *         if {@link #until()} throws an exception
+     *
+     * @param timeout the timeout in milliseconds, overrides the timeout in the
+     * constructor
+     * @throws TimedOut if {@link #until()} does not return true within the
+     * timeout
+     * @throws Exception if {@link #until()} throws an exception
      */
-    public void waitUntil (int timeout)
+    public void waitUntil(int timeout)
             throws TimedOut, Exception {
         waitUntil(timeout, this.sleep, this.timeoutMessage);
     }
 
     /**
      * Waits until {@link #until()} returns true.
-     * 
-     * @param timeout
-     *        the timeout in milliseconds, overrides the timeout in the constructor
-     * @param timeoutMessage
-     *        the timeout message, overrides the message in the constructor
-     * @throws TimedOut
-     *         if {@link #until()} does not return true within the timeout
-     * @throws Exception
-     *         if {@link #until()} throws an exception
+     *
+     * @param timeout the timeout in milliseconds, overrides the timeout in the
+     * constructor
+     * @param timeoutMessage the timeout message, overrides the message in the
+     * constructor
+     * @throws TimedOut if {@link #until()} does not return true within the
+     * timeout
+     * @throws Exception if {@link #until()} throws an exception
      */
-    public void waitUntil (int timeout, String timeoutMessage)
+    public void waitUntil(int timeout, String timeoutMessage)
             throws TimedOut, Exception {
         waitUntil(timeout, this.sleep, timeoutMessage);
     }
 
     /**
      * Waits until {@link #until()} returns true.
-     * 
-     * @param timeout
-     *        the timeout in milliseconds, overrides the timeout in the constructor
-     * @param sleep
-     *        the time between calls to {@link #until()}, in milliseconds, overrides the value
-     *        defined in the constructor
-     * @throws TimedOut
-     *         if {@link #until()} does not return true within the timeout
-     * @throws Exception
-     *         if {@link #until()} throws an exception
+     *
+     * @param timeout the timeout in milliseconds, overrides the timeout in the
+     * constructor
+     * @param sleep the time between calls to {@link #until()}, in milliseconds,
+     * overrides the value defined in the constructor
+     * @throws TimedOut if {@link #until()} does not return true within the
+     * timeout
+     * @throws Exception if {@link #until()} throws an exception
      */
-    public void waitUntil (int timeout, int sleep)
+    public void waitUntil(int timeout, int sleep)
             throws TimedOut, Exception {
         waitUntil(timeout, sleep, this.timeoutMessage);
     }
 
     /**
      * Waits until {@link #until()} returns true.
-     * 
-     * @param timeout
-     *        the timeout in milliseconds, overrides the timeout in the constructor
-     * @param sleep
-     *        the time between calls to {@link #until()}, in milliseconds, overrides the value
-     *        defined in the constructor
-     * @param timeoutMessage
-     *        the timeout message, overrides the message in the constructor
-     * @throws TimedOut
-     *         if {@link #until()} does not return true within the timeout
-     * @throws Exception
-     *         if {@link #until()} throws an exception
+     *
+     * @param timeout the timeout in milliseconds, overrides the timeout in the
+     * constructor
+     * @param sleep the time between calls to {@link #until()}, in milliseconds,
+     * overrides the value defined in the constructor
+     * @param timeoutMessage the timeout message, overrides the message in the
+     * constructor
+     * @throws TimedOut if {@link #until()} does not return true within the
+     * timeout
+     * @throws Exception if {@link #until()} throws an exception
      */
-    public void waitUntil (int timeout, int sleep, String timeoutMessage)
+    public void waitUntil(int timeout, int sleep, String timeoutMessage)
             throws TimedOut, Exception {
         int waited = 0;
         while (true) {
-            if (this.until())
+            if (this.until()) {
                 break;
+            }
             if (timeout > 0 && waited >= timeout) {
                 throw new TimedOut(timeoutMessage);
             }
             try {
                 Thread.sleep(sleep);
+            } catch (InterruptedException e) {
             }
-            catch (InterruptedException e) {}
             waited += sleep;
         }
     }
 
     /**
      * Indicates that the condition is true.
-     * 
+     *
      * @return true if the condition is true
-     * @throws Exception
-     *         if an error occurs while checking the condition
+     * @throws Exception if an error occurs while checking the condition
      */
-    public abstract boolean until ()
+    public abstract boolean until()
             throws Exception;
 
     /**
-     * Exception thrown when the condition does not become true within the timeout.
+     * Exception thrown when the condition does not become true within the
+     * timeout.
      */
     public class TimedOut
             extends Exception {
 
         private static final long serialVersionUID = 1L;
 
-        public TimedOut (String message) {
+        public TimedOut(String message) {
             super(message);
         }
     }

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,15 +35,20 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.finitedifferences;
 
 /**
- * {@latex$ D_{-} } matricial representation
+ * {
+ *
+ * @latex$ D_{-} } matricial representation
  * <p>
- * The differential operator {@latex$ D_{-} } discretizes the first derivative with the first-order formula
- * <p>{@latex[ \frac{\partial u_{i}}{\partial x} \approx \frac{u_{i}-u_{i-1}}{h} = D_{-} u_{i} }
+ * The differential operator {
+ * @latex$ D_{-} } discretizes the first derivative with the first-order formula
+ * <p>
+ * {
+ * @latex[ \frac{\partial u_{i}}{\partial x} \approx \frac{u_{i}-u_{i-1}}{h} =
+ * D_{-} u_{i} }
  *
  * @category findiff
  *
@@ -51,7 +56,7 @@ package org.jquantlib.methods.finitedifferences;
  */
 public class DMinus extends TridiagonalOperator {
 
-    public DMinus(final int gridPoints, /* Real */final double h) {
+    public DMinus(final int gridPoints, /* Real */ final double h) {
         super(gridPoints);
         setFirstRow(-1 / h, 1 / h); // linear extrapolation
         setMidRows(-1 / h, 1 / h, 0.0);

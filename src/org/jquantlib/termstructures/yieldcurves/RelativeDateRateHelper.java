@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import org.jquantlib.QL;
@@ -45,9 +44,7 @@ public abstract class RelativeDateRateHelper extends RateHelper {
     //
     // protected fields
     //
-
     protected JDate evaluationDate;
-
 
 //    //
 //    // protected constructors
@@ -62,13 +59,10 @@ public abstract class RelativeDateRateHelper extends RateHelper {
 //        // XXX:registerWith
 //        //registerWith(this.evaluationDate);
 //    }
-
-
     //
     // public constructors
     //
-
-    public RelativeDateRateHelper(/*@Real*/ final double d) {
+    public RelativeDateRateHelper(/*@Real*/final double d) {
         super(d);
         QL.validateExperimentalMode();
 
@@ -95,21 +89,16 @@ public abstract class RelativeDateRateHelper extends RateHelper {
 //        // XXX:registerWith
 //        //registerWith(this.evaluationDate);
 //    }
-
-
     //
     // protected abstract methods
     //
-
     protected abstract void initializeDates();
-
 
     //
     // overrides RateHelper
     //
-
     @Override
-  //XXX::OBS public void update(final Observable o, final Object arg) {
+    //XXX::OBS public void update(final Observable o, final Object arg) {
     public void update() {
         final JDate newEvaluationDate = new Settings().evaluationDate();
         if (!evaluationDate.equals(newEvaluationDate)) {

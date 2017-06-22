@@ -4,25 +4,27 @@
  */
 package com.incurrency.framework;
 
-
 import java.text.SimpleDateFormat;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 /**
  *
- * @author pankaj This class generates one min bars from 5 second bars.
- * 1. Request RealTime bars. To maximize IB data limit, at the cost of efficiency, request realtime bars from the connection that subscribes to the symbol
- * Ideally, efficiency or speed should be an input parameter.
- * 2.Once RT bars subscription is completed, make historical data request to fill the duration from the beginning of the market hours
- * (provided in symbols file) to the beginning of the first 1min bar created from 5 sec bars.
- * 3.Close this thread once all bars are completed.
+ * @author pankaj This class generates one min bars from 5 second bars. 1.
+ * Request RealTime bars. To maximize IB data limit, at the cost of efficiency,
+ * request realtime bars from the connection that subscribes to the symbol
+ * Ideally, efficiency or speed should be an input parameter. 2.Once RT bars
+ * subscription is completed, make historical data request to fill the duration
+ * from the beginning of the market hours (provided in symbols file) to the
+ * beginning of the first 1min bar created from 5 sec bars. 3.Close this thread
+ * once all bars are completed.
  */
 public class RealTimeBars implements Runnable {
 
-    Thread t;
     private static ConcurrentHashMap queue = new <Integer, PendingHistoricalRequests> ConcurrentHashMap();
     private static final Logger logger = Logger.getLogger(RealTimeBars.class.getName());
+    Thread t;
     private int size = 0;
     private int completed = 0;
     private boolean barsCompleted = false;
@@ -45,7 +47,7 @@ public class RealTimeBars implements Runnable {
         for (BeanSymbol s : Parameters.symbol) {
             if (TradingUtil.isValidTime(s.getBarsstarttime())) {
                 //while (Parameters.connection.get(i).getHistMessageLimit() == 0 || Parameters.connection.get(i).getTickersLimit() == 0) {
-                while (Parameters.connection.get(i).getHistMessageLimit() == 0 ) {
+                while (Parameters.connection.get(i).getHistMessageLimit() == 0) {
                     i = i + 1;
                     if (i >= connectionCount) {
                         i = 0;
@@ -58,18 +60,18 @@ public class RealTimeBars implements Runnable {
                 } else {
                     tempC = Parameters.connection.get(i);
                 }
-                if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless","true"))) {
+                if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                     //Launch.setMessage("Market Data Store: Requesting realtime bars for: " + s.getSymbol() + "(" + completed + "/" + size + ")");
                 }
                 //logger.log(Level.INFO, "Market Data Store,{0},{1},Requesting RealTime Bars, Symbol:{2} ,Completed: {3}/{4}", new Object[]{tempC.getAccountName(), "ALL", s.getSymbol(), completed, size});
                 /*
                 Commented line as getRealTimeBars(s) requirement for TWS needs to be understood
                 tempC.getWrapper().getRealTimeBars(s);
-                */
+                 */
                 i = i + 1;
                 if (i >= connectionCount) {
                     i = 0; //reset counter
-                    if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless","true"))) {
+                    if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                         //Launch.setMessage("");
                     }
                 }
@@ -99,7 +101,7 @@ public class RealTimeBars implements Runnable {
                     }
                     completed = completed + 1;
                     //logger.log(Level.INFO, "Market Data Store,{0},{1},Requesting 1 min historical bars, Symbol: {2}, Completed: {3}/{4}", new Object[]{Parameters.connection.get(i).getAccountName(),"ALL",s.getSymbol(), completed, size});
-                    if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless","true"))) {
+                    if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                         //Launch.setMessage("Market Data Store,Requesting 1 min bars for symbol: " + s.getSymbol() + "(" + completed + "/" + size + ")");
                     }
                     Parameters.connection.get(i).getWrapper().requestHistoricalData(s, firstBarTime, "2 D", "1 min");

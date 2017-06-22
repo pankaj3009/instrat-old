@@ -27,21 +27,20 @@ import org.jquantlib.math.Ops;
  *
  */
 public class PayoffFunction implements Ops.DoubleOp {
-	private final Payoff payOff;
 
-	public PayoffFunction(final Payoff payOff) {
-		super();
-		this.payOff = payOff;
-	}
+    private final Payoff payOff;
 
+    public PayoffFunction(final Payoff payOff) {
+        super();
+        this.payOff = payOff;
+    }
 
-	//
-	// implements Ops.DoubleOp
-	//
-
-	@Override
-	public double op(final double a) {
-		return payOff.get(a);
-	}
+    //
+    // implements Ops.DoubleOp
+    //
+    @Override
+    public double op(final double a) {
+        return payOff.get(a);
+    }
 
 }

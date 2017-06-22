@@ -34,7 +34,7 @@ AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 package org.jquantlib.math.matrixutilities.internal;
 
 import java.util.EnumSet;
@@ -59,25 +59,23 @@ public class DirectArrayRowAddress extends DirectAddress implements Address.Arra
             final Set<Address.Flags> flags,
             final boolean contiguous,
             final int rows, final int cols) {
-        super(data, row, row+1, chain, col0, col1, flags, contiguous, rows, cols);
+        super(data, row, row + 1, chain, col0, col1, flags, contiguous, rows, cols);
     }
-
 
     //
     // implements ArrayAddress
     //
-
     @Override
     public ArrayAddress toFortran() {
-        return isFortran() ? this :
-            new DirectArrayRowAddress(data, row0, this.chain, col0, col1, EnumSet.of(Address.Flags.FORTRAN), contiguous, rows, cols);
+        return isFortran() ? this
+                : new DirectArrayRowAddress(data, row0, this.chain, col0, col1, EnumSet.of(Address.Flags.FORTRAN), contiguous, rows, cols);
     }
 
     @Override
     public ArrayAddress toJava() {
-        return isFortran() ?
-            new DirectArrayRowAddress(data, row0+1, this.chain, col0+1, col1+1, EnumSet.noneOf(Address.Flags.class), contiguous, rows, cols)
-            : this;
+        return isFortran()
+                ? new DirectArrayRowAddress(data, row0 + 1, this.chain, col0 + 1, col1 + 1, EnumSet.noneOf(Address.Flags.class), contiguous, rows, cols)
+                : this;
     }
 
     @Override
@@ -92,14 +90,12 @@ public class DirectArrayRowAddress extends DirectAddress implements Address.Arra
 
     @Override
     public int op(final int index) {
-        return (row0+offset)*cols + (col0+index);
+        return (row0 + offset) * cols + (col0 + index);
     }
-
 
     //
     // implements Cloneable
     //
-
     @Override
     public DirectArrayRowAddress clone() {
         try {
@@ -109,43 +105,35 @@ public class DirectArrayRowAddress extends DirectAddress implements Address.Arra
         }
     }
 
-
     //
     // private inner classes
     //
-
     private class DirectArrayRowAddressOffset extends DirectAddressOffset implements Address.ArrayAddress.ArrayOffset {
 
         public DirectArrayRowAddressOffset(final int row, final int col) {
-            super.row = row0+row;
-            super.col = col0+col;
+            super.row = row0 + row;
+            super.col = col0 + col;
         }
-
 
         //
         // implements Offset
         //
-
         @Override
         public int op() {
-            return row*cols + col;
+            return row * cols + col;
         }
-
 
         //
         // implements ArrayOffset
         //
-
         @Override
         public void setIndex(final int index) {
-            super.col = col0+index;
+            super.col = col0 + index;
         }
-
 
         //
         // implements ListIterator
         //
-
         @Override
         public void add(final Double e) {
             throw new UnsupportedOperationException();
@@ -180,26 +168,29 @@ public class DirectArrayRowAddress extends DirectAddress implements Address.Arra
         public Double next() {
             final int idx = op();
             nextIndex();
-            if (idx==col1) throw new NoSuchElementException();
+            if (idx == col1) {
+                throw new NoSuchElementException();
+            }
             return data[idx];
         }
 
         @Override
         public Double previous() {
             final int idx = previousIndex();
-            if (idx==-1) throw new NoSuchElementException();
+            if (idx == -1) {
+                throw new NoSuchElementException();
+            }
             return data[op()];
         }
 
         @Override
         public void set(final Double e) {
             final int idx = op();
-            if ((idx==-1)||(idx==cols)) throw new IllegalStateException();
+            if ((idx == -1) || (idx == cols)) {
+                throw new IllegalStateException();
+            }
             data[idx] = e;
         }
-
-
-
 
     }
 

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2004 StatPro Italia srl
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.interpolations.factories;
 
 import org.jquantlib.math.interpolations.CubicInterpolation;
@@ -55,6 +54,7 @@ import org.jquantlib.math.matrixutilities.Array;
  * @author Daniel Kong
  */
 public class Cubic implements Interpolation.Interpolator {
+
     private final DerivativeApprox da;
     private final BoundaryCondition leftType;
     private final BoundaryCondition rightType;
@@ -82,10 +82,14 @@ public class Cubic implements Interpolation.Interpolator {
     }
 
     @Override
-    public final boolean global()     { return true; }
+    public final boolean global() {
+        return true;
+    }
 
     @Override
-    public final int requiredPoints() { return 2; }
+    public final int requiredPoints() {
+        return 2;
+    }
 
     @Override
     public final Interpolation interpolate(final Array vx, final Array vy) /* @ReadOnly */ {

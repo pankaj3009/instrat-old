@@ -6,7 +6,7 @@ public class PdeShortRate extends PdeSecondOrderParabolic {
 
     @Override
     public double diffusion(double t, double x) {
-       return 0;
+        return 0;
     }
 
     @Override
@@ -18,7 +18,5 @@ public class PdeShortRate extends PdeSecondOrderParabolic {
     public double discount(double t, double x) {
         return 0;
     }
-
-
 
 }

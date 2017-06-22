@@ -32,36 +32,33 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * 
- * GbpLiborSwapIsdaFix index base class
- * GBP Libor Swap indexes fixed by ISDA in cooperation with
- * Reuters and Intercapital Brokers at 11am London.
- * Semiannual Actual/365F vs 6M Libor, 1Y Annual vs 3M Libor.
- * Reuters page ISDAFIX4 or GBPSFIX=.
- * Further info can be found at <http://www.isda.org/fix/isdafix.html> or
- * Reuters page ISDAFIX.
- * 
+ *
+ * GbpLiborSwapIsdaFix index base class GBP Libor Swap indexes fixed by ISDA in
+ * cooperation with Reuters and Intercapital Brokers at 11am London. Semiannual
+ * Actual/365F vs 6M Libor, 1Y Annual vs 3M Libor. Reuters page ISDAFIX4 or
+ * GBPSFIX=. Further info can be found at <http://www.isda.org/fix/isdafix.html>
+ * or Reuters page ISDAFIX.
+ *
  * @author Tim Blackler
  */
 public class GbpLiborSwapIsdaFix extends SwapIndex {
 
     public GbpLiborSwapIsdaFix(final Period tenor) {
-    	this(tenor, new Handle<YieldTermStructure>());
+        this(tenor, new Handle<YieldTermStructure>());
     }
-	
+
     public GbpLiborSwapIsdaFix(final Period tenor, final Handle<YieldTermStructure> h) {
-        super( "GbpLiborSwapIsdaFix",
+        super("GbpLiborSwapIsdaFix",
                 tenor,
                 2, // settlement days
                 new GBPCurrency(),
                 new Target(),
-                tenor.gt(new Period(1,TimeUnit.Years)) ? new Period(6,TimeUnit.Months):
-                										 new Period(1,TimeUnit.Years),
+                tenor.gt(new Period(1, TimeUnit.Years)) ? new Period(6, TimeUnit.Months)
+                : new Period(1, TimeUnit.Years),
                 BusinessDayConvention.ModifiedFollowing,
                 new Actual365Fixed(),
-                tenor.gt(new Period(1,TimeUnit.Years)) ? new GBPLibor(new Period(6,TimeUnit.Months), h):
-                	 									 new GBPLibor(new Period(3,TimeUnit.Months), h)
-                		
-                );
-        }
+                tenor.gt(new Period(1, TimeUnit.Years)) ? new GBPLibor(new Period(6, TimeUnit.Months), h)
+                : new GBPLibor(new Period(3, TimeUnit.Months), h)
+        );
+    }
 }

@@ -9,5 +9,6 @@ package com.incurrency.framework;
  * @author admin
  */
 public interface BidAskListener {
-     public void bidaskChanged( BidAskEvent event );
+
+    public void bidaskChanged(BidAskEvent event);
 }

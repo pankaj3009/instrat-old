@@ -19,9 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.distributions;
-
 
 import org.jquantlib.QL;
 import org.jquantlib.math.Constants;
@@ -39,48 +37,41 @@ public class InverseCumulativePoisson implements Ops.DoubleOp {
     //
     // private fields
     //
-
     private final double lambda;
-
 
     //
     // public constructors
     //
-
-	public InverseCumulativePoisson() {
-    	this(1.0);
+    public InverseCumulativePoisson() {
+        this(1.0);
     }
-
 
     public InverseCumulativePoisson(final double lambda) {
-        QL.require(lambda>0.0, "lambda must be positive");
+        QL.require(lambda > 0.0, "lambda must be positive");
         this.lambda = lambda;
     }
-
 
     //
     // public methods
     //
-
     private double calcSummand(final int index) {
         final Factorial fact = new Factorial();
         return Math.exp(-lambda) * Math.pow(lambda, index) / fact.get(index);
     }
 
-
     //
     // implements Ops.op
     //
-
     /**
      * Computes the inverse cumulative poisson distribution.
      *
      * @param x
-     * @returns the inverse of the cumulative poisson distribution of input <code>x</code>
+     * @returns the inverse of the cumulative poisson distribution of input
+     * <code>x</code>
      */
     @Override
-    public double op (final double x) /* @Read-only */ {
-        QL.require(x >= 0.0 && x <= 1.0 , "undefined outside interval [0,1]"); // TODO: message
+    public double op(final double x) /* @Read-only */ {
+        QL.require(x >= 0.0 && x <= 1.0, "undefined outside interval [0,1]"); // TODO: message
 
         if (x == 1.0) {
             return Constants.QL_MAX_REAL;
@@ -92,7 +83,7 @@ public class InverseCumulativePoisson implements Ops.DoubleOp {
             sum += calcSummand(index);
             index++;
         }
-        return (index-1);
+        return (index - 1);
     }
 
 }

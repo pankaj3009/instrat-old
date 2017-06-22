@@ -20,14 +20,14 @@ public class FixedRateLeg extends Leg {
     private DayCounter firstPeriodDayCounter_;
     private BusinessDayConvention paymentAdjustment_;
 
-    public FixedRateLeg(final Schedule schedule, final DayCounter paymentDayCounter){
-        this.schedule_=(schedule);
-        this.paymentDayCounter_=(paymentDayCounter);
+    public FixedRateLeg(final Schedule schedule, final DayCounter paymentDayCounter) {
+        this.schedule_ = (schedule);
+        this.paymentDayCounter_ = (paymentDayCounter);
         this.paymentAdjustment_ = BusinessDayConvention.Following;
     }
 
     public FixedRateLeg withNotionals(/* Real */final double notional) {
-        this.notionals_ = new double[] {notional};
+        this.notionals_ = new double[]{notional};
         return this;
     }
 
@@ -39,8 +39,9 @@ public class FixedRateLeg extends Leg {
     public FixedRateLeg withCouponRates(/* @Rate */final double couponRate) {
         couponRates_ = new InterestRate[]{new InterestRate(couponRate, paymentDayCounter_, Compounding.Simple)};
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
         //        couponRates_.clear();
         //        couponRates_.set(0, new InterestRate(couponRate, paymentDayCounter_, Compounding.SIMPLE));
@@ -52,15 +53,15 @@ public class FixedRateLeg extends Leg {
         return this;
     }
 
-    public FixedRateLeg withCouponRates(/* @Rate */final double [] couponRates) {
+    public FixedRateLeg withCouponRates(/* @Rate */final double[] couponRates) {
         couponRates_ = new InterestRate[couponRates.length];
-        for (int i = 0; i<couponRates.length; i++) {
+        for (int i = 0; i < couponRates.length; i++) {
             couponRates_[i] = new InterestRate(couponRates[i], paymentDayCounter_, Compounding.Simple);
         }
         return this;
     }
 
-    public FixedRateLeg withCouponRates(final InterestRate [] couponRates) {
+    public FixedRateLeg withCouponRates(final InterestRate[] couponRates) {
         couponRates_ = couponRates; // TODO: clone() ?
         return this;
     }
@@ -75,10 +76,9 @@ public class FixedRateLeg extends Leg {
         return this;
     }
 
-
     public Leg Leg() {
-        QL.require(couponRates_ != null && couponRates_.length>0 , "coupon rates not specified"); // TODO: message
-        QL.require(notionals_   != null && notionals_.length>0 , "nominals not specified"); // TODO: message
+        QL.require(couponRates_ != null && couponRates_.length > 0, "coupon rates not specified"); // TODO: message
+        QL.require(notionals_ != null && notionals_.length > 0, "nominals not specified"); // TODO: message
 
         final Leg leg = new Leg();
 
@@ -92,7 +92,7 @@ public class FixedRateLeg extends Leg {
         /*@Real*/ double nominal = notionals_[0];
         if (schedule_.isRegular(1)) {
             // TODO: code review :: please verify against QL/C++ code
-            QL.require(firstPeriodDayCounter_==null || !firstPeriodDayCounter_.equals(paymentDayCounter_) , "regular first coupon does not allow a first-period day count"); // TODO: message
+            QL.require(firstPeriodDayCounter_ == null || !firstPeriodDayCounter_.equals(paymentDayCounter_), "regular first coupon does not allow a first-period day count"); // TODO: message
             leg.add(new FixedRateCoupon(nominal, paymentDate, rate, paymentDayCounter_, start, end, start, end));
         } else {
             JDate ref = end.sub(schedule_.tenor());

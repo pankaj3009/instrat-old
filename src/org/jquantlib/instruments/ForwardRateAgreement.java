@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Allen Kuo
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.instruments;
 
 import org.jquantlib.Settings;
@@ -52,43 +51,39 @@ import org.jquantlib.time.TimeUnit;
 /**
  * Forward rate agreement (FRA) class
  * <p>
- *  1. Unlike the forward contract conventions on carryable
- *     financial assets (stocks, bonds, commodities), the
- *     valueDate for a FRA is taken to be the day when the forward
- *     loan or deposit begins and when full settlement takes place
- *     (based on the NPV of the contract on that date).
- *     maturityDate is the date when the forward loan or deposit
- *     ends. In fact, the FRA settles and expires on the
- *     valueDate, not on the (later) maturityDate. It follows that
- *     (maturityDate - valueDate) is the tenor/term of the
- *     underlying loan or deposit
+ * 1. Unlike the forward contract conventions on carryable financial assets
+ * (stocks, bonds, commodities), the valueDate for a FRA is taken to be the day
+ * when the forward loan or deposit begins and when full settlement takes place
+ * (based on the NPV of the contract on that date). maturityDate is the date
+ * when the forward loan or deposit ends. In fact, the FRA settles and expires
+ * on the valueDate, not on the (later) maturityDate. It follows that
+ * (maturityDate - valueDate) is the tenor/term of the underlying loan or
+ * deposit
  * <p>
- *  2. Choose position type = Long for an "FRA purchase" (future
- *     long loan, short deposit [borrower])
+ * 2. Choose position type = Long for an "FRA purchase" (future long loan, short
+ * deposit [borrower])
  * <p>
- *  3. Choose position type = Short for an "FRA sale" (future short
- *     loan, long deposit [lender])
+ * 3. Choose position type = Short for an "FRA sale" (future short loan, long
+ * deposit [lender])
  * <p>
- *  4. If strike is given in the constructor, can calculate the NPV
- *     of the contract via NPV().
+ * 4. If strike is given in the constructor, can calculate the NPV of the
+ * contract via NPV().
  * <p>
- *  5. If forward rate is desired/unknown, it can be obtained via
- *     forwardRate(). In this case, the strike variable in the
- *     constructor is irrelevant and will be ignored.
+ * 5. If forward rate is desired/unknown, it can be obtained via forwardRate().
+ * In this case, the strike variable in the constructor is irrelevant and will
+ * be ignored.
  *
- *  @todo Add preconditions and tests
+ * @todo Add preconditions and tests
  *
- *  @todo Should put an instance of ForwardRateAgreement in the
- *        FraRateHelper to ensure consistency with the piecewise
- *        yield curve.
+ * @todo Should put an instance of ForwardRateAgreement in the FraRateHelper to
+ * ensure consistency with the piecewise yield curve.
  *
- *  @todo Differentiate between BBA (British)/AFB (French)
- *        [assumed here] and ABA (Australian) banker conventions
- *        in the calculations.
+ * @todo Differentiate between BBA (British)/AFB (French) [assumed here] and ABA
+ * (Australian) banker conventions in the calculations.
  *
- *  @warning This class still needs to be rigorously tested
+ * @warning This class still needs to be rigorously tested
  *
- *  @category instruments
+ * @category instruments
  *
  * @author John Martin
  */
@@ -100,11 +95,9 @@ public class ForwardRateAgreement extends Forward {
     protected double notional;
     protected IborIndex index;
 
-
     //
     // public constructor
     //
-
     public ForwardRateAgreement(
             final JDate valueDate,
             final JDate maturityDate,
@@ -112,9 +105,8 @@ public class ForwardRateAgreement extends Forward {
             final double strikeForwardRate,
             final double notionalAmount,
             final IborIndex index) {
-        this (valueDate, maturityDate, type, strikeForwardRate, notionalAmount, index, new Handle<YieldTermStructure>());
+        this(valueDate, maturityDate, type, strikeForwardRate, notionalAmount, index, new Handle<YieldTermStructure>());
     }
-
 
     public ForwardRateAgreement(
             final JDate valueDate,
@@ -132,7 +124,7 @@ public class ForwardRateAgreement extends Forward {
 
         // do I adjust this ?
         // valueDate_ = calendar_.adjust(valueDate_,businessDayConvention_);
-        final JDate fixingDate = calendar.advance (valueDate, -1 * settlementDays, TimeUnit.Days);
+        final JDate fixingDate = calendar.advance(valueDate, -1 * settlementDays, TimeUnit.Days);
 
         forwardRate = new InterestRate(index.fixing(fixingDate), index.dayCounter(), Compounding.Simple, Frequency.Once);
         this.strikeForwardRate = new InterestRate(strikeForwardRate, index.dayCounter(), Compounding.Simple, Frequency.Once);
@@ -143,7 +135,7 @@ public class ForwardRateAgreement extends Forward {
         incomeDiscountCurve = discountCurve;
         underlyingIncome = 0.0;
 
-        index.addObserver (this);
+        index.addObserver(this);
     }
 
     @Override
@@ -171,7 +163,6 @@ public class ForwardRateAgreement extends Forward {
     // defined in the base class, with an underlying having a
     // spotPrice (in this case, a loan or deposit with an NPV). Thus,
     // spotValue() is defined here.
-
     @Override
     public double spotValue() {
         calculate();

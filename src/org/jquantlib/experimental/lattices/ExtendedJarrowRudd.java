@@ -18,9 +18,9 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
-*/
+ */
 
-/*
+ /*
 Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
 Copyright (C) 2003 Ferdinando Ametrano
 Copyright (C) 2005 StatPro Italia srl
@@ -38,44 +38,40 @@ copy of the license along with this program; if not, please email
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.experimental.lattices;
 
 import org.jquantlib.processes.StochasticProcess1D;
 
 /**
-* Cox-Ross-Rubinstein (multiplicative) equal jumps binomial tree
-*
-* @category lattices
-*
-* @author Richard Gomes
-*/
+ * Cox-Ross-Rubinstein (multiplicative) equal jumps binomial tree
+ *
+ * @category lattices
+ *
+ * @author Richard Gomes
+ */
 public class ExtendedJarrowRudd extends ExtendedEqualProbabilitiesBinomialTree /*<ExtendedCoxRossRubinstein> */ {
 
-   //
-   // public methods
-   //
+    //
+    // public methods
+    //
+    public ExtendedJarrowRudd(
+            final StochasticProcess1D process,
+            final /* @Time */ double end,
+            final int steps,
+            final double strike) {
 
-   public ExtendedJarrowRudd(
-           final StochasticProcess1D process,
-           final /* @Time */ double end,
-           final int steps,
-           final double strike) {
+        super(process, end, steps);
+        // drift removed
+        this.up = process.stdDeviation(0.0, x0, dt);
+    }
 
-       super(process, end, steps);
-       // drift removed
-       this.up = process.stdDeviation(0.0, x0, dt);
-   }
-
-
-   //
-   // protected methods
-   //
-
-   @Override
-   protected double upStep(/* @Time */ final double stepTime) /* @ReadOnly */ {
-       return treeProcess.stdDeviation(stepTime, x0, dt);
-   }
+    //
+    // protected methods
+    //
+    @Override
+    protected double upStep(/* @Time */final double stepTime) /* @ReadOnly */ {
+        return treeProcess.stdDeviation(stepTime, x0, dt);
+    }
 
 }

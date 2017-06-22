@@ -26,8 +26,8 @@ import org.jquantlib.math.Ops;
 import org.jquantlib.math.matrixutilities.Array;
 
 /**
- * This class verifies a condition and if true, returns the evaluation of
- * a function, otherwise returns Double.NaN.
+ * This class verifies a condition and if true, returns the evaluation of a
+ * function, otherwise returns Double.NaN.
  *
  * @author Richard Gomes
  */
@@ -42,14 +42,13 @@ public final class FindIf {
         QL.validateExperimentalMode();
     }
 
-
     public Array op() {
         // find first element which satisfies predicate and insert it, if found
         int pos = 0;
         double item = Double.NaN;
-        for (; pos<array.size(); pos++) {
+        for (; pos < array.size(); pos++) {
             final double a = array.get(pos);
-            if ( predicate.op(a) ) {
+            if (predicate.op(a)) {
                 item = a;
                 break;
             }
@@ -58,14 +57,12 @@ public final class FindIf {
         final Array result = new Array(array.size() - pos);
         result.set(0, item);
         // copy remaining elements
-        int j=1;
-        for (++pos; pos<array.size(); pos++, j++) {
-        // while (iterator.hasNext()) {
-            result.set(j, array.get(pos) );
+        int j = 1;
+        for (++pos; pos < array.size(); pos++, j++) {
+            // while (iterator.hasNext()) {
+            result.set(j, array.get(pos));
         }
         return result;
     }
 
 }
-
-

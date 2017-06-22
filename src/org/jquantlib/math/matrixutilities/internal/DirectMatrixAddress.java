@@ -34,7 +34,7 @@ AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 package org.jquantlib.math.matrixutilities.internal;
 
 import java.util.EnumSet;
@@ -62,22 +62,20 @@ public class DirectMatrixAddress extends DirectAddress implements Address.Matrix
         super(data, row0, row1, chain, col0, col1, flags, contiguous, rows, cols);
     }
 
-
     //
     // implements MatrixAddress
     //
-
     @Override
     public MatrixAddress toFortran() {
-        return isFortran() ? this :
-            new DirectMatrixAddress(data, row0, row1, this.chain, col0, col1, EnumSet.of(Address.Flags.FORTRAN), contiguous, rows, cols);
+        return isFortran() ? this
+                : new DirectMatrixAddress(data, row0, row1, this.chain, col0, col1, EnumSet.of(Address.Flags.FORTRAN), contiguous, rows, cols);
     }
 
     @Override
     public MatrixAddress toJava() {
-        return isFortran() ?
-            new DirectMatrixAddress(data, row0+1, row1+1, this.chain, col0+1, col1+1, EnumSet.noneOf(Address.Flags.class), contiguous, rows, cols)
-            : this;
+        return isFortran()
+                ? new DirectMatrixAddress(data, row0 + 1, row1 + 1, this.chain, col0 + 1, col1 + 1, EnumSet.noneOf(Address.Flags.class), contiguous, rows, cols)
+                : this;
     }
 
     @Override
@@ -92,14 +90,12 @@ public class DirectMatrixAddress extends DirectAddress implements Address.Matrix
 
     @Override
     public int op(final int row, final int col) {
-        return (row0+row)*cols + (col0+col);
+        return (row0 + row) * cols + (col0 + col);
     }
-
 
     //
     // implements Cloneable
     //
-
     @Override
     public DirectMatrixAddress clone() {
         try {
@@ -109,16 +105,14 @@ public class DirectMatrixAddress extends DirectAddress implements Address.Matrix
         }
     }
 
-
     //
     // private inner classes
     //
-
     private class DirectMatrixAddressOffset extends DirectAddressOffset implements Address.MatrixAddress.MatrixOffset {
 
         public DirectMatrixAddressOffset(final int row, final int col) {
-            super.row = row0+row;
-            super.col = col0+col;
+            super.row = row0 + row;
+            super.col = col0 + col;
         }
 
         @Override
@@ -143,17 +137,17 @@ public class DirectMatrixAddress extends DirectAddress implements Address.Matrix
 
         @Override
         public void setRow(final int row) {
-            super.row = row0+row;
+            super.row = row0 + row;
         }
 
         @Override
         public void setCol(final int col) {
-            super.col = col0+col;
+            super.col = col0 + col;
         }
 
         @Override
         public int op() {
-            return row*cols + col;
+            return row * cols + col;
         }
 
     }

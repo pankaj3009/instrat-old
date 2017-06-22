@@ -19,7 +19,7 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,8 +34,7 @@ When applicable, the original copyright notice follows this notice.
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.model;
 
 import org.jquantlib.math.matrixutilities.Array;
@@ -44,50 +43,48 @@ import org.jquantlib.math.optimization.NoConstraint;
 /**
  * Piecewise-constant parameter.
  * <p>
- * {@latex$ a(t) = a_i} if {@latex$ t_{i-1} \geq t < t_i }.
- * <p>
+ * {
+ *
+ * @latex$ a(t) = a_i} if {
+ * @latex$ t_{i-1} \geq t < t_i }. <p>
  * This kind of parameter is usually used to enhance the fitting of a model.
  *
  * @author Richard Gomes
  */
 public class PiecewiseConstantParameter extends Parameter {
 
-
     //
     // public methods
     //
-
     public PiecewiseConstantParameter(final /* @Time */ double[] times) {
-        super(times.length+1, new Impl(times), new NoConstraint());
+        super(times.length + 1, new Impl(times), new NoConstraint());
     }
-
 
     //
     // private inner classes
     //
-
     static private class Impl implements Parameter.Impl {
 
         //
         // private fields
         //
-
         private final double[] times_;
 
         //
         // public methods
         //
-
         public Impl(final double[] times) {
             this.times_ = times;
         }
 
         @Override
-        public double value(final Array  params, /* @Time */ final double t) /* @ReadOnly */ {
+        public double value(final Array params, /* @Time */ final double t) /* @ReadOnly */ {
             /*@NonNegative*/ final int size = times_.length;
-            for (/*@NonNegative*/ int i=0; i<size; i++)
-                if (t<times_[i])
+            for (/*@NonNegative*/int i = 0; i < size; i++) {
+                if (t < times_[i]) {
                     return params.get(i);
+                }
+            }
             return params.get(size);
         }
     }

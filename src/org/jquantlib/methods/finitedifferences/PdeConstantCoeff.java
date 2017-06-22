@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,13 +35,11 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.finitedifferences;
 
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.processes.GeneralizedBlackScholesProcess;
-
 
 /**
  * General class for one dimensional PDE's
@@ -51,19 +49,22 @@ import org.jquantlib.processes.GeneralizedBlackScholesProcess;
  * @param <T>
  */
 public class PdeConstantCoeff<T extends Pde> extends PdeSecondOrderParabolic {
-    /* Real*/private final double diffusion;
-    /* Real*/private final double drift;
-    /* Real*/private final double discount;
-    
+
+    /* Real*/
+    private final double diffusion;
+    /* Real*/
+    private final double drift;
+    /* Real*/
+    private final double discount;
+
     private final Class<? extends Pde> classT;
-    
 
     public PdeConstantCoeff(
-    		final Class<? extends Pde> classT,
-    		final GeneralizedBlackScholesProcess process, 
-    		/*Time*/final double t, 
-    		/*Real*/final double x) {
-    	this.classT = classT;
+            final Class<? extends Pde> classT,
+            final GeneralizedBlackScholesProcess process,
+            /*Time*/ final double t,
+            /*Real*/ final double x) {
+        this.classT = classT;
         final T pde = getInstance(classT, process);
         diffusion = pde.diffusion(t, x);
         drift = pde.drift(t, x);
@@ -86,8 +87,8 @@ public class PdeConstantCoeff<T extends Pde> extends PdeSecondOrderParabolic {
     }
 
     protected T getInstance(
-    		final Class<? extends Pde> classT,
-    		final GeneralizedBlackScholesProcess process) {
+            final Class<? extends Pde> classT,
+            final GeneralizedBlackScholesProcess process) {
         try {
             return (T) classT.getConstructor(GeneralizedBlackScholesProcess.class).newInstance(process);
         } catch (final Exception e) {

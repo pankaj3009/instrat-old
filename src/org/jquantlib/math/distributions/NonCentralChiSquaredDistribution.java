@@ -19,12 +19,10 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.distributions;
 
 import org.jquantlib.math.Constants;
 import org.jquantlib.math.Ops;
-
 
 /**
  * @author Richard Gomes
@@ -33,38 +31,39 @@ public class NonCentralChiSquaredDistribution implements Ops.DoubleOp {
 
     private static final String FAILED_TO_CONVERGE = "failed to converge";
 
-	//
-	// private fields
-	//
+    //
+    // private fields
+    //
+    /**
+     * degrees of freedom
+     */
+    private final double df;
 
-	/** degrees of freedom */
-	private final double df;
+    /**
+     * non-centrality parameter
+     */
+    private final double ncp;
 
-	/** non-centrality parameter */
-	private final double ncp;
+    private final GammaFunction gammaFunction_ = new GammaFunction();
 
-	private final GammaFunction gammaFunction_ = new GammaFunction();
+    //
+    // public constructor
+    //
+    public NonCentralChiSquaredDistribution(final double df, final double ncp) {
+        //TODO check on valid parameters
+        this.df = df;
+        this.ncp = ncp;
+    }
 
-
-	//
-	// public constructor
-	//
-
-	public NonCentralChiSquaredDistribution(final double df, final double ncp){
-		//TODO check on valid parameters
-		this.df = df;
-		this.ncp = ncp;
-	}
-
-
-	//
-	// implements Ops.DoubleOp
-	//
-
-	@Override
-	public double op(final double x) /* @Read-only */ {
-		//C++ appears to be based on Algorithm AS 275 with perhaps one addition, see below
-        if (x <= 0.0) return 0.0;
+    //
+    // implements Ops.DoubleOp
+    //
+    @Override
+    public double op(final double x) /* @Read-only */ {
+        //C++ appears to be based on Algorithm AS 275 with perhaps one addition, see below
+        if (x <= 0.0) {
+            return 0.0;
+        }
 
         final double errmax = 1e-12;
         final int itrmax = 10000;
@@ -83,7 +82,7 @@ public class NonCentralChiSquaredDistribution implements Ops.DoubleOp {
             t = Math.exp(f2 * Math.log(x2) - x2 - gammaFunction_.logValue(f2 + 1));
         }
 
-        double ans = v*t;
+        double ans = v * t;
         int n = 1;
         double f_2n = df + 2.0;
         double f_x_2n = df + 2.0 - x;
@@ -115,6 +114,6 @@ public class NonCentralChiSquaredDistribution implements Ops.DoubleOp {
         }
 
         throw new ArithmeticException(FAILED_TO_CONVERGE); // TODO: message
-	}
+    }
 
 }

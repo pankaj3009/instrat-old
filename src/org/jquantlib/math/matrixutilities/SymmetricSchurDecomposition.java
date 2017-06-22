@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
  Copyright (C) 2004 Ferdinando Ametrano
@@ -46,18 +46,24 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 /**
  * Symmetric threshold Jacobi algorithm
  * <p>
- * Given a real symmetric matrix S, the Schur decomposition finds the eigenvalues and eigenvectors of S. If D is the diagonal matrix
- * formed by the eigenvalues and U the unitarian matrix of the eigenvectors we can write the Schur decomposition as {@latex[ S = U
- * \cdot D \cdot U^T } where {@latex$ \cdot } is the standard matrix product and {@latex$ ^T } is the transpose operator.
- * <p>
- * This class implements the Schur decomposition using the symmetric threshold Jacobi algorithm. For details on the different Jacobi
- * transfomations.
+ * Given a real symmetric matrix S, the Schur decomposition finds the
+ * eigenvalues and eigenvectors of S. If D is the diagonal matrix formed by the
+ * eigenvalues and U the unitarian matrix of the eigenvectors we can write the
+ * Schur decomposition as {
  *
- * @see "Matrix computation," second edition, by Golub and Van Loan, The Johns Hopkins University Press
+ * @latex[ S = U \cdot D \cdot U^T } where {
+ * @latex$ \cdot } is the standard matrix product and {
+ * @latex$ ^T } is the transpose operator.
+ * <p>
+ * This class implements the Schur decomposition using the symmetric threshold
+ * Jacobi algorithm. For details on the different Jacobi transfomations.
+ *
+ * @see "Matrix computation," second edition, by Golub and Van Loan, The Johns
+ * Hopkins University Press
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q0_UNFINISHED, version = Version.V097, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q0_UNFINISHED, version = Version.V097, reviewers = {"Richard Gomes"})
 public class SymmetricSchurDecomposition {
 
     private static final double epsPrec = 1e-15;
@@ -66,7 +72,6 @@ public class SymmetricSchurDecomposition {
     private final int size;
     private final Matrix A;
     private final Array diag;
-
 
     public SymmetricSchurDecomposition(final Matrix m) {
         QL.require(m.rows() == m.cols(), Matrix.MATRIX_MUST_BE_SQUARE); // QA:[RG]::verified
@@ -81,12 +86,12 @@ public class SymmetricSchurDecomposition {
         final Matrix s = m.clone();
         final int offset = s.offset();
 
-        for (int q = offset; q < size+offset; q++) {
+        for (int q = offset; q < size + offset; q++) {
             diag.$[diag.addr.op(q)] = s.$[s.addr.op(q, q)];
             A.$[A.addr.op(q, q)] = 1.0;
         }
         for (int j = 0; j < size; j++) {
-            tmpDiag[j] = diag.$[diag.addr.op(j+offset)];
+            tmpDiag[j] = diag.$[diag.addr.op(j + offset)];
         }
 
         boolean keeplooping = true;
@@ -136,8 +141,8 @@ public class SymmetricSchurDecomposition {
                             sine = tang * cosin;
                             rho = sine / (1 + cosin);
                             heig = tang * s.$[s.addr.op(j, k)];
-                            tmpSum[j-offset] -= heig;
-                            tmpSum[k-offset] += heig;
+                            tmpSum[j - offset] -= heig;
+                            tmpSum[k - offset] += heig;
                             diag.$[diag.addr.op(j)] -= heig;
                             diag.$[diag.addr.op(k)] += heig;
                             s.$[s.addr.op(j, k)] = 0.0;
@@ -158,7 +163,7 @@ public class SymmetricSchurDecomposition {
                 }
                 for (k = 0; k < size; k++) {
                     tmpDiag[k] += tmpSum[k];
-                    diag.$[diag.addr.op(k+offset)] = tmpDiag[k];
+                    diag.$[diag.addr.op(k + offset)] = tmpDiag[k];
                     tmpSum[k] = 0.0;
                 }
             }
@@ -170,7 +175,6 @@ public class SymmetricSchurDecomposition {
     //
     // public methods
     //
-
     public Matrix eigenvectors() {
         return A.clone();
     }
@@ -182,7 +186,6 @@ public class SymmetricSchurDecomposition {
     //
     // private methods
     //
-
     /**
      * This routines implements the Jacobi, a.k.a. Givens, rotation
      */
@@ -193,7 +196,7 @@ public class SymmetricSchurDecomposition {
             final int j1,
             final int k1,
             final int j2,
-            final int k2) /* @ReadOnly */{
+            final int k2) /* @ReadOnly */ {
         double x1, x2;
         x1 = m.$[m.addr.op(j1, k1)];
         x2 = m.$[m.addr.op(j2, k2)];

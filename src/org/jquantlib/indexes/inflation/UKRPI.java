@@ -31,36 +31,35 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * 
+ *
  * UK Retail Price Inflation Index
- * 
+ *
  * @author Tim Blackler
  *
  */
-
 public class UKRPI extends ZeroInflationIndex {
 
-	public UKRPI(final Frequency frequency,
-         	      final boolean revised,
-         	      final boolean interpolated) {
-		this(frequency, revised, interpolated, new Handle<ZeroInflationTermStructure>());
-		   
-	   }
-	
     public UKRPI(final Frequency frequency,
-            	  final boolean revised,
-            	  final boolean interpolated,
-            	  final Handle<ZeroInflationTermStructure> termStructure) {
-    	
-    	super("RPI",
-              new UKRegion(),
-              revised,
-              interpolated,
-              frequency,
-              new Period(2, TimeUnit.Months),
-              new GBPCurrency(),
-              termStructure);
-    	
+            final boolean revised,
+            final boolean interpolated) {
+        this(frequency, revised, interpolated, new Handle<ZeroInflationTermStructure>());
+
+    }
+
+    public UKRPI(final Frequency frequency,
+            final boolean revised,
+            final boolean interpolated,
+            final Handle<ZeroInflationTermStructure> termStructure) {
+
+        super("RPI",
+                new UKRegion(),
+                revised,
+                interpolated,
+                frequency,
+                new Period(2, TimeUnit.Months),
+                new GBPCurrency(),
+                termStructure);
+
     }
 
 }

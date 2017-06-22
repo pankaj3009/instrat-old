@@ -9,5 +9,6 @@ package com.incurrency.framework;
  * @author admin
  */
 public interface TWSErrorListener {
-     public void TWSErrorReceived( TWSErrorEvent event );
+
+    public void TWSErrorReceived(TWSErrorEvent event);
 }

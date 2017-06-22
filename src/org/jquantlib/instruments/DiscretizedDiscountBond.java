@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2005, 2006 Theo Boafo
  Copyright (C) 2006, 2007 StatPro Italia srl
 
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.instruments;
 
 import java.util.List;
@@ -50,100 +49,99 @@ import org.jquantlib.methods.lattices.Lattice;
 // TODO: complete this class
 public class DiscretizedDiscountBond extends DiscretizedAsset {
 
-
     public DiscretizedDiscountBond() {
         throw new UnsupportedOperationException("work in progress");
     }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#initialize(org.jquantlib.methods.lattices.Lattice,
 	 *      double)
-	 */
-	@Override
-	public void initialize(final Lattice lt, final double t) {
+     */
+    @Override
+    public void initialize(final Lattice lt, final double t) {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#isOnTime(double)
-	 */
-	@Override
-	protected boolean isOnTime(final double t) {
+     */
+    @Override
+    protected boolean isOnTime(final double t) {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#mandatoryTimes()
-	 */
-	@Override
-	public List<Double> mandatoryTimes() {
+     */
+    @Override
+    public List<Double> mandatoryTimes() {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#partialRollback(double)
-	 */
-	@Override
-	public void partialRollback(final double to) {
+     */
+    @Override
+    public void partialRollback(final double to) {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#postAdjustValues()
-	 */
-	@Override
-	public void postAdjustValues() {
+     */
+    @Override
+    public void postAdjustValues() {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#preAdjustValues()
-	 */
-	@Override
-	public void preAdjustValues() {
+     */
+    @Override
+    public void preAdjustValues() {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#presentValue()
-	 */
-	@Override
-	public double presentValue() {
+     */
+    @Override
+    public double presentValue() {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#reset(int)
-	 */
-	@Override
-	public void reset(final int size) {
+     */
+    @Override
+    public void reset(final int size) {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
-	/*
+    /*
 	 * (non-Javadoc)
 	 *
 	 * @see org.jquantlib.methods.lattices.DiscretizedAsset#rollback(double)
-	 */
-	@Override
-	public void rollback(final double to) {
+     */
+    @Override
+    public void rollback(final double to) {
         throw new UnsupportedOperationException("work in progress");
-	}
+    }
 
 }

@@ -3,6 +3,7 @@
  * and open the template in the editor.
  */
 package com.incurrency.framework.logging;
+
 import java.io.IOException;
 import java.util.logging.FileHandler;
 
@@ -10,11 +11,10 @@ import java.util.logging.FileHandler;
  *
  * @author Admin
  */
-public class FiveSecondBarHandler extends FileHandler{
-    
-    public  FiveSecondBarHandler() throws IOException, SecurityException
-    {
-        super();   
+public class FiveSecondBarHandler extends FileHandler {
+
+    public FiveSecondBarHandler() throws IOException, SecurityException {
+        super();
     }
-    
+
 }

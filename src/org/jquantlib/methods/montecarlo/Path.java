@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
  Copyright (C) 2003 Ferdinando Ametrano
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.methods.montecarlo;
 
 import org.jquantlib.time.TimeGrid;
@@ -48,36 +47,53 @@ import org.jquantlib.time.TimeGrid;
  *
  * @author Richard Gomes
  */
-
 // FIXME: code review: verify if DoubleReference should be used here
-
 public class Path {
 
     //
     // private fields
     //
-
     /**
      * This field represents the {@link TimeGrid} held by this Path.
      * <p>
-     * This field can has public read access via getter
-     * but can only be written by friend classes (same package)
+     * This field can has public read access via getter but can only be written
+     * by friend classes (same package)
      */
     private TimeGrid timeGrid_;
 
     /**
      * This field represents contains a double[] held by this Path.
      * <p>
-     * This field can has public read access via getter
-     * but can only be written by friend classes (same package)
+     * This field can has public read access via getter but can only be written
+     * by friend classes (same package)
      */
     private double[] values_;
+    //
+    // public constructors
+    //
 
+    public Path(final TimeGrid timeGrid) {
+        this(timeGrid, null);
+    }
+
+    public Path(final TimeGrid timeGrid, final double[] values) {
+        if (System.getProperty("EXPERIMENTAL") == null) {
+            throw new UnsupportedOperationException("Work in progress");
+        }
+        this.timeGrid_ = timeGrid;
+        if (values == null || values.length == 0) {
+            values_ = new double[timeGrid_.size()];
+        } else {
+            this.values_ = values; // TODO: clone() ?
+        }
+        if (values_.length != timeGrid_.size()) {
+            throw new IllegalArgumentException("different number of times and asset values"); // FIXME: message
+        }
+    }
 
     //
     // public getters
     //
-
     public TimeGrid getTimeGrid_() {
         return timeGrid_;
     }
@@ -89,6 +105,7 @@ public class Path {
     public double getValues_(final int i) {
         return values_[i];
     }
+
 
     //
     // package private setters
@@ -106,42 +123,18 @@ public class Path {
         this.values_[i] = value;
     }
 
-
-    //
-    // public constructors
-    //
-
-    public Path(final TimeGrid timeGrid) {
-        this(timeGrid, null);
-    }
-
-    public Path(final TimeGrid timeGrid, final double[] values) {
-        if (System.getProperty("EXPERIMENTAL")==null)
-            throw new UnsupportedOperationException("Work in progress");
-        this.timeGrid_ = timeGrid;
-        if (values == null || values.length == 0) {
-            values_ = new double[timeGrid_.size()];
-        } else {
-            this.values_ = values; // TODO: clone() ?
-        }
-        if (values_.length != timeGrid_.size())
-            throw new IllegalArgumentException("different number of times and asset values"); // FIXME: message
-    }
-
-
     //
     // public methods
     //
-
-    public boolean empty() /* @ReadOnly */{
+    public boolean empty() /* @ReadOnly */ {
         return timeGrid_.empty();
     }
 
-    public/* @NonNegative */int length() /* @ReadOnly */{
+    public/* @NonNegative */ int length() /* @ReadOnly */ {
         return timeGrid_.size();
     }
 
-    public/* @Time */double time(/* @NonNegative */final int i) /* @ReadOnly */{
+    public/* @Time */ double time(/* @NonNegative */final int i) /* @ReadOnly */ {
         return timeGrid_.get(i);
     }
 
@@ -149,7 +142,6 @@ public class Path {
 //    public final TimeGrid timeGrid() /* @ReadOnly */{
 //        return timeGrid_;
 //    }
-
 //XXX
 //    public DoubleForwardIterator forwardIterator() /* @ReadOnly */{
 //        return values_.forwardIterator();
@@ -158,8 +150,6 @@ public class Path {
 //    public DoubleReverseIterator reverseIterator() /* @ReadOnly */{
 //        return values_.reverseIterator();
 //    }
-
-
 //
 //XXX
 //

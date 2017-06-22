@@ -20,7 +20,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005, 2006, 2007, 2008 StatPro Italia srl
  Copyright (C) 2007 Ferdinando Ametrano
 
@@ -37,21 +37,21 @@ When applicable, the original copyright notice follows this notice.
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures;
 
 import java.io.Serializable;
 import java.util.Comparator;
 
-
 public class BootstrapHelperSorter<Helper extends BootstrapHelper> implements Comparator<Helper>, Serializable {
 
     @Override
     public int compare(final Helper h1, final Helper h2) {
-        if (h1.latestDate().lt(h2.latestDate()))
+        if (h1.latestDate().lt(h2.latestDate())) {
             return -1;
-        if (h1.latestDate().equals(h2.latestDate()))
+        }
+        if (h1.latestDate().equals(h2.latestDate())) {
             return 0;
+        }
         return 1;
     }
 }

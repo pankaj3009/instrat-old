@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004 StatPro Italia srl
@@ -38,8 +38,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
-
 package org.jquantlib.pricingengines.vanilla;
 
 import org.jquantlib.QL;
@@ -65,58 +63,50 @@ public class IntegralEngine extends OneAssetOption.EngineImpl {
     private static final String NON_STRIKED_PAYOFF_GIVEN = "non-striked payoff given";
     private static final String BLACK_SCHOLES_PROCESS_REQUIRED = "Black-Scholes process required";
 
-
     //
     // private final fields
     //
-
     private final GeneralizedBlackScholesProcess process;
-    private final Option.ArgumentsImpl     a;
-    private final Instrument.ResultsImpl   r;
-
+    private final Option.ArgumentsImpl a;
+    private final Instrument.ResultsImpl r;
 
     //
     // public constructors
     //
-
     public IntegralEngine(final GeneralizedBlackScholesProcess process) {
-        this.a = (Option.ArgumentsImpl)arguments_;
-        this.r = (Instrument.ResultsImpl)results_;
+        this.a = (Option.ArgumentsImpl) arguments_;
+        this.r = (Instrument.ResultsImpl) results_;
         this.process = process;
         this.process.addObserver(this);
     }
 
-
     //
     // implements PricingEngine
     //
-
     // TODO: define tolerance for calculate()
     @Override
     public void calculate() {
-        QL.require(a.exercise.type()==Exercise.Type.European , NOT_AN_AMERICAN_OPTION); // TODO: message
-        QL.require(a.payoff instanceof StrikedTypePayoff , NON_STRIKED_PAYOFF_GIVEN); // TODO: message
+        QL.require(a.exercise.type() == Exercise.Type.European, NOT_AN_AMERICAN_OPTION); // TODO: message
+        QL.require(a.payoff instanceof StrikedTypePayoff, NON_STRIKED_PAYOFF_GIVEN); // TODO: message
         final StrikedTypePayoff payoff = (StrikedTypePayoff) a.payoff;
 
         final double variance = process.blackVolatility().currentLink().blackVariance(a.exercise.lastDate(), payoff.strike());
-        final double /* @DiscountFactor */dividendDiscount = process.dividendYield().currentLink().discount(a.exercise.lastDate());
-        final double /* @DiscountFactor */riskFreeDiscount = process.riskFreeRate().currentLink().discount(a.exercise.lastDate());
-        final double /* @Rate */drift = Math.log(dividendDiscount / riskFreeDiscount) - 0.5 * variance;
+        final double /* @DiscountFactor */ dividendDiscount = process.dividendYield().currentLink().discount(a.exercise.lastDate());
+        final double /* @DiscountFactor */ riskFreeDiscount = process.riskFreeRate().currentLink().discount(a.exercise.lastDate());
+        final double /* @Rate */ drift = Math.log(dividendDiscount / riskFreeDiscount) - 0.5 * variance;
 
         final Integrand f = new Integrand(a.payoff, process.stateVariable().currentLink().value(), drift, variance);
         final SegmentIntegral integrator = new SegmentIntegral(5000);
 
-        final double infinity = 10.0*Math.sqrt(variance);
-        r.value =
-            process.riskFreeRate().currentLink().discount(a.exercise.lastDate()) /
-            Math.sqrt(2.0*Math.PI*variance) * integrator.op(f, drift-infinity, drift+infinity);
+        final double infinity = 10.0 * Math.sqrt(variance);
+        r.value
+                = process.riskFreeRate().currentLink().discount(a.exercise.lastDate())
+                / Math.sqrt(2.0 * Math.PI * variance) * integrator.op(f, drift - infinity, drift + infinity);
     }
-
 
     //
     // private inner classes
     //
-
     private static class Integrand implements Ops.DoubleOp {
 
         private final Payoff payoff;
@@ -124,7 +114,7 @@ public class IntegralEngine extends OneAssetOption.EngineImpl {
         private final double /* @Rate */ drift;
         private final double variance;
 
-        public Integrand(final Payoff payoff, final double s0, final double /* @Rate */drift, final double variance) {
+        public Integrand(final Payoff payoff, final double s0, final double /* @Rate */ drift, final double variance) {
             this.payoff = payoff;
             this.s0 = s0;
             this.drift = drift;

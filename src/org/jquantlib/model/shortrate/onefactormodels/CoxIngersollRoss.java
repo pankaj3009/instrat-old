@@ -42,12 +42,15 @@ import org.jquantlib.time.TimeGrid;
  * Cox-Ingersoll-Ross model class.
  * <p>
  * This class implements the Cox-Ingersoll-Ross model defined by
- * <p>{@latex[ dr_t = k(\theta - r_t)dt + \sqrt{r_t}\sigma dW_t}
- * 
+ * <p>
+ * {
+ *
+ * @latex[ dr_t = k(\theta - r_t)dt + \sqrt{r_t}\sigma dW_t}
+ *
  * @bug this class was not tested enough to guarantee its functionality.
- * 
+ *
  * @category shortrate
- * 
+ *
  * @author Praneet Tiwari
  */
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
@@ -67,7 +70,7 @@ public class CoxIngersollRoss extends OneFactorAffineModel {
         this(0.05, 0.1, 0.1, 0.1);
     }
 
-    public CoxIngersollRoss(final double /* @Rate */r0, final double /* @Real */theta, final double /* @Real */k, final double /* @Real */sigma) {
+    public CoxIngersollRoss(final double /* @Rate */ r0, final double /* @Real */ theta, final double /* @Real */ k, final double /* @Real */ sigma) {
         super(4);
         theta_ = (arguments_.get(0));
         k_ = arguments_.get(1);
@@ -79,44 +82,42 @@ public class CoxIngersollRoss extends OneFactorAffineModel {
         r0_ = new ConstantParameter(r0, new PositiveConstraint());
     }
 
-    protected double /* @Real */theta() {
+    protected double /* @Real */ theta() {
         return theta_.get(0.0);
     }
 
-    protected double /* @Real */k() {
+    protected double /* @Real */ k() {
         return k_.get(0.0);
     }
 
-    protected double /* @Real */sigma() {
+    protected double /* @Real */ sigma() {
         return sigma_.get(0.0);
     }
 
-    protected double /* @Real */x0() {
+    protected double /* @Real */ x0() {
         return r0_.get(0.0);
     }
-
 
     //
     // overrides OneFactorModel
     //
-
     @Override
     public ShortRateDynamics dynamics() {
         return new Dynamics(theta(), k(), sigma(), x0());
     }
 
     @Override
-    public double /* @Real */discountBondOption(
-            final Option.Type type,
-            final double /* @Real */strike,
-            final double /* @Time */t,
-            final double /* @Time */s) {
-        QL.require(strike > 0.0 , strike_must_be_positive); // TODO: message
-        final double /* @DiscountFactor */discountT = discountBond(0.0, t, x0());
-        final double /* @DiscountFactor */discountS = discountBond(0.0, s, x0());
+    public double /* @Real */ discountBondOption(
+                    final Option.Type type,
+                    final double /* @Real */ strike,
+                    final double /* @Time */ t,
+                    final double /* @Time */ s) {
+        QL.require(strike > 0.0, strike_must_be_positive); // TODO: message
+        final double /* @DiscountFactor */ discountT = discountBond(0.0, t, x0());
+        final double /* @DiscountFactor */ discountS = discountBond(0.0, s, x0());
 
         if (t < Constants.QL_EPSILON) {
-            switch(type) {
+            switch (type) {
                 case Call:
                     return Math.max(discountS - strike, 0.0);
                 case Put:
@@ -126,23 +127,23 @@ public class CoxIngersollRoss extends OneFactorAffineModel {
             }
         }
 
-        final double /* @Real */sigma2 = sigma() * sigma();
-        final double /* @Real */h = Math.sqrt(k() * k() + 2.0 * sigma2);
-        final double /* @Real */b = B(t, s);
+        final double /* @Real */ sigma2 = sigma() * sigma();
+        final double /* @Real */ h = Math.sqrt(k() * k() + 2.0 * sigma2);
+        final double /* @Real */ b = B(t, s);
 
-        final double /* @Real */rho = 2.0 * h / (sigma2 * (Math.exp(h * t) - 1.0));
-        final double /* @Real */psi = (k() + h) / sigma2;
+        final double /* @Real */ rho = 2.0 * h / (sigma2 * (Math.exp(h * t) - 1.0));
+        final double /* @Real */ psi = (k() + h) / sigma2;
 
-        final double /* @Real */df = 4.0 * k() * theta() / sigma2;
-        final double /* @Real */ncps = 2.0 * rho * rho * x0() * Math.exp(h * t) / (rho + psi + b);
-        final double /* @Real */ncpt = 2.0 * rho * rho * x0() * Math.exp(h * t) / (rho + psi);
+        final double /* @Real */ df = 4.0 * k() * theta() / sigma2;
+        final double /* @Real */ ncps = 2.0 * rho * rho * x0() * Math.exp(h * t) / (rho + psi + b);
+        final double /* @Real */ ncpt = 2.0 * rho * rho * x0() * Math.exp(h * t) / (rho + psi);
 
         final NonCentralChiSquaredDistribution chis = new NonCentralChiSquaredDistribution(df, ncps);
         final NonCentralChiSquaredDistribution chit = new NonCentralChiSquaredDistribution(df, ncpt);
 
-        final double /* @Real */z = Math.log(A(t, s) / strike) / b;
-        final double /*@Real*/ call = discountS*chis.op(2.0*z*(rho+psi+b)) -
-        strike*discountT*chit.op(2.0*z*(rho+psi));
+        final double /* @Real */ z = Math.log(A(t, s) / strike) / b;
+        final double /*@Real*/ call = discountS * chis.op(2.0 * z * (rho + psi + b))
+                - strike * discountT * chit.op(2.0 * z * (rho + psi));
 
         if (type == Option.Type.Call) {
             return 0.0;
@@ -158,59 +159,59 @@ public class CoxIngersollRoss extends OneFactorAffineModel {
     }
 
     @Override
-    protected double /* @Real */A(final double /* @Time */t, final double /* @Time */T) {
-        final double /* @Real */sigma2 = sigma() * sigma();
-        final double /* @Real */h = Math.sqrt(k() * k() + 2.0 * sigma2);
-        final double /* @Real */numerator = 2.0 * h * Math.exp(0.5 * (k() + h) * (T - t));
-        final double /* @Real */denominator = 2.0 * h + (k() + h) * (Math.exp((T - t) * h) - 1.0);
-        final double /* @Real */value = Math.log(numerator / denominator) * 2.0 * k() * theta() / sigma2;
+    protected double /* @Real */ A(final double /* @Time */ t, final double /* @Time */ T) {
+        final double /* @Real */ sigma2 = sigma() * sigma();
+        final double /* @Real */ h = Math.sqrt(k() * k() + 2.0 * sigma2);
+        final double /* @Real */ numerator = 2.0 * h * Math.exp(0.5 * (k() + h) * (T - t));
+        final double /* @Real */ denominator = 2.0 * h + (k() + h) * (Math.exp((T - t) * h) - 1.0);
+        final double /* @Real */ value = Math.log(numerator / denominator) * 2.0 * k() * theta() / sigma2;
         return Math.exp(value);
     }
 
     @Override
-    protected double /* @Real */B(final double /* @Time */t, final double /* @Time */T) {
-        final double /* @Real */h = Math.sqrt(k() * k() + 2.0 * sigma() * sigma());
-        final double /* @Real */temp = Math.exp((T - t) * h) - 1.0;
-        final double /* @Real */numerator = 2.0 * temp;
-        final double /* @Real */denominator = 2.0 * h + (k() + h) * temp;
-        final double /* @Real */value = numerator / denominator;
+    protected double /* @Real */ B(final double /* @Time */ t, final double /* @Time */ T) {
+        final double /* @Real */ h = Math.sqrt(k() * k() + 2.0 * sigma() * sigma());
+        final double /* @Real */ temp = Math.exp((T - t) * h) - 1.0;
+        final double /* @Real */ numerator = 2.0 * temp;
+        final double /* @Real */ denominator = 2.0 * h + (k() + h) * temp;
+        final double /* @Real */ value = numerator / denominator;
         return value;
     }
-
 
     //
     // protected inner classes
     //
-
     /**
      * Dynamics of the short-rate under the Cox-Ingersoll-Ross model
      * <p>
-     * The state variable {@latex$ y_t } will here be the square-root of the short-rate.
-     * It satisfies the following stochastic equation
-     * {@latex[dy_t = \left[ (\frac{k\theta }{2}+\frac{\sigma^2}{8})\frac{1}{y_t}-\frac{k}{2}y_t \right]d_t+\frac{\sigma}{2}dW_{t}}.
+     * The state variable {
+     *
+     * @latex$ y_t } will here be the square-root of the short-rate. It
+     * satisfies the following stochastic equation {
+     * @latex[dy_t = \left[ (\frac{k\theta
+     * }{2}+\frac{\sigma^2}{8})\frac{1}{y_t}-\frac{k}{2}y_t
+     * \right]d_t+\frac{\sigma}{2}dW_{t}}.
      */
     protected class Dynamics extends ShortRateDynamics {
 
-        public Dynamics(final double /* @Real */theta, final double /* @Real */k, final double /* @Real */sigma, final double /* @Real */x0) {
+        public Dynamics(final double /* @Real */ theta, final double /* @Real */ k, final double /* @Real */ sigma, final double /* @Real */ x0) {
             super(new HelperProcess(theta, k, sigma, Math.sqrt(x0)));
         }
 
         @Override
-        public double /* @Real */variable(final double /* @Time */t, final double /* @Real */r) {
+        public double /* @Real */ variable(final double /* @Time */ t, final double /* @Real */ r) {
             return Math.sqrt(r);
         }
 
         @Override
-        public double /* @Real */shortRate(final double /* @Time */t, final double /* @Real */y) {
+        public double /* @Real */ shortRate(final double /* @Time */ t, final double /* @Real */ y) {
             return y * y;
         }
     }
 
-
     //
     // private inner classes
     //
-
     private class VolatilityConstraint extends Constraint {
 
         double k, theta;
@@ -235,7 +236,12 @@ public class CoxIngersollRoss extends OneFactorAffineModel {
 
     private class HelperProcess extends StochasticProcess1D {
 
-        public HelperProcess(final double /* @Real */theta, final double /* @Real */k, final double /* @Real */sigma, final double /* @Real */y0) {
+        private final double y0_;
+        private final double theta_;
+        private final double k_;
+        private final double sigma_;
+
+        public HelperProcess(final double /* @Real */ theta, final double /* @Real */ k, final double /* @Real */ sigma, final double /* @Real */ y0) {
             this.y0_ = y0;
             this.theta_ = theta;
             this.k_ = k;
@@ -243,21 +249,20 @@ public class CoxIngersollRoss extends OneFactorAffineModel {
         }
 
         @Override
-        public double /* @Real */x0() {
+        public double /* @Real */ x0() {
             return y0_;
         }
 
         @Override
-        public double /* @Real */drift(final double /* @Time */t, final double /* @Real */y) {
+        public double /* @Real */ drift(final double /* @Time */ t, final double /* @Real */ y) {
             return (0.5 * theta_ * k_ - 0.125 * sigma_ * sigma_) / y - 0.5 * k_ * y;
         }
 
         @Override
-        public double /* @Real */diffusion(final double /* @Time */t, final double /* @Real */y) {
+        public double /* @Real */ diffusion(final double /* @Time */ t, final double /* @Real */ y) {
             return 0.5 * sigma_;
         }
 
-        private final double /* @Real */y0_, theta_, k_, sigma_;
     }
 
 }

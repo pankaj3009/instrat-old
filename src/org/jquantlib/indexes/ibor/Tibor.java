@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
 
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.indexes.ibor;
 
 import org.jquantlib.currencies.Asia.JPYCurrency;
@@ -51,39 +50,39 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.calendars.Japan;
 
 /**
- * Tokyo Interbank Offered Rate
- * This is the rate fixed in Tokio by JBA. 
- * Use JPYLibor if you're interested in the London fixing by BBA.
- * 
+ * Tokyo Interbank Offered Rate This is the rate fixed in Tokio by JBA. Use
+ * JPYLibor if you're interested in the London fixing by BBA.
+ *
  * TODO check settlement days and end-of-month adjustment.
- 
+ *
  */
 public class Tibor extends IborIndex {
 
-	public Tibor(final Period tenor) {
-		this(tenor, new Handle<YieldTermStructure>(
-						new AbstractYieldTermStructure() {
-							@Override
-							protected double discountImpl(final double t) {
-								throw new UnsupportedOperationException();
-							}
-							@Override
-							public JDate maxDate() {
-								throw new UnsupportedOperationException();
-							}
-						}
-				));
-	}
+    public Tibor(final Period tenor) {
+        this(tenor, new Handle<YieldTermStructure>(
+                new AbstractYieldTermStructure() {
+            @Override
+            protected double discountImpl(final double t) {
+                throw new UnsupportedOperationException();
+            }
 
-	public Tibor(final Period tenor,
-			final Handle<YieldTermStructure> h) {
-		super("Tibor", tenor, 0,
-				new JPYCurrency(),
-				new Japan(),
-				BusinessDayConvention.ModifiedFollowing,
-				false,
-				new Actual365Fixed(), 
-				h);
-	}
+            @Override
+            public JDate maxDate() {
+                throw new UnsupportedOperationException();
+            }
+        }
+        ));
+    }
+
+    public Tibor(final Period tenor,
+            final Handle<YieldTermStructure> h) {
+        super("Tibor", tenor, 0,
+                new JPYCurrency(),
+                new Japan(),
+                BusinessDayConvention.ModifiedFollowing,
+                false,
+                new Actual365Fixed(),
+                h);
+    }
 
 }

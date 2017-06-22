@@ -9,10 +9,11 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public class BrokerageRate {
+
     public String type;
     public double primaryRate;
     public double secondaryRate;
     public EnumPrimaryApplication primaryRule;
     public EnumSecondaryApplication secondaryRule;
-    
+
 }

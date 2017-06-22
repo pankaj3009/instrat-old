@@ -24,8 +24,8 @@ package org.jquantlib.math.functions;
 import org.jquantlib.math.Ops;
 
 /**
- * This class verifies a condition and if true, returns the evaluation of
- * a function, otherwise returns Double.NaN.
+ * This class verifies a condition and if true, returns the evaluation of a
+ * function, otherwise returns Double.NaN.
  *
  * @author Richard Gomes
  */
@@ -34,21 +34,17 @@ public final class Clipped implements Ops.DoubleOp {
     private final Ops.DoublePredicate checker;
     private final Ops.DoubleOp function;
 
-    public Clipped(final Ops.DoublePredicate checker, final Ops.DoubleOp function){
+    public Clipped(final Ops.DoublePredicate checker, final Ops.DoubleOp function) {
         this.checker = checker;
         this.function = function;
     }
 
-
     //
     // implements Ops.DoubleOp
     //
-
-	@Override
-	public double op(final double a) {
+    @Override
+    public double op(final double a) {
         return checker.op(a) ? function.op(a) : Double.NaN;
-	}
+    }
 
 }
-
-

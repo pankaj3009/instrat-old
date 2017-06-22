@@ -27,11 +27,13 @@ import org.jquantlib.math.optimization.EndCriteria.Type;
 //TODO: code review: license, class comments, compare against C++ sources
 public class SteepestDescent extends LineSearchBasedMethod {
 
-    public SteepestDescent(LineSearch lineSearch){
-        if (System.getProperty("EXPERIMENTAL") == null)
+    public SteepestDescent(LineSearch lineSearch) {
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
-        if(lineSearch == null)
+        }
+        if (lineSearch == null) {
             lineSearch = new LineSearch();
+        }
 
     }
 
@@ -50,7 +52,7 @@ public class SteepestDescent extends LineSearchBasedMethod {
         // classical initial value for line-search step
         double t = 1.0;
         // set gold at the size of the optimization problem search direction
-        Array gold  = new Array(lineSearch_.searchDirection().size());
+        Array gold = new Array(lineSearch_.searchDirection().size());
         Array gdiff = new Array(lineSearch_.searchDirection().size());
 
         P.setFunctionValue(P.valueAndGradient(gold, x_));
@@ -61,7 +63,9 @@ public class SteepestDescent extends LineSearchBasedMethod {
         do {
             // Linesearch
             t = lineSearch_.evaluate(P, ecType, endCriteria, t);
-            if (lineSearch_.succeed_ == false) throw new ArithmeticException("line search failed");
+            if (lineSearch_.succeed_ == false) {
+                throw new ArithmeticException("line search failed");
+            }
             // End
             end = endCriteria.get(iterationNumber,
                     stationaryStateIterationNumber_,
@@ -71,8 +75,8 @@ public class SteepestDescent extends LineSearchBasedMethod {
                     lineSearch_.lastFunctionValue(),
                     Math.sqrt(lineSearch_.lastGradientNormNorm2()),
                     ecType
-                    //FIXME: it's never been used! ???
-                    // , normdiff
+            //FIXME: it's never been used! ???
+            // , normdiff
             );
 
             // Updates

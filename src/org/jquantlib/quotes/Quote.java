@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.quotes;
 
 import java.util.List;
@@ -49,11 +48,22 @@ import org.jquantlib.util.Observer;
 
 /**
  * Purely virtual base class for market observables
- * 
+ *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Richard Gomes"})
 public abstract class Quote implements Observable {
+    //
+    // implements Observable
+    //
+
+    /**
+     * Implements multiple inheritance via delegate pattern to an inner class
+     *
+     * @see Observable
+     * @see DefaultObservable
+     */
+    private final Observable delegatedObservable = new DefaultObservable(this);
 
     /**
      * @return the current value
@@ -64,19 +74,6 @@ public abstract class Quote implements Observable {
      * @return true if the Quote holds a valid value
      */
     public abstract boolean isValid() /* @ReadOnly */;
-
-
-    //
-    // implements Observable
-    //
-
-    /**
-     * Implements multiple inheritance via delegate pattern to an inner class
-     * 
-     * @see Observable
-     * @see DefaultObservable
-     */
-    private final Observable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public void addObserver(final Observer observer) {

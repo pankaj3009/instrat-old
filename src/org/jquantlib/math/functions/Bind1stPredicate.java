@@ -23,10 +23,10 @@ package org.jquantlib.math.functions;
 
 import org.jquantlib.math.Ops;
 
-
 /**
- * This method binds the 1st argument of a binary predicate to a scalar value, effectively enabling
- * a binary predicate to be called in a context intended for a unary predicate.
+ * This method binds the 1st argument of a binary predicate to a scalar value,
+ * effectively enabling a binary predicate to be called in a context intended
+ * for a unary predicate.
  *
  * @author Richard Gomes
  */
@@ -35,19 +35,17 @@ public final class Bind1stPredicate implements Ops.DoublePredicate {
     private final double scalar;                // 1st argument
     private final Ops.BinaryDoublePredicate f;  // 2nd argument
 
-	public Bind1stPredicate(final double scalar, final Ops.BinaryDoublePredicate f) {
-	    this.scalar = scalar;
-	    this.f = f;
-	}
+    public Bind1stPredicate(final double scalar, final Ops.BinaryDoublePredicate f) {
+        this.scalar = scalar;
+        this.f = f;
+    }
 
-
-	//
+    //
     // implements DoublePredicate
     //
-
-	@Override
-	public boolean op(final double a) {
-		return f.op(scalar, a);
-	}
+    @Override
+    public boolean op(final double a) {
+        return f.op(scalar, a);
+    }
 
 }

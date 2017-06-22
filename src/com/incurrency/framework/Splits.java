@@ -9,18 +9,19 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public class Splits {
+
     private Integer id;
     private String symbol;
     private Integer oldShares;
     private Integer newShares;
     private long effectiveDate;
-    
-    public Splits(int id, String symbol, int oldShares, int newShares, long effectiveDate){
-        this.id=id;
-        this.symbol=symbol;
-        this.oldShares=oldShares;
-        this.newShares=newShares;
-        this.effectiveDate=effectiveDate;
+
+    public Splits(int id, String symbol, int oldShares, int newShares, long effectiveDate) {
+        this.id = id;
+        this.symbol = symbol;
+        this.oldShares = oldShares;
+        this.newShares = newShares;
+        this.effectiveDate = effectiveDate;
     }
 
     /**

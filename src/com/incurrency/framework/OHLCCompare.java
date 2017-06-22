@@ -14,12 +14,10 @@ public class OHLCCompare implements Comparator<BeanOHLC> {
 
     @Override
     public int compare(BeanOHLC o1, BeanOHLC o2) {
-        if(o1.getOpenTime()>o2.getOpenTime()){
+        if (o1.getOpenTime() > o2.getOpenTime()) {
             return 1;
-        }
-        else {
+        } else {
             return -1;
         }
-        }
     }
-   
+}

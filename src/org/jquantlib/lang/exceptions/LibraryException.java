@@ -34,8 +34,7 @@ AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-*/
-
+ */
 package org.jquantlib.lang.exceptions;
 
 import java.io.PrintStream;
@@ -67,9 +66,10 @@ public class LibraryException extends RuntimeException {
         QL.error(this);
     }
 
-
     /**
-     * Constructs a new runtime exception with the specified detail message and cause.
+     * Constructs a new runtime exception with the specified detail message and
+     * cause.
+     *
      * @param message
      * @param cause
      */
@@ -78,10 +78,10 @@ public class LibraryException extends RuntimeException {
         QL.error(this);
     }
 
-
     /**
-     * Constructs a new runtime exception with the specified cause and a detail message of (cause==null ? null : cause.toString())
-     * (which typically contains the class and detail message of cause).
+     * Constructs a new runtime exception with the specified cause and a detail
+     * message of (cause==null ? null : cause.toString()) (which typically
+     * contains the class and detail message of cause).
      *
      * @param cause
      */
@@ -89,8 +89,6 @@ public class LibraryException extends RuntimeException {
         super(cause);
         QL.error(this);
     }
-
-
 
     @Override
     public synchronized Throwable fillInStackTrace() {

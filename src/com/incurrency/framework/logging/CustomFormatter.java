@@ -16,18 +16,19 @@ import java.util.logging.SimpleFormatter;
 
 //This custom formatter formats parts of a log record to a single line
 class CustomFormatter extends SimpleFormatter {
-    // This method is called for every log records
-	public CustomFormatter() {
-		super();
-	}
 
-        @Override
+    // This method is called for every log records
+    public CustomFormatter() {
+        super();
+    }
+
+    @Override
     public String format(LogRecord rec) {
         StringBuilder buf = new StringBuilder(1000);
         // Bold any levels >= WARNING
         if (rec.getLevel().intValue() >= Level.WARNING.intValue()) {
             //do something if warning or higher
-           return rec.toString(); 
+            return rec.toString();
         } else {
             buf.append(rec.getLevel());
             buf.append(",");

@@ -19,31 +19,31 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.solvers1D;
 
 import org.jquantlib.math.AbstractSolver1D;
 import org.jquantlib.math.Ops;
 import org.jquantlib.math.Ops.DoubleOp;
 
-
 /**
  * Secant 1d solver.
  *
- * @see Book: <i>Press, Teukolsky, Vetterling, and Flannery, "Numerical Recipes in C", 2nd edition, Cambridge University Press</i>
- * 
+ * @see Book: <i>Press, Teukolsky, Vetterling, and Flannery, "Numerical Recipes
+ * in C", 2nd edition, Cambridge University Press</i>
+ *
  * @author Dominik Holenstein
  */
 public class Secant extends AbstractSolver1D<Ops.DoubleOp> {
 
     /**
      * Computes the roots of a function by using the Secant method.
+     *
      * @param f the function
      * @param xAccuracy the provided accuracy
      * @returns <code>root_</code>
      */
     @Override
-    protected double solveImpl(final DoubleOp f, final double xAccuracy)  {
+    protected double solveImpl(final DoubleOp f, final double xAccuracy) {
 
         double fl, froot, dx, xl;
 
@@ -67,8 +67,9 @@ public class Secant extends AbstractSolver1D<Ops.DoubleOp> {
             root += dx;
             froot = f.op(root);
             evaluationNumber++;
-            if (Math.abs(dx) < xAccuracy || froot == 0.0)
+            if (Math.abs(dx) < xAccuracy || froot == 0.0) {
                 return root;
+            }
         }
         throw new ArithmeticException("maximum number of function evaluations exceeded"); // TODO: message
     }

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.pricingengines;
 
 import org.jquantlib.instruments.Instrument;
@@ -45,27 +44,22 @@ import org.jquantlib.model.CalibratedModel;
 /**
  * Base class for some pricing engine on a particular model.
  * <p>
- * Derived engines only need to implement the <code>{@link calculate()}</code> method.
+ * Derived engines only need to implement the <code>{@link calculate()}</code>
+ * method.
  *
  * @author Richard Gomes
  */
-public abstract class GenericModelEngine<M extends CalibratedModel,
-                                         A extends Instrument.Arguments,
-                                         R extends Instrument.Results>
+public abstract class GenericModelEngine<M extends CalibratedModel, A extends Instrument.Arguments, R extends Instrument.Results>
         extends GenericEngine<A, R> {
-
 
     //
     // protected fields
     //
-
     protected M model;
-
 
     //
     // public methods
     //
-
     public GenericModelEngine(final A arguments, final R results) {
         super(arguments, results);
     }
@@ -77,11 +71,13 @@ public abstract class GenericModelEngine<M extends CalibratedModel,
     }
 
     public void setModel(final M model) {
-        if (this.model!=null)
+        if (this.model != null) {
             this.model.deleteObserver(this);
+        }
         this.model = model;
-        if (this.model!=null)
+        if (this.model != null) {
             this.model.addObserver(this);
+        }
         update();
     }
 

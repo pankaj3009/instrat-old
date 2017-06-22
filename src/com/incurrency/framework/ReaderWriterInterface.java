@@ -11,8 +11,8 @@ import java.util.List;
  * @author pankaj
  */
 public interface ReaderWriterInterface<E> {
-    
-    public void reader(String inputfile, List<E> target);
-    public void writer (String fileName);
-}
 
+    public void reader(String inputfile, List<E> target);
+
+    public void writer(String fileName);
+}

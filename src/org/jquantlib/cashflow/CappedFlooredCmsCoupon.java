@@ -20,8 +20,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
-
 package org.jquantlib.cashflow;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -32,64 +30,64 @@ public class CappedFlooredCmsCoupon extends CappedFlooredCoupon {
 
     public CappedFlooredCmsCoupon(
             final JDate paymentDate,
-            final /*Real*/double nominal,
+            final /*Real*/ double nominal,
             final JDate startDate,
             final JDate endDate,
-            final /*Natural*/int fixingDays,
+            final /*Natural*/ int fixingDays,
             final SwapIndex index) {
         // default gearing to 1.0
-        this (paymentDate, nominal, startDate, endDate, fixingDays, index, 1.0);
+        this(paymentDate, nominal, startDate, endDate, fixingDays, index, 1.0);
     }
 
     public CappedFlooredCmsCoupon(
             final JDate paymentDate,
-            final /*Real*/double nominal,
+            final /*Real*/ double nominal,
             final JDate startDate,
             final JDate endDate,
-            final /*Natural*/int fixingDays,
+            final /*Natural*/ int fixingDays,
             final SwapIndex index,
             final double gearing) {
         // default spread to 0.0
-        this (paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, 0.0);
+        this(paymentDate, nominal, startDate, endDate, fixingDays, index, gearing, 0.0);
     }
 
     public CappedFlooredCmsCoupon(
             final JDate paymentDate,
-            final /*Real*/double nominal,
+            final /*Real*/ double nominal,
             final JDate startDate,
             final JDate endDate,
-            final /*Natural*/int fixingDays,
+            final /*Natural*/ int fixingDays,
             final SwapIndex index,
             final double gearing,
             final double spread) {
         // default cap and floor to NaN
-        this (paymentDate, nominal, startDate, endDate,
-              fixingDays, index, gearing, spread, Double.NaN, Double.NaN);
+        this(paymentDate, nominal, startDate, endDate,
+                fixingDays, index, gearing, spread, Double.NaN, Double.NaN);
     }
 
     public CappedFlooredCmsCoupon(
             final JDate paymentDate,
-            final /*Real*/double nominal,
+            final /*Real*/ double nominal,
             final JDate startDate,
             final JDate endDate,
-            final /*Natural*/int fixingDays,
+            final /*Natural*/ int fixingDays,
             final SwapIndex index,
             final double gearing,
             final double spread,
             final double cap,
             final double floor) {
         // default reference dates
-        this (paymentDate, nominal, startDate, endDate,
-              fixingDays, index, gearing, spread,
-              cap, floor, new JDate(), new JDate());
+        this(paymentDate, nominal, startDate, endDate,
+                fixingDays, index, gearing, spread,
+                cap, floor, new JDate(), new JDate());
     }
 
     public CappedFlooredCmsCoupon(
             final JDate paymentDate,
-            final /*Real*/double nominal,
+            final /*Real*/ double nominal,
             final JDate startDate,
             final JDate endDate,
-            final /*Natural*/int fixingDays,
+            final /*Natural*/ int fixingDays,
             final SwapIndex index,
             final double gearing,
             final double spread,
@@ -98,17 +96,17 @@ public class CappedFlooredCmsCoupon extends CappedFlooredCoupon {
             final JDate refPeriodStart,
             final JDate refPeriodEnd) {
         // default day counter
-        this (paymentDate, nominal, startDate, endDate,
-              fixingDays, index, gearing, spread,
-              cap, floor, refPeriodStart, refPeriodEnd, new DayCounter());
+        this(paymentDate, nominal, startDate, endDate,
+                fixingDays, index, gearing, spread,
+                cap, floor, refPeriodStart, refPeriodEnd, new DayCounter());
     }
 
     public CappedFlooredCmsCoupon(
             final JDate paymentDate,
-            final /*Real*/double nominal,
+            final /*Real*/ double nominal,
             final JDate startDate,
             final JDate endDate,
-            final /*Natural*/int fixingDays,
+            final /*Natural*/ int fixingDays,
             final SwapIndex index,
             final double gearing,
             final double spread,
@@ -118,18 +116,18 @@ public class CappedFlooredCmsCoupon extends CappedFlooredCoupon {
             final JDate refPeriodEnd,
             final DayCounter dayCounter) {
         // default isInArrears false
-        this (paymentDate, nominal, startDate, endDate,
-              fixingDays, index, gearing, spread,
-              cap, floor, refPeriodStart, refPeriodEnd,
-              dayCounter, false);
+        this(paymentDate, nominal, startDate, endDate,
+                fixingDays, index, gearing, spread,
+                cap, floor, refPeriodStart, refPeriodEnd,
+                dayCounter, false);
     }
 
     public CappedFlooredCmsCoupon(
             final JDate paymentDate,
-            final /*Real*/double nominal,
+            final /*Real*/ double nominal,
             final JDate startDate,
             final JDate endDate,
-            final /*Natural*/int fixingDays,
+            final /*Natural*/ int fixingDays,
             final SwapIndex index,
             final double gearing,
             final double spread,
@@ -139,9 +137,9 @@ public class CappedFlooredCmsCoupon extends CappedFlooredCoupon {
             final JDate refPeriodEnd,
             final DayCounter dayCounter,
             final boolean isInArrears) {
-        super (new CmsCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
-            index, gearing, spread, refPeriodStart, refPeriodEnd,
+        super(new CmsCoupon(paymentDate, nominal, startDate, endDate, fixingDays,
+                index, gearing, spread, refPeriodStart, refPeriodEnd,
                 dayCounter, isInArrears), cap, floor);
-        throw new UnsupportedOperationException ("work in progress...");
+        throw new UnsupportedOperationException("work in progress...");
     }
 }

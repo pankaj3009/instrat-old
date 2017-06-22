@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
 
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.indexes.ibor;
 
 import org.jquantlib.currencies.Africa.ZARCurrency;
@@ -52,35 +51,36 @@ import org.jquantlib.time.calendars.SouthAfrica;
 
 /**
  * Johannesburg Interbank Agreed Rate
- *        
+ *
  * TODO check settlement days and day-count convention.
  */
 public class Jibar extends IborIndex {
 
-	public Jibar(final Period tenor) {
-		this(tenor, new Handle<YieldTermStructure>(
-						new AbstractYieldTermStructure() {
-							@Override
-							protected double discountImpl(final double t) {
-								throw new UnsupportedOperationException();
-							}
-							@Override
-							public JDate maxDate() {
-								throw new UnsupportedOperationException();
-							}
-						}
-				));
-	}
+    public Jibar(final Period tenor) {
+        this(tenor, new Handle<YieldTermStructure>(
+                new AbstractYieldTermStructure() {
+            @Override
+            protected double discountImpl(final double t) {
+                throw new UnsupportedOperationException();
+            }
 
-	public Jibar(final Period tenor,
-			final Handle<YieldTermStructure> h) {
-		super("Jibar", tenor, 0,
-				new ZARCurrency(),
-				new SouthAfrica(),
-				BusinessDayConvention.ModifiedFollowing,
-				false,
-				new Actual365Fixed(), 
-				h);
-	}
+            @Override
+            public JDate maxDate() {
+                throw new UnsupportedOperationException();
+            }
+        }
+        ));
+    }
+
+    public Jibar(final Period tenor,
+            final Handle<YieldTermStructure> h) {
+        super("Jibar", tenor, 0,
+                new ZARCurrency(),
+                new SouthAfrica(),
+                BusinessDayConvention.ModifiedFollowing,
+                false,
+                new Actual365Fixed(),
+                h);
+    }
 
 }

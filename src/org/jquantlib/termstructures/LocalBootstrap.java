@@ -19,8 +19,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
-
 package org.jquantlib.termstructures;
 
 import java.util.Arrays;
@@ -35,88 +33,73 @@ import org.jquantlib.math.optimization.PositiveConstraint;
 import org.jquantlib.termstructures.yieldcurves.PiecewiseYieldCurve;
 import org.jquantlib.time.JDate;
 
-
 /**
  * Localised-term-structure bootstrapper for most curve types.
  * <p>
- * This algorithm enables a localised fitting for non-local
-    interpolation methods.
-
-    As in the similar class (IterativeBootstrap) the input term
-    structure is solved on a number of market instruments which
-    are passed as a vector of handles to BootstrapHelper
-    instances. Their maturities mark the boundaries of the
-    interpolated segments.
-
-    Unlike the IterativeBootstrap class, the solution for each
-    interpolated segment is derived using a local
-    approximation. This restricts the risk profile s.t.  the risk
-    is localised. Therefore, we obtain a local IR risk profile
-    whilst using a smoother interpolation method. Particularly
-    good for the convex-monotone spline method.
-*/
-
-
+ * This algorithm enables a localised fitting for non-local interpolation
+ * methods.
+ *
+ * As in the similar class (IterativeBootstrap) the input term structure is
+ * solved on a number of market instruments which are passed as a vector of
+ * handles to BootstrapHelper instances. Their maturities mark the boundaries of
+ * the interpolated segments.
+ *
+ * Unlike the IterativeBootstrap class, the solution for each interpolated
+ * segment is derived using a local approximation. This restricts the risk
+ * profile s.t. the risk is localised. Therefore, we obtain a local IR risk
+ * profile whilst using a smoother interpolation method. Particularly good for
+ * the convex-monotone spline method.
+ */
 //FIXME: This class needs full code review
-
-
 public class LocalBootstrap<Curve extends PiecewiseYieldCurve> {
 
-    
     //    typedef typename Curve::traits_type Traits;
     //    typedef typename Curve::interpolator_type Interpolator;
-
-
     //
     // private final fields
     //
-    
     private Curve ts_;
     private final /*Size*/ int localisation_;
     private final boolean forcePositive_;
-    
-    
+
     //
     // private fields
     //
-    
     private boolean validCurve_;
 
     public LocalBootstrap() {
         this(2, true);
     }
 
-    public LocalBootstrap(/*Size*/ final int localisation) {
+    public LocalBootstrap(/*Size*/final int localisation) {
         this(localisation, true);
     }
 
-    public LocalBootstrap(/*Size*/ final int localisation, final boolean forcePositive) {
-        
+    public LocalBootstrap(/*Size*/final int localisation, final boolean forcePositive) {
+
         QL.validateExperimentalMode();
-        
+
         this.validCurve_ = false;
         this.ts_ = null;
         this.localisation_ = localisation;
         this.forcePositive_ = forcePositive;
     }
 
-
     public void setup(final Curve ts) {
         this.ts_ = ts;
         /*Size*/ final int n = ts_.instruments().length;
-        
+
         QL.require(n >= ts.interpolator().requiredPoints(),
                 "not enough instruments: %d provided, %d required",
                 n, ts.interpolator().requiredPoints());
         QL.require(n > localisation_,
                 "not enough instruments: %d provided, %d required.",
                 n, localisation_);
-        
-        for (/*Size*/ int i=0; i<n; ++i) {
+
+        for (/*Size*/int i = 0; i < n; ++i) {
             ts_.instruments()[i].addObserver(ts_);
         }
     }
-
 
     public void calculate() /*@ReadOnly*/ {
         validCurve_ = false;
@@ -126,74 +109,69 @@ public class LocalBootstrap<Curve extends PiecewiseYieldCurve> {
         Arrays.sort(ts_.instruments(), new BootstrapHelperSorter());
 
         // check that there is no instruments with the same maturity
-        for (/*Size*/ int i=1; i<nInsts; ++i) {
-            final JDate m1 = ts_.instruments()[i-1].latestDate();
+        for (/*Size*/int i = 1; i < nInsts; ++i) {
+            final JDate m1 = ts_.instruments()[i - 1].latestDate();
             final JDate m2 = ts_.instruments()[i].latestDate();
             QL.require(m1 != m2, "two instruments have the same maturity");
         }
 
         // check that there is no instruments with invalid quote
-        for (/*Size*/ int i=0; i<nInsts; ++i)
+        for (/*Size*/int i = 0; i < nInsts; ++i) {
             QL.require(ts_.instruments()[i].quoteIsValid(),
                     " instrument #%d (maturity: %s) has infalic quote",
-                    i+1, ts_.instruments()[i].latestDate());
+                    i + 1, ts_.instruments()[i].latestDate());
+        }
 
         // setup instruments
-        for (/*Size*/ int i=0; i<nInsts; ++i) {
+        for (/*Size*/int i = 0; i < nInsts; ++i) {
             // don't try this at home!
             // This call creates instruments, and removes "const".
             // There is a significant interaction with observability.
             ts_.instruments()[i].setTermStructure(ts_); // const_cast<Curve*>(ts_)
         }
         // set initial guess only if the current curve cannot be used as guess
-        if (validCurve_)
-            QL.ensure(ts_.data().length == nInsts+1,
-                      "dimension mismatch: expected %d, actual %d",
-                      nInsts+1, ts_.data().length);
-        else {
-            final double[] data = new double[nInsts+1];
+        if (validCurve_) {
+            QL.ensure(ts_.data().length == nInsts + 1,
+                    "dimension mismatch: expected %d, actual %d",
+                    nInsts + 1, ts_.data().length);
+        } else {
+            final double[] data = new double[nInsts + 1];
             data[0] = ts_.traits().initialValue(ts_);
             ts_.setData(data);
         }
 
         // calculate dates
         {
-            final JDate[] dates = new JDate[nInsts+1];
+            final JDate[] dates = new JDate[nInsts + 1];
             dates[0] = ts_.traits().initialDate(ts_);
             ts_.setDates(dates);
         }
-        
+
         // calculate times
         {
-            final double[] times = new double[nInsts+1];
+            final double[] times = new double[nInsts + 1];
             times[0] = ts_.timeFromReference(ts_.dates()[0]);
             ts_.setTimes(times);
         }
-        
-        for (/*Size*/ int i=0; i<nInsts; ++i) {
-            ts_.dates()[i+1] = ts_.instruments()[i].latestDate();
-            ts_.times()[i+1] = ts_.timeFromReference(ts_.dates()[i+1]);
-            if (!validCurve_)
-                ts_.data()[i+1] = ts_.data()[i];
+
+        for (/*Size*/int i = 0; i < nInsts; ++i) {
+            ts_.dates()[i + 1] = ts_.instruments()[i].latestDate();
+            ts_.times()[i + 1] = ts_.timeFromReference(ts_.dates()[i + 1]);
+            if (!validCurve_) {
+                ts_.data()[i + 1] = ts_.data()[i];
+            }
         }
-        
-        
-        
-        
 
         final LevenbergMarquardt solver = new LevenbergMarquardt(ts_.accuracy(), ts_.accuracy(), ts_.accuracy());
         final EndCriteria endCriteria = new EndCriteria(100, 10, 0.00, ts_.accuracy(), 0.00);
         final Constraint solverConstraint = forcePositive_ ? new PositiveConstraint() : new NoConstraint();
 
-        // now start the bootstrapping.
-        /*Size*/ final int iInst = localisation_-1;
 
-        
+        // now start the bootstrapping.
+        /*Size*/ final int iInst = localisation_ - 1;
+
         //=========================================================================
-        
         //FIXME: uncomment and review this block
-        
-        
 //        /*Size*/ final int dataAdjust = ts_.interpolator().dataSizeAdjustment;
 //
 //        do {
@@ -244,17 +222,14 @@ public class LocalBootstrap<Curve extends PiecewiseYieldCurve> {
 //            ++iInst;
 //        } while ( iInst < nInsts );
         //=========================================================================
-        
-        
         validCurve_ = true;
     }
-
 
     //
     // inner classes
     //
-
     private class PenaltyFunction extends CostFunction {
+
         private final int initialIndex;
         private final int rateHelpersStart;
         private final int rateHelpersEnd;

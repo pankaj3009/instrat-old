@@ -24,16 +24,17 @@ import java.util.List;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public class BoundaryConditionSet<T extends BoundaryCondition<? extends Operator>> {
-	private List<List<T>> bcSet = new ArrayList<List<T>>();
 
-	public void push_back(List<T> a) {
-		bcSet.add(a);
-	}
+    private List<List<T>> bcSet = new ArrayList<List<T>>();
 
-	public List<T> get(int i) {
-		return bcSet.get(i);
-	}
+    public void push_back(List<T> a) {
+        bcSet.add(a);
+    }
+
+    public List<T> get(int i) {
+        return bcSet.get(i);
+    }
 }

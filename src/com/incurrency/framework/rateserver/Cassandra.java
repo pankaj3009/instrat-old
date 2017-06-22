@@ -15,6 +15,8 @@ import java.util.logging.Logger;
  */
 public class Cassandra {
 
+    private static final Logger logger = Logger.getLogger(Cassandra.class.getName());
+
     String value;
     long time;
     String metric;
@@ -23,21 +25,20 @@ public class Cassandra {
     String right;
     String strike;
     PrintStream output;
-    private static final Logger logger = Logger.getLogger(Cassandra.class.getName());
 
-    public Cassandra(String value, long time, String metric, String symbol, String expiry,String right,String strike, PrintStream output) {
+    public Cassandra(String value, long time, String metric, String symbol, String expiry, String right, String strike, PrintStream output) {
         this.value = value;
         this.time = time;
         this.metric = metric;
         this.symbol = symbol;
         this.expiry = expiry;
-        this.right=right;
-        this.strike=Utilities.roundToDecimal(strike);
+        this.right = right;
+        this.strike = Utilities.roundToDecimal(strike);
         this.output = output;
 
     }
-    
-        public Cassandra(String value, long time, String metric, String displayName, PrintStream output) {
+
+    public Cassandra(String value, long time, String metric, String displayName, PrintStream output) {
         this.value = value;
         this.time = time;
         this.metric = metric;
@@ -51,7 +52,8 @@ public class Cassandra {
         }
         this.output = output;
     }
-/*
+
+    /*
     @Override
     public void run() {
         try {
@@ -66,18 +68,18 @@ public class Cassandra {
             //output.close();
         }
     }
-  */  
+     */
     public void write() {
         try {
             if (expiry.equals("")) {
                 //logger.log(Level.INFO,"Symbol:{0}",new Object[]{symbol});
                 output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.split("_")[0].replace("&", "").toLowerCase() + System.getProperty("line.separator"));
-                
+
             } else if (right.equals("")) {
                 //logger.log(Level.INFO,"Symbol:{0}",new Object[]{symbol});
                 output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.split("_")[0].replace("&", "").toLowerCase() + " " + "expiry=" + expiry + System.getProperty("line.separator"));
-            }else{
-                output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.split("_")[0].replace("&", "").toLowerCase() + " " + "expiry=" + expiry + " " + "right=" + right+ " " + "strike=" + strike+System.getProperty("line.separator"));
+            } else {
+                output.print("put " + metric + " " + time + " " + value + " " + "symbol=" + symbol.split("_")[0].replace("&", "").toLowerCase() + " " + "expiry=" + expiry + " " + "right=" + right + " " + "strike=" + strike + System.getProperty("line.separator"));
             }
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);

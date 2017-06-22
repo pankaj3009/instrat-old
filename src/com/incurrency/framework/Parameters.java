@@ -21,7 +21,6 @@ public class Parameters {
     private static ArrayList _listeners = new ArrayList();
 //control variables
 //--for realtime bars
-    static int barCount;  
-    
-   
+    static int barCount;
+
 }

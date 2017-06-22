@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import org.jquantlib.QL;
@@ -39,257 +38,228 @@ import org.jquantlib.time.TimeUnit;
 
 /**
  * FuturesRateHelper
- * 
+ *
  * @author Srinivas Hasti
  * @author Neel Sheyal
- * 
+ *
  * Rate helper for bootstrapping over IborIndex futures prices
  * {@link <BootstrapHelper>} {@link <RateHelper>}
  */
-
-
 public class FuturesRateHelper extends RateHelper {
-     
-   private static final String NOT_A_VALID_IMM_DATE = "not a valid IMM date"; 
-   private static final String TERMSTRUCT_NOT_SET = "term structure not set";
+
+    private static final String NOT_A_VALID_IMM_DATE = "not a valid IMM date";
+    private static final String TERMSTRUCT_NOT_SET = "term structure not set";
     //
     // private fields
     // 
     private final double yearFraction;
     private Handle<Quote> convAdj;
 
-	//
-	// public constructors
-	//
-	/**
-	 * @param Handle<Quote>
-	 *             price
-	 * @param Date
-	 *            immDate
-	 * @param int lengthInMonths
-	 * @param Calendar
-	 *            calendar
-	 * @param BusinessDayConvention
-	 *            convention
-	 * @param boolean endOfMonth
-	 * @param DayCounter
-	 *            dayCounter
-	 */
-	public FuturesRateHelper(final Handle<Quote> price, 
-			                  final JDate immDate,
-			                  final/* Natural */int lengthInMonths, 
-			                  final Calendar calendar,
-			                  final BusinessDayConvention convention, 
-			                  final boolean endOfMonth,
-			                  final DayCounter dayCounter) {
-		this(price, immDate, lengthInMonths, calendar, convention, endOfMonth,
-				dayCounter, new Handle<Quote>());
-	}
-    
-	/**
-	 * @param Handle
-	 *            <Quote> price
-	 * @param Date
-	 *            immDate
-	 * @param int lengthInMonths
-	 * @param Calendar
-	 *            calendar
-	 * @param BusinessDayConvention
-	 *            convention
-	 * @param boolean endOfMonth
-	 * @param DayCounter
-	 *            dayCounter
-	 * @param Handle
-	 *            <Quote> convAdj
-	 */
-	public FuturesRateHelper(final Handle<Quote> price, 
-			                  final JDate immDate,
-			                  final/* Natural */int lengthInMonths, 
-			                  final Calendar calendar,
-			                  final BusinessDayConvention convention, 
-			                  final boolean endOfMonth,
-			                  final DayCounter dayCounter, 
-			                  final Handle<Quote> convAdj) {
-		super(price);
-		this.convAdj = convAdj;
+    //
+    // public constructors
+    //
+    /**
+     * @param Handle<Quote>
+     * price
+     * @param Date immDate
+     * @param int lengthInMonths
+     * @param Calendar calendar
+     * @param BusinessDayConvention convention
+     * @param boolean endOfMonth
+     * @param DayCounter dayCounter
+     */
+    public FuturesRateHelper(final Handle<Quote> price,
+            final JDate immDate,
+            final/* Natural */ int lengthInMonths,
+            final Calendar calendar,
+            final BusinessDayConvention convention,
+            final boolean endOfMonth,
+            final DayCounter dayCounter) {
+        this(price, immDate, lengthInMonths, calendar, convention, endOfMonth,
+                dayCounter, new Handle<Quote>());
+    }
 
-		QL.require(new IMM().isIMMdate(immDate, false), NOT_A_VALID_IMM_DATE);
+    /**
+     * @param Handle
+     * <Quote> price
+     * @param Date immDate
+     * @param int lengthInMonths
+     * @param Calendar calendar
+     * @param BusinessDayConvention convention
+     * @param boolean endOfMonth
+     * @param DayCounter dayCounter
+     * @param Handle
+     * <Quote> convAdj
+     */
+    public FuturesRateHelper(final Handle<Quote> price,
+            final JDate immDate,
+            final/* Natural */ int lengthInMonths,
+            final Calendar calendar,
+            final BusinessDayConvention convention,
+            final boolean endOfMonth,
+            final DayCounter dayCounter,
+            final Handle<Quote> convAdj) {
+        super(price);
+        this.convAdj = convAdj;
 
-		earliestDate = immDate;
-		latestDate = calendar.advance(immDate, new Period(lengthInMonths,
-				TimeUnit.Months), convention, endOfMonth);
-		yearFraction = dayCounter.yearFraction(earliestDate, latestDate);
+        QL.require(new IMM().isIMMdate(immDate, false), NOT_A_VALID_IMM_DATE);
 
-		convAdj.addObserver(this); 
-	}    
-    
+        earliestDate = immDate;
+        latestDate = calendar.advance(immDate, new Period(lengthInMonths,
+                TimeUnit.Months), convention, endOfMonth);
+        yearFraction = dayCounter.yearFraction(earliestDate, latestDate);
 
-	/**
-	 * @param Handle
-	 *            <Quote> price
-	 * @param Date
-	 *            immDate
-	 * @param int lengthInMonths
-	 * @param Calendar
-	 *            calendar
-	 * @param BusinessDayConvention
-	 *            convention
-	 * @param boolean endOfMonth
-	 * @param DayCounter
-	 *            dayCounter
-	 */
-	public FuturesRateHelper(final/* Real */double price, 
-			                  final JDate immDate,
-			                  final/* Natural */ int lengthInMonths, 
-			                  final Calendar calendar,
-			                  final BusinessDayConvention convention, 
-			                  final boolean endOfMonth,
-			                  final DayCounter dayCounter) {
-		this(price, immDate, lengthInMonths, calendar, convention, endOfMonth,
-				dayCounter, 0.0);
-	}
-	
-	/**
-	 * @param double price
-	 * @param Date
-	 *            immDate
-	 * @param int lengthInMonths
-	 * @param Calendar
-	 *            calendar
-	 * @param BusinessDayConvention
-	 *            convention
-	 * @param boolean endOfMonth
-	 * @param DayCounter
-	 *            dayCounter
-	 *  @param double  convAdj         
-	 */
-	public FuturesRateHelper(final/* Real */double price, 
-			                  final JDate immDate,
-			                  final/* Natural */int lengthInMonths, 
-			                  final Calendar calendar,
-			                  final BusinessDayConvention convention, 
-			                  final boolean endOfMonth,
-			                  final DayCounter dayCounter, 
-			                  final/* Rate */double convAdj) {
-		super(price);
-		this.convAdj = new Handle<Quote>(new SimpleQuote(convAdj));
+        convAdj.addObserver(this);
+    }
 
-		QL.require(new IMM().isIMMdate(immDate, false), NOT_A_VALID_IMM_DATE);
+    /**
+     * @param Handle
+     * <Quote> price
+     * @param Date immDate
+     * @param int lengthInMonths
+     * @param Calendar calendar
+     * @param BusinessDayConvention convention
+     * @param boolean endOfMonth
+     * @param DayCounter dayCounter
+     */
+    public FuturesRateHelper(final/* Real */ double price,
+            final JDate immDate,
+            final/* Natural */ int lengthInMonths,
+            final Calendar calendar,
+            final BusinessDayConvention convention,
+            final boolean endOfMonth,
+            final DayCounter dayCounter) {
+        this(price, immDate, lengthInMonths, calendar, convention, endOfMonth,
+                dayCounter, 0.0);
+    }
 
-		earliestDate = immDate;
-		latestDate = calendar.advance(immDate, new Period(lengthInMonths,
-				TimeUnit.Months), convention, endOfMonth);
-		yearFraction = dayCounter.yearFraction(earliestDate, latestDate);
-	}
-
-	/**
-	 * @param Handle
-	 *            <Quote> price
-	 * @param Date
-	 *            immDate
-	 * @param IborIndex
-	 *            index
-	 */
-	public FuturesRateHelper(final Handle<Quote> price, 
-			                  final JDate immDate,
-			                  final IborIndex i) {
-		this(price, immDate, i, new Handle<Quote>());
-	}
-
-	/**
-	 * @param Handle
-	 *            <Quote> price
-	 * @param Date
-	 *            immDate
-	 * @param IborIndex
-	 *            index
-	 * @param Handle
-	 *            <Quote> convAdj
-	 */
-	public FuturesRateHelper(final Handle<Quote> price, 
-			                  final JDate immDate,
-		                      final IborIndex i, 
-		                      final Handle<Quote> convAdj) {
-
-		super(price);
-		this.convAdj = convAdj;
-
-		QL.require(new IMM().isIMMdate(immDate, false), NOT_A_VALID_IMM_DATE);
-
-		this.earliestDate = immDate;
-		this.latestDate = i.fixingCalendar().advance(immDate, i.tenor(),
-				i.businessDayConvention());
-		this.yearFraction = i.dayCounter().yearFraction(this.earliestDate,
-				this.latestDate);
-
-		convAdj.addObserver(this); 
-	}
- 
-
-	/**
-	 * @param double price
-	 * @param Date
-	 *            immDate
-	 * @param IborIndex
-	 *            index
-	 */
-	public FuturesRateHelper(final /* Real */ double price, 
-			                  final JDate immDate,
-			                  final IborIndex i) {
-		this(price, immDate, i, 0.0);
-	}
-        
-	/**
-	 * @param double price
-	 * @param Date
-	 *            immDate
-	 * @param IborIndex
-	 *            index
-	 * @param double convAdj
-	 * 
-	 */  
-    public FuturesRateHelper(final /* Real */ double price,
-                              final JDate immDate,
-                              final IborIndex i,
-                              final /* Rate */ double convAdj) {
-        super(price);   
+    /**
+     * @param double price
+     * @param Date immDate
+     * @param int lengthInMonths
+     * @param Calendar calendar
+     * @param BusinessDayConvention convention
+     * @param boolean endOfMonth
+     * @param DayCounter dayCounter
+     * @param double convAdj
+     */
+    public FuturesRateHelper(final/* Real */ double price,
+            final JDate immDate,
+            final/* Natural */ int lengthInMonths,
+            final Calendar calendar,
+            final BusinessDayConvention convention,
+            final boolean endOfMonth,
+            final DayCounter dayCounter,
+            final/* Rate */ double convAdj) {
+        super(price);
         this.convAdj = new Handle<Quote>(new SimpleQuote(convAdj));
-        
-        QL.require(new IMM().isIMMdate(immDate, false) , NOT_A_VALID_IMM_DATE); 
-        
+
+        QL.require(new IMM().isIMMdate(immDate, false), NOT_A_VALID_IMM_DATE);
+
+        earliestDate = immDate;
+        latestDate = calendar.advance(immDate, new Period(lengthInMonths,
+                TimeUnit.Months), convention, endOfMonth);
+        yearFraction = dayCounter.yearFraction(earliestDate, latestDate);
+    }
+
+    /**
+     * @param Handle
+     * <Quote> price
+     * @param Date immDate
+     * @param IborIndex index
+     */
+    public FuturesRateHelper(final Handle<Quote> price,
+            final JDate immDate,
+            final IborIndex i) {
+        this(price, immDate, i, new Handle<Quote>());
+    }
+
+    /**
+     * @param Handle
+     * <Quote> price
+     * @param Date immDate
+     * @param IborIndex index
+     * @param Handle
+     * <Quote> convAdj
+     */
+    public FuturesRateHelper(final Handle<Quote> price,
+            final JDate immDate,
+            final IborIndex i,
+            final Handle<Quote> convAdj) {
+
+        super(price);
+        this.convAdj = convAdj;
+
+        QL.require(new IMM().isIMMdate(immDate, false), NOT_A_VALID_IMM_DATE);
+
+        this.earliestDate = immDate;
+        this.latestDate = i.fixingCalendar().advance(immDate, i.tenor(),
+                i.businessDayConvention());
+        this.yearFraction = i.dayCounter().yearFraction(this.earliestDate,
+                this.latestDate);
+
+        convAdj.addObserver(this);
+    }
+
+    /**
+     * @param double price
+     * @param Date immDate
+     * @param IborIndex index
+     */
+    public FuturesRateHelper(final /* Real */ double price,
+            final JDate immDate,
+            final IborIndex i) {
+        this(price, immDate, i, 0.0);
+    }
+
+    /**
+     * @param double price
+     * @param Date immDate
+     * @param IborIndex index
+     * @param double convAdj
+     *
+     */
+    public FuturesRateHelper(final /* Real */ double price,
+            final JDate immDate,
+            final IborIndex i,
+            final /* Rate */ double convAdj) {
+        super(price);
+        this.convAdj = new Handle<Quote>(new SimpleQuote(convAdj));
+
+        QL.require(new IMM().isIMMdate(immDate, false), NOT_A_VALID_IMM_DATE);
+
         earliestDate = immDate;
         final Calendar cal = i.fixingCalendar();
         latestDate = cal.advance(immDate, i.tenor(), i.businessDayConvention());
         yearFraction = i.dayCounter().yearFraction(earliestDate, latestDate);
     }
 
-
     /**
-    /* Implements the abstract method defined in {@link <BootstrapHelper>}
-     * Returns the futures value of the instrument  
+     * /* Implements the abstract method defined in {@link <BootstrapHelper>}
+     * Returns the futures value of the instrument
      *
-     * @return double   
+     * @return double
      */
-	@Override
-	public/* Real */double impliedQuote() {
+    @Override
+    public/* Real */ double impliedQuote() {
 
-		QL.require(termStructure != null, TERMSTRUCT_NOT_SET);
-		final/* Rate */double forwardRate = termStructure.discount(earliestDate)
-				/ (termStructure.discount(latestDate) - 1.0) / yearFraction;
-		final/* Rate */double convA = this.convAdj.empty() ? 0.0 : this.convAdj
-				.currentLink().value();
-		QL.ensure(convA >= 0.0, "Negative (" + convAdj
-				+ ") futures convexity adjustment");
-		final/* Rate */double futureRate = forwardRate + convA;
-		return 100.0 * (1.0 - futureRate);
-	}
+        QL.require(termStructure != null, TERMSTRUCT_NOT_SET);
+        final/* Rate */ double forwardRate = termStructure.discount(earliestDate)
+                / (termStructure.discount(latestDate) - 1.0) / yearFraction;
+        final/* Rate */ double convA = this.convAdj.empty() ? 0.0 : this.convAdj
+                .currentLink().value();
+        QL.ensure(convA >= 0.0, "Negative (" + convAdj
+                + ") futures convexity adjustment");
+        final/* Rate */ double futureRate = forwardRate + convA;
+        return 100.0 * (1.0 - futureRate);
+    }
 
     //
     // public methods
     //
-	/**
-	 * @return double value of the adjusted convexity
-	 */
+    /**
+     * @return double value of the adjusted convexity
+     */
     public /* Real */ double getConvexityAdjustment() {
         return convAdj.empty() ? 0.0 : convAdj.currentLink().value();
     }

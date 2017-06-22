@@ -9,5 +9,6 @@ package com.incurrency.framework;
  * @author admin
  */
 public interface TradeListener {
-    public void tradeReceived( TradeEvent event );
+
+    public void tradeReceived(TradeEvent event);
 }

@@ -12,12 +12,12 @@ import java.util.logging.SimpleFormatter;
  *
  * @author psharma
  */
-public final class TimeSourceFormatter extends SimpleFormatter{
-      @Override public String format(LogRecord aLogRecord) {
-    aLogRecord.setMillis(TradingUtil.getAlgoDate().getTime());
-    return super.format(aLogRecord);
-  }
+public final class TimeSourceFormatter extends SimpleFormatter {
 
-  
-    
+    @Override
+    public String format(LogRecord aLogRecord) {
+        aLogRecord.setMillis(TradingUtil.getAlgoDate().getTime());
+        return super.format(aLogRecord);
+    }
+
 }

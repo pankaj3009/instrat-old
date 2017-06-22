@@ -21,7 +21,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2007 Ferdinando Ametrano
  Copyright (C) 2007 Giorgio Facchinetti
  Copyright (C) 2007 Cristina Duminuco
@@ -39,7 +39,7 @@ When applicable, the original copyright notice follows this notice.
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.cashflow;
 
 import org.jquantlib.QL;
@@ -58,7 +58,7 @@ import org.jquantlib.time.Schedule;
  * @author John Martin
  */
 public class AverageBMALeg {
-	
+
     private final Schedule schedule;
     private final BMAIndex index;
     private Array notionals;
@@ -79,11 +79,11 @@ public class AverageBMALeg {
         // quantlib behavoir
         gearings = new Array(0);
         spreads = new Array(0);
-  
+
     }
 
     public final AverageBMALeg withNotionals(/* @Real */final double notional) {
-        notionals = new Array(new double[] { notional });// std::vector<Real>(1,notional);
+        notionals = new Array(new double[]{notional});// std::vector<Real>(1,notional);
         return this;
     }
 
@@ -103,7 +103,7 @@ public class AverageBMALeg {
     }
 
     public AverageBMALeg withGearings(/* @Real */final double gearing) {
-        gearings = new Array(new double[] { gearing });
+        gearings = new Array(new double[]{gearing});
         return this;
     }
 
@@ -113,7 +113,7 @@ public class AverageBMALeg {
     }
 
     public AverageBMALeg withSpreads(/* @Spread */final double spread) {
-        spreads = new Array(new double[] { spread });
+        spreads = new Array(new double[]{spread});
         return this;
     }
 
@@ -122,7 +122,7 @@ public class AverageBMALeg {
         return this;
     }
 
-    public Leg Leg() /* @ReadOnly */{
+    public Leg Leg() /* @ReadOnly */ {
 
         QL.require(!this.notionals.empty(), "no notional given");
 
@@ -134,41 +134,40 @@ public class AverageBMALeg {
         JDate refStart, start, refEnd, end;
         JDate paymentDate;
 
-        int n = schedule.size()-1;
-        	
-        for (int i=0; i<n ; i++) {
-        	refStart = schedule.date(i);
-        	start = schedule.date(i);
-        	
-        	refEnd = schedule.date(i+1);
-        	end = schedule.date(i+1);
-        	paymentDate = calendar.adjust(end, paymentAdjustment);
-        	
-        	if (i == 0 && !schedule.isRegular(i+1)) {
-        		refStart = calendar.adjust(end.sub(schedule.tenor()),
-                        				   paymentAdjustment);
-        	}
+        int n = schedule.size() - 1;
 
-        	if (i == n-1 && !schedule.isRegular(i+1))
-        		refEnd = calendar.adjust(start.add(schedule.tenor()),
-                                   		 paymentAdjustment);
-        	
-        	AverageBMACoupon coupon = new AverageBMACoupon(paymentDate,
-        													notionals.get(i) != 0.0 ? notionals.get(i):notionals.last(),
-        													start,
-        													end,
-        													index,
-        													gearings.get(i) != 0.0 ? gearings.get(i) : 1.0,
-        													spreads.get(i) != 0.0 ? spreads.get(i) : 0.0,
-        													refStart,
-        													refEnd,
-        													paymentDayCounter);
-        	
-        	cashflows.add(coupon);       	
-        	
+        for (int i = 0; i < n; i++) {
+            refStart = schedule.date(i);
+            start = schedule.date(i);
+
+            refEnd = schedule.date(i + 1);
+            end = schedule.date(i + 1);
+            paymentDate = calendar.adjust(end, paymentAdjustment);
+
+            if (i == 0 && !schedule.isRegular(i + 1)) {
+                refStart = calendar.adjust(end.sub(schedule.tenor()),
+                        paymentAdjustment);
+            }
+
+            if (i == n - 1 && !schedule.isRegular(i + 1)) {
+                refEnd = calendar.adjust(start.add(schedule.tenor()),
+                        paymentAdjustment);
+            }
+
+            AverageBMACoupon coupon = new AverageBMACoupon(paymentDate,
+                    notionals.get(i) != 0.0 ? notionals.get(i) : notionals.last(),
+                    start,
+                    end,
+                    index,
+                    gearings.get(i) != 0.0 ? gearings.get(i) : 1.0,
+                    spreads.get(i) != 0.0 ? spreads.get(i) : 0.0,
+                    refStart,
+                    refEnd,
+                    paymentDayCounter);
+
+            cashflows.add(coupon);
+
         }
-    	
-        
 
         return cashflows;
     }

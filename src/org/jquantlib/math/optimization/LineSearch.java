@@ -37,60 +37,62 @@ public class LineSearch {
     protected boolean succeed_;
 
     // Default constructor - there are no default param values in java :-(
-    public LineSearch(){
+    public LineSearch() {
         this(0.0);
     }
 
     // Default constructor
-    public LineSearch(final double init){
+    public LineSearch(final double init) {
         qt_ = init;
-        qpt_= init;
+        qpt_ = init;
         succeed_ = true;
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
     }
 
     // return last x value
-    public Array lastX(){
+    public Array lastX() {
         return xtd_;
     }
 
     // return last cost function value
-    public double lastFunctionValue(){
+    public double lastFunctionValue() {
         return qt_;
     }
 
     // return last gradient
-    public Array lastGradient(){
+    public Array lastGradient() {
         return gradient_;
     }
 
     // return square norm of last gradient
-    public double lastGradientNormNorm2(){
+    public double lastGradientNormNorm2() {
         return qpt_;
     }
 
     // current value of the search direction
-    public Array searchDirection(){
+    public Array searchDirection() {
         return searchDirection_;
     }
 
     //FIXME: to be reviewed.
     // Perform line search
-    public double evaluate(final Problem P, final EndCriteria.Type ecType, final EndCriteria endCriteria, final double t_ini){
+    public double evaluate(final Problem P, final EndCriteria.Type ecType, final EndCriteria endCriteria, final double t_ini) {
         throw new UnsupportedOperationException("Work in progress");
     }
 
-    public double update(final Array params, final Array direction, final double beta, final Constraint constraint){
+    public double update(final Array params, final Array direction, final double beta, final Constraint constraint) {
         double diff = beta;
         //TODO: check whether we implemented overloaded c++ operators correctly
         Array newParams = params.add(direction.mul(diff));
         boolean valid = constraint.test(newParams);
         int icount = 0;
-        while(!valid){
-            if(icount > 200)
+        while (!valid) {
+            if (icount > 200) {
                 throw new ArithmeticException("can't update lineSearch");
+            }
             diff *= 0.5;
             icount++;
             newParams = params.add(direction.mul(diff));
@@ -101,10 +103,8 @@ public class LineSearch {
         return diff;
     }
 
-    public void setSearchDirection(final Array searchDirection){
+    public void setSearchDirection(final Array searchDirection) {
         this.searchDirection_ = searchDirection;
     }
-
-
 
 }

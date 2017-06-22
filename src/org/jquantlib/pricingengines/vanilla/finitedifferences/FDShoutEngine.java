@@ -19,7 +19,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2005 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,7 +34,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.pricingengines.vanilla.finitedifferences;
 
 import java.util.List;
@@ -50,7 +50,6 @@ import org.jquantlib.util.Observer;
  * @author Richard Gomes
  */
 //typedef FDEngineAdapter<FDAmericanCondition<FDStepConditionEngine>, VanillaOption::engine> FDAmericanEngine;
-
 public class FDShoutEngine
         extends FDEngineAdapter<FDShoutCondition<FDStepConditionEngine>, VanillaOption.Engine>
         implements OneAssetOption.Engine {
@@ -58,10 +57,9 @@ public class FDShoutEngine
     //
     // public constructors
     //
-
     public FDShoutEngine(
             final GeneralizedBlackScholesProcess process) {
-        super(FDShoutCondition.class, VanillaOption.Engine.class, process, 100,100, false);
+        super(FDShoutCondition.class, VanillaOption.Engine.class, process, 100, 100, false);
         super.impl = new Impl(this);
     }
 
@@ -92,28 +90,9 @@ public class FDShoutEngine
     //
     // private inner classes
     //
-
-
-    private class Impl extends VanillaOption.EngineImpl {
-
-        private final FDShoutEngine engine;
-
-        private Impl(final FDShoutEngine engine) {
-            this.engine = engine;
-        }
-
-        @Override
-        public void calculate() {
-            // calls FDEngineAdapter#calculate()
-            engine.calculate();
-        }
-    }
-
-
     //
     // implements VanillaOption.Engine
     //
-
     @Override
     public Arguments getArguments() {
         return super.impl.getArguments();
@@ -129,11 +108,9 @@ public class FDShoutEngine
         super.impl.reset();
     }
 
-
     //
     // implements Observer
     //
-
 //    @Override
 //XXX::OBS    public void update(final Observable o, final Object arg) {
 //        super.impl.update(o, arg);
@@ -143,11 +120,9 @@ public class FDShoutEngine
         super.impl.update();
     }
 
-
     //
     // implements Observable
     //
-
     @Override
     public void addObserver(final Observer observer) {
         super.impl.addObserver(observer);
@@ -181,6 +156,21 @@ public class FDShoutEngine
     @Override
     public void notifyObservers(final Object arg) {
         super.impl.notifyObservers(arg);
+    }
+
+    private class Impl extends VanillaOption.EngineImpl {
+
+        private final FDShoutEngine engine;
+
+        private Impl(final FDShoutEngine engine) {
+            this.engine = engine;
+        }
+
+        @Override
+        public void calculate() {
+            // calls FDEngineAdapter#calculate()
+            engine.calculate();
+        }
     }
 
 }

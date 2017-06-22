@@ -40,77 +40,66 @@ import org.jquantlib.time.TimeGrid;
 
 /**
  * Single-factor short-rate model abstract class
- * 
+ *
  * @category shortrate
- * 
+ *
  * @author Praneet Tiwari
  */
-@QualityAssurance(quality=Quality.Q0_UNFINISHED, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q0_UNFINISHED, version = Version.V097, reviewers = "Richard Gomes")
 public abstract class OneFactorModel extends ShortRateModel {
 
     //
     // public constructors
     //
-
     public OneFactorModel(final int nArguments) {
         super(nArguments);
     }
 
-
     //
     // public methods
     //
-
     /**
      * Return by default a trinomial recombining tree.
      */
     @Override
-    public  Lattice tree(final TimeGrid  grid) /* @ReadOnly */ {
+    public Lattice tree(final TimeGrid grid) /* @ReadOnly */ {
         final TrinomialTree trinomial = new TrinomialTree(dynamics().process(), grid);
         //XXX return boost::shared_ptr<Lattice>( new ShortRateTree(trinomial, dynamics(), grid) );
         return new ShortRateTree(trinomial, dynamics(), grid);
     }
 
-
     //
     // public abstract methods
     //
-
     /**
      * Returns the short-rate dynamics
      */
-    public abstract ShortRateDynamics dynamics() /* @ReadOnly */ ;
-
+    public abstract ShortRateDynamics dynamics() /* @ReadOnly */;
 
     //
     // private inner classes
     //
-
     /**
-     * <p>Base class describing the short-rate dynamics. </p>
+     * <p>
+     * Base class describing the short-rate dynamics. </p>
      */
     protected abstract class ShortRateDynamics {
 
         //
         // private fields
         //
-
         private final StochasticProcess1D process_;
-
 
         //
         // public constructors
         //
-
         protected ShortRateDynamics(final StochasticProcess1D process) {
             this.process_ = process;
         }
 
-
         //
         // public methods
         //
-
         /**
          * Returns the risk-neutral dynamics of the state variable.
          */
@@ -118,23 +107,20 @@ public abstract class OneFactorModel extends ShortRateModel {
             return this.process_;
         }
 
-
         //
         // public abstract methods
         //
-
         /**
          * Compute state variable from short rate.
          */
-        public abstract double variable(/* @Time */ double t, /* @Rate */ double r) /* @ReadOnly */ ;
+        public abstract double variable(/* @Time */double t, /* @Rate */ double r) /* @ReadOnly */;
 
         /**
          * Compute short rate from state variable.
          */
-        public abstract /* @Rate */ double shortRate(/* @Time */ double t, double variable) /* @ReadOnly */ ;
+        public abstract /* @Rate */ double shortRate(/* @Time */double t, double variable) /* @ReadOnly */;
 
     }
-
 
     /**
      * Recombining trinomial tree discretizing the state variable.
@@ -144,15 +130,12 @@ public abstract class OneFactorModel extends ShortRateModel {
         //
         // private fields
         //
-
-        private final  TrinomialTree tree_;
-        private final  ShortRateDynamics dynamics_;
-
+        private final TrinomialTree tree_;
+        private final ShortRateDynamics dynamics_;
 
         //
         // public constructors
         //
-
         /**
          * Plain tree build-up from short-rate dynamics.
          */
@@ -172,7 +155,7 @@ public abstract class OneFactorModel extends ShortRateModel {
                 final TrinomialTree tree,
                 final ShortRateDynamics dynamics,
                 final TermStructureFittingParameter.NumericalImpl theta,
-                final TimeGrid  timeGrid) {
+                final TimeGrid timeGrid) {
 
             super(timeGrid, tree.size(1));
             this.tree_ = tree;
@@ -181,8 +164,8 @@ public abstract class OneFactorModel extends ShortRateModel {
             double value = 1.0;
             final double vMin = -100.0;
             final double vMax = 100.0;
-            for (int i=0; i<(timeGrid.size() - 1); i++) {
-                final double discountBond = theta.termStructure().currentLink().discount(t.get(i+1));
+            for (int i = 0; i < (timeGrid.size() - 1); i++) {
+                final double discountBond = theta.termStructure().currentLink().discount(t.get(i + 1));
                 final Helper finder = new Helper(i, discountBond, theta, this);
                 final Brent s1d = new Brent();
                 s1d.setMaxEvaluations(1000);
@@ -193,11 +176,9 @@ public abstract class OneFactorModel extends ShortRateModel {
             }
         }
 
-
         //
         // public methods
         //
-
         @Override
         public int size(final int i) /* @ReadOnly */ {
             return tree_.size(i);
@@ -207,7 +188,7 @@ public abstract class OneFactorModel extends ShortRateModel {
         public /* @DiscountFactor */ double discount(final int i, final int index) /* @ReadOnly */ {
             final double x = tree_.underlying(i, index);
             /*@Rate*/ final double r = dynamics_.shortRate(timeGrid().get(i), x);
-            return Math.exp(-r*timeGrid().dt(i));
+            return Math.exp(-r * timeGrid().dt(i));
         }
 
         @Override
@@ -225,29 +206,24 @@ public abstract class OneFactorModel extends ShortRateModel {
             return tree_.probability(i, index, branch);
         }
 
-
         //
         // private inner class
         //
-
         private class Helper implements Ops.DoubleOp {
 
             //
             // private fields
             //
-
             private final int size_;
             private final int i_;
-            private final Array  statePrices_;
+            private final Array statePrices_;
             private final double discountBondPrice_;
             protected final TermStructureFittingParameter.NumericalImpl theta_;
             private final ShortRateTree tree_;
 
-
             //
             // public methods
             //
-
             private Helper(
                     final int i,
                     final double discountBondPrice,
@@ -266,8 +242,8 @@ public abstract class OneFactorModel extends ShortRateModel {
             public double op(final double theta) /* @ReadOnly */ {
                 double value = discountBondPrice_;
                 this.theta_.change(theta);
-                for (int j=0; j<size_; j++) {
-                    value -= statePrices_.get(j)*tree_.discount(i_,j);
+                for (int j = 0; j < size_; j++) {
+                    value -= statePrices_.get(j) * tree_.discount(i_, j);
                 }
                 return value;
             }

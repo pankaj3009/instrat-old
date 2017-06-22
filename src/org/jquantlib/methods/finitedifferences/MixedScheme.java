@@ -26,7 +26,7 @@ import org.jquantlib.math.matrixutilities.Array;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 // ! Mixed (explicit/implicit) scheme for finite difference methods
 /*
@@ -58,54 +58,66 @@ import org.jquantlib.math.matrixutilities.Array;
  * \ingroup findiff
  */
 public class MixedScheme<T extends Operator> {
-	private T L, I, explicitPart, implicitPart;
-	/* Time */private double dt;
-	/* Real */private double theta;
-	private List<BoundaryCondition<T>> bcs;
 
-	public MixedScheme(T op,
-	/* Real */double theta, List<BoundaryCondition<T>> bcs2) {
-		L = op;
-		I = (T)op.identity(op.size());
-		this.theta = theta;
-		this.bcs = bcs2;
-	}
+    private T L, I, explicitPart, implicitPart;
+    /* Time */
+    private double dt;
+    /* Real */
+    private double theta;
+    private List<BoundaryCondition<T>> bcs;
 
-	public Array step(Array a, /* Time */double t) {
-		int i;
-		for (i = 0; i < bcs.size(); i++)
-			bcs.get(i).setTime(t);
-		if (theta != 1.0) { // there is an explicit part
-			if (L.isTimeDependent()) {
-				L.setTime(t);
-				explicitPart = (T) I.subtract(L.multiply((1.0 - theta) * dt)); // I-((1.0-theta) * dt)*L_;
-			}
-			for (i = 0; i < bcs.size(); i++)
-				bcs.get(i).applyBeforeApplying(explicitPart);
-			a = explicitPart.applyTo(a);
-			for (i = 0; i < bcs.size(); i++)
-				bcs.get(i).applyAfterApplying(a);
-		}
-		if (theta != 0.0) { // there is an implicit part
-			if (L.isTimeDependent()) {
-				L.setTime(t - dt);
-				implicitPart = (T) I.add(L.multiply(theta * dt)); // I_+(theta_ * dt_)*L_;
-			}
-			for (i = 0; i < bcs.size(); i++)
-				bcs.get(i).applyBeforeSolving(implicitPart, a);
-			a = implicitPart.solveFor(a);
-			for (i = 0; i < bcs.size(); i++)
-				bcs.get(i).applyAfterSolving(a);
-		}
-		
-		return a;
-	}
+    public MixedScheme(T op,
+            /* Real */ double theta, List<BoundaryCondition<T>> bcs2) {
+        L = op;
+        I = (T) op.identity(op.size());
+        this.theta = theta;
+        this.bcs = bcs2;
+    }
 
-	public void setStep(/* Time */double dt) {
-		this.dt = dt;
-		if (theta != 1.0) // there is an explicit part
-			explicitPart = (T) I.subtract(L.multiply((1.0 - theta) * dt)); // I - ((1.0 - theta) * dt) * L
-		if (theta != 0.0) // there is an implicit part
-			implicitPart = (T) I.add(L.multiply(theta * dt)); // I + (theta * dt) * L
-	}
+    public Array step(Array a, /* Time */ double t) {
+        int i;
+        for (i = 0; i < bcs.size(); i++) {
+            bcs.get(i).setTime(t);
+        }
+        if (theta != 1.0) { // there is an explicit part
+            if (L.isTimeDependent()) {
+                L.setTime(t);
+                explicitPart = (T) I.subtract(L.multiply((1.0 - theta) * dt)); // I-((1.0-theta) * dt)*L_;
+            }
+            for (i = 0; i < bcs.size(); i++) {
+                bcs.get(i).applyBeforeApplying(explicitPart);
+            }
+            a = explicitPart.applyTo(a);
+            for (i = 0; i < bcs.size(); i++) {
+                bcs.get(i).applyAfterApplying(a);
+            }
+        }
+        if (theta != 0.0) { // there is an implicit part
+            if (L.isTimeDependent()) {
+                L.setTime(t - dt);
+                implicitPart = (T) I.add(L.multiply(theta * dt)); // I_+(theta_ * dt_)*L_;
+            }
+            for (i = 0; i < bcs.size(); i++) {
+                bcs.get(i).applyBeforeSolving(implicitPart, a);
+            }
+            a = implicitPart.solveFor(a);
+            for (i = 0; i < bcs.size(); i++) {
+                bcs.get(i).applyAfterSolving(a);
+            }
+        }
+
+        return a;
+    }
+
+    public void setStep(/* Time */double dt) {
+        this.dt = dt;
+        if (theta != 1.0) // there is an explicit part
+        {
+            explicitPart = (T) I.subtract(L.multiply((1.0 - theta) * dt)); // I - ((1.0 - theta) * dt) * L
+        }
+        if (theta != 0.0) // there is an implicit part
+        {
+            implicitPart = (T) I.add(L.multiply(theta * dt)); // I + (theta * dt) * L
+        }
+    }
 }

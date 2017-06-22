@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2004, 2005, 2006 Ferdinando Ametrano
  Copyright (C) 2006 Katiuscia Manzoni
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
@@ -39,7 +39,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.time;
 
 import java.util.Formatter;
@@ -48,8 +47,8 @@ import org.jquantlib.QL;
 import org.jquantlib.lang.exceptions.LibraryException;
 
 /**
- * This class provides a {@link Period} (length + TimeUnit) class and
- * implements a limited algebra.
+ * This class provides a {@link Period} (length + TimeUnit) class and implements
+ * a limited algebra.
  *
  * @author Srinivas Hasti
  * @author Richard Gomes
@@ -62,7 +61,6 @@ public class Period implements Cloneable {
     private static final String INCOMPATIBLE_TIME_UNIT = "incompatible time unit";
     private static final String UNDECIDABLE_COMPARISON = "undecidable comparison";
     private static final String DIVISION_BY_ZERO_ERROR = "cannot be divided by zero";
-
 
     /**
      * Constant that can be used to represent one year period forward
@@ -94,7 +92,6 @@ public class Period implements Cloneable {
      */
     public static final Period ONE_DAY_BACKWARD = new Period(-1, TimeUnit.Days);
 
-
     /**
      * Length of the period
      */
@@ -105,11 +102,9 @@ public class Period implements Cloneable {
      */
     private TimeUnit units;
 
-
     //
     // public constructors
     //
-
     /**
      * Default constructor. Defaults to period of 0 days
      */
@@ -136,63 +131,57 @@ public class Period implements Cloneable {
      */
     public Period(final Frequency f) {
         switch (f) {
-        case Once:
-        case NoFrequency:
-            // same as Period()
-            units = TimeUnit.Days;
-            length = 0;
-            break;
-        case Annual:
-            units = TimeUnit.Years;
-            length = 1;
-            break;
-        case Semiannual:
-        case EveryFourthMonth:
-        case Quarterly:
-        case Bimonthly:
-        case Monthly:
-            units = TimeUnit.Months;
-            length = 12 / f.toInteger();
-            break;
-        case EveryFourthWeek:
-        case Biweekly:
-        case Weekly:
-            units = TimeUnit.Weeks;
-            length = 52 / f.toInteger();
-            break;
-        case Daily:
-            units = TimeUnit.Days;
-            length = 1;
-            break;
-        default:
-            throw new LibraryException(UNKNOWN_FREQUENCY); // QA:[RG]::verified
+            case Once:
+            case NoFrequency:
+                // same as Period()
+                units = TimeUnit.Days;
+                length = 0;
+                break;
+            case Annual:
+                units = TimeUnit.Years;
+                length = 1;
+                break;
+            case Semiannual:
+            case EveryFourthMonth:
+            case Quarterly:
+            case Bimonthly:
+            case Monthly:
+                units = TimeUnit.Months;
+                length = 12 / f.toInteger();
+                break;
+            case EveryFourthWeek:
+            case Biweekly:
+            case Weekly:
+                units = TimeUnit.Weeks;
+                length = 52 / f.toInteger();
+                break;
+            case Daily:
+                units = TimeUnit.Days;
+                length = 1;
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_FREQUENCY); // QA:[RG]::verified
         }
     }
-
 
     //
     // implements Cloneable
     //
-
     @Override
     protected Period clone() {
         return new Period(this.length, this.units);
     }
 
-
     //
     // unary operators
     //
-
     public Period negative() {
         return new Period(-this.length(), this.units());
     }
 
-
     //
     // binary operators
     //
-
     /**
      * Returns <code>this</code> Period added to <code>another</code> Period
      *
@@ -203,15 +192,15 @@ public class Period implements Cloneable {
         if (this.length() == 0) {
             this.length = another.length();
             this.units = another.units();
-        } else if (this.units == another.units())
+        } else if (this.units == another.units()) {
             this.length += another.length();
-        else
+        } else {
             switch (this.units) {
                 case Years:
                     switch (another.units()) {
                         case Months:
                             this.units = another.units();
-                            this.length = this.length*12 + another.length();
+                            this.length = this.length * 12 + another.length();
                             break;
                         case Weeks:
                         case Days:
@@ -236,7 +225,7 @@ public class Period implements Cloneable {
                     switch (another.units()) {
                         case Days:
                             this.units = another.units();
-                            this.length = this.length*7 + another.length();
+                            this.length = this.length * 7 + another.length();
                             break;
                         case Years:
                         case Months:
@@ -248,7 +237,7 @@ public class Period implements Cloneable {
                 case Days:
                     switch (another.units()) {
                         case Weeks:
-                            this.length += another.length()*7;
+                            this.length += another.length() * 7;
                             break;
                         case Years:
                         case Months:
@@ -260,6 +249,7 @@ public class Period implements Cloneable {
                 default:
                     throw new LibraryException(UNKNOWN_TIME_UNIT);
             }
+        }
         return this;
     }
 
@@ -280,15 +270,16 @@ public class Period implements Cloneable {
      * @return this
      */
     public Period divAssign(final int scalar) {
-        if (scalar == 0)
+        if (scalar == 0) {
             throw new ArithmeticException(DIVISION_BY_ZERO_ERROR);
+        }
 
-        if (this.length % scalar == 0)
-            // keep the original units. If the user created a
-            // 24-months period, he'll probably want a 12-months one
-            // when he halves it.
+        if (this.length % scalar == 0) // keep the original units. If the user created a
+        // 24-months period, he'll probably want a 12-months one
+        // when he halves it.
+        {
             this.length /= scalar;
-        else
+        } else {
             switch (this.units) {
                 case Years:
                     this.units = TimeUnit.Months;
@@ -299,11 +290,13 @@ public class Period implements Cloneable {
                     this.length *= 7;
                     break;
             }
+        }
 
-        if (this.length % scalar == 0)
-            this.length = this.length/scalar;
-        else
+        if (this.length % scalar == 0) {
+            this.length = this.length / scalar;
+        } else {
             throw new LibraryException("cannot be divided by " + scalar);
+        }
 
         return this;
     }
@@ -352,7 +345,8 @@ public class Period implements Cloneable {
      * Compares <code>this</code> to <code>another</code> Period
      *
      * @param another
-     * @return <code>true</code> if <code>this</code> is equal to <code>another</code>, <code>false</code> otherwise
+     * @return <code>true</code> if <code>this</code> is equal to
+     * <code>another</code>, <code>false</code> otherwise
      */
     public boolean eq(final Period another) {
         return this.equals(another);
@@ -362,7 +356,8 @@ public class Period implements Cloneable {
      * Compares <code>this</code> to <code>another</code> Period
      *
      * @param another
-     * @return <code>true</code> if <code>this</code> is not equal to <code>another</code>, <code>false</code> otherwise
+     * @return <code>true</code> if <code>this</code> is not equal to
+     * <code>another</code>, <code>false</code> otherwise
      */
     public boolean neq(final Period another) {
         return !this.equals(another);
@@ -372,7 +367,8 @@ public class Period implements Cloneable {
      * Compares <code>this</code> to <code>another</code> Period
      *
      * @param another
-     * @return <code>true</code> if <code>this</code> is greater than <code>another</code>, <code>false</code> otherwise
+     * @return <code>true</code> if <code>this</code> is greater than
+     * <code>another</code>, <code>false</code> otherwise
      */
     public boolean gt(final Period another) {
         return another.lt(this);
@@ -382,7 +378,8 @@ public class Period implements Cloneable {
      * Compares <code>this</code> to <code>another</code> Period
      *
      * @param another
-     * @return <code>true</code> if <code>this</code> is less than or equal to <code>another</code>, <code>false</code> otherwise
+     * @return <code>true</code> if <code>this</code> is less than or equal to
+     * <code>another</code>, <code>false</code> otherwise
      */
     public boolean le(final Period another) {
         return this.lt(another) || this.eq(another);
@@ -392,7 +389,8 @@ public class Period implements Cloneable {
      * Compares <code>this</code> to <code>another</code> Period
      *
      * @param another
-     * @return <code>true</code> if <code>this</code> is greater or equal to <code>another</code>, <code>false</code> otherwise
+     * @return <code>true</code> if <code>this</code> is greater or equal to
+     * <code>another</code>, <code>false</code> otherwise
      */
     public boolean ge(final Period another) {
         return another.le(this);
@@ -402,25 +400,33 @@ public class Period implements Cloneable {
      * Compares <code>this</code> to <code>another</code> Period
      *
      * @param another
-     * @return <code>true</code> if <code>this</code> is less than <code>another</code>, <code>false</code> otherwise
+     * @return <code>true</code> if <code>this</code> is less than
+     * <code>another</code>, <code>false</code> otherwise
      */
     public boolean lt(final Period another) {
-        if (this.length == 0)
+        if (this.length == 0) {
             return (another.length > 0);
-        if (another.length == 0)
+        }
+        if (another.length == 0) {
             return (this.length < 0);
+        }
 
         // exact comparisons
-        if (this.units() == another.units())
+        if (this.units() == another.units()) {
             return this.length() < another.length();
-        if (this.units() == TimeUnit.Months && another.units() == TimeUnit.Years)
+        }
+        if (this.units() == TimeUnit.Months && another.units() == TimeUnit.Years) {
             return this.length() < 12 * another.length();
-        if (this.units() == TimeUnit.Years && another.units() == TimeUnit.Months)
+        }
+        if (this.units() == TimeUnit.Years && another.units() == TimeUnit.Months) {
             return 12 * this.length() < another.length();
-        if (this.units() == TimeUnit.Days && another.units() == TimeUnit.Weeks)
+        }
+        if (this.units() == TimeUnit.Days && another.units() == TimeUnit.Weeks) {
             return this.length() < 7 * another.length();
-        if (this.units() == TimeUnit.Weeks && another.units() == TimeUnit.Days)
+        }
+        if (this.units() == TimeUnit.Weeks && another.units() == TimeUnit.Days) {
             return 7 * this.length() < another.length();
+        }
 
         // Inexact comparison
         final int period1MinDays = this.getMinDays();
@@ -428,145 +434,152 @@ public class Period implements Cloneable {
         final int period2MinDays = another.getMinDays();
         final int period2MaxDays = another.getMaxDays();
 
-        if (period1MaxDays < period2MinDays)
+        if (period1MaxDays < period2MinDays) {
             return true;
-        else if (period1MinDays > period2MaxDays)
+        } else if (period1MinDays > period2MaxDays) {
             return false;
-        else
+        } else {
             throw new LibraryException(UNDECIDABLE_COMPARISON);
+        }
     }
 
+    //
+    // public methods
+    //
+    /**
+     * @return length of the period
+     */
+    public final int length() {
+        return this.length;
+    }
 
-   //
-   // public methods
-   //
+    /**
+     * Time units represented by the period
+     *
+     * @return time units of the period
+     */
+    public final TimeUnit units() {
+        return this.units;
+    }
 
-   /**
-    * @return length of the period
-    */
-   public final int length() {
-       return this.length;
-   }
+    /**
+     * To get at Frequency represented by the period
+     *
+     * @return
+     */
+    public final Frequency frequency() {
+        // unsigned version
+        final int length = Math.abs(this.length);
 
-   /**
-    * Time units represented by the period
-    *
-    * @return time units of the period
-    */
-   public final TimeUnit units() {
-       return this.units;
-   }
+        if (length == 0) {
+            return Frequency.NoFrequency;
+        }
 
-   /**
-    * To get at Frequency represented by the period
-    *
-    * @return
-    */
-   public final Frequency frequency() {
-       // unsigned version
-       final int length = Math.abs(this.length);
-
-       if (length == 0)
-           return Frequency.NoFrequency;
-
-       switch (units) {
-       case Years:
-           if (length == 1)
-               return Frequency.Annual;
-           else
-               return Frequency.OtherFrequency;
-         case Months:
-           if (12%length == 0 && length <= 12)
-               return Frequency.valueOf(12 / length);
-           else
-               return Frequency.OtherFrequency;
-         case Weeks:
-           if (length==1)
-               return Frequency.Weekly;
-           else if (length==2)
-               return Frequency.Biweekly;
-           else if (length==4)
-               return Frequency.EveryFourthWeek;
-           else
-               return Frequency.OtherFrequency;
-         case Days:
-           if (length==1)
-               return Frequency.Daily;
-           else
-               return Frequency.OtherFrequency;
-       default:
-           throw new LibraryException(UNKNOWN_TIME_UNIT); // QA:[RG]::verified
-       }
-   }
-
-
+        switch (units) {
+            case Years:
+                if (length == 1) {
+                    return Frequency.Annual;
+                } else {
+                    return Frequency.OtherFrequency;
+                }
+            case Months:
+                if (12 % length == 0 && length <= 12) {
+                    return Frequency.valueOf(12 / length);
+                } else {
+                    return Frequency.OtherFrequency;
+                }
+            case Weeks:
+                if (length == 1) {
+                    return Frequency.Weekly;
+                } else if (length == 2) {
+                    return Frequency.Biweekly;
+                } else if (length == 4) {
+                    return Frequency.EveryFourthWeek;
+                } else {
+                    return Frequency.OtherFrequency;
+                }
+            case Days:
+                if (length == 1) {
+                    return Frequency.Daily;
+                } else {
+                    return Frequency.OtherFrequency;
+                }
+            default:
+                throw new LibraryException(UNKNOWN_TIME_UNIT); // QA:[RG]::verified
+        }
+    }
 
     public double years(final Period p) {
-    	if(p.length() == 0) return 0.0;
+        if (p.length() == 0) {
+            return 0.0;
+        }
 
-    	switch (p.units()) {
-	    	case Days:
-	    	case Weeks:
-	    		throw new IllegalArgumentException(UNDECIDABLE_COMPARISON);
-	    	case Months:
-	    		return p.length()/12.0;
-	    	case Years:
-	    		return p.length();
-	    	default:
-	    		throw new LibraryException(UNKNOWN_TIME_UNIT);
-    	}
+        switch (p.units()) {
+            case Days:
+            case Weeks:
+                throw new IllegalArgumentException(UNDECIDABLE_COMPARISON);
+            case Months:
+                return p.length() / 12.0;
+            case Years:
+                return p.length();
+            default:
+                throw new LibraryException(UNKNOWN_TIME_UNIT);
+        }
     }
 
     public double months(final Period p) {
-    	if(p.length() == 0) return 0.0;
+        if (p.length() == 0) {
+            return 0.0;
+        }
 
-    	switch(p.units()) {
-	    	case Days:
-	    	case Weeks:
-	    		throw new IllegalArgumentException(UNDECIDABLE_COMPARISON);
-	    	case Months:
-	    		return p.length();
-	    	case Years:
-	    		return p.length()*12.0;
-	    	default:
-	    		throw new LibraryException(UNKNOWN_TIME_UNIT);
-    	}
+        switch (p.units()) {
+            case Days:
+            case Weeks:
+                throw new IllegalArgumentException(UNDECIDABLE_COMPARISON);
+            case Months:
+                return p.length();
+            case Years:
+                return p.length() * 12.0;
+            default:
+                throw new LibraryException(UNKNOWN_TIME_UNIT);
+        }
     }
 
     public double weeks(final Period p) {
-    	if(p.length() == 0) return 0.0;
+        if (p.length() == 0) {
+            return 0.0;
+        }
 
-    	switch(p.units()) {
-	    	case Days:
-	    		return p.length()/7.0;
-	    	case Weeks:
-	    		return p.length();
-	    	case Months:
-	    	case Years:
-	    		throw new IllegalArgumentException(UNDECIDABLE_COMPARISON);
-	    	default:
-	    		throw new LibraryException(UNKNOWN_TIME_UNIT);
-    	}
+        switch (p.units()) {
+            case Days:
+                return p.length() / 7.0;
+            case Weeks:
+                return p.length();
+            case Months:
+            case Years:
+                throw new IllegalArgumentException(UNDECIDABLE_COMPARISON);
+            default:
+                throw new LibraryException(UNKNOWN_TIME_UNIT);
+        }
     }
 
     public double days(final Period p) {
-    	if(p.length() == 0) return 0.0;
+        if (p.length() == 0) {
+            return 0.0;
+        }
 
-    	switch(p.units()) {
-	    	case Days:
-	    		return p.length();
-	    	case Weeks:
-	    		return p.length()*7.0;
-	    	case Months:
-	    	case Years:
-	    		throw new IllegalArgumentException(UNDECIDABLE_COMPARISON);
-	    	default:
-	    		throw new LibraryException(UNKNOWN_TIME_UNIT);
-    	}
+        switch (p.units()) {
+            case Days:
+                return p.length();
+            case Weeks:
+                return p.length() * 7.0;
+            case Months:
+            case Years:
+                throw new IllegalArgumentException(UNDECIDABLE_COMPARISON);
+            default:
+                throw new LibraryException(UNKNOWN_TIME_UNIT);
+        }
     }
-
-
-
 
     @Override
     public int hashCode() {
@@ -579,74 +592,74 @@ public class Period implements Cloneable {
 
     @Override
     public boolean equals(final Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-    	
-        return obj instanceof Period &&
-        ((Period) obj).fEquals(this);
-    }
+        }
 
+        return obj instanceof Period
+                && ((Period) obj).fEquals(this);
+    }
 
     //
     // protected methods
     //
-
     protected boolean fEquals(Period other) {
-        if (length != other.length)
+        if (length != other.length) {
             return false;
+        }
         if (units == null) {
-            if (other.units != null)
+            if (other.units != null) {
                 return false;
-        } else if (!units.equals(other.units))
+            }
+        } else if (!units.equals(other.units)) {
             return false;
-        return true;	
+        }
+        return true;
     }
-
-
-
-
-
 
     /**
      * Converts Period to days
+     *
      * @param p
      * @return minimum days
      */
     private int getMinDays() {
-    	switch (this.units()) {
-    		case Years:
-    			return this.length()*365;
-    		case Months:
-    			return this.length()*28;
-    		case Weeks:
-    			return this.length()*7;
-    		case Days:
-    			return this.length();
-    		default:
-    			throw new LibraryException(UNKNOWN_TIME_UNIT);
-    	}
+        switch (this.units()) {
+            case Years:
+                return this.length() * 365;
+            case Months:
+                return this.length() * 28;
+            case Weeks:
+                return this.length() * 7;
+            case Days:
+                return this.length();
+            default:
+                throw new LibraryException(UNKNOWN_TIME_UNIT);
+        }
     }
 
     /**
      * Converts Period to days
+     *
      * @param p
      * @return maximum days
      */
     private int getMaxDays() {
-    	switch (this.units()) {
-		case Years:
-			return this.length()*366;
-		case Months:
-			return this.length()*31;
-		case Weeks:
-			return this.length()*7;
-		case Days:
-			return this.length();
-		default:
-			throw new LibraryException(UNKNOWN_TIME_UNIT);
-	}
+        switch (this.units()) {
+            case Years:
+                return this.length() * 366;
+            case Months:
+                return this.length() * 31;
+            case Weeks:
+                return this.length() * 7;
+            case Days:
+                return this.length();
+            default:
+                throw new LibraryException(UNKNOWN_TIME_UNIT);
+        }
 
     }
 
@@ -678,10 +691,11 @@ public class Period implements Cloneable {
      */
     private String getInternalLongFormat() {
         String suffix;
-        if (this.length == 1)
+        if (this.length == 1) {
             suffix = "";
-        else
+        } else {
             suffix = "s";
+        }
         final StringBuilder sb = new StringBuilder();
         final Formatter formatter = new Formatter(sb, Locale.US);
         formatter.format("%d %s%s", this.length, this.units.getLongFormat(),
@@ -700,26 +714,27 @@ public class Period implements Cloneable {
     }
 
     public void normalize() {
-        if (length!=0)
+        if (length != 0) {
             switch (units) {
-            case Days:
-                if (!(length%7!=0)) {
-                    length/=7;
-                    units = TimeUnit.Weeks;
-                }
-                break;
-            case Months:
-                if (!(length%12!=0)) {
-                    length/=12;
-                    units = TimeUnit.Years;
-                }
-                break;
-            case Weeks:
-            case Years:
-                break;
-            default:
-                QL.require(false , UNKNOWN_TIME_UNIT); // QA:[RG]::verified
+                case Days:
+                    if (!(length % 7 != 0)) {
+                        length /= 7;
+                        units = TimeUnit.Weeks;
+                    }
+                    break;
+                case Months:
+                    if (!(length % 12 != 0)) {
+                        length /= 12;
+                        units = TimeUnit.Years;
+                    }
+                    break;
+                case Weeks:
+                case Years:
+                    break;
+                default:
+                    QL.require(false, UNKNOWN_TIME_UNIT); // QA:[RG]::verified
             }
+        }
     }
 
 }

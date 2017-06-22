@@ -33,7 +33,6 @@ public final class Cos implements Ops.DoubleOp {
     //
     // implements Ops.DoubleOp
     //
-
     @Override
     public double op(final double a) {
         return Math.cos(a);

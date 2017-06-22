@@ -47,7 +47,6 @@ public class ConvertibleBond extends Bond {
     protected Handle<Quote> creditSpread;
     protected Option option;
 
-    
     public ConvertibleBond(
             final Exercise exercise,
             final double conversionRatio,

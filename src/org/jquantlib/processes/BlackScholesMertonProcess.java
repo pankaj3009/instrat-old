@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.processes;
 
 import org.jquantlib.quotes.Handle;
@@ -30,9 +29,10 @@ import org.jquantlib.termstructures.YieldTermStructure;
 /**
  * Merton (1973) extension to the Black-Scholes stochastic process
  * <p>
- * This class describes the stochastic process for a stock or
- * stock index paying a continuous dividend yield given by
- * {@latex[ dS(t, S) = (r(t) - q(t) - \frac{\sigma(t, S)^2}{2}) dt }
+ * This class describes the stochastic process for a stock or stock index paying
+ * a continuous dividend yield given by {
+ *
+ * @latex[ dS(t, S) = (r(t) - q(t) - \frac{\sigma(t, S)^2}{2}) dt }
  *
  * @author Richard Gomes
  */
@@ -43,16 +43,16 @@ public class BlackScholesMertonProcess extends GeneralizedBlackScholesProcess {
             final Handle<YieldTermStructure> dividendTS,
             final Handle<YieldTermStructure> riskFreeTS,
             final Handle<BlackVolTermStructure> blackVolTS) {
-    	this(x0, dividendTS, riskFreeTS, blackVolTS, new EulerDiscretization());
+        this(x0, dividendTS, riskFreeTS, blackVolTS, new EulerDiscretization());
     }
 
-	public BlackScholesMertonProcess(
+    public BlackScholesMertonProcess(
             final Handle<? extends Quote> x0,
             final Handle<YieldTermStructure> dividendTS,
             final Handle<YieldTermStructure> riskFreeTS,
             final Handle<BlackVolTermStructure> blackVolTS,
             final StochasticProcess1D.Discretization1D discretization) {
-    	super(x0, dividendTS, riskFreeTS, blackVolTS, discretization);
+        super(x0, dividendTS, riskFreeTS, blackVolTS, discretization);
     }
 
 }

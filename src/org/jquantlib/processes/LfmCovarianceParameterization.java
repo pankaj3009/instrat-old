@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.processes;
 
 import org.jquantlib.QL;
@@ -29,12 +28,14 @@ import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
 
 public abstract class LfmCovarianceParameterization {
+
     protected int size_;
     private final int factors_;
 
     public LfmCovarianceParameterization(final int size, final int factors) {
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
         this.size_ = size;
         this.factors_ = factors;
@@ -68,17 +69,17 @@ public abstract class LfmCovarianceParameterization {
         // because it is too slow and too inefficient.
         // This method is useful for testing and R&D.
         // Please overload the method within derived classes.
-        QL.require(!x.empty() , "can not handle given x here"); // TODO: message
+        QL.require(!x.empty(), "can not handle given x here"); // TODO: message
 
         final Matrix tmp = new Matrix(size_, size_);
         for (int i = 0; i < size_; ++i) {
             for (int j = 0; j <= i; ++j) {
                 final Var_Helper helper = new Var_Helper(this, i, j);
                 final GaussKronrodAdaptive integrator = new GaussKronrodAdaptive(1e-10, 10000);
-                for(int k = 0; k<64; ++k) {
-                    tmp.set(i, j, tmp.get(i, j)+integrator.op(helper, k*t/64.0,(k+1)*t/64.0));
+                for (int k = 0; k < 64; ++k) {
+                    tmp.set(i, j, tmp.get(i, j) + integrator.op(helper, k * t / 64.0, (k + 1) * t / 64.0));
                 }
-                tmp.set(j,i, tmp.get(i, j));
+                tmp.set(j, i, tmp.get(i, j));
             }
         }
 

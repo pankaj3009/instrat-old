@@ -31,33 +31,31 @@ import org.jquantlib.time.TimeUnit;
 import org.jquantlib.time.calendars.Target;
 
 /**
- * 
- * EuriborSwapIfrFix index base class
- * Euribor Swap indexes published by IFR Markets and 
- * distributed by Reuters page TGM42281 and by Telerate.
- * Annual 30/360 vs 6M Euribor, 1Y vs 3M Euribor.
- * For more info see <http://www.ifrmarkets.com>
- * 
+ *
+ * EuriborSwapIfrFix index base class Euribor Swap indexes published by IFR
+ * Markets and distributed by Reuters page TGM42281 and by Telerate. Annual
+ * 30/360 vs 6M Euribor, 1Y vs 3M Euribor. For more info see
+ * <http://www.ifrmarkets.com>
+ *
  * @author Tim Blackler
  */
 public class EuriborSwapIfrFix extends SwapIndex {
 
     public EuriborSwapIfrFix(final Period tenor) {
-    	this(tenor, new Handle<YieldTermStructure>());
+        this(tenor, new Handle<YieldTermStructure>());
     }
-	
+
     public EuriborSwapIfrFix(final Period tenor, final Handle<YieldTermStructure> h) {
-        super( "EuriborSwapIfrFix",
+        super("EuriborSwapIfrFix",
                 tenor,
                 2, // settlement days
                 new EURCurrency(),
                 new Target(),
-                new Period(1,TimeUnit.Years),
+                new Period(1, TimeUnit.Years),
                 BusinessDayConvention.ModifiedFollowing,
                 new Thirty360(Thirty360.Convention.BondBasis),
-                tenor.gt(new Period(1,TimeUnit.Years)) ? new Euribor(new Period(6,TimeUnit.Months), h):
-                	 									 new Euribor(new Period(3,TimeUnit.Months), h)
-                		
-                );
-        }
+                tenor.gt(new Period(1, TimeUnit.Years)) ? new Euribor(new Period(6, TimeUnit.Months), h)
+                : new Euribor(new Period(3, TimeUnit.Months), h)
+        );
+    }
 }

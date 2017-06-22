@@ -22,17 +22,14 @@ public class SwapIndex extends InterestRateIndex {
     //
     // protected fields
     //
-
     protected Period tenor;
     protected IborIndex iborIndex;
     protected Period fixedLegTenor;
     protected BusinessDayConvention fixedLegConvention;
 
-
     //
     // public constructors
     //
-
     public SwapIndex(
             final String familyName,
             final Period tenor,
@@ -54,26 +51,22 @@ public class SwapIndex extends InterestRateIndex {
         //registerWith(this.iborIndex);
     }
 
-
     //
     // protected methods
     //
-
     @Override
     protected /*@Rate*/ double forecastFixing(final JDate fixingDate) /* @ReadOnly */ {
         return underlyingSwap(fixingDate).fairRate();
     }
 
-
     //
     // public methods
     //
-
     public IborIndex iborIndex() /* @ReadOnly */ {
         return iborIndex;
     }
 
-    public Period fixedLegTenor() /* @ReadOnly */{
+    public Period fixedLegTenor() /* @ReadOnly */ {
         return fixedLegTenor;
     }
 
@@ -84,12 +77,12 @@ public class SwapIndex extends InterestRateIndex {
     public VanillaSwap underlyingSwap(final JDate fixingDate) /* @ReadOnly */ {
         /*@Rate*/ final double fixedRate = 0.0;
         return new MakeVanillaSwap(tenor, iborIndex, fixedRate)
-        .withEffectiveDate(valueDate(fixingDate))
-        .withFixedLegCalendar(fixingCalendar())
-        .withFixedLegDayCount(dayCounter)
-        .withFixedLegTenor(fixedLegTenor)
-        .withFixedLegConvention(fixedLegConvention)
-        .withFixedLegTerminationDateConvention(fixedLegConvention).value();
+                .withEffectiveDate(valueDate(fixingDate))
+                .withFixedLegCalendar(fixingCalendar())
+                .withFixedLegDayCount(dayCounter)
+                .withFixedLegTenor(fixedLegTenor)
+                .withFixedLegConvention(fixedLegConvention)
+                .withFixedLegTerminationDateConvention(fixedLegConvention).value();
     }
 
     @Override
@@ -97,8 +90,6 @@ public class SwapIndex extends InterestRateIndex {
         final JDate fixDate = fixingDate(valueDate);
         return underlyingSwap(fixDate).maturityDate();
     }
-
-
 
     @Override
     public Handle<YieldTermStructure> termStructure() /* @ReadOnly */ {

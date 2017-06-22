@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2006 Ferdinando Ametrano
  Copyright (C) 2006 Fran�ois du Vignaud
@@ -38,8 +38,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.instruments;
 
 import java.util.List;
@@ -64,8 +63,6 @@ import org.jquantlib.time.JDate;
  */
 public class CapFloor extends Instrument {
 
-    public enum Type { Cap, Floor, Collar };
-
     private final Type type_;
     private final Leg floatingLeg_;
     private List</*@Rate*/ Double> capRates_;
@@ -78,10 +75,10 @@ public class CapFloor extends Instrument {
             final List</*@Rate*/ Double> capRates,
             final List</*@Rate*/ Double> floorRates,
             final Handle<YieldTermStructure> termStructure,
-            final PricingEngine engine){
+            final PricingEngine engine) {
 
-    	QL.validateExperimentalMode();
-    	
+        QL.validateExperimentalMode();
+
         this.type_ = type;
         this.floatingLeg_ = floatingLeg;
         this.capRates_ = capRates;
@@ -90,10 +87,8 @@ public class CapFloor extends Instrument {
 
         setPricingEngine(engine);
 
-
-
         if (type_ == Type.Cap || type_ == Type.Collar) {
-            QL.require(capRates_.size()>0 , "no cap rates given"); // TODO: message
+            QL.require(capRates_.size() > 0, "no cap rates given"); // TODO: message
             // capRates_.reserve(floatingLeg_.size());
             while (capRates_.size() < floatingLeg_.size()) {
                 // this looks kind of suspicious...
@@ -102,7 +97,7 @@ public class CapFloor extends Instrument {
         }
 
         if (type_ == Type.Floor || type_ == Type.Collar) {
-            QL.require(floorRates_.size()>0 , "no floor rates given"); // TODO: message
+            QL.require(floorRates_.size() > 0, "no floor rates given"); // TODO: message
             // floorRates_.reserve(floatingLeg_.size());
             while (floorRates_.size() < floatingLeg_.size()) {
                 floorRates_.add(floorRates_.get(floorRates_.size() - 1));
@@ -116,7 +111,6 @@ public class CapFloor extends Instrument {
 
         // TODO: code review :: please verify against QL/C++ code
         // seems like we should have this.evaluationDate
-
         this.termStructure_.addObserver(this);
         evaluationDate.addObserver(this);
     }
@@ -126,10 +120,11 @@ public class CapFloor extends Instrument {
             final Leg floatingLeg,
             final List</*@Rate*/ Double> strikes,
             final Handle<YieldTermStructure> termStructure,
-            final PricingEngine engine){
+            final PricingEngine engine) {
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
         this.type_ = type;
         this.floatingLeg_ = floatingLeg;
@@ -137,22 +132,22 @@ public class CapFloor extends Instrument {
 
         setPricingEngine(engine);
 
-        QL.require(strikes.size()>0 , "no strikes given"); // TODO: message
+        QL.require(strikes.size() > 0, "no strikes given"); // TODO: message
         if (type_ == Type.Cap) {
             capRates_ = strikes;
             //capRates_.reserve(floatingLeg_.size());
             while (capRates_.size() < floatingLeg_.size()) {
-                capRates_.add(capRates_.get(capRates_.size()-1));
+                capRates_.add(capRates_.get(capRates_.size() - 1));
             }
         } else if (type_ == Type.Floor) {
             floorRates_ = strikes;
             //floorRates_.reserve(floatingLeg_.size());
             while (floorRates_.size() < floatingLeg_.size()) {
-                floorRates_.add(floorRates_.get(floorRates_.size()-1));
+                floorRates_.add(floorRates_.get(floorRates_.size() - 1));
             }
-        } else
+        } else {
             throw new LibraryException("only Cap/Floor types allowed in this constructor"); // TODO: message
-
+        }
         final JDate evaluationDate = new Settings().evaluationDate();
         for (final CashFlow cashFlow : floatingLeg_) {
             cashFlow.addObserver(this);
@@ -160,26 +155,25 @@ public class CapFloor extends Instrument {
 
         // TODO: code review :: please verify against QL/C++ code
         // Seems like we should have this.evaluationDate
-
         this.termStructure_.addObserver(this);
         evaluationDate.addObserver(this);
     }
 
-    public /*@Rate*/double atmRate(){
+    public /*@Rate*/ double atmRate() {
         return CashFlows.getInstance().atmRate(floatingLeg_, termStructure_);
     }
 
     @Override
-    public boolean isExpired(){
+    public boolean isExpired() {
         JDate lastPaymentDate = JDate.minDate();
-        for (int i=0; i<floatingLeg_.size(); i++) {
+        for (int i = 0; i < floatingLeg_.size(); i++) {
             //FIXME: kind of ugly... intention: get the last date of all dates in the floatingdate c++ max syntax.
-            lastPaymentDate = lastPaymentDate.le(floatingLeg_.get(i).date())?floatingLeg_.get(i).date():lastPaymentDate;
+            lastPaymentDate = lastPaymentDate.le(floatingLeg_.get(i).date()) ? floatingLeg_.get(i).date() : lastPaymentDate;
         }
         return lastPaymentDate.le(termStructure_.currentLink().referenceDate());
     }
 
-    public JDate startDate(){
+    public JDate startDate() {
         return CashFlows.getInstance().startDate(floatingLeg_);
     }
 
@@ -274,7 +268,6 @@ public class CapFloor extends Instrument {
     //                                        (floorRates_[i]-spread)/gearing);
     //   }
     //}
-
     //void CapFloor::arguments::validate() const {
     //   QL_REQUIRE(endTimes.size() == startTimes.size(),
     //              "number of start times (" << startTimes.size()
@@ -362,26 +355,17 @@ public class CapFloor extends Instrument {
     //       QL_FAIL("unknown CapFloor::Type (" << Integer(t) << ")");
     //   }
     //}
-
-
-
-
-
-
-
     @Override
     protected void performCalculations() throws ArithmeticException {
         // TODO Auto-generated method stub
 
     }
+
     @Override
     protected void setupArguments(final PricingEngine.Arguments arguments) {
         // TODO Auto-generated method stub
 
     }
-
-
-
 
     //    */
     //    class CapFloor : public Instrument {
@@ -519,5 +503,8 @@ public class CapFloor extends Instrument {
     //        : public GenericEngine<CapFloor::arguments, CapFloor::results> {};
     //
     //    std::ostream& operator<<(std::ostream&, CapFloor::Type);
+    public enum Type {
+        Cap, Floor, Collar
+    }
 
 }

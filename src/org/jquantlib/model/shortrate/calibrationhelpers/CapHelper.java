@@ -22,6 +22,11 @@ import org.jquantlib.util.Observer;
 // TODO: code review :: please verify against QL/C++ code
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public class CapHelper extends CalibrationHelper {
+    //
+    // implements Observable
+    //
+
+    private final Observable delegatedObservable = new DefaultObservable(this);
 
     public CapHelper(final Period length,
             final Handle<Quote> volatility,
@@ -30,9 +35,9 @@ public class CapHelper extends CalibrationHelper {
             final Frequency fixedLegFrequency,
             final DayCounter fixedLegDayCounter,
             final boolean includeFirstSwaplet,
-            final Handle<YieldTermStructure> termStructure){
+            final Handle<YieldTermStructure> termStructure) {
         this(length, volatility, index, fixedLegFrequency, fixedLegDayCounter,
-                includeFirstSwaplet,termStructure, false);
+                includeFirstSwaplet, termStructure, false);
     }
 
     public CapHelper(final Period length,
@@ -43,17 +48,16 @@ public class CapHelper extends CalibrationHelper {
             final DayCounter fixedLegDayCounter,
             final boolean includeFirstSwaplet,
             final Handle<YieldTermStructure> termStructure,
-            final boolean calibrateVolatility){
+            final boolean calibrateVolatility) {
         super(volatility, termStructure, calibrateVolatility);
 
         final Period indexTenor = index.tenor();
         final double fixedRate = 0.04; //dummy value
         JDate startDate, maturity;
-        if(includeFirstSwaplet){
+        if (includeFirstSwaplet) {
             startDate = termStructure.currentLink().referenceDate();
             maturity = termStructure.currentLink().referenceDate().add(length);
-        }
-        else{
+        } else {
             startDate = termStructure.currentLink().referenceDate().add(indexTenor);
             maturity = termStructure.currentLink().referenceDate().add(length);
         }
@@ -68,8 +72,7 @@ public class CapHelper extends CalibrationHelper {
                 termStructure.currentLink().dayCounter(),
                 termStructure);
 
-        final double [] nominals = {1,1.0};
-
+        final double[] nominals = {1, 1.0};
 
         // TODO: code review :: please verify against QL/C++ code
         final Schedule fixedSchedule = new Schedule(
@@ -79,8 +82,9 @@ public class CapHelper extends CalibrationHelper {
                 DateGeneration.Rule.Forward, false);
 
         //TODO: Code review :: incomplete code
-        if (true)
+        if (true) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
 
         /*
@@ -100,8 +104,6 @@ public class CapHelper extends CalibrationHelper {
                                               std::vector<Rate>(1, fairRate),
                                               termStructure, engine_));
         marketValue_ = blackPrice(volatility_->value());*/
-
-
     }
 
     @Override
@@ -122,7 +124,6 @@ public class CapHelper extends CalibrationHelper {
         return 0;
     }
 
-
     //
     // implements Observer
     //
@@ -130,13 +131,6 @@ public class CapHelper extends CalibrationHelper {
     public void update() {
         throw new UnsupportedOperationException("work in progress");
     }
-
-
-    //
-    // implements Observable
-    //
-
-    private final Observable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public void addObserver(final Observer observer) {

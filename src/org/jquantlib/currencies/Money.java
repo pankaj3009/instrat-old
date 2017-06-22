@@ -21,7 +21,6 @@
  */
 package org.jquantlib.currencies;
 
-
 import org.jquantlib.QL;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.Closeness;
@@ -36,8 +35,16 @@ public class Money implements Cloneable {
     public static ConversionType conversionType;
     public static Currency baseCurrency;
 
+    public static Money multiple(final Currency c, /* Decimal */ final double value) {
+        return new Money(value, c);
+    }
+
+    public static Money multiple( /* Decimal */final double value, final Currency c) {
+        return new Money(value, c);
+    }
+
     // class fields
-    private/* @Decimal */double value_;
+    private/* @Decimal */ double value_;
     private Currency currency_;
 
     // constructors
@@ -46,7 +53,7 @@ public class Money implements Cloneable {
         this.value_ = (0.0);
     }
 
-    public Money(final Currency currency, /* @Decimal */final double value) {
+    public Money(final Currency currency, /* @Decimal */ final double value) {
         QL.validateExperimentalMode();
         this.value_ = (value);
         this.currency_ = (currency);
@@ -71,7 +78,7 @@ public class Money implements Cloneable {
         return currency_;
     }
 
-    public/* @Decimal */double value() {
+    public/* @Decimal */ double value() {
         return value_;
     }
 
@@ -79,9 +86,7 @@ public class Money implements Cloneable {
         return new Money(currency_.rounding().operator(value_), currency_);
     }
 
-
     // class based operators
-
     // +() //FIXME: this looks like a mistake in c++
     public Money positiveValue() {
         return new Money(currency_, value_);
@@ -150,14 +155,6 @@ public class Money implements Cloneable {
         return new Money(value, c);
     }
 
-    public static Money multiple(final Currency c, /* Decimal */final double value) {
-        return new Money(value, c);
-    }
-
-    public static Money multiple( /* Decimal */final double value, final Currency c) {
-        return new Money(value, c);
-    }
-
     public void convertTo(final Currency target) {
         if (currency().ne(target)) {
             final ExchangeRate rate = ExchangeRateManager.getInstance().lookup(currency(), target);
@@ -168,7 +165,6 @@ public class Money implements Cloneable {
         }
     }
 
-
     //
     //    Assignment operations
     //
@@ -176,8 +172,6 @@ public class Money implements Cloneable {
     //    ----- ---------- ------- -------- ------
     //    +=    addAssign  Money   Money   this
     //    -=    addAssign  Money   Money   this
-
-
     //
     //    Operations
     //
@@ -185,19 +179,14 @@ public class Money implements Cloneable {
     //    ----- ---------- ------- -------- ------
     //    /     addAssign  Money   Money   this
     //    ==    equals     Money   Money   boolean
-
     public void convertToBase() {
-        QL.require((!baseCurrency.empty()) , "no base currency set");  // TODO: message
+        QL.require((!baseCurrency.empty()), "no base currency set");  // TODO: message
         convertTo(baseCurrency);
     }
 
-
-
-
-
-
     /**
      * += Operator
+     *
      * @param money The money to be added.
      * @return This money instance increased by the specified amount.
      */
@@ -215,13 +204,15 @@ public class Money implements Cloneable {
             tmp.convertTo(currency_);
             // recursive invocation
             this.addAssign(tmp);
-        } else
+        } else {
             throw new LibraryException("currency mismatch and no conversion specified"); // TODO: message
+        }
         return this;
     }
 
     /**
      * -= Operator
+     *
      * @param money The money to be subtracted.
      * @return This money instance decreased by the specified amount.
      */
@@ -238,21 +229,23 @@ public class Money implements Cloneable {
             final Money tmp = money.clone();
             tmp.convertTo(currency_);
             this.subAssign(tmp);
-        } else
+        } else {
             throw new LibraryException("currency mismatch and no conversion specified"); // TODO: message
+        }
         return this;
     }
 
     /**
      * Returns the the value of this instance divided by another instance.
-     * @note  This instance remains unchanged!
+     *
+     * @note This instance remains unchanged!
      * @param money The amount this instance should be divided to.
      * @return The amount of this divided by money.
      */
     public double div(final Money money) {
-        if (currency().eq(money.currency()))
+        if (currency().eq(money.currency())) {
             return value_ / money.value();
-        else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
+        } else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
             final Money tmp1 = this.clone();
             tmp1.convertToBase();
             final Money tmp2 = money.clone();
@@ -264,19 +257,21 @@ public class Money implements Cloneable {
             tmp.convertTo(money.currency());
             // recursive
             return this.div(tmp);
-        } else
+        } else {
             throw new LibraryException("currency mismatch and no conversion specified"); // TODO: message
+        }
     }
 
     /**
      * Operator ==
+     *
      * @param money The instance this instance should be compared to.
      * @return Whether this instance is equal to another instance
      */
     public boolean equals(final Money money) {
-        if (currency().eq(money.currency()))
+        if (currency().eq(money.currency())) {
             return value() == money.value();
-        else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
+        } else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
             final Money tmp1 = this.clone();
             tmp1.convertToBase();
             final Money tmp2 = money.clone();
@@ -287,14 +282,15 @@ public class Money implements Cloneable {
             final Money tmp = money.clone();
             tmp.convertTo(this.currency());
             return this.equals(tmp);
-        } else
+        } else {
             throw new LibraryException("currency mismatch and no conversion specified"); // TODO: message
+        }
     }
 
     public boolean less(final Money money) {
-        if (this.currency().eq(money.currency()))
+        if (this.currency().eq(money.currency())) {
             return value() < money.value();
-        else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
+        } else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
             final Money tmp1 = this.clone();
             tmp1.convertToBase();
             final Money tmp2 = money;
@@ -304,14 +300,15 @@ public class Money implements Cloneable {
             final Money tmp = money;
             tmp.convertTo(currency());
             return this.less(tmp);
-        } else
+        } else {
             throw new LibraryException("currency mismatch and no conversion specified"); // TODO: message
+        }
     }
 
     public boolean lessEquals(final Money money) {
-        if (currency().eq(money.currency()))
+        if (currency().eq(money.currency())) {
             return value() <= money.value();
-        else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
+        } else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
             final Money tmp1 = this.clone();
             tmp1.convertToBase();
             final Money tmp2 = money;
@@ -322,14 +319,15 @@ public class Money implements Cloneable {
             ;
             tmp.convertTo(this.currency());
             return this.less(tmp);
-        } else
+        } else {
             throw new LibraryException("currency mismatch and no conversion specified"); // TODO: message
+        }
     }
 
-    public boolean close(final Money money, /* Size */final int n) {
-        if (currency().eq(money.currency()))
+    public boolean close(final Money money, /* Size */ final int n) {
+        if (currency().eq(money.currency())) {
             return Closeness.isClose(value(), money.value(), n);
-        else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
+        } else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
             final Money tmp1 = this.clone();
             tmp1.convertToBase();
             final Money tmp2 = money.clone();
@@ -339,14 +337,15 @@ public class Money implements Cloneable {
             final Money tmp = money.clone();
             tmp.convertTo(this.currency());
             return this.close(tmp, n);
-        } else
+        } else {
             throw new LibraryException("currency mismatch and no conversion specified"); // TODO: message
+        }
     }
 
-    public boolean close_enough(final Money money, /* Size */final int n) {
-        if (currency().eq(money.currency()))
+    public boolean close_enough(final Money money, /* Size */ final int n) {
+        if (currency().eq(money.currency())) {
             return Closeness.isCloseEnough(value(), money.value(), n);
-        else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
+        } else if (conversionType == Money.ConversionType.BaseCurrencyConversion) {
             final Money tmp1 = this.clone();
             tmp1.convertToBase();
             final Money tmp2 = money;
@@ -356,26 +355,23 @@ public class Money implements Cloneable {
             final Money tmp = money;
             tmp.convertTo(currency());
             return this.close_enough(tmp, n);
-        } else
+        } else {
             throw new LibraryException("currency mismatch and no conversion specified"); // TODO: message
+        }
     }
-
 
     //
     // Overrides Object
     //
-
     @Override
     public String toString() {
         final Currency currency = currency();
-        return String.format(currency.format(), rounded().value_, currency.code(), currency.symbol() );
+        return String.format(currency.format(), rounded().value_, currency.code(), currency.symbol());
     }
-
 
     //
     // inner public enums
     //
-
     // enums
     public enum ConversionType {
 
@@ -383,12 +379,10 @@ public class Money implements Cloneable {
          * Do not perform conversions
          */
         NoConversion,
-
         /**
          * Convert both operands to the base currency before converting
          */
         BaseCurrencyConversion,
-
         /**
          * Return the result in the currency of the first operand
          */

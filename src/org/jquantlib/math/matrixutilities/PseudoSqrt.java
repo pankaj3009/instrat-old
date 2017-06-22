@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2004, 2007 Ferdinando Ametrano
  Copyright (C) 2006 Yiping Chen
  Copyright (C) 2007 Neil Firth
@@ -37,8 +37,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.matrixutilities;
 
 import org.jquantlib.QL;
@@ -52,44 +51,6 @@ import org.jquantlib.math.Closeness;
 public class PseudoSqrt {
 
     private final static String unknown_salvaging_algorithm = "unknown salvaging algorithm";
-
-    public enum SalvagingAlgorithm {
-        None, Spectral, Hypersphere, LowerDiagonal, Higham;
-    }
-
-    //! Returns the pseudo square root of a real symmetric matrix
-    /*! Given a matrix \f$ M \f$, the result \f$ S \f$ is defined
-        as the matrix such that \f$ S S^T = M. \f$
-        If the matrix is not positive semi definite, it can
-        return an approximation of the pseudo square root
-        using a (user selected) salvaging algorithm.
-
-        For more information see: "The most general methodology to create
-        a valid correlation matrix for risk management and option pricing
-        purposes", by R. Rebonato and P. Jaeckel.
-        The Journal of Risk, 2(2), Winter 1999/2000
-        http://www.rebonato.com/correlationmatrix.pdf
-
-        Revised and extended in "Monte Carlo Methods in Finance",
-        by Peter Jaeckel, Chapter 6.
-
-        \pre the given matrix must be symmetric.
-
-        \relates Matrix
-
-        \warning Higham algorithm only works for correlation matrices.
-
-        \test
-        - the correctness of the results is tested by reproducing
-          known good data.
-        - the correctness of the results is tested by checking
-          returned values against numerical calculations.
-     */
-    public Matrix pseudoSqrt( final Matrix matrix){
-        return pseudoSqrt(matrix, SalvagingAlgorithm.None);
-    }
-
-
 
     //! Returns the rank-reduced pseudo square root of a real symmetric matrix
     /*! The result matrix has rank<=maxRank. If maxRank>=size, then the
@@ -107,16 +68,15 @@ public class PseudoSqrt {
     public static Matrix rankReducedSqrt(final Matrix matrix,
             final int maxRank,
             final int componentRetainedPercentage,
-            final SalvagingAlgorithm sa){
-
+            final SalvagingAlgorithm sa) {
 
         QL.validateExperimentalMode();
 
         QL.require(matrix.rows == matrix.columns(), Cells.MATRIX_MUST_BE_SQUARE); // QA:[RG]::verified
         QL.require(checkSymmetry(matrix), Cells.MATRIX_MUST_BE_SYMMETRIC); // QA:[RG]::verified
-        QL.require(componentRetainedPercentage>0.0, "no eigenvalues retained"); // TODO: message
-        QL.require(componentRetainedPercentage<=1.0, "percentage to be retained > 100%"); // TODO: message
-        QL.require(maxRank>=1, "max rank required < 1"); // TODO: message
+        QL.require(componentRetainedPercentage > 0.0, "no eigenvalues retained"); // TODO: message
+        QL.require(componentRetainedPercentage <= 1.0, "percentage to be retained > 100%"); // TODO: message
+        QL.require(maxRank >= 1, "max rank required < 1"); // TODO: message
 
         final int size = matrix.rows;
 
@@ -126,27 +86,28 @@ public class PseudoSqrt {
 
         // salvaging algorithm
         switch (sa) {
-        case None:
-            // eigenvalues are sorted in decreasing order
-            if(eigenValues.get(size-1)<-1e-16)
-                throw new IllegalArgumentException("negative eigenvalue(s) ("
-                        + eigenValues.get(size-1)+")");
-            break;
-        case Spectral:
-            // negative eigenvalues set to zero
-            for (int i=0; i<size; ++i) {
-                eigenValues.set(i,Math.max(eigenValues.get(i), 0.0));
-            }
-            break;
-        case Higham:
-            final int maxIterations = 40;
-            final double tolerance = 1e-6;
-            final Matrix adjustedMatrix = null;//highamImplementation(matrix, maxIterations, tolerance);
-            jd = new SymmetricSchurDecomposition(adjustedMatrix);
-            eigenValues = jd.eigenvalues();
-            break;
-        default:
-            throw new LibraryException("unknown or invalid salvaging algorithm"); // TODO: message
+            case None:
+                // eigenvalues are sorted in decreasing order
+                if (eigenValues.get(size - 1) < -1e-16) {
+                    throw new IllegalArgumentException("negative eigenvalue(s) ("
+                            + eigenValues.get(size - 1) + ")");
+                }
+                break;
+            case Spectral:
+                // negative eigenvalues set to zero
+                for (int i = 0; i < size; ++i) {
+                    eigenValues.set(i, Math.max(eigenValues.get(i), 0.0));
+                }
+                break;
+            case Higham:
+                final int maxIterations = 40;
+                final double tolerance = 1e-6;
+                final Matrix adjustedMatrix = null;//highamImplementation(matrix, maxIterations, tolerance);
+                jd = new SymmetricSchurDecomposition(adjustedMatrix);
+                eigenValues = jd.eigenvalues();
+                break;
+            default:
+                throw new LibraryException("unknown or invalid salvaging algorithm"); // TODO: message
         }
 
         // factor reduction
@@ -158,16 +119,16 @@ public class PseudoSqrt {
         // retain at least one factor
         double components = eigenValues.first();
         int retainedFactors = 1;
-        for (int i=1; components<enough && i<size; ++i) {
+        for (int i = 1; components < enough && i < size; ++i) {
             components += eigenValues.get(i);
             retainedFactors++;
         }
         // output is granted to have a rank<=maxRank
-        retainedFactors=Math.min(retainedFactors, maxRank);
+        retainedFactors = Math.min(retainedFactors, maxRank);
 
         final Matrix diagonal = new Matrix(size, retainedFactors);
-        for (int i=0; i<retainedFactors; ++i) {
-            diagonal.set(i,i, Math.sqrt(eigenValues.get(i)));
+        for (int i = 0; i < retainedFactors; ++i) {
+            diagonal.set(i, i, Math.sqrt(eigenValues.get(i)));
         }
         // TODO: code review:: compare against C++ code
         final Matrix result = jd.eigenvectors().mul(jd.eigenvectors()).mul(diagonal);
@@ -176,28 +137,28 @@ public class PseudoSqrt {
         return result;
     }
 
-
     public static void normalizePseudoRoot(final Matrix matrix, final Matrix pseudo) {
 
         QL.validateExperimentalMode();
 
         final int size = matrix.rows;
 
-        if (size != pseudo.rows)
+        if (size != pseudo.rows) {
             throw new IllegalArgumentException(
                     "matrix/pseudo mismatch: matrix rows are " + size + " while pseudo rows are " + pseudo.cols);
+        }
 
         final int pseudoCols = pseudo.cols;
 
         // row normalization
-        for (int i=0; i<size; ++i) {
+        for (int i = 0; i < size; ++i) {
             double norm = 0.0;
-            for (int j=0; j<pseudoCols; ++j) {
-                norm += pseudo.get(i, j)*pseudo.get(j, i);
+            for (int j = 0; j < pseudoCols; ++j) {
+                norm += pseudo.get(i, j) * pseudo.get(j, i);
             }
-            if (norm>0.0) {
-                final double normAdj = Math.sqrt(matrix.get(i,i)/norm);
-                for (int j=0; j<pseudoCols; ++j) {
+            if (norm > 0.0) {
+                final double normAdj = Math.sqrt(matrix.get(i, i) / norm);
+                for (int j = 0; j < pseudoCols; ++j) {
                     pseudo.set(i, j, pseudo.get(i, j) * normAdj);
                 }
             }
@@ -438,71 +399,78 @@ public class PseudoSqrt {
         final Matrix result;
         boolean negative;
         switch (sa) {
-        case None:
-            // eigenvalues are sorted in decreasing order
-            if (jd.eigenvalues().get(size-1)<-1e-16)
-                throw new IllegalArgumentException( "negative eigenvalue(s) ("
-                        + /*std::scientific*/ + jd.eigenvalues().get(size-1)
-                        + ")");
-            result = matrix.cholesky().L();
-            break;
-        case Spectral:
-            // negative eigenvalues set to zero
-            for (int i=0; i<size; i++) {
-                diagonal.set(i, i, Math.sqrt(Math.max((jd.eigenvalues().get(i)), 0.0)));
-            }
-            if(true)
-                throw new UnsupportedOperationException("work in progress");
-            //result = jd.eigenvectors() * diagonal;
-            normalizePseudoRoot(matrix, result);
-            break;
-        case Hypersphere:
-            // negative eigenvalues set to zero
-            negative=false;
-            for (int i=0; i<size; ++i){
-                diagonal.set(i, i, Math.sqrt(Math.max(jd.eigenvalues().get(i), 0.0)));
-                if (jd.eigenvalues().get(i)<0.0) {
-                    negative=true;
+            case None:
+                // eigenvalues are sorted in decreasing order
+                if (jd.eigenvalues().get(size - 1) < -1e-16) {
+                    throw new IllegalArgumentException("negative eigenvalue(s) ("
+                            + /*std::scientific*/ +jd.eigenvalues().get(size - 1)
+                            + ")");
                 }
-            }
-            if(true)
-                throw new UnsupportedOperationException("work in progress");
-            //result = jd.eigenvectors() * diagonal;
-            normalizePseudoRoot(matrix, result);
-
-            if (negative)
-                throw new UnsupportedOperationException("work in progress");
-            //result = hypersphereOptimize(matrix, result, false);
-            break;
-        case LowerDiagonal:
-            // negative eigenvalues set to zero
-            negative=false;
-            for (int i=0; i<size; ++i){
-                diagonal.set(i, i, Math.sqrt(Math.max(jd.eigenvalues().get(i), 0.0)));
-                if (jd.eigenvalues().get(i)<0.0) {
-                    negative=true;
+                result = matrix.cholesky().L();
+                break;
+            case Spectral:
+                // negative eigenvalues set to zero
+                for (int i = 0; i < size; i++) {
+                    diagonal.set(i, i, Math.sqrt(Math.max((jd.eigenvalues().get(i)), 0.0)));
                 }
-            }
-            if(true)
-                throw new UnsupportedOperationException("work in progress");
-            //result = jd.eigenvectors() * diagonal;
-            normalizePseudoRoot(matrix, result);
+                if (true) {
+                    throw new UnsupportedOperationException("work in progress");
+                }
+                //result = jd.eigenvectors() * diagonal;
+                normalizePseudoRoot(matrix, result);
+                break;
+            case Hypersphere:
+                // negative eigenvalues set to zero
+                negative = false;
+                for (int i = 0; i < size; ++i) {
+                    diagonal.set(i, i, Math.sqrt(Math.max(jd.eigenvalues().get(i), 0.0)));
+                    if (jd.eigenvalues().get(i) < 0.0) {
+                        negative = true;
+                    }
+                }
+                if (true) {
+                    throw new UnsupportedOperationException("work in progress");
+                }
+                //result = jd.eigenvectors() * diagonal;
+                normalizePseudoRoot(matrix, result);
 
-            if (negative)
-                throw new UnsupportedOperationException("work in progress");
-            //result = hypersphereOptimize(matrix, result, true);
-            break;
-        case Higham:
-            final int maxIterations = 40;
-            final double tol = 1e-6;
-            if(true)
-                throw new UnsupportedOperationException("work in progress");
-            // TODO: code review :: please verify against QL/C++ code
-            //result = highamImplementation(matrix, maxIterations, tol);
-            // result = new CholeskyDecomposition().CholeskyDecomposition(result, true);
-            break;
-        default:
-            throw new LibraryException(unknown_salvaging_algorithm); // TODO: message
+                if (negative) {
+                    throw new UnsupportedOperationException("work in progress");
+                }
+                //result = hypersphereOptimize(matrix, result, false);
+                break;
+            case LowerDiagonal:
+                // negative eigenvalues set to zero
+                negative = false;
+                for (int i = 0; i < size; ++i) {
+                    diagonal.set(i, i, Math.sqrt(Math.max(jd.eigenvalues().get(i), 0.0)));
+                    if (jd.eigenvalues().get(i) < 0.0) {
+                        negative = true;
+                    }
+                }
+                if (true) {
+                    throw new UnsupportedOperationException("work in progress");
+                }
+                //result = jd.eigenvectors() * diagonal;
+                normalizePseudoRoot(matrix, result);
+
+                if (negative) {
+                    throw new UnsupportedOperationException("work in progress");
+                }
+                //result = hypersphereOptimize(matrix, result, true);
+                break;
+            case Higham:
+                final int maxIterations = 40;
+                final double tol = 1e-6;
+                if (true) {
+                    throw new UnsupportedOperationException("work in progress");
+                }
+                // TODO: code review :: please verify against QL/C++ code
+                //result = highamImplementation(matrix, maxIterations, tol);
+                // result = new CholeskyDecomposition().CholeskyDecomposition(result, true);
+                break;
+            default:
+                throw new LibraryException(unknown_salvaging_algorithm); // TODO: message
         }
         return result;
     }
@@ -590,23 +558,55 @@ const Disposable<Matrix> rankReducedSqrt(const Matrix& matrix,
 }
 
      */
-
-
     //
     // private methods
     //
-
     private static boolean checkSymmetry(final Matrix matrix) {
         final int size = matrix.rows;
-        for (int i=0; i<size; ++i) {
-            for (int j=0; j<i; ++j)
-                if (Closeness.isClose(matrix.get(i, j), matrix.get(j, i)))
+        for (int i = 0; i < size; ++i) {
+            for (int j = 0; j < i; ++j) {
+                if (Closeness.isClose(matrix.get(i, j), matrix.get(j, i))) {
                     return false;
+                }
+            }
         }
         return true;
     }
 
+    //! Returns the pseudo square root of a real symmetric matrix
+    /*! Given a matrix \f$ M \f$, the result \f$ S \f$ is defined
+    as the matrix such that \f$ S S^T = M. \f$
+    If the matrix is not positive semi definite, it can
+    return an approximation of the pseudo square root
+    using a (user selected) salvaging algorithm.
+    
+    For more information see: "The most general methodology to create
+    a valid correlation matrix for risk management and option pricing
+    purposes", by R. Rebonato and P. Jaeckel.
+    The Journal of Risk, 2(2), Winter 1999/2000
+    http://www.rebonato.com/correlationmatrix.pdf
+    
+    Revised and extended in "Monte Carlo Methods in Finance",
+    by Peter Jaeckel, Chapter 6.
+    
+    \pre the given matrix must be symmetric.
+    
+    \relates Matrix
+    
+    \warning Higham algorithm only works for correlation matrices.
+    
+    \test
+    - the correctness of the results is tested by reproducing
+    known good data.
+    - the correctness of the results is tested by checking
+    returned values against numerical calculations.
+     */
+    public Matrix pseudoSqrt(final Matrix matrix) {
+        return pseudoSqrt(matrix, SalvagingAlgorithm.None);
+    }
+
+    public enum SalvagingAlgorithm {
+        None, Spectral, Hypersphere, LowerDiagonal, Higham;
+    }
+
 }
-
-
-

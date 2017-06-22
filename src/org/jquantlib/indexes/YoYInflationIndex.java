@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.indexes;
 
 import org.jquantlib.QL;
@@ -39,97 +38,98 @@ import org.jquantlib.util.Pair;
 /**
  * Base class for year-on-year inflation indices.
  *
- * These may be genuine indices published on, say, Bloomberg, or
- * "fake" indices that are defined as the ratio of an index at
- * different time points. 
- * 
+ * These may be genuine indices published on, say, Bloomberg, or "fake" indices
+ * that are defined as the ratio of an index at different time points.
+ *
  * @author Tim Blackler
  *
  */
 // TODO: code review :: please verify against QL/C++ code
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public abstract class YoYInflationIndex extends InflationIndex {
-    
+
     private Handle<YoYInflationTermStructure> yoyInflation;
     private boolean ratio;
-    
+
     public YoYInflationIndex(final String familyName,
-			 final Region region,
-			 final boolean revised,
-			 final boolean interpolated,
-			 final boolean ratio, // is this one a genuine index or a ratio?
-			 final Frequency frequency,
-			 final Period availabilityLag,
-			 final Currency currency) {
-    	this(familyName, region, revised, interpolated, ratio, frequency, availabilityLag, currency, new Handle<YoYInflationTermStructure	>());
-  	
+            final Region region,
+            final boolean revised,
+            final boolean interpolated,
+            final boolean ratio, // is this one a genuine index or a ratio?
+            final Frequency frequency,
+            final Period availabilityLag,
+            final Currency currency) {
+        this(familyName, region, revised, interpolated, ratio, frequency, availabilityLag, currency, new Handle<YoYInflationTermStructure>());
+
     }
-    
+
     public YoYInflationIndex(final String familyName,
-            				 final Region region,
-            				 final boolean revised,
-            				 final boolean interpolated,
-            				 final boolean ratio, // is this one a genuine index or a ratio?
-            				 final Frequency frequency,
-            				 final Period availabilityLag,
-            				 final Currency currency,
-            				 final Handle<YoYInflationTermStructure> yoyInflation) {
-    	super(familyName, region, revised, interpolated, frequency, availabilityLag, currency);
-    	this.ratio = ratio;
-    	this.yoyInflation = yoyInflation;
-    	this.yoyInflation.addObserver(this);	
+            final Region region,
+            final boolean revised,
+            final boolean interpolated,
+            final boolean ratio, // is this one a genuine index or a ratio?
+            final Frequency frequency,
+            final Period availabilityLag,
+            final Currency currency,
+            final Handle<YoYInflationTermStructure> yoyInflation) {
+        super(familyName, region, revised, interpolated, frequency, availabilityLag, currency);
+        this.ratio = ratio;
+        this.yoyInflation = yoyInflation;
+        this.yoyInflation.addObserver(this);
     }
- 
+
     @Override
     public double fixing(JDate fixingDate) {
-    	return this.fixing(fixingDate, false);
-    }	
-    
+        return this.fixing(fixingDate, false);
+    }
+
     @Override
     public double fixing(JDate fixingDate, boolean forecastTodaysFixing) {
-    	JDate today = new Settings().evaluationDate();
-    	JDate todayMinusLag = today.sub(availabilityLag);
-    	
-    	Pair<JDate,JDate> lim = InflationTermStructure.inflationPeriod(todayMinusLag, frequency);
-    	todayMinusLag = lim.second().inc();
-    	
-    	if ((fixingDate.lt(todayMinusLag)) ||
-    		(fixingDate.eq(todayMinusLag) && !forecastTodaysFixing)) {
-    		
-    		@Real double pastFixing = IndexManager.getInstance().getHistory(name()).get(fixingDate);
-    		QL.require(!(Double.isNaN(pastFixing)) , "Missing " + name() + " fixing for " + fixingDate);
-    		
-    		JDate previousDate = fixingDate.sub(new Period(1,TimeUnit.Years));
-    		@Rate double previousFixing = IndexManager.getInstance().getHistory(name()).get(previousDate);
-    		QL.require(!(Double.isNaN(pastFixing)) , "Missing " + name() + " fixing for " + previousFixing);
+        JDate today = new Settings().evaluationDate();
+        JDate todayMinusLag = today.sub(availabilityLag);
 
-    		return pastFixing/previousFixing - 1.0;
-    		
-    	} else {
-    		return forecastFixing(fixingDate);
-    	}
-    }    
-    
-    public Handle<YoYInflationTermStructure> yoyInflationTermStructure() {
-    	return yoyInflation;
+        Pair<JDate, JDate> lim = InflationTermStructure.inflationPeriod(todayMinusLag, frequency);
+        todayMinusLag = lim.second().inc();
+
+        if ((fixingDate.lt(todayMinusLag))
+                || (fixingDate.eq(todayMinusLag) && !forecastTodaysFixing)) {
+
+            @Real
+            double pastFixing = IndexManager.getInstance().getHistory(name()).get(fixingDate);
+            QL.require(!(Double.isNaN(pastFixing)), "Missing " + name() + " fixing for " + fixingDate);
+
+            JDate previousDate = fixingDate.sub(new Period(1, TimeUnit.Years));
+            @Rate
+            double previousFixing = IndexManager.getInstance().getHistory(name()).get(previousDate);
+            QL.require(!(Double.isNaN(pastFixing)), "Missing " + name() + " fixing for " + previousFixing);
+
+            return pastFixing / previousFixing - 1.0;
+
+        } else {
+            return forecastFixing(fixingDate);
+        }
     }
-    
+
+    public Handle<YoYInflationTermStructure> yoyInflationTermStructure() {
+        return yoyInflation;
+    }
+
     public boolean ratio() {
         return ratio;
     }
-    
+
     private /* @Rate */ double forecastFixing(final JDate fixingDate) {
         // if the value is not interpolated get the value for
         // half way along the period.
         JDate d = fixingDate;
-        
+
         if (!interpolated()) {
-            Pair<JDate,JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
-            int n = (int)(lim.second().sub(lim.first())) / 2;
-    		d = lim.first().add(n);
+            Pair<JDate, JDate> lim = InflationTermStructure.inflationPeriod(fixingDate, frequency);
+            int n = (int) (lim.second().sub(lim.first())) / 2;
+            d = lim.first().add(n);
         }
 
         return yoyInflation.currentLink().yoyRate(d);
     }
-       
+
 }

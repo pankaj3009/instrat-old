@@ -9,6 +9,7 @@ package com.incurrency.framework;
  * @author jaya
  */
 public interface HistoricalBarListener {
-    public void barsReceived( HistoricalBarEvent event );
+
+    public void barsReceived(HistoricalBarEvent event);
 
 }

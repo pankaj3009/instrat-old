@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -83,8 +82,28 @@ import static org.jquantlib.time.Weekday.Friday;
  * @author Srinivas Hasti
  * @author Dominik Holenstein
  */
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Richard Gomes"})
 public class Brazil extends Calendar {
+
+    //
+    // public constructors
+    //
+    public Brazil() {
+        this(Market.SETTLEMENT);
+    }
+
+    public Brazil(final Market market) {
+        switch (market) {
+            case SETTLEMENT:
+                impl = new SettlementImpl();
+                break;
+            case BOVESPA:
+                impl = new ExchangeImpl();
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
+        }
+    }
 
     /**
      * Brazil calendars
@@ -94,40 +113,15 @@ public class Brazil extends Calendar {
          * Generic settlement calendar
          */
         SETTLEMENT,
-
         /**
          * Bolsa de Valores de Sao Paulo
          */
         BOVESPA
     }
 
-
-    //
-    // public constructors
-    //
-
-    public Brazil() {
-        this(Market.SETTLEMENT);
-    }
-
-    public Brazil(final Market market) {
-        switch (market) {
-        case SETTLEMENT:
-            impl = new SettlementImpl();
-            break;
-        case BOVESPA:
-            impl = new ExchangeImpl();
-            break;
-        default:
-            throw new LibraryException(UNKNOWN_MARKET);
-        }
-    }
-
-
     //
     // private final inner classes
     //
-
     private final class SettlementImpl extends Calendar.WesternImpl {
 
         @Override

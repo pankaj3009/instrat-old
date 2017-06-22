@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2004, 2008 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2001, 2002, 2003 Nicolas Di C�sar�
@@ -36,13 +36,10 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.interpolations;
 
 import org.jquantlib.math.matrixutilities.Array;
-
-
 
 /**
  * Linear interpolation between discrete points
@@ -55,52 +52,44 @@ public class LinearInterpolation extends AbstractInterpolation {
     //
     // public constructors
     //
-
     public LinearInterpolation(final Array vx, final Array vy) {
         super.impl = new LinearInterpolationImpl(vx, vy);
         super.impl.update();
 
     }
 
-
     //
     // protected inner classes
     //
-
     private class LinearInterpolationImpl extends AbstractInterpolation.Impl {
 
         //
         // private fields
         //
-
         private final Array vp;
         private final Array vs;
-
 
         //
         // protected constructors
         //
-
         protected LinearInterpolationImpl(final Array vx, final Array vy) {
             super(vx, vy);
             this.vp = new Array(vx.size());
             this.vs = new Array(vx.size());
         }
 
-
         //
         // overrides AbstractInterpolation.Impl
         //
-
         @Override
         public void update() {
             vp.set(0, 0.0);
             double value;
-            for (int i=1; i < vx.size(); i++) {
-                final double dx = vx.get(i) - vx.get(i-1);
-                value = (vy.get(i) - vy.get(i-1)) / dx;
-                vs.set(i-1, value);
-                value = vp.get(i-1) + dx*(vy.get(i-1) +0.5*dx*vs.get(i-1));
+            for (int i = 1; i < vx.size(); i++) {
+                final double dx = vx.get(i) - vx.get(i - 1);
+                value = (vy.get(i) - vy.get(i - 1)) / dx;
+                vs.set(i - 1, value);
+                value = vp.get(i - 1) + dx * (vy.get(i - 1) + 0.5 * dx * vs.get(i - 1));
                 vp.set(i, value);
             }
         }
@@ -108,14 +97,14 @@ public class LinearInterpolation extends AbstractInterpolation {
         @Override
         public double op(final double x) {
             final int i = locate(x);
-            return vy.get(i) + (x - vx.get(i))*vs.get(i);
+            return vy.get(i) + (x - vx.get(i)) * vs.get(i);
         }
 
         @Override
         public double primitive(final double x) {
             final int i = locate(x);
             final double dx = x - vx.get(i);
-            return vp.get(i-1) + dx*(vy.get(i-1) + 0.5*dx*vs.get(i-1));
+            return vp.get(i - 1) + dx * (vy.get(i - 1) + 0.5 * dx * vs.get(i - 1));
         }
 
         @Override

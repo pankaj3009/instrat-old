@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2004, 2005 StatPro Italia srl
@@ -38,7 +38,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.processes;
 
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -63,7 +62,10 @@ import org.jquantlib.time.JDate;
  * <p>
  * This class describes the stochastic process governed by
  * <p>
- * {@latex[ dS(t, S) = (r(t) - q(t) - \frac \sigma(t, S)^2}{2}) dt + \sigma dW_t. }
+ * {
+ *
+ * @latex[ dS(t, S) = (r(t) - q(t) - \frac \sigma(t, S)^2}{2}) dt + \sigma dW_t.
+ * }
  *
  * @author Richard Gomes
  */
@@ -77,9 +79,9 @@ public class GeneralizedBlackScholesProcess extends StochasticProcess1D {
     private boolean updated;
 
     /**
-     * @param discretization
-     *            is an Object that <b>must</b> implement {@link Discretization}
-     *            <b>and</b> {@link Discretization1D}.
+     * @param discretization is an Object that <b>must</b> implement
+     * {@link Discretization}
+     * <b>and</b> {@link Discretization1D}.
      */
     public GeneralizedBlackScholesProcess(
             final Handle<? extends Quote> x0,
@@ -90,9 +92,9 @@ public class GeneralizedBlackScholesProcess extends StochasticProcess1D {
     }
 
     /**
-     * @param discretization
-     *            is an Object that <b>must</b> implement {@link Discretization}
-     *            <b>and</b> {@link Discretization1D}.
+     * @param discretization is an Object that <b>must</b> implement
+     * {@link Discretization}
+     * <b>and</b> {@link Discretization1D}.
      */
     public GeneralizedBlackScholesProcess(
             final Handle<? extends Quote> x0,
@@ -137,7 +139,6 @@ public class GeneralizedBlackScholesProcess extends StochasticProcess1D {
         this.blackVolatility.addObserver(this);
     }
 
-
     public final Handle<? extends Quote> stateVariable() {
         return x0;
     }
@@ -164,7 +165,7 @@ public class GeneralizedBlackScholesProcess extends StochasticProcess1D {
                 final BlackConstantVol constVol = (BlackConstantVol) blackVolatility.currentLink();
                 localVolatility.linkTo(new LocalConstantVol(
                         constVol.referenceDate(),
-                        constVol.blackVol(/*@Time*/0.0, /*@Real*/x0.currentLink().value()), constVol.dayCounter()));
+                        constVol.blackVol(/*@Time*/0.0, /*@Real*/ x0.currentLink().value()), constVol.dayCounter()));
                 updated = true;
                 return localVolatility;
             }
@@ -189,30 +190,32 @@ public class GeneralizedBlackScholesProcess extends StochasticProcess1D {
             // We decided to explicitly test the interface and throw an exception if we are not able
             // to identify the correct interface to be used.
             throw new LibraryException("unrecognized volatility curve"); // QA:[RG]::verified // FIXME: message
-        } else
+        } else {
             return localVolatility;
+        }
     }
-
 
     //
     // implements StochasticProcess1D
     //
-
     @Override
-    public/* @Real */double x0() {
+    public/* @Real */ double x0() {
         return x0.currentLink().value();
     }
 
     @Override
     public /* @Drift */ double drift(
-            final/* @Time */double t,
-            final/* @Real */double x) {
-        /* @Diffusion */final double sigma = diffusion(t, x);
+                    final/* @Time */ double t,
+                    final/* @Real */ double x) {
+        /* @Diffusion */
+        final double sigma = diffusion(t, x);
         // we could be more anticipatory if we know the right dt
         // for which the drift will be used
-        /* @Time */final double t1 = t + 0.0001;
+        /* @Time */
+        final double t1 = t + 0.0001;
         final YieldTermStructure yts = riskFreeRate.currentLink();
-        /* @Rate */final double r = yts.forwardRate(t, t1, Compounding.Continuous, Frequency.NoFrequency, true).rate();
+        /* @Rate */
+        final double r = yts.forwardRate(t, t1, Compounding.Continuous, Frequency.NoFrequency, true).rate();
 
         final YieldTermStructure divTs = dividendYield.currentLink();
         final double d = divTs.forwardRate(t, t1, Compounding.Continuous, Frequency.NoFrequency, true).rate();
@@ -220,24 +223,25 @@ public class GeneralizedBlackScholesProcess extends StochasticProcess1D {
     }
 
     @Override
-    public/* @Diffusion */double diffusion(
-            final/* @Time */double t,
-            final/* @Real */double x) {
-        /* @Volatility */final double vol = localVolatility().currentLink().localVol(t, x, true);
+    public/* @Diffusion */ double diffusion(
+                    final/* @Time */ double t,
+                    final/* @Real */ double x) {
+        /* @Volatility */
+        final double vol = localVolatility().currentLink().localVol(t, x, true);
         return vol;
     }
 
     @Override
-    public final/* @Real */double apply(
-            final/* @Real */double x0,
-            final/* @Time */double dx) {
+    public final/* @Real */ double apply(
+                    final/* @Real */ double x0,
+                    final/* @Time */ double dx) {
         // result = x0 * e^dx
         final double result = x0 * Math.exp(dx);
         return result;
     }
 
     @Override
-    public final/* @Time */double time(final JDate d) {
+    public final/* @Time */ double time(final JDate d) {
         final YieldTermStructure yts = riskFreeRate.currentLink();
         return yts.dayCounter().yearFraction(yts.referenceDate(), d);
     }
@@ -245,7 +249,6 @@ public class GeneralizedBlackScholesProcess extends StochasticProcess1D {
     //
     // implements Observer
     //
-
     @Override
     //XXX::OBS public final void update(final Observable o, final Object arg) {
     public final void update() {

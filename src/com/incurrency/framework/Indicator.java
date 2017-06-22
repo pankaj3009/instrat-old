@@ -9,6 +9,7 @@ package com.incurrency.framework;
  * @author Pankaj
  */
 public class Indicator {
+
     public long timeStamp;
     public double value;
 }

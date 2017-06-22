@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006, 2007 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.quotes;
 
 import java.util.List;
@@ -74,32 +73,26 @@ public class Handle<T extends Observable> implements Observable {
     // forwarding notifications to external Observers as expected.
     //
     /////////////////////////////////////////////////////////////////////////////////////////////////
-
-
     static private final String EMPTY_HANDLE = "empty Handle cannot be dereferenced"; // TODO: message
 
     //
     // final private fields
     //
-
     /**
-     * Responsible for forwarding notifications coming from the Observable object to
-     * objects registering as Observers of <code>this</code> instance
+     * Responsible for forwarding notifications coming from the Observable
+     * object to objects registering as Observers of <code>this</code> instance
      */
     final private Link link;
 
     //
     // private fields
     //
-
     private T observable;
     private boolean isObserver = false;
 
     //
     // public constructors
     //
-
-
     public Handle() {
         this.link = new Link(this);
         this.observable = null; // just for verbosity
@@ -111,30 +104,25 @@ public class Handle<T extends Observable> implements Observable {
         internalLinkTo(observable, true);
     }
 
-
     public Handle(final T observable, final boolean registerAsObserver) {
         this.link = new Link(this);
         internalLinkTo(observable, registerAsObserver);
     }
 
-
     //
     // final public methods
     //
-
     final public boolean empty() /* @ReadOnly */ {
-        return (this.observable==null);
+        return (this.observable == null);
     }
 
     final public T currentLink() {
         return this.observable;
     }
 
-
     //
     // public methods
     //
-
     public void linkTo(final T observable) {
         throw new UnsupportedOperationException();
     }
@@ -143,46 +131,40 @@ public class Handle<T extends Observable> implements Observable {
         throw new UnsupportedOperationException();
     }
 
-
     //
     // protected final methods
     //
-
     final protected void internalLinkTo(final T observable) {
         this.internalLinkTo(observable, true);
     }
 
     final protected void internalLinkTo(final T observable, final boolean registerAsObserver) {
-        if ((this.observable!=observable) || (this.isObserver!=registerAsObserver)) {
-            if (this.observable!=null && this.isObserver) {
+        if ((this.observable != observable) || (this.isObserver != registerAsObserver)) {
+            if (this.observable != null && this.isObserver) {
                 this.observable.deleteObserver(link);
             }
             this.observable = observable;
             this.isObserver = registerAsObserver;
-            if (this.observable!=null && this.isObserver) {
+            if (this.observable != null && this.isObserver) {
                 this.observable.addObserver(link);
             }
-            if (this.observable!=null) {
+            if (this.observable != null) {
                 this.observable.notifyObservers();
             }
         }
     }
 
-
     //
     // overrides Object
     //
-
     @Override
     public String toString() {
-        return observable==null ? "null" : observable.toString();
+        return observable == null ? "null" : observable.toString();
     }
-
 
     //
     // implements Observable
     //
-
     @Override
     public final void addObserver(final Observer observer) {
         //XXX QL.require(observable!=null, EMPTY_HANDLE);
@@ -225,17 +207,17 @@ public class Handle<T extends Observable> implements Observable {
         return link.getObservers();
     }
 
-
     //
     // private final inner classes
     //
-
     /**
-     * A Link is responsible for observing the Observable object passed to Handle during it's construction
-     * or another Observable passed to {@link Handle#linkTo(Observable)} methods.
+     * A Link is responsible for observing the Observable object passed to
+     * Handle during it's construction or another Observable passed to
+     * {@link Handle#linkTo(Observable)} methods.
      * <p>
-     * So, the ditto Observable notifies its Observers, a Link instance is notified, which ultimately
-     * is responsible for forwarding this notification to a list of external Observers.
+     * So, the ditto Observable notifies its Observers, a Link instance is
+     * notified, which ultimately is responsible for forwarding this
+     * notification to a list of external Observers.
      */
     final private class Link extends WeakReferenceObservable implements Observer {
 
@@ -245,7 +227,7 @@ public class Handle<T extends Observable> implements Observable {
 
         @Override
         public void update() {
-            if (observable!=null) {
+            if (observable != null) {
                 super.notifyObservers();
             }
         }

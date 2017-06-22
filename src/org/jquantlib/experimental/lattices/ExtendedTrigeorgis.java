@@ -18,9 +18,9 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
-*/
+ */
 
-/*
+ /*
 Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
 Copyright (C) 2003 Ferdinando Ametrano
 Copyright (C) 2005 StatPro Italia srl
@@ -38,56 +38,51 @@ copy of the license along with this program; if not, please email
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.experimental.lattices;
 
 import org.jquantlib.QL;
 import org.jquantlib.processes.StochasticProcess1D;
 
 /**
-* Trigeorgis (additive equal jumps) binomial tree
-*
-* @category lattices
-*
-* @author Richard Gomes
-*/
+ * Trigeorgis (additive equal jumps) binomial tree
+ *
+ * @category lattices
+ *
+ * @author Richard Gomes
+ */
 public class ExtendedTrigeorgis extends ExtendedEqualJumpsBinomialTree /*<ExtendedCoxRossRubinstein> */ {
 
-   //
-   // public methods
-   //
+    //
+    // public methods
+    //
+    public ExtendedTrigeorgis(
+            final StochasticProcess1D process,
+            final /* @Time */ double end,
+            final int steps,
+            final double strike) {
 
-   public ExtendedTrigeorgis(
-           final StochasticProcess1D process,
-           final /* @Time */ double end,
-           final int steps,
-           final double strike) {
+        super(process, end, steps);
 
+        this.dx = Math.sqrt(process.variance(0.0, x0, dt) + driftStep(0.0) * driftStep(0.0));
+        this.pu = 0.5 + 0.5 * driftStep(0.0) / dxStep(0.0);
+        this.pd = 1.0 - this.pu;
 
-       super(process, end, steps);
+        QL.require(pu <= 1.0, NEGATIVE_PROBABILITY);
+        QL.require(pu >= 0.0, NEGATIVE_PROBABILITY);
+    }
 
-       this.dx = Math.sqrt(process.variance(0.0, x0, dt) + driftStep(0.0)*driftStep(0.0));
-       this.pu = 0.5 + 0.5*driftStep(0.0)/dxStep(0.0);
-       this.pd = 1.0 - this.pu;
+    //
+    // protected methods
+    //
+    @Override
+    protected double dxStep(/* @Time */final double stepTime) /* @ReadOnly */ {
+        return Math.sqrt(treeProcess.variance(stepTime, x0, dt) + driftStep(stepTime) * driftStep(stepTime));
+    }
 
-       QL.require(pu<=1.0, NEGATIVE_PROBABILITY);
-       QL.require(pu>=0.0, NEGATIVE_PROBABILITY);
-   }
-
-
-   //
-   // protected methods
-   //
-
-   @Override
-   protected double dxStep(/* @Time */ final double stepTime) /* @ReadOnly */ {
-       return Math.sqrt(treeProcess.variance(stepTime, x0, dt)+driftStep(stepTime)*driftStep(stepTime));
-   }
-
-   @Override
-   protected double probUp(/* @Time */ final double stepTime) /* @ReadOnly */ {
-       return 0.5 + 0.5*driftStep(stepTime)/dxStep(stepTime);
-   }
+    @Override
+    protected double probUp(/* @Time */final double stepTime) /* @ReadOnly */ {
+        return 0.5 + 0.5 * driftStep(stepTime) / dxStep(stepTime);
+    }
 
 }

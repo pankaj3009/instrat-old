@@ -9,18 +9,20 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public class PendingHistoricalRequests {
+
     private int symbolid;
     private String enddate;
     private String duration;
     private String barsize;
-    private boolean status=false;
+    private boolean status = false;
 
-public PendingHistoricalRequests(int symbolid,String enddate, String duration, String barsize){
-    this.symbolid=symbolid;
-    this.enddate=enddate;
-    this.duration=duration;
-    this.barsize=barsize;
-}
+    public PendingHistoricalRequests(int symbolid, String enddate, String duration, String barsize) {
+        this.symbolid = symbolid;
+        this.enddate = enddate;
+        this.duration = duration;
+        this.barsize = barsize;
+    }
+
     /**
      * @return the enddate
      */
@@ -90,5 +92,5 @@ public PendingHistoricalRequests(int symbolid,String enddate, String duration, S
     public synchronized void setStatus(boolean status) {
         this.status = status;
     }
-    
+
 }

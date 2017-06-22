@@ -19,49 +19,48 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.methods.finitedifferences;
 
 import org.jquantlib.math.matrixutilities.Array;
 
 /**
  * @author Srinivas Hasti
- * 
+ *
  */
 public interface BoundaryCondition<T extends Operator> {
-	
-	public static enum Side {
-		None, Upper, Lower;
-	}
 
-	/*
+    public static enum Side {
+        None, Upper, Lower;
+    }
+
+    /*
 	 * ! This method modifies an operator \f$ L \f$ before it is applied to an
 	 * array \f$ u \f$ so that \f$ v = Lu \f$ will satisfy the given condition.
-	 */
-	public void applyBeforeApplying(T operator);
+     */
+    public void applyBeforeApplying(T operator);
 
-	/*
+    /*
 	 * ! This method modifies an array \f$ u \f$ so that it satisfies the given
 	 * condition.
-	 */
-	public void applyAfterApplying(Array array);
+     */
+    public void applyAfterApplying(Array array);
 
-	/*
+    /*
 	 * ! This method modifies an operator \f$ L \f$ before the linear system \f$
 	 * Lu' = u \f$ is solved so that \f$ u' \f$ will satisfy the given
 	 * condition.
-	 */
-	public void applyBeforeSolving(T operator, Array array);
+     */
+    public void applyBeforeSolving(T operator, Array array);
 
-	/*
+    /*
 	 * ! This method modifies an array \f$ u \f$ so that it satisfies the given
 	 * condition.
-	 */
-	public void applyAfterSolving(Array array);
+     */
+    public void applyAfterSolving(Array array);
 
-	/*
+    /*
 	 * ! This method sets the current time for time-dependent boundary
 	 * conditions.
-	 */
-	public void setTime(/*@Time*/double t);
+     */
+    public void setTime(/*@Time*/double t);
 }

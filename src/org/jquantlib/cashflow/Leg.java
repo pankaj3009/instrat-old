@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.cashflow;
 
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ public class Leg extends ArrayList<CashFlow> implements Cloneable {
     //
     // public constructors
     //
-
     public Leg() {
         super();
     }
@@ -44,18 +42,18 @@ public class Leg extends ArrayList<CashFlow> implements Cloneable {
     }
 
     public CashFlow first() {
-        QL.require(this.size() > 0 , "no cashflows");  // TODO: message
+        QL.require(this.size() > 0, "no cashflows");  // TODO: message
         return this.get(0);
     }
 
     public CashFlow last() {
-        QL.require(this.size() > 0 , "no cashflows");  // TODO: message
-        return this.get(this.size()-1);
+        QL.require(this.size() > 0, "no cashflows");  // TODO: message
+        return this.get(this.size() - 1);
     }
 
     @Override
     public Object clone() {
-    	return (Leg)super.clone();
+        return (Leg) super.clone();
     }
 
 }

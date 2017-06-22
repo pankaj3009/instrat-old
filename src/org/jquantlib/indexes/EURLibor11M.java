@@ -27,20 +27,19 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * 11-months EUR Libor index    
- * 
+ * 11-months EUR Libor index
+ *
  * @author Tim Blackler
  */
 public class EURLibor11M extends EURLibor {
 
-
     //
     // public constructors
     //
-
     public EURLibor11M() {
-    	this(new Handle<YieldTermStructure>());
+        this(new Handle<YieldTermStructure>());
     }
+
     public EURLibor11M(final Handle<YieldTermStructure> h) {
         super(new Period(11, TimeUnit.Months), h);
     }

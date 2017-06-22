@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2007 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,7 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.instruments;
 
 import org.jquantlib.QL;
@@ -54,7 +54,6 @@ public class PriceError implements DoubleOp {
     private final SimpleQuote vol;
     private final double targetValue;
 
-
     public PriceError(final PricingEngine engine, final SimpleQuote vol, final double targetValue) {
         this.engine = engine;
         this.vol = vol;
@@ -63,13 +62,11 @@ public class PriceError implements DoubleOp {
         QL.require(results != null, "pricing engine does not supply needed results"); // TODO: message
     }
 
-
     //
     // implements Ops.DoubleOp
     //
-
     @Override
-    public double op(/*@Volatility*/ final double x) /* @ReadOnly */ {
+    public double op(/*@Volatility*/final double x) /* @ReadOnly */ {
         vol.setValue(x);
         engine.calculate();
 

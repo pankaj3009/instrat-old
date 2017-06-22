@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.util;
 
 /**
@@ -27,14 +26,14 @@ package org.jquantlib.util;
  * models when multiple inheritance is needed.
  *
  * <p>
- * This class is based on the work done by Martin Fischer, with only minor changes.
- * See references below.
+ * This class is based on the work done by Martin Fischer, with only minor
+ * changes. See references below.
  *
  * @see <a
  *      href="http://www.jroller.com/martin_fischer/entry/a_generic_java_observer_pattern">Martin
- *      Fischer: Observer and Observable interfaces</a>
+ * Fischer: Observer and Observable interfaces</a>
  * @see <a href="http://jdj.sys-con.com/read/35878.htm">Improved
- *      Observer/Observable</a>
+ * Observer/Observable</a>
  * @see Observable
  *
  * @author Martin Fischer (original author)

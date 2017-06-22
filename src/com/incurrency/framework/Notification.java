@@ -9,6 +9,7 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public class Notification {
+
     private int id;
     private EnumOrderReason notificationType;
     private double fillPrice;
@@ -17,14 +18,14 @@ public class Notification {
     private String account;
     private String strategy;
 
-    public Notification(int id, EnumOrderReason notificationType, double fillPrice, int internalOrderID, int externalOrderID, String account, String strategy ) {
+    public Notification(int id, EnumOrderReason notificationType, double fillPrice, int internalOrderID, int externalOrderID, String account, String strategy) {
         this.id = id;
         this.notificationType = notificationType;
         this.fillPrice = fillPrice;
         this.internalOrderID = internalOrderID;
         this.externalOrderID = externalOrderID;
-        this.account=account;
-        this.strategy=strategy;
+        this.account = account;
+        this.strategy = strategy;
     }
 
     /**
@@ -124,8 +125,5 @@ public class Notification {
     public void setStrategy(String strategy) {
         this.strategy = strategy;
     }
-    
-   
-    
-    
+
 }

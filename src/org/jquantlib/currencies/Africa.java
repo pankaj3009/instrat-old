@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2004, 2005 StatPro Italia srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,26 +34,28 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.currencies;
 
 import org.jquantlib.math.Rounding;
 
 public class Africa {
+
     /**
      * South-African rand
-     * 
-     * The ISO three-letter code is ZAR; the numeric code is 710
-     * It is divided in 100 cents.
-     * 
+     *
+     * The ISO three-letter code is ZAR; the numeric code is 710 It is divided
+     * in 100 cents.
+     *
      * @category currencies
      */
     public static class ZARCurrency extends Currency {
-    	public ZARCurrency() {
-            Data zarData= new Data("South-African rand", "ZAR", 710,
-                                             "R", "", 100,
-                                             new Rounding(),
-                                             "%3% %1$.2f");
+
+        public ZARCurrency() {
+            Data zarData = new Data("South-African rand", "ZAR", 710,
+                    "R", "", 100,
+                    new Rounding(),
+                    "%3% %1$.2f");
             data = zarData;
         }
     };

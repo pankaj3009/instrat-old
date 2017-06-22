@@ -11,6 +11,7 @@ import java.util.ArrayList;
  * @author pankaj
  */
 public class ArrayListHolder {
+
     ArrayList<BeanOHLC> B1;
     ArrayList<BeanOHLC> B2;
 }

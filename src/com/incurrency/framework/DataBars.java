@@ -27,146 +27,67 @@ import java.util.logging.Logger;
 public class DataBars {
 
     private final static Logger logger = Logger.getLogger(DataBars.class.getName());
+    public static AtomicInteger lastConnectionIDUsed = new AtomicInteger(0);
     private TreeMapExtension<Long, BeanOHLC> historicalBars = new TreeMapExtension<>();
-    private final String delimiter="_";
+    private final String delimiter = "_";
     private ArrayList<Long> barTime;
-    private int maxBarsRetrieved=2000;
+    private int maxBarsRetrieved = 2000;
     private CopyOnWriteArrayList _listeners = new CopyOnWriteArrayList();
     private BeanOHLC ohlc = new BeanOHLC();
     private BeanOHLC ohlcHist = new BeanOHLC(); //this is used by historical bars so that there is no overwrting of variables.
     private BeanSymbol mSymbol;
     private boolean firstOneMinBarGenerated = false; //used by RealTimeBars to check if realtime bars have succeeded in generating one min bars 
-    private boolean oneMinBarsCompleted=false;
-    private boolean finished=false;
+    private boolean oneMinBarsCompleted = false;
+    private boolean finished = false;
     private long timerStart;
-    private final Object ohlc_lock=new Object();
+    private final Object ohlc_lock = new Object();
     private EnumBarSize barSize;
     private String timeZone;
     private String endTime;
     private String startTime;
-    private String duration="";
-    private String ibBarSizeString="";
-    private boolean historicalBarsRequested=false;
-    public static AtomicInteger lastConnectionIDUsed=new AtomicInteger(0);
-    
-    public DataBars(){
-        
-    }
-    public DataBars(BeanSymbol s,EnumBarSize barSize) {
-        mSymbol = s;
-        this.barSize=barSize;
-        int timerDuration=0;
-        if(s.getBarsstarttime()!=null){
-            String []input=s.getBarsstarttime().split("\\?");
-            setStartTime(input[0]);
-            this.endTime=input[1];
-            this.timeZone=input[2];
-            
-        switch(barSize){
-            case DAILY:
-                timerDuration=24*60*60*1000;
-                ibBarSizeString="1 day";
-                break;
-            case ONEMINUTE:
-                timerDuration=60*1000;
-                ibBarSizeString="1 min";
-                break;
-            case FIVESECOND:
-                timerDuration=5*1000;
-                ibBarSizeString="5 secs";
-                break;
-            default:
-                break;
-        }
-        if(timerDuration>0){
-            Timer triggerBars = new Timer("Timer: " + s.getBrokerSymbol() + " DataBars");
-            Date currDate=TradingUtil.getAlgoDate();
-            DateFormat df = new SimpleDateFormat("yyyyMMdd");
-            df.setTimeZone(TimeZone.getTimeZone(timeZone));
-            String currDateStr=df.format(currDate);
-            String startDateStr = currDateStr + " " + getStartTime();     
-            String endDateStr = currDateStr + " " + this.endTime;     
-            Date startDate=DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr,timeZone);
-            Date endDate=DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr,timeZone);
-            Calendar startCal=Calendar.getInstance();
-            Calendar endCal=Calendar.getInstance();
-            int hours=Integer.valueOf(endTime.substring(0, endTime.length()-6));
-            int minute=Integer.valueOf(endTime.substring(endTime.length()-5, endTime.length()-3));
-            int second=Integer.valueOf(endTime.substring(endTime.length()-2, endTime.length()));
-            endCal.setTime(endDate);
-            int days=0;
-            switch(barSize){ //get number of days of historical data supported for the barsize
-            case DAILY:
-                duration="1 Y";
-                break;
-            case ONEMINUTE:
-                days=(int)maxBarsRetrieved/DateUtil.minutesDiff(startDate, endDate);
-                duration=String.valueOf(days)+" D";
-                break;
-            case FIVESECOND:
-                days=(int)maxBarsRetrieved/(DateUtil.minutesDiff(startDate, endDate)*20);
-                duration=String.valueOf(days)+" D";
-                break;
-            default:
-                break;
-        }
-            if(startDate.before(TradingUtil.getAlgoDate())){
-                startCal.setTime(TradingUtil.getAlgoDate());
-                startCal.add(Calendar.MINUTE, 1);
-                startCal.set(Calendar.SECOND, 0);
-                startCal.set(Calendar.MILLISECOND,0);
-                startDate=startCal.getTime();
-            }else{
-                startCal.setTime(startDate);
-            }
-            
-            timerStart=startDate.getTime();
-            triggerBars.schedule(generateBars, startDate,60000);
-            
-        }
-        }
-    }
-    
-TimerTask generateBars = new TimerTask() {
+    private String duration = "";
+    private String ibBarSizeString = "";
+    private boolean historicalBarsRequested = false;
+    TimerTask generateBars = new TimerTask() {
 
         @Override
         public void run() {
-            synchronized(ohlc_lock){         
-                if(getHistoricalBars().size()==0){
-                    double tempOpen=mSymbol.getOpenPrice()==0D?getOhlc().getOpen():mSymbol.getOpenPrice();
-                    tempOpen=tempOpen==0D?mSymbol.getClosePrice():tempOpen;
-                    getOhlc().setOpen(tempOpen); 
-                    if (getOhlc().getClose()==0D){
-                    getOhlc().setHigh(tempOpen);
-                    getOhlc().setLow(tempOpen);
-                    getOhlc().setClose(tempOpen);
-                }
-                    
-                }else if(getOhlc().getOpen()==0D){
-                    
-                    double lastClose=getHistoricalBars().lastEntry().getValue().getClose();
+            synchronized (ohlc_lock) {
+                if (getHistoricalBars().size() == 0) {
+                    double tempOpen = mSymbol.getOpenPrice() == 0D ? getOhlc().getOpen() : mSymbol.getOpenPrice();
+                    tempOpen = tempOpen == 0D ? mSymbol.getClosePrice() : tempOpen;
+                    getOhlc().setOpen(tempOpen);
+                    if (getOhlc().getClose() == 0D) {
+                        getOhlc().setHigh(tempOpen);
+                        getOhlc().setLow(tempOpen);
+                        getOhlc().setClose(tempOpen);
+                    }
+
+                } else if (getOhlc().getOpen() == 0D) {
+
+                    double lastClose = getHistoricalBars().lastEntry().getValue().getClose();
                     getOhlc().setOpen(lastClose);
                     getOhlc().setHigh(lastClose);
                     getOhlc().setLow(lastClose);
                     getOhlc().setClose(lastClose);
                 }
-                if(getHistoricalBars().size()>0){
-                    Calendar priorCal=Calendar.getInstance();
+                if (getHistoricalBars().size() > 0) {
+                    Calendar priorCal = Calendar.getInstance();
                     priorCal.setTimeInMillis(getHistoricalBars().lastEntry().getKey());
-                    switch(barSize){
+                    switch (barSize) {
                         case ONEMINUTE:
                             priorCal.add(Calendar.MINUTE, 1);
-                            getOhlc().setOpenTime(priorCal.getTimeInMillis());                    
+                            getOhlc().setOpenTime(priorCal.getTimeInMillis());
                             break;
                         case FIVESECOND:
                             priorCal.add(Calendar.SECOND, 5);
-                            getOhlc().setOpenTime(priorCal.getTimeInMillis());                    
-                            
+                            getOhlc().setOpenTime(priorCal.getTimeInMillis());
+
                         default:
                             break;
                     }
-                }else{
-                    getOhlc().setOpenTime(timerStart);   
+                } else {
+                    getOhlc().setOpenTime(timerStart);
                 }
                 getOhlc().setPeriodicity(barSize);
                 ohlcHist = new BeanOHLC(getOhlc());
@@ -174,24 +95,103 @@ TimerTask generateBars = new TimerTask() {
                 _fireHistoricalBars();
                 initialize(getOhlc());
             }
-            if(!historicalBarsRequested && mSymbol.getDailyBar().finished && getHistoricalBars().size()>0 && !Parameters.connection.isEmpty() && Parameters.connection.get(lastConnectionIDUsed.get())!=null){
+            if (!historicalBarsRequested && mSymbol.getDailyBar().finished && getHistoricalBars().size() > 0 && !Parameters.connection.isEmpty() && Parameters.connection.get(lastConnectionIDUsed.get()) != null) {
                 Parameters.connection.get(lastConnectionIDUsed.get()).getWrapper().requestHistoricalData(mSymbol, DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", TradingUtil.getAlgoDate().getTime()), duration, ibBarSizeString);
-                historicalBarsRequested=true;
+                historicalBarsRequested = true;
                 lastConnectionIDUsed.addAndGet(1);
-                if(lastConnectionIDUsed.get()>=Parameters.connection.size()){
+                if (lastConnectionIDUsed.get() >= Parameters.connection.size()) {
                     lastConnectionIDUsed.set(0);
                 }
             }
         }
-        };
-    
-   private void initialize(BeanOHLC ohlc){
-       ohlc.setOpen(0D);
-       ohlc.setHigh(0D);
-       ohlc.setLow(0D);
-       ohlc.setClose(0D);
-       ohlc.setVolume(0L);
-   }
+    };
+
+    public DataBars() {
+
+    }
+
+    public DataBars(BeanSymbol s, EnumBarSize barSize) {
+        mSymbol = s;
+        this.barSize = barSize;
+        int timerDuration = 0;
+        if (s.getBarsstarttime() != null) {
+            String[] input = s.getBarsstarttime().split("\\?");
+            setStartTime(input[0]);
+            this.endTime = input[1];
+            this.timeZone = input[2];
+
+            switch (barSize) {
+                case DAILY:
+                    timerDuration = 24 * 60 * 60 * 1000;
+                    ibBarSizeString = "1 day";
+                    break;
+                case ONEMINUTE:
+                    timerDuration = 60 * 1000;
+                    ibBarSizeString = "1 min";
+                    break;
+                case FIVESECOND:
+                    timerDuration = 5 * 1000;
+                    ibBarSizeString = "5 secs";
+                    break;
+                default:
+                    break;
+            }
+            if (timerDuration > 0) {
+                Timer triggerBars = new Timer("Timer: " + s.getBrokerSymbol() + " DataBars");
+                Date currDate = TradingUtil.getAlgoDate();
+                DateFormat df = new SimpleDateFormat("yyyyMMdd");
+                df.setTimeZone(TimeZone.getTimeZone(timeZone));
+                String currDateStr = df.format(currDate);
+                String startDateStr = currDateStr + " " + getStartTime();
+                String endDateStr = currDateStr + " " + this.endTime;
+                Date startDate = DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr, timeZone);
+                Date endDate = DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, timeZone);
+                Calendar startCal = Calendar.getInstance();
+                Calendar endCal = Calendar.getInstance();
+                int hours = Integer.valueOf(endTime.substring(0, endTime.length() - 6));
+                int minute = Integer.valueOf(endTime.substring(endTime.length() - 5, endTime.length() - 3));
+                int second = Integer.valueOf(endTime.substring(endTime.length() - 2, endTime.length()));
+                endCal.setTime(endDate);
+                int days = 0;
+                switch (barSize) { //get number of days of historical data supported for the barsize
+                    case DAILY:
+                        duration = "1 Y";
+                        break;
+                    case ONEMINUTE:
+                        days = (int) maxBarsRetrieved / DateUtil.minutesDiff(startDate, endDate);
+                        duration = String.valueOf(days) + " D";
+                        break;
+                    case FIVESECOND:
+                        days = (int) maxBarsRetrieved / (DateUtil.minutesDiff(startDate, endDate) * 20);
+                        duration = String.valueOf(days) + " D";
+                        break;
+                    default:
+                        break;
+                }
+                if (startDate.before(TradingUtil.getAlgoDate())) {
+                    startCal.setTime(TradingUtil.getAlgoDate());
+                    startCal.add(Calendar.MINUTE, 1);
+                    startCal.set(Calendar.SECOND, 0);
+                    startCal.set(Calendar.MILLISECOND, 0);
+                    startDate = startCal.getTime();
+                } else {
+                    startCal.setTime(startDate);
+                }
+
+                timerStart = startDate.getTime();
+                triggerBars.schedule(generateBars, startDate, 60000);
+
+            }
+        }
+    }
+
+    private void initialize(BeanOHLC ohlc) {
+        ohlc.setOpen(0D);
+        ohlc.setHigh(0D);
+        ohlc.setLow(0D);
+        ohlc.setClose(0D);
+        ohlc.setVolume(0L);
+    }
 
     public synchronized void setFiveSecOHLC(long openTime, double open, double high, double low, double close, long volume) {
         getOhlc().setPeriodicity(EnumBarSize.FIVESECOND);
@@ -283,7 +283,7 @@ TimerTask generateBars = new TimerTask() {
                 getOhlc().setClose(close);
                 getOhlc().setVolume(volume);
             }
-            ohlcHist= new BeanOHLC(getOhlc());
+            ohlcHist = new BeanOHLC(getOhlc());
             historicalBars.put(ohlcHist.getOpenTime(), ohlcHist);
             //generate event
             this.setFirstOneMinBarGenerated(true);
@@ -293,70 +293,69 @@ TimerTask generateBars = new TimerTask() {
 
     public void setOneMinBars(long openTime, double open, double high, double low, double close, long volume) {
         String temp = DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", openTime * 1000);
-        if(getStartTime()!=null){//databar has been initialized
-        Date startDate = DateUtil.timeToDate(getStartTime(),timeZone);
-        if (startDate.compareTo(new Date(openTime * 1000)) <= 0) {
-            getOhlcHist().setPeriodicity(EnumBarSize.ONEMINUTE);
-            getOhlcHist().setOpenTime(openTime * 1000);
-            getOhlcHist().setOpen(open);
-            getOhlcHist().setHigh(high);
-            getOhlcHist().setLow(low);
-            getOhlcHist().setClose(close);
-            getOhlcHist().setVolume((Long) volume);
-            ohlcHist = new BeanOHLC(getOhlcHist());
-            historicalBars.put(ohlcHist.getOpenTime(), ohlcHist);
-            //System.out.println(openTime+","+open);
-                    
-            _fireHistoricalBars();
-        }
+        if (getStartTime() != null) {//databar has been initialized
+            Date startDate = DateUtil.timeToDate(getStartTime(), timeZone);
+            if (startDate.compareTo(new Date(openTime * 1000)) <= 0) {
+                getOhlcHist().setPeriodicity(EnumBarSize.ONEMINUTE);
+                getOhlcHist().setOpenTime(openTime * 1000);
+                getOhlcHist().setOpen(open);
+                getOhlcHist().setHigh(high);
+                getOhlcHist().setLow(low);
+                getOhlcHist().setClose(close);
+                getOhlcHist().setVolume((Long) volume);
+                ohlcHist = new BeanOHLC(getOhlcHist());
+                historicalBars.put(ohlcHist.getOpenTime(), ohlcHist);
+                //System.out.println(openTime+","+open);
+
+                _fireHistoricalBars();
+            }
         }
     }
 
     public void setOHLCFromTick(long openTime, int type, String value) {
-        if(mSymbol.getBarsstarttime()!=null){
-        //Date tempDate = new Date(openTime);
-        //Calendar tempCalendar = Calendar.getInstance();
-        //tempCalendar.setTime(tempDate);
-        synchronized(ohlc_lock){    
-              switch (type){
-                case com.ib.client.TickType.LAST:
-                    double price=Double.valueOf(value);
-                    if(ohlc.getOpen()==0D){
-                    ohlc.setOpen(price);
-                    ohlc.setHigh(price);
-                    ohlc.setLow(price);
-                    ohlc.setClose(price);
-                    }else{
-                        ohlc.setClose(price);
-                        if(price>this.getOhlc().getHigh()){
-                            this.getOhlc().setHigh(price);
-                        }else if(price<this.getOhlc().getLow()){
-                            this.getOhlc().setLow(price);
+        if (mSymbol.getBarsstarttime() != null) {
+            //Date tempDate = new Date(openTime);
+            //Calendar tempCalendar = Calendar.getInstance();
+            //tempCalendar.setTime(tempDate);
+            synchronized (ohlc_lock) {
+                switch (type) {
+                    case com.ib.client.TickType.LAST:
+                        double price = Double.valueOf(value);
+                        if (ohlc.getOpen() == 0D) {
+                            ohlc.setOpen(price);
+                            ohlc.setHigh(price);
+                            ohlc.setLow(price);
+                            ohlc.setClose(price);
+                        } else {
+                            ohlc.setClose(price);
+                            if (price > this.getOhlc().getHigh()) {
+                                this.getOhlc().setHigh(price);
+                            } else if (price < this.getOhlc().getLow()) {
+                                this.getOhlc().setLow(price);
+                            }
                         }
-                    }
-                    break;
-                case com.ib.client.TickType.VOLUME:
-                    long volume=Long.valueOf(value);
-                    long earlierVolume=this.getOhlc().getVolume();
-                    this.getOhlc().setVolume(volume+earlierVolume);
-                    break;
-                default:
-                    break;
-            }     
-        }
+                        break;
+                    case com.ib.client.TickType.VOLUME:
+                        long volume = Long.valueOf(value);
+                        long earlierVolume = this.getOhlc().getVolume();
+                        this.getOhlc().setVolume(volume + earlierVolume);
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 
     private synchronized void _fireHistoricalBars() {
-        
-        HistoricalBarEvent bars = new HistoricalBarEvent(this, historicalBars.size(), historicalBars, mSymbol,ohlcHist);
-        logger.log(Level.FINER, "402,HistoricalBars,{0}", new Object[]{mSymbol.getDisplayname()+delimiter+ohlcHist.getPeriodicity()+delimiter+DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", ohlcHist.getOpenTime())+delimiter+ohlcHist.getOpen()+delimiter+ohlcHist.getHigh()+delimiter+ohlcHist.getLow()+delimiter+ohlcHist.getClose()+delimiter+ohlcHist.getVolume()});
+
+        HistoricalBarEvent bars = new HistoricalBarEvent(this, historicalBars.size(), historicalBars, mSymbol, ohlcHist);
+        logger.log(Level.FINER, "402,HistoricalBars,{0}", new Object[]{mSymbol.getDisplayname() + delimiter + ohlcHist.getPeriodicity() + delimiter + DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", ohlcHist.getOpenTime()) + delimiter + ohlcHist.getOpen() + delimiter + ohlcHist.getHigh() + delimiter + ohlcHist.getLow() + delimiter + ohlcHist.getClose() + delimiter + ohlcHist.getVolume()});
         Iterator listeners = _listeners.iterator();
         while (listeners.hasNext()) {
             ((HistoricalBarListener) listeners.next()).barsReceived(bars);
         }
     }
-
 
     public synchronized void addHistoricalBarListener(HistoricalBarListener l) {
         _listeners.add(l);
@@ -365,7 +364,7 @@ TimerTask generateBars = new TimerTask() {
     public synchronized void removeHistoricalBarListener(HistoricalBarListener l) {
         _listeners.remove(l);
     }
-    
+
     /**
      * @return the mSymbol
      */
@@ -464,8 +463,8 @@ TimerTask generateBars = new TimerTask() {
     public synchronized void setStartTime(String startTime) {
         this.startTime = startTime;
     }
-    
-            public synchronized TreeMapExtension<Long, BeanOHLC> getHistoricalBars() {
+
+    public synchronized TreeMapExtension<Long, BeanOHLC> getHistoricalBars() {
         return historicalBars;
     }
 }

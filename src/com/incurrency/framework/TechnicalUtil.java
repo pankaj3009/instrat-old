@@ -57,8 +57,8 @@ public class TechnicalUtil {
         double sum = 0;
         if (period + numberOfValuesNeeded <= b.size()) {
             while (numberofSMACalculated < numberOfValuesNeeded && numberofSMACalculated <= b.size() - period) {
-                sum=0;
-                List<Double> subList = b.subList(b.size() - numberOfValuesNeeded - period+numberofSMACalculated, b.size() - numberOfValuesNeeded + numberofSMACalculated);
+                sum = 0;
+                List<Double> subList = b.subList(b.size() - numberOfValuesNeeded - period + numberofSMACalculated, b.size() - numberOfValuesNeeded + numberofSMACalculated);
                 for (Double bar : subList) {
                     sum = sum + bar;
                 }
@@ -74,17 +74,17 @@ public class TechnicalUtil {
         ArrayList<Double> out = new ArrayList<>();
         if (period < b.size()) {
             ArrayList<Double> sma = getSimpleMovingAverage(b, tickType, period, 0);
-            double firstsma=sma.get(0);
-            double ema=firstsma;
+            double firstsma = sma.get(0);
+            double ema = firstsma;
             List<BeanOHLC> subList = b.subList(period - 1, b.size() - 1);
-            double multiplier=(double)2/(period+1);
+            double multiplier = (double) 2 / (period + 1);
             for (BeanOHLC bar : subList) {
                 switch (tickType) {
                     case com.ib.client.TickType.CLOSE:
-                        ema = (bar.getClose()-ema)*multiplier+ema;
+                        ema = (bar.getClose() - ema) * multiplier + ema;
                         break;
                     case com.ib.client.TickType.VOLUME:
-                        ema = (bar.getVolume()-ema)*multiplier+ema;
+                        ema = (bar.getVolume() - ema) * multiplier + ema;
                         break;
                     default:
                         break;
@@ -100,8 +100,8 @@ public class TechnicalUtil {
         ArrayList<Double> fastEMA = getEMA(b, tickType, fastPeriod);
         ArrayList<Double> slowEMA = getEMA(b, tickType, slowPeriod);
         //line up emas. truncate fastEMA = size of slow EMA
-        fastEMA= new ArrayList<Double> (fastEMA.subList(fastEMA.size()-slowEMA.size(), fastEMA.size()));
-        
+        fastEMA = new ArrayList<Double>(fastEMA.subList(fastEMA.size() - slowEMA.size(), fastEMA.size()));
+
         for (int i = 0; i < slowEMA.size(); i++) {
             double macd = fastEMA.get(i) - slowEMA.get(i);
             out.add(macd);
@@ -178,7 +178,7 @@ public class TechnicalUtil {
     }
 
     static public ArrayList<Double> getStandardDeviationOfReturns(ArrayList<BeanOHLC> prices, int duration, int tickType) {//prices should be from oldest to newest
-        ArrayList <Double> out=new ArrayList();
+        ArrayList<Double> out = new ArrayList();
         ArrayList<Double> inputValues = new ArrayList<>();
         switch (tickType) {
             case TickType.OPEN:
@@ -209,40 +209,40 @@ public class TechnicalUtil {
             default:
                 break;
         }
-        
+
         DescriptiveStatistics stats = new DescriptiveStatistics();
-        duration=Math.min(duration, inputValues.size()-1);
+        duration = Math.min(duration, inputValues.size() - 1);
         stats.setWindowSize(duration);
-        for (int i=0;i<inputValues.size();i++) {
-            if(i>0){//wait till two values are available
-            stats.addValue((inputValues.get(i)/inputValues.get(i-1))-1);
-            if(i>=duration){ //10 values have been added
-                out.add(stats.getStandardDeviation());
-            }
+        for (int i = 0; i < inputValues.size(); i++) {
+            if (i > 0) {//wait till two values are available
+                stats.addValue((inputValues.get(i) / inputValues.get(i - 1)) - 1);
+                if (i >= duration) { //10 values have been added
+                    out.add(stats.getStandardDeviation());
+                }
             }
         }
         return out; //the latest SD is at the end of the arraylist
     }
-    
-   static public Double[] getBeta (ArrayList<BeanOHLC>symbolPrices,ArrayList<BeanOHLC>indexPrices, int duration, int tickType){
-      Double[] out=new Double[4];
-       ArrayList <Double> symbolSD = new ArrayList<>();
-       ArrayList <Double> indexSD = new ArrayList<>();
-        symbolSD=getStandardDeviationOfReturns(symbolPrices, duration, tickType);
-        indexSD=getStandardDeviationOfReturns(indexPrices, duration, tickType);
-        double[] x=DoubleArrayListToArray(getDailyReturns(indexPrices,9));
-        double []y=DoubleArrayListToArray(getDailyReturns(symbolPrices,9));
-        double correlation= new PearsonsCorrelation().correlation(x, y);
-        out[0]=indexSD.get(indexSD.size()-1);
-        out[1]=symbolSD.get(symbolSD.size()-1);
-        out[2]=correlation;
-        out[3]= correlation*symbolSD.get(symbolSD.size()-1)/indexSD.get(indexSD.size()-1);
+
+    static public Double[] getBeta(ArrayList<BeanOHLC> symbolPrices, ArrayList<BeanOHLC> indexPrices, int duration, int tickType) {
+        Double[] out = new Double[4];
+        ArrayList<Double> symbolSD = new ArrayList<>();
+        ArrayList<Double> indexSD = new ArrayList<>();
+        symbolSD = getStandardDeviationOfReturns(symbolPrices, duration, tickType);
+        indexSD = getStandardDeviationOfReturns(indexPrices, duration, tickType);
+        double[] x = DoubleArrayListToArray(getDailyReturns(indexPrices, 9));
+        double[] y = DoubleArrayListToArray(getDailyReturns(symbolPrices, 9));
+        double correlation = new PearsonsCorrelation().correlation(x, y);
+        out[0] = indexSD.get(indexSD.size() - 1);
+        out[1] = symbolSD.get(symbolSD.size() - 1);
+        out[2] = correlation;
+        out[3] = correlation * symbolSD.get(symbolSD.size() - 1) / indexSD.get(indexSD.size() - 1);
         return out;
-       }
- 
-    static public ArrayList<Double> getDailyReturns(ArrayList<BeanOHLC>prices, int tickType){
-        ArrayList<Double> out=new ArrayList<>();
-                ArrayList<Double> inputValues = new ArrayList<>();
+    }
+
+    static public ArrayList<Double> getDailyReturns(ArrayList<BeanOHLC> prices, int tickType) {
+        ArrayList<Double> out = new ArrayList<>();
+        ArrayList<Double> inputValues = new ArrayList<>();
         switch (tickType) {
             case TickType.OPEN:
                 for (BeanOHLC p : prices) {
@@ -272,39 +272,39 @@ public class TechnicalUtil {
             default:
                 break;
         }
-        for(int i=0;i<inputValues.size();i++){
-            if(i>=1){
-                out.add(inputValues.get(i)/inputValues.get(i-1)-1);
+        for (int i = 0; i < inputValues.size(); i++) {
+            if (i >= 1) {
+                out.add(inputValues.get(i) / inputValues.get(i - 1) - 1);
             }
         }
-        
+
         return out;
     }
-    
-    public static  ArrayListHolder lineupPrices(ArrayList<BeanOHLC> input1, ArrayList<BeanOHLC> input2){
-        ArrayListHolder out=new ArrayListHolder();
-        ArrayList<BeanOHLC> B1=new ArrayList<>();
-        ArrayList<BeanOHLC> B2=new ArrayList<>();
-        for(int i=0;i<input1.size();i++){
-            BeanOHLC b1=input1.get(i);
-            for(int j=0;j<input2.size();j++){
-                if(b1.getOpenTime()==input2.get(j).getOpenTime()){ //lineup true.
-                B1.add(b1);
-                B2.add(input2.get(j));
-                break;
-            }
+
+    public static ArrayListHolder lineupPrices(ArrayList<BeanOHLC> input1, ArrayList<BeanOHLC> input2) {
+        ArrayListHolder out = new ArrayListHolder();
+        ArrayList<BeanOHLC> B1 = new ArrayList<>();
+        ArrayList<BeanOHLC> B2 = new ArrayList<>();
+        for (int i = 0; i < input1.size(); i++) {
+            BeanOHLC b1 = input1.get(i);
+            for (int j = 0; j < input2.size(); j++) {
+                if (b1.getOpenTime() == input2.get(j).getOpenTime()) { //lineup true.
+                    B1.add(b1);
+                    B2.add(input2.get(j));
+                    break;
+                }
             }
         }
-        out.B1=B1;
-        out.B2=B2;
+        out.B1 = B1;
+        out.B2 = B2;
         return out;
     }
-    
-        static double[] DoubleArrayListToArray(List<Double> input){
-      double[] out=new double[input.size()];
-      for(int i=0;i<input.size();i++){
-          out[i]=input.get(i);
-      }
-      return out;
-  }
+
+    static double[] DoubleArrayListToArray(List<Double> input) {
+        double[] out = new double[input.size()];
+        for (int i = 0; i < input.size(); i++) {
+            out[i] = input.get(i);
+        }
+        return out;
+    }
 }

@@ -8,6 +8,7 @@ package com.incurrency.framework;
  *
  * @author admin
  */
-public enum EnumOrderSide {BUY,SELL,SHORT,COVER,UNDEFINED
-    
+public enum EnumOrderSide {
+    BUY, SELL, SHORT, COVER, UNDEFINED
+
 }

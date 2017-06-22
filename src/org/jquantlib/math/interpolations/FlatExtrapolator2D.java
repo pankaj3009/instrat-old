@@ -19,14 +19,15 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.interpolations;
 
 /**
- * This class performs a flat extrapolation backed by an existing {@link Interpolation2D}.
+ * This class performs a flat extrapolation backed by an existing
+ * {@link Interpolation2D}.
  * <p>
- * Unlike other classes extended from Interpolation and Interpolation2D interfaces, this class is not self enclosed but
- * it depends on another interpolation class in order to perform the extrapolation.
+ * Unlike other classes extended from Interpolation and Interpolation2D
+ * interfaces, this class is not self enclosed but it depends on another
+ * interpolation class in order to perform the extrapolation.
  *
  * @author Richard Gomes
  */
@@ -54,33 +55,31 @@ public class FlatExtrapolator2D extends AbstractInterpolation2D {
 //        public void update() {
 //            decoratedInterp_.update();
 //        }
-
         //
         // overrides AbstractInterpolation2D.Impl
         //
-
         @Override
-        public double xMin() /* @ReadOnly */{
+        public double xMin() /* @ReadOnly */ {
             return decoratedInterp_.xMin();
         }
 
         @Override
-        public double xMax() /* @ReadOnly */{
+        public double xMax() /* @ReadOnly */ {
             return decoratedInterp_.xMax();
         }
 
         @Override
-        public double yMin() /* @ReadOnly */{
+        public double yMin() /* @ReadOnly */ {
             return decoratedInterp_.yMin();
         }
 
         @Override
-        public double yMax() /* @ReadOnly */{
+        public double yMax() /* @ReadOnly */ {
             return decoratedInterp_.yMax();
         }
 
         @Override
-        public boolean isInRange(final double x, final double y) /* @ReadOnly */{
+        public boolean isInRange(final double x, final double y) /* @ReadOnly */ {
             return decoratedInterp_.isInRange(x, y);
         }
 
@@ -90,7 +89,7 @@ public class FlatExtrapolator2D extends AbstractInterpolation2D {
         }
 
         @Override
-        public double op(double x, double y) /* @ReadOnly */{
+        public double op(double x, double y) /* @ReadOnly */ {
             x = bindX(x);
             y = bindY(y);
             return decoratedInterp_.op(x, y);
@@ -99,23 +98,20 @@ public class FlatExtrapolator2D extends AbstractInterpolation2D {
         //
         // protected methods
         //
-
         @Override
-        protected int locateX(final double x) /* @ReadOnly */{
+        protected int locateX(final double x) /* @ReadOnly */ {
             return decoratedInterp_.locateX(x);
         }
 
         @Override
-        protected int locateY(final double y) /* @ReadOnly */{
+        protected int locateY(final double y) /* @ReadOnly */ {
             return decoratedInterp_.locateY(y);
         }
-
 
         //
         // private methods
         //
-
-        private double bindX(final double x) /* @ReadOnly */{
+        private double bindX(final double x) /* @ReadOnly */ {
             if (x < xMin()) {
                 return xMin();
             }
@@ -125,7 +121,7 @@ public class FlatExtrapolator2D extends AbstractInterpolation2D {
             return x;
         }
 
-        private double bindY(final double y) /* @ReadOnly */{
+        private double bindY(final double y) /* @ReadOnly */ {
             if (y < yMin()) {
                 return yMin();
             }

@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.legacy.libormarkets;
 
 import java.util.ArrayList;
@@ -36,16 +35,17 @@ public abstract class LmVolatilityModel {
     protected final int size_;
     protected List<Parameter> arguments_;
 
-    public LmVolatilityModel(final int size, final int nArguments){
+    public LmVolatilityModel(final int size, final int nArguments) {
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
         this.size_ = size;
         this.arguments_ = new ArrayList<Parameter>(nArguments);
     }
 
-    public int size(){
+    public int size() {
         return size_;
     }
 
@@ -53,11 +53,11 @@ public abstract class LmVolatilityModel {
         return false;
     }
 
-    public double volatility(final int i, final double t){
+    public double volatility(final int i, final double t) {
         return volatility(t, new Array(i)).get(i);//ZH size should be atleast i
     }
 
-    public double volatility(final int i, final double t, final Array x){
+    public double volatility(final int i, final double t, final Array x) {
         return volatility(t, x).get(i);
     }
 
@@ -67,13 +67,13 @@ public abstract class LmVolatilityModel {
 
     public abstract Array volatility(double t, Array x);
 
-    public double integratedVariance(final int i, final int ii, final double t, final Array list){
+    public double integratedVariance(final int i, final int ii, final double t, final Array list) {
         throw new LibraryException(integrated_variance_not_supported); // QA:[RG]::verified
     }
 
-    public void setParams(final List<Parameter> arguments){
-       this.arguments_ = arguments;
-       generateArguments();
+    public void setParams(final List<Parameter> arguments) {
+        this.arguments_ = arguments;
+        generateArguments();
     }
 
     protected abstract void generateArguments();

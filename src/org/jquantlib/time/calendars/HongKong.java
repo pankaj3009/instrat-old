@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.time.calendars;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -57,7 +56,8 @@ import static org.jquantlib.time.Weekday.Monday;
  * <li>Boxing Day, December 26th (possibly moved to Monday)</li>
  * </ul>
  *
- * Other holidays for which no rule is given (data available for 2004-2007 only:)
+ * Other holidays for which no rule is given (data available for 2004-2007
+ * only:)
  * <ul>
  * <li>Lunar New Year</li>
  * <li>Chinese New Year</li>
@@ -74,9 +74,26 @@ import static org.jquantlib.time.Weekday.Monday;
  * @author Richard Gomes
  * @author Zahid Hussain
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class HongKong extends Calendar {
+
+    //
+    // public constructor
+    //
+    public HongKong() {
+        this(Market.HKEx);
+    }
+
+    public HongKong(final Market m) {
+        switch (m) {
+            case HKEx:
+                impl = new HkexImpl();
+                break;
+
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
+        }
+    }
 
     public static enum Market {
         /**
@@ -86,30 +103,10 @@ public class HongKong extends Calendar {
     }
 
     //
-    // public constructor
-    //
-
-    public HongKong() {
-        this(Market.HKEx);
-    }
-
-    public HongKong(final Market m) {
-        switch (m) {
-        case HKEx:
-            impl = new HkexImpl();
-            break;
-
-        default:
-            throw new LibraryException(UNKNOWN_MARKET);
-        }
-    }
-
-
-    //
     // private final inner classes
     //
-
     private final class HkexImpl extends WesternImpl {
+
         @Override
         public String name() {
             return "Hong Kong stock exchange";
@@ -124,7 +121,7 @@ public class HongKong extends Calendar {
             final int em = easterMonday(y);
 
             if (isWeekend(w)
-            // New Year's Day
+                    // New Year's Day
                     || ((d == 1 || ((d == 2 || d == 3) && w == Monday)) && m == January)
                     // Ching Ming Festival
                     || (d == 5 && m == April)
@@ -147,8 +144,8 @@ public class HongKong extends Calendar {
 
             if (y == 2004) {
                 if (// Lunar New Year
-                ((d == 22 || d == 23 || d == 24) && m == January)
-                // Buddha's birthday
+                        ((d == 22 || d == 23 || d == 24) && m == January)
+                        // Buddha's birthday
                         || (d == 26 && m == May)
                         // Tuen NG festival
                         || (d == 22 && m == June)
@@ -162,8 +159,8 @@ public class HongKong extends Calendar {
 
             if (y == 2005) {
                 if (// Lunar New Year
-                ((d == 9 || d == 10 || d == 11) && m == February)
-                // Buddha's birthday
+                        ((d == 9 || d == 10 || d == 11) && m == February)
+                        // Buddha's birthday
                         || (d == 16 && m == May)
                         // Tuen NG festival
                         || (d == 11 && m == June)
@@ -177,8 +174,8 @@ public class HongKong extends Calendar {
 
             if (y == 2006) {
                 if (// Lunar New Year
-                ((d >= 28 && d <= 31) && m == January)
-                // Buddha's birthday
+                        ((d >= 28 && d <= 31) && m == January)
+                        // Buddha's birthday
                         || (d == 5 && m == May)
                         // Tuen NG festival
                         || (d == 31 && m == May)
@@ -192,8 +189,8 @@ public class HongKong extends Calendar {
 
             if (y == 2007) {
                 if (// Lunar New Year
-                ((d >= 17 && d <= 20) && m == February)
-                // Buddha's birthday
+                        ((d >= 17 && d <= 20) && m == February)
+                        // Buddha's birthday
                         || (d == 24 && m == May)
                         // Tuen NG festival
                         || (d == 19 && m == June)
@@ -207,8 +204,8 @@ public class HongKong extends Calendar {
 
             if (y == 2008) {
                 if (// Lunar New Year
-                ((d >= 7 && d <= 9) && m == February)
-                // Ching Ming Festival
+                        ((d >= 7 && d <= 9) && m == February)
+                        // Ching Ming Festival
                         || (d == 4 && m == April)
                         // Buddha's birthday
                         || (d == 12 && m == May)

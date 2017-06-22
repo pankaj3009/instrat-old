@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math;
 
 import org.jquantlib.math.functions.Log;
@@ -30,17 +29,17 @@ import org.jquantlib.math.matrixutilities.Array;
  */
 // TODO: code review :: license, class comments, comments for access modifiers, comments for @Override
 public class LogGrid extends TransformedGrid {
-    
-	public LogGrid(Array grid) {
-		super(grid, new Log());
-	}
 
-	public Array logGridArray() {
-		return transformedGridArray();
-	}
+    public LogGrid(Array grid) {
+        super(grid, new Log());
+    }
 
-	public double logGrid(int i) {
-		return transformedGrid(i);
-	}
+    public Array logGridArray() {
+        return transformedGridArray();
+    }
+
+    public double logGrid(int i) {
+        return transformedGrid(i);
+    }
 
 }

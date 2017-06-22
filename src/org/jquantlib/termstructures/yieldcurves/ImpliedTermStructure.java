@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -50,14 +49,14 @@ import org.jquantlib.time.JDate;
  * Implied term structure at a given date in the future.
  *
  * @note The given date will be the implied reference date.
- * @note This term structure will remain linked to the original structure, i.e., any changes in the latter will be reflected in this
- *       structure as well.
+ * @note This term structure will remain linked to the original structure, i.e.,
+ * any changes in the latter will be reflected in this structure as well.
  */
 //TEST the correctness of the returned values is tested by checking them against numerical calculations.
 //TEST observability against changes in the underlying term structure is checked.
 public class ImpliedTermStructure<T extends YieldTermStructure> extends AbstractYieldTermStructure {
 
-    private final Handle<T>	originalCurve;
+    private final Handle<T> originalCurve;
 
     public ImpliedTermStructure(final Handle<T> h, final JDate referenceDate) {
         super(referenceDate);
@@ -85,7 +84,7 @@ public class ImpliedTermStructure<T extends YieldTermStructure> extends Abstract
     }
 
     @Override
-    protected /*@DiscountFactor*/ double discountImpl(final /*@Time*/ double  t) /* @ReadOnly */ {
+    protected /*@DiscountFactor*/ double discountImpl(final /*@Time*/ double t) /* @ReadOnly */ {
         /* t is relative to the current reference date
            and needs to be converted to the time relative
            to the reference date of the original curve */

@@ -33,14 +33,13 @@ public final class Nowhere implements Ops.DoublePredicate {
     //
     // implements Ops.DoublePredicate
     //
-
     /**
      * @param a is always discarded
      * @return false
      */
-	@Override
-	public boolean op(final double a) {
-		return false;
-	}
+    @Override
+    public boolean op(final double a) {
+        return false;
+    }
 
 }

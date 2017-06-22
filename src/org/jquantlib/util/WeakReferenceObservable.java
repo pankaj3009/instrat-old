@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.util;
 
 import java.lang.ref.WeakReference;
@@ -28,9 +27,9 @@ import java.lang.ref.WeakReference;
  * Implementation of Observable that holds references to Observers as
  * WeakReferences.
  *
- * @note This implementation notifies the observers in a synchronous
- * fashion. Note that this can cause trouble if you notify observers while
- * in a transactional context because the notification is then done also in the
+ * @note This implementation notifies the observers in a synchronous fashion.
+ * Note that this can cause trouble if you notify observers while in a
+ * transactional context because the notification is then done also in the
  * transaction.
  *
  * <p>
@@ -38,8 +37,9 @@ import java.lang.ref.WeakReference;
  *
  * @see <a
  *      href="http://www.jroller.com/martin_fischer/entry/a_generic_java_observer_pattern">
- *      Martin Fischer: Observer and Observable interfaces</a>
- * @see <a href="http://jdj.sys-con.com/read/35878.htm">Improved Observer/Observable</a>
+ * Martin Fischer: Observer and Observable interfaces</a>
+ * @see <a href="http://jdj.sys-con.com/read/35878.htm">Improved
+ * Observer/Observable</a>
  *
  * @see Observable
  * @see Observer
@@ -61,27 +61,27 @@ public class WeakReferenceObservable extends DefaultObservable {
     }
 
     /**
-     * This method deletes the Observer passed as argument but also discards those Observers which where reclaimed by gc
+     * This method deletes the Observer passed as argument but also discards
+     * those Observers which where reclaimed by gc
      */
     @Override
     public void deleteObserver(final Observer observer) {
         for (final Observer weakObserver : getObservers()) {
             final WeakReferenceObserver weakReference = (WeakReferenceObserver) weakObserver;
             final Observer referent = weakReference.get();
-            if (referent == null || referent.equals(observer))
+            if (referent == null || referent.equals(observer)) {
                 deleteWeakReference(weakReference);
+            }
         }
     }
 
-    private void deleteWeakReference(final WeakReferenceObserver observer){
+    private void deleteWeakReference(final WeakReferenceObserver observer) {
         super.deleteObserver(observer);
     }
-
 
     //
     // inner classes
     //
-
     private class WeakReferenceObserver extends WeakReference<Observer> implements Observer {
 
         public WeakReferenceObserver(final Observer referent) {
@@ -92,11 +92,12 @@ public class WeakReferenceObservable extends DefaultObservable {
         //XXX::OBS public void update(final Observable o, final Object arg) {
         public void update() {
             final Observer referent = get();
-            if (referent != null)
-                //XXX::OBS referent.update(o, arg);
+            if (referent != null) //XXX::OBS referent.update(o, arg);
+            {
                 referent.update();
-            else
+            } else {
                 deleteWeakReference(this);
+            }
         }
     }
 

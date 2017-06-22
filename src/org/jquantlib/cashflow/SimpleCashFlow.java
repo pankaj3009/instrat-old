@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/* 
+ /* 
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl 
  This file is part of QuantLib, a free-software/open-source library 
  for financial quantitative analysts and developers - http://quantlib.org/ 
@@ -52,46 +52,39 @@ public class SimpleCashFlow extends CashFlow {
     //
     // protected fields
     //
-
     protected double amount;
     protected JDate paymentDate;
 
     //
     // public constructors
     //
-
     public SimpleCashFlow(final double amount,
-            final JDate paymentDate){
+            final JDate paymentDate) {
         this.amount = amount;
         this.paymentDate = paymentDate;
     }
 
-
     //
     // public methods
     //
-
-    public double amount(){
+    public double amount() {
         return amount;
     }
 
     //
     // implements Event
     //
-
     @Override
     public JDate date() {
         return paymentDate.clone();
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<SimpleCashFlow> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<SimpleCashFlow> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

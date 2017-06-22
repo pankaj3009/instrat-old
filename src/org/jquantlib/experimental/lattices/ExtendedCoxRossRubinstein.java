@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2003 Ferdinando Ametrano
  Copyright (C) 2005 StatPro Italia srl
@@ -38,8 +38,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.experimental.lattices;
 
 import org.jquantlib.QL;
@@ -57,7 +56,6 @@ public class ExtendedCoxRossRubinstein extends ExtendedEqualJumpsBinomialTree /*
     //
     // public methods
     //
-
     public ExtendedCoxRossRubinstein(
             final StochasticProcess1D process,
             final /* @Time */ double end,
@@ -66,26 +64,24 @@ public class ExtendedCoxRossRubinstein extends ExtendedEqualJumpsBinomialTree /*
 
         super(process, end, steps);
         this.dx = process.stdDeviation(0.0, x0, dt);
-        this.pu = 0.5 + 0.5*driftStep(0.0)/dx;
+        this.pu = 0.5 + 0.5 * driftStep(0.0) / dx;
         this.pd = 1.0 - pu;
 
-        QL.require(pu<=1.0, NEGATIVE_PROBABILITY);
-        QL.require(pu>=0.0, NEGATIVE_PROBABILITY);
+        QL.require(pu <= 1.0, NEGATIVE_PROBABILITY);
+        QL.require(pu >= 0.0, NEGATIVE_PROBABILITY);
     }
-
 
     //
     // protected methods
     //
-
     @Override
-    protected double dxStep(/* @Time */ final double stepTime) /* @ReadOnly */ {
+    protected double dxStep(/* @Time */final double stepTime) /* @ReadOnly */ {
         return treeProcess.stdDeviation(stepTime, x0, dt);
     }
 
     @Override
-    protected double probUp(/* @Time */ final double stepTime) /* @ReadOnly */ {
-        return 0.5 + 0.5*driftStep(stepTime)/dxStep(stepTime);
+    protected double probUp(/* @Time */final double stepTime) /* @ReadOnly */ {
+        return 0.5 + 0.5 * driftStep(stepTime) / dxStep(stepTime);
     }
 
 }

@@ -22,16 +22,15 @@
 package org.jquantlib.indexes;
 
 /**
- * 
- * France as geographical/economic region
- * used for inflation applicability
- * 
+ *
+ * France as geographical/economic region used for inflation applicability
+ *
  * @author Tim Blackler
  */
 public class UKRegion extends Region {
-	
-	public UKRegion() {
-		this.data = new Region.Data("UK","UK");	
-	}
+
+    public UKRegion() {
+        this.data = new Region.Data("UK", "UK");
+    }
 
 }

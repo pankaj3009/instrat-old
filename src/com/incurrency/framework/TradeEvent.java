@@ -10,13 +10,15 @@ import java.util.EventObject;
  *
  * @author admin
  */
-public class TradeEvent extends EventObject{
+public class TradeEvent extends EventObject {
+
     private int _symbolID;
     private int _tickType;
-    public TradeEvent( Object source, int id,int type){
+
+    public TradeEvent(Object source, int id, int type) {
         super(source);
-        _symbolID=id;
-        _tickType=type;
+        _symbolID = id;
+        _tickType = type;
     }
 
     /**
@@ -46,6 +48,5 @@ public class TradeEvent extends EventObject{
     public void setTickType(int tickType) {
         this._tickType = tickType;
     }
-
 
 }

@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2004, 2008 Ferdinando Ametrano
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2001, 2002, 2003 Nicolas Di C�sar�
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.interpolations.factories;
 
 import org.jquantlib.math.interpolations.CubicInterpolation.BoundaryCondition;
@@ -54,6 +53,7 @@ import org.jquantlib.math.matrixutilities.Array;
  * @author Richard Gomes
  */
 public class LogCubic implements Interpolation.Interpolator {
+
     private final DerivativeApprox da;
     private final BoundaryCondition leftType;
     private final BoundaryCondition rightType;
@@ -61,10 +61,10 @@ public class LogCubic implements Interpolation.Interpolator {
     private final double rightValue;
     private final boolean monotonic;
 
-
     public LogCubic(final DerivativeApprox da) {
         this(da, false, BoundaryCondition.SecondDerivative, 0.0, BoundaryCondition.SecondDerivative, 0.0);
     }
+
     public LogCubic(
             final DerivativeApprox da,
             final boolean monotonic,
@@ -81,10 +81,14 @@ public class LogCubic implements Interpolation.Interpolator {
     }
 
     @Override
-    public final boolean global()     { return true; }
+    public final boolean global() {
+        return true;
+    }
 
     @Override
-    public final int requiredPoints() { return 2; }
+    public final int requiredPoints() {
+        return 2;
+    }
 
     @Override
     public final Interpolation interpolate(final Array vx, final Array vy) /* @ReadOnly */ {

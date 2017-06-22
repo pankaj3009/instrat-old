@@ -29,71 +29,72 @@ import org.jquantlib.math.matrixutilities.Array;
  *
  */
 public class NeumannBC implements BoundaryCondition<TridiagonalOperator> {
-	private final /* @Real */double value;
-	private final Side side;
 
-	public NeumannBC(final double value, final Side side) {
-		this.value = value;
-		this.side = side;
-	}
+    private final /* @Real */ double value;
+    private final Side side;
 
-	@Override
-	public void applyAfterApplying(final Array u) {
-		switch (side) {
-		case Lower:
-			u.set(0, u.get(1) - value);
-			break;
-		case Upper:
-			u.set(u.size() - 1, u.get(u.size() - 2) + value);
-			break;
-		default:
-			throw new IllegalStateException(
-					"unknown side for Neumann boundary condition");
-		}
-	}
+    public NeumannBC(final double value, final Side side) {
+        this.value = value;
+        this.side = side;
+    }
 
-	@Override
-	public void applyBeforeApplying(final TridiagonalOperator operator) {
-		switch (side) {
-		case Lower:
-			operator.setFirstRow(-1.0, 1.0);
-			break;
-		case Upper:
-			operator.setLastRow(-1.0, 1.0);
-			break;
-		default:
-			throw new IllegalStateException(
-					"unknown side for Neumann boundary condition");
-		}
-	}
+    @Override
+    public void applyAfterApplying(final Array u) {
+        switch (side) {
+            case Lower:
+                u.set(0, u.get(1) - value);
+                break;
+            case Upper:
+                u.set(u.size() - 1, u.get(u.size() - 2) + value);
+                break;
+            default:
+                throw new IllegalStateException(
+                        "unknown side for Neumann boundary condition");
+        }
+    }
 
-	@Override
-	public void applyBeforeSolving(final TridiagonalOperator operator,
-		 final Array rhs) {
-		switch (side) {
-		case Lower:
-			operator.setFirstRow(-1.0, 1.0);
-			rhs.set(0, value);
-			break;
-		case Upper:
-			operator.setLastRow(-1.0, 1.0);
-			rhs.set(rhs.size() - 1, value);
-			break;
-		default:
-			throw new IllegalStateException(
-					"unknown side for Neumann boundary condition");
-		}
+    @Override
+    public void applyBeforeApplying(final TridiagonalOperator operator) {
+        switch (side) {
+            case Lower:
+                operator.setFirstRow(-1.0, 1.0);
+                break;
+            case Upper:
+                operator.setLastRow(-1.0, 1.0);
+                break;
+            default:
+                throw new IllegalStateException(
+                        "unknown side for Neumann boundary condition");
+        }
+    }
 
-	}
+    @Override
+    public void applyBeforeSolving(final TridiagonalOperator operator,
+            final Array rhs) {
+        switch (side) {
+            case Lower:
+                operator.setFirstRow(-1.0, 1.0);
+                rhs.set(0, value);
+                break;
+            case Upper:
+                operator.setLastRow(-1.0, 1.0);
+                rhs.set(rhs.size() - 1, value);
+                break;
+            default:
+                throw new IllegalStateException(
+                        "unknown side for Neumann boundary condition");
+        }
 
-	@Override
-	public void applyAfterSolving(final Array arrayType) {
+    }
 
-	}
+    @Override
+    public void applyAfterSolving(final Array arrayType) {
 
-	@Override
-	public void setTime(final double t) {
+    }
 
-	}
+    @Override
+    public void setTime(final double t) {
+
+    }
 
 }

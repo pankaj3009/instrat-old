@@ -34,7 +34,7 @@ AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 package org.jquantlib.math.matrixutilities.internal;
 
 import java.util.ListIterator;
@@ -43,7 +43,8 @@ import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.matrixutilities.Matrix;
 
 /**
- * This is the main interface responsible for {@link Matrix} and {@link Array} accessors
+ * This is the main interface responsible for {@link Matrix} and {@link Array}
+ * accessors
  *
  * @author Richard Gomes
  */
@@ -53,7 +54,6 @@ public interface Address {
     public static final String INVALID_ROW_INDEX = "invalid row index";
     public static final String INVALID_COLUMN_INDEX = "invalid column index";
     public static final String GAP_INDEX_FOUND = "gap index found";
-
 
     /**
      * @return the number of rows mapped
@@ -78,7 +78,8 @@ public interface Address {
     /**
      * <code>row0</code> is the row offset of the upmost row of a Matrix.
      * <p>
-     * Example: Matrix B, being a sub-matrix of A, has <code>row0</code> like shown below:
+     * Example: Matrix B, being a sub-matrix of A, has <code>row0</code> like
+     * shown below:
      * <pre>
      *     Matrix A = new Matrix(5, 8);
      *     int row0 = 1; int row1 = 4;
@@ -93,7 +94,8 @@ public interface Address {
     /**
      * <code>col0</code> is the row offset of the leftmost column of a Matrix.
      * <p>
-     * Example: Matrix B, being a sub-matrix of A, has <code>col0</code> like shown below:
+     * Example: Matrix B, being a sub-matrix of A, has <code>col0</code> like
+     * shown below:
      * <pre>
      *     Matrix A = new Matrix(5, 8);
      *     int row0 = 1; int row1 = 4;
@@ -106,9 +108,11 @@ public interface Address {
     public int col0();
 
     /**
-     * Tells if the underlying memory storage can be accessed in a continuous way.
+     * Tells if the underlying memory storage can be accessed in a continuous
+     * way.
      * <p>
-     * When <code>contiguous</code> is <code>true</code>, certain operations are benefited by bulk operations.
+     * When <code>contiguous</code> is <code>true</code>, certain operations are
+     * benefited by bulk operations.
      */
     public boolean isContiguous();
 
@@ -119,28 +123,25 @@ public interface Address {
      */
     public boolean isFortran();
 
-
-
     /**
      * @return a set of flags in effect on this {@link Address} object.
      */
     public Set<Address.Flags> flags();
 
-
     //
     // public inner enumerations
     //
-
     public enum Flags {
 
         /**
-         * Tells if this {@link Address} is intended to Fortran 1-based indexing.
+         * Tells if this {@link Address} is intended to Fortran 1-based
+         * indexing.
          * <p>
-         * In FORTRAN language, access to vectors and matrices are 1-based, like this:
+         * In FORTRAN language, access to vectors and matrices are 1-based, like
+         * this:
          * <pre>
          *     for (i = 1; i <= n; i++)
-         * </pre>
-         * rather than what you can see in Java, C, C++, etc:
+         * </pre> rather than what you can see in Java, C, C++, etc:
          * <pre>
          *     for (i = 0; i < n; i++)
          * </pre>
@@ -162,21 +163,17 @@ public interface Address {
 //        TRANSPOSE
     }
 
-
-
-
-
     //
     // public inner interfaces
     //
-
     /**
-     * This is the main interface responsible for generation of Iterators associated to
-     * classes {@link Matrix} and  {@link Array}
+     * This is the main interface responsible for generation of Iterators
+     * associated to classes {@link Matrix} and {@link Array}
      *
      * @see ListIterator
      */
     public interface Offset {
+
         public abstract int op();
     }
 
@@ -192,9 +189,11 @@ public interface Address {
         public int op(int index);
 
         public ArrayAddress toFortran();
+
         public ArrayAddress toJava();
 
         public ArrayOffset offset();
+
         public ArrayOffset offset(int index);
 
         /**
@@ -203,6 +202,7 @@ public interface Address {
          * @see ListIterator
          */
         public interface ArrayOffset extends Offset, ListIterator<Double> {
+
             public void setIndex(final int index);
         }
     }
@@ -219,9 +219,11 @@ public interface Address {
         public int op(int row, int col);
 
         public MatrixAddress toFortran();
+
         public MatrixAddress toJava();
 
         public MatrixOffset offset();
+
         public MatrixOffset offset(final int row, final int col);
 
         /**
@@ -230,11 +232,17 @@ public interface Address {
          * @see ListIterator
          */
         public interface MatrixOffset extends Offset {
+
             public void setRow(final int row);
+
             public void setCol(final int col);
+
             public void nextRow();
+
             public void prevRow();
+
             public void nextCol();
+
             public void prevCol();
         }
 

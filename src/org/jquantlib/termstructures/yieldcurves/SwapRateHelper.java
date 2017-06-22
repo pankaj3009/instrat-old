@@ -19,10 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
-
-
 
 import org.jquantlib.QL;
 import org.jquantlib.Settings;
@@ -63,27 +60,26 @@ public class SwapRateHelper extends RelativeDateRateHelper {
     protected final DayCounter fixedDayCount;
     protected final IborIndex iborIndex;
     protected VanillaSwap swap;
-    protected RelinkableHandle<YieldTermStructure> termStructureHandle = new RelinkableHandle <YieldTermStructure> (null);
+    protected RelinkableHandle<YieldTermStructure> termStructureHandle = new RelinkableHandle<YieldTermStructure>(null);
     protected final Handle<Quote> spread;
     protected final Period fwdStart;
-
 
     //
     // public constructors
     //
-
-    
     public SwapRateHelper(
             final Handle<Quote> rate,
             final SwapIndex swapIndex) {
-    	this(rate, swapIndex, new Handle<Quote>(), new Period(0, TimeUnit.Days));
+        this(rate, swapIndex, new Handle<Quote>(), new Period(0, TimeUnit.Days));
     }
+
     public SwapRateHelper(
             final Handle<Quote> rate,
             final SwapIndex swapIndex,
             final Handle<Quote> spread) {
-    	this(rate, swapIndex, spread, new Period(0, TimeUnit.Days));
+        this(rate, swapIndex, spread, new Period(0, TimeUnit.Days));
     }
+
     public SwapRateHelper(
             final Handle<Quote> rate,
             final SwapIndex swapIndex,
@@ -107,7 +103,6 @@ public class SwapRateHelper extends RelativeDateRateHelper {
         initializeDates();
     }
 
-
     public SwapRateHelper(
             final Handle<Quote> rate,
             final Period tenor,
@@ -116,8 +111,9 @@ public class SwapRateHelper extends RelativeDateRateHelper {
             final BusinessDayConvention fixedConvention,
             final DayCounter fixedDayCount,
             final IborIndex iborIndex) {
-    	this(rate, tenor, calendar, fixedFrequency, fixedConvention, fixedDayCount, iborIndex, new Handle<Quote>(), new Period(0, TimeUnit.Days));
+        this(rate, tenor, calendar, fixedFrequency, fixedConvention, fixedDayCount, iborIndex, new Handle<Quote>(), new Period(0, TimeUnit.Days));
     }
+
     public SwapRateHelper(
             final Handle<Quote> rate,
             final Period tenor,
@@ -127,60 +123,11 @@ public class SwapRateHelper extends RelativeDateRateHelper {
             final DayCounter fixedDayCount,
             final IborIndex iborIndex,
             final Handle<Quote> spread) {
-    	this(rate, tenor, calendar, fixedFrequency, fixedConvention, fixedDayCount, iborIndex, spread, new Period(0, TimeUnit.Days));
+        this(rate, tenor, calendar, fixedFrequency, fixedConvention, fixedDayCount, iborIndex, spread, new Period(0, TimeUnit.Days));
     }
+
     public SwapRateHelper(
             final Handle<Quote> rate,
-            final Period tenor,
-            final Calendar calendar,
-            final Frequency fixedFrequency,
-            final BusinessDayConvention fixedConvention,
-            final DayCounter fixedDayCount,
-            final IborIndex iborIndex,
-            final Handle<Quote> spread,
-            final Period fwdStart) {
-        super(rate);
-        QL.validateExperimentalMode();
-
-        this.tenor = tenor;
-        this.calendar = calendar;
-        this.fixedConvention = fixedConvention;
-        this.fixedFrequency = fixedFrequency;
-        this.fixedDayCount = fixedDayCount;
-        this.iborIndex = iborIndex;
-        this.spread =spread;
-        this.fwdStart =fwdStart;
-
-        this.iborIndex.addObserver(this);
-        this.spread.addObserver(this);
-
-        initializeDates();
-    }
-
-
-    public SwapRateHelper(
-            final /*@Rate*/ double rate,
-            final Period tenor,
-            final Calendar calendar,
-            final Frequency fixedFrequency,
-            final BusinessDayConvention fixedConvention,
-            final DayCounter fixedDayCount,
-            final IborIndex iborIndex) {
-    	this(rate, tenor, calendar, fixedFrequency, fixedConvention, fixedDayCount, iborIndex, new Handle<Quote>(), new Period(0, TimeUnit.Days));
-    }
-    public SwapRateHelper(
-            final /*@Rate*/ double rate,
-            final Period tenor,
-            final Calendar calendar,
-            final Frequency fixedFrequency,
-            final BusinessDayConvention fixedConvention,
-            final DayCounter fixedDayCount,
-            final IborIndex iborIndex,
-            final Handle<Quote> spread) {
-    	this(rate, tenor, calendar, fixedFrequency, fixedConvention, fixedDayCount, iborIndex, spread, new Period(0, TimeUnit.Days));
-    }
-    public SwapRateHelper(
-            final /*@Rate*/ double rate,
             final Period tenor,
             final Calendar calendar,
             final Frequency fixedFrequency,
@@ -207,18 +154,70 @@ public class SwapRateHelper extends RelativeDateRateHelper {
         initializeDates();
     }
 
+    public SwapRateHelper(
+            final /*@Rate*/ double rate,
+            final Period tenor,
+            final Calendar calendar,
+            final Frequency fixedFrequency,
+            final BusinessDayConvention fixedConvention,
+            final DayCounter fixedDayCount,
+            final IborIndex iborIndex) {
+        this(rate, tenor, calendar, fixedFrequency, fixedConvention, fixedDayCount, iborIndex, new Handle<Quote>(), new Period(0, TimeUnit.Days));
+    }
+
+    public SwapRateHelper(
+            final /*@Rate*/ double rate,
+            final Period tenor,
+            final Calendar calendar,
+            final Frequency fixedFrequency,
+            final BusinessDayConvention fixedConvention,
+            final DayCounter fixedDayCount,
+            final IborIndex iborIndex,
+            final Handle<Quote> spread) {
+        this(rate, tenor, calendar, fixedFrequency, fixedConvention, fixedDayCount, iborIndex, spread, new Period(0, TimeUnit.Days));
+    }
+
+    public SwapRateHelper(
+            final /*@Rate*/ double rate,
+            final Period tenor,
+            final Calendar calendar,
+            final Frequency fixedFrequency,
+            final BusinessDayConvention fixedConvention,
+            final DayCounter fixedDayCount,
+            final IborIndex iborIndex,
+            final Handle<Quote> spread,
+            final Period fwdStart) {
+        super(rate);
+        QL.validateExperimentalMode();
+
+        this.tenor = tenor;
+        this.calendar = calendar;
+        this.fixedConvention = fixedConvention;
+        this.fixedFrequency = fixedFrequency;
+        this.fixedDayCount = fixedDayCount;
+        this.iborIndex = iborIndex;
+        this.spread = spread;
+        this.fwdStart = fwdStart;
+
+        this.iborIndex.addObserver(this);
+        this.spread.addObserver(this);
+
+        initializeDates();
+    }
 
     public SwapRateHelper(
             final /*@Rate*/ double rate,
             final SwapIndex swapIndex) {
-    	this(rate, swapIndex, new Handle<Quote>(), new Period(0, TimeUnit.Days));
+        this(rate, swapIndex, new Handle<Quote>(), new Period(0, TimeUnit.Days));
     }
+
     public SwapRateHelper(
             final /*@Rate*/ double rate,
             final SwapIndex swapIndex,
             final Handle<Quote> spread) {
-    	this(rate, swapIndex, spread, new Period(0, TimeUnit.Days));
+        this(rate, swapIndex, spread, new Period(0, TimeUnit.Days));
     }
+
     public SwapRateHelper(
             final /*@Rate*/ double rate,
             final SwapIndex swapIndex,
@@ -241,15 +240,14 @@ public class SwapRateHelper extends RelativeDateRateHelper {
 
         initializeDates();
     }
-
 
     //
     // protected methods
     //
-
-	/** 
-     * 
-     * @see org.jquantlib.termstructures.yield.RelativeDateRateHelper#initializeDates()
+    /**
+     *
+     * @see
+     * org.jquantlib.termstructures.yield.RelativeDateRateHelper#initializeDates()
      */
     @Override
     protected void initializeDates() {
@@ -258,12 +256,12 @@ public class SwapRateHelper extends RelativeDateRateHelper {
 
         // do not pass the spread here, as it might be a Quote i.e. it can dynamically change
         this.swap = new MakeVanillaSwap(tenor, clonedIborIndex, 0.0, fwdStart)
-        .withFixedLegDayCount(fixedDayCount)
-        .withFixedLegTenor(new Period(fixedFrequency))
-        .withFixedLegConvention(fixedConvention)
-        .withFixedLegTerminationDateConvention(fixedConvention)
-        .withFixedLegCalendar(calendar)
-        .withFloatingLegCalendar(calendar).value();
+                .withFixedLegDayCount(fixedDayCount)
+                .withFixedLegTenor(new Period(fixedFrequency))
+                .withFixedLegConvention(fixedConvention)
+                .withFixedLegTerminationDateConvention(fixedConvention)
+                .withFixedLegCalendar(calendar)
+                .withFloatingLegCalendar(calendar).value();
 
         this.earliestDate = swap.startDate();
 
@@ -279,11 +277,10 @@ public class SwapRateHelper extends RelativeDateRateHelper {
         }
     }
 
-
     /**
-     * Do not set the relinkable handle as an observer.
-     * Force recalculation when needed
-     * 
+     * Do not set the relinkable handle as an observer. Force recalculation when
+     * needed
+     *
      * @see org.jquantlib.termstructures.BootstrapHelper#setTermStructure
      *
      * @param t
@@ -294,23 +291,23 @@ public class SwapRateHelper extends RelativeDateRateHelper {
         super.setTermStructure(t);
     }
 
-
-    /** 
+    /**
      * @see org.jquantlib.termstructures.BootstrapHelper#getImpliedQuote()
      */
     @Override
     public /*@Real*/ double impliedQuote() /* @ReadOnly */ {
-        QL.require(termStructure != null , "term structure not set");
+        QL.require(termStructure != null, "term structure not set");
 
         // we didn't register as observers - force calculation
         swap.recalculate();
 
+
         // weak implementation... to be improved
         /*@Real*/ final double floatingLegNPV = swap.floatingLegNPV();
         /*@Spread*/ final double spread = this.spread.empty() ? 0.0 : this.spread.currentLink().value();
-        /*@Real*/ final double spreadNPV = swap.floatingLegBPS()/basisPoint*spread;
-        /*@Real*/ final double totNPV = - (floatingLegNPV+spreadNPV);
-        /*@Real*/ final double result = totNPV/(swap.fixedLegBPS()/basisPoint);
+        /*@Real*/ final double spreadNPV = swap.floatingLegBPS() / basisPoint * spread;
+        /*@Real*/ final double totNPV = -(floatingLegNPV + spreadNPV);
+        /*@Real*/ final double result = totNPV / (swap.fixedLegBPS() / basisPoint);
         return result;
     }
 
@@ -326,14 +323,12 @@ public class SwapRateHelper extends RelativeDateRateHelper {
         return this.fwdStart;
     }
 
-
     //
     // implements PolymorphicVisitable
     //
-
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<SwapRateHelper> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<SwapRateHelper> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

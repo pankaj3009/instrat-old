@@ -20,7 +20,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.model.equity;
 
 import org.jquantlib.math.optimization.BoundaryConstraint;
@@ -29,7 +28,7 @@ import org.jquantlib.model.ConstantParameter;
 import org.jquantlib.processes.HestonProcess;
 
 /**
- * 
+ *
  * @author Ueli Hofstetter
  *
  */
@@ -68,6 +67,7 @@ public class BatesDoubleExpModel extends HestonModel {
     }
 
     public static class BatesDoubleExpDetJumpModel extends BatesDoubleExpModel {
+
         public BatesDoubleExpDetJumpModel(final HestonProcess process, final double lambda, final double nuUp, final double nuDown, final double p,
                 final double kappaLambda, final double thetaLambda) {
             super(process);

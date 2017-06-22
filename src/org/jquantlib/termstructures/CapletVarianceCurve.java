@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2005 Klaus Spanderen
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,7 +34,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
+ */
 package org.jquantlib.termstructures;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -50,71 +50,65 @@ import org.jquantlib.time.JDate;
  * caplet variance curve
  * <p>
  * @deprecated use the StrippedOptionletAdapter of a StrippedOptionlet instance
-*/
+ */
 @Deprecated
 public class CapletVarianceCurve extends OptionletVolatilityStructure {
 
-	private final BlackVarianceCurve blackCurve;
+    private final BlackVarianceCurve blackCurve;
 
-	//
-	// public constructor
-	//
-
-	public CapletVarianceCurve(
-	        final JDate referenceDate,
-            final JDate [] dates,
-            final double [] capletVolCurve,
+    //
+    // public constructor
+    //
+    public CapletVarianceCurve(
+            final JDate referenceDate,
+            final JDate[] dates,
+            final double[] capletVolCurve,
             final DayCounter dayCounter) {
-		super(referenceDate, new Calendar(), BusinessDayConvention.Following);
-		blackCurve = new BlackVarianceCurve(referenceDate, dates, capletVolCurve, dayCounter, false);
-	}
-
+        super(referenceDate, new Calendar(), BusinessDayConvention.Following);
+        blackCurve = new BlackVarianceCurve(referenceDate, dates, capletVolCurve, dayCounter, false);
+    }
 
     //
     // overrides TermStructure
     //
-
     public JDate maxDate() {
         return blackCurve.maxDate();
     }
 
-	//
-	// overrides AbstractTermStructure
-	//
-
-	@Override
+    //
+    // overrides AbstractTermStructure
+    //
+    @Override
     public DayCounter dayCounter() {
-		return blackCurve.dayCounter();
-	}
+        return blackCurve.dayCounter();
+    }
 
-	//
-	// overrides VolatilityTermStructure
-	//
-
-	@Override
+    //
+    // overrides VolatilityTermStructure
+    //
+    @Override
     public /* @Real */ double minStrike() {
-		return blackCurve.minStrike();
-	}
+        return blackCurve.minStrike();
+    }
 
-	@Override
+    @Override
     public /* @Real */ double maxStrike() {
-		return blackCurve.maxStrike();
-	}
+        return blackCurve.maxStrike();
+    }
 
-	//
-	// override OptionletVolatilityStructure
-	//
-
-	@Override
+    //
+    // override OptionletVolatilityStructure
+    //
+    @Override
     protected SmileSection smileSectionImpl(/* @Time */final double t) {
-		// dummy strike
-		final double atmVol = blackCurve.blackVol(t, 0.05, true);
-		return new FlatSmileSection(t, atmVol, dayCounter());
-	}
+        // dummy strike
+        final double atmVol = blackCurve.blackVol(t, 0.05, true);
+        return new FlatSmileSection(t, atmVol, dayCounter());
+    }
 
-	@Override
-    protected /* @Volatility */ double volatilityImpl(/* @Time */ final double t, /* @Rate */ final double r) {
-		return blackCurve.blackVol(t, r, true);
-	}
+    @Override
+    protected /* @Volatility */ double volatilityImpl(/* @Time */final double t, /* @Rate */ final double r) {
+        return blackCurve.blackVol(t, r, true);
+    }
 
 }

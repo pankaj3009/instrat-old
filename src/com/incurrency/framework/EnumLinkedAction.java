@@ -8,6 +8,7 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumLinkedAction {REVERSEFILL,COMPLETEFILL,CLOSEPOSITION,REVERSESTUB,PROPOGATE,UNDEFINED
-    
+public enum EnumLinkedAction {
+    REVERSEFILL, COMPLETEFILL, CLOSEPOSITION, REVERSESTUB, PROPOGATE, UNDEFINED
+
 }

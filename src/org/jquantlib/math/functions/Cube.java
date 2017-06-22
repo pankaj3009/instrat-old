@@ -30,13 +30,12 @@ import org.jquantlib.math.Ops;
  */
 public final class Cube implements Ops.DoubleOp {
 
-	//
+    //
     // implements Ops.DoubleOp
     //
-
-	@Override
-	public double op(final double a) {
-		return a*a*a;
-	}
+    @Override
+    public double op(final double a) {
+        return a * a * a;
+    }
 
 }

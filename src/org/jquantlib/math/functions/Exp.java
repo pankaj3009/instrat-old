@@ -25,18 +25,17 @@ import org.jquantlib.math.Ops;
 
 /**
  * A exp(n) function
- * 
+ *
  * @author Srinivas Hasti
  */
 public final class Exp implements Ops.DoubleOp {
 
-	//
+    //
     // implements Ops.DoubleOp
     //
-    
-	@Override
-	public double op(final double a) {
-		return Math.exp(a);
-	}
+    @Override
+    public double op(final double a) {
+        return Math.exp(a);
+    }
 
 }

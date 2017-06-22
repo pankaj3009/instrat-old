@@ -21,7 +21,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Roman Gitlin
  Copyright (C) 2003 StatPro Italia srl
 
@@ -37,8 +37,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.integrals;
 
 import org.jquantlib.math.Ops;
@@ -51,24 +50,21 @@ import org.jquantlib.math.Ops;
  */
 public class SimpsonIntegral extends TrapezoidIntegral<TrapezoidIntegral.Default> {
 
-	//
-	// public constructors
-	//
+    //
+    // public constructors
+    //
+    public SimpsonIntegral(final double accuracy, final int maxIterations) {
+        super(TrapezoidIntegral.Default.class, accuracy, maxIterations);
+    }
 
-	public SimpsonIntegral (final double accuracy, final int maxIterations) {
-		super(TrapezoidIntegral.Default.class, accuracy, maxIterations);
-	}
-
-
-	//
-	// protected virtual methods
-	//
-
-	@Override
+    //
+    // protected virtual methods
+    //
+    @Override
     protected double integrate(final Ops.DoubleOp f, final double a, final double b) {
         // start from the coarsest trapezoid...
         int N = 1;
-        double I = (f.op(a)+f.op(b))*(b-a)/2.0;
+        double I = (f.op(a) + f.op(b)) * (b - a) / 2.0;
         double adjI = I;
 
         double newI, newAdjI;

@@ -18,7 +18,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
 
  This file is part of QuantLib, a free-software/open-source library
@@ -34,7 +34,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.optimization;
 
 import org.jquantlib.lang.annotation.QualityAssurance;
@@ -44,25 +43,22 @@ import org.jquantlib.math.matrixutilities.Array;
 
 /**
  * Constraint imposing all arguments to be in [low,high]
- * 
+ *
  * @author Richard Gomes
  */
-@QualityAssurance(quality=Quality.Q3_DOCUMENTATION, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = "Richard Gomes")
 public class BoundaryConstraint extends Constraint {
 
     //
     // public constructors
     //
-
     public BoundaryConstraint(final double low, final double high) {
         super.impl = new Impl(low, high);
     }
 
-
     //
     // private inner classes
     //
-
     /**
      * Base class for constraint implementations.
      */
@@ -71,30 +67,25 @@ public class BoundaryConstraint extends Constraint {
         //
         // private fields
         //
-
         private final double low, high;
-
 
         //
         // private constructors
         //
-
         private Impl(final double low, final double high) {
-            this.low  = low;
+            this.low = low;
             this.high = high;
         }
-
 
         //
         // public abstract methods
         //
-
         /**
          * Tests if params satisfy the constraint.
          */
         @Override
-        public boolean test(final Array  params) /* @ReadOnly */ {
-            for (int i=0; i<params.size(); i++) {
+        public boolean test(final Array params) /* @ReadOnly */ {
+            for (int i = 0; i < params.size(); i++) {
                 if ((params.get(i) < low) || (params.get(i) > high)) {
                     return false;
                 }

@@ -20,7 +20,7 @@ JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2005, 2007 StatPro Italia srl
 
@@ -46,30 +46,26 @@ import org.jquantlib.methods.lattices.Lattice;
 import org.jquantlib.model.CalibratedModel;
 import org.jquantlib.time.TimeGrid;
 
-
 /**
  * Abstract short-rate model class
- * 
+ *
  * @category shortrate
- * 
+ *
  * @author Praneet Tiwari
  */
-@QualityAssurance(quality=Quality.Q3_DOCUMENTATION, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = "Richard Gomes")
 public abstract class ShortRateModel extends CalibratedModel {
 
     //
     // public methods
     //
-
     public ShortRateModel(final int nArguments) {
         super(nArguments);
     }
 
-
     //
     // public abstract methods
     //
-
-    public abstract  Lattice tree(final TimeGrid  ref) /* @ReadOnly */ ;
+    public abstract Lattice tree(final TimeGrid ref) /* @ReadOnly */;
 
 }

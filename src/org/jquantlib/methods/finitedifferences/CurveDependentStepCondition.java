@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.finitedifferences;
 
 import org.jquantlib.instruments.Option;
@@ -46,16 +45,13 @@ import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.matrixutilities.Array;
 
 /**
- * Abstract base class which allows step conditions to use both payoff and array functions
+ * Abstract base class which allows step conditions to use both payoff and array
+ * functions
  *
  * @author Richard Gomes
  */
 //TODO: code review :: license, class comments, comments for access modifiers, put "final" everywhere
 public class CurveDependentStepCondition implements StepCondition<Array> {
-
-    public static interface CurveWrapper {
-        double getValue(Array a, int i);
-    }
 
     private final CurveWrapper curveItem;
 
@@ -86,7 +82,13 @@ public class CurveDependentStepCondition implements StepCondition<Array> {
         return curveItem.getValue(a, index);
     }
 
+    public static interface CurveWrapper {
+
+        double getValue(Array a, int i);
+    }
+
     static class ArrayWrapper implements CurveWrapper {
+
         private final Array values;
 
         public ArrayWrapper(final Array values) {
@@ -99,6 +101,7 @@ public class CurveDependentStepCondition implements StepCondition<Array> {
     };
 
     static class PayoffWrapper implements CurveWrapper {
+
         private final Payoff payoff;
 
         public PayoffWrapper(final Payoff p) {

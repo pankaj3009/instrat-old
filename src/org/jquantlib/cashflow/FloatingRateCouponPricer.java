@@ -31,18 +31,22 @@ public abstract class FloatingRateCouponPricer implements Observer, Observable {
     private final DefaultObservable delegatedObservable = new DefaultObservable(this);
 
     public abstract double swapletPrice();
-    public abstract double swapletRate();
-    public abstract double capletPrice(double effectiveCap);
-    public abstract double capletRate(double effectiveCap);
-    public abstract double floorletPrice(double effectiveFloor);
-    public abstract double floorletRate(double effectiveFloor);
-    public abstract void initialize(FloatingRateCoupon coupon);
 
+    public abstract double swapletRate();
+
+    public abstract double capletPrice(double effectiveCap);
+
+    public abstract double capletRate(double effectiveCap);
+
+    public abstract double floorletPrice(double effectiveFloor);
+
+    public abstract double floorletRate(double effectiveFloor);
+
+    public abstract void initialize(FloatingRateCoupon coupon);
 
     //
     // implements Observer
     //
-
     //XXX:registerWith
     //    @Override
     //    public void registerWith(final Observable o) {
@@ -53,17 +57,14 @@ public abstract class FloatingRateCouponPricer implements Observer, Observable {
     //    public void unregisterWith(final Observable o) {
     //        o.deleteObserver(this);
     //    }
-
     @Override
     public void update() {
         notifyObservers();
     }
 
-
     //
     // implements Observable
     //
-
     @Override
     public void addObserver(final Observer observer) {
         delegatedObservable.addObserver(observer);

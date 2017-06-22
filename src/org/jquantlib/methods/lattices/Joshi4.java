@@ -37,16 +37,17 @@ import org.jquantlib.processes.StochasticProcess1D;
  */
 public class Joshi4 extends BinomialTree {
 
-	protected double up, down, pu, pd;
+    protected double up, down, pu, pd;
 
-	public Joshi4(
-	        final StochasticProcess1D process,
-	        final @Time double end,
-	        final @NonNegative int steps,
-	        final @Real double strike) {
+    public Joshi4(
+            final StochasticProcess1D process,
+            final @Time double end,
+            final @NonNegative int steps,
+            final @Real double strike) {
         super(process, end, ((steps % 2) > 0 ? steps : steps + 1));
-        if (strike <= 0.0)
+        if (strike <= 0.0) {
             throw new IllegalStateException("strike must be positive");
+        }
 
         final int oddSteps = (steps % 2 > 0 ? steps : steps + 1);
         final double variance = process.variance(0.0, x0, end);
@@ -60,20 +61,20 @@ public class Joshi4 extends BinomialTree {
 
     }
 
-	@Override
+    @Override
     public double underlying(final int i, final int index) {
         final int j = i - index;
         final double d = j;
-		return x0 * Math.pow(down, d) * Math.pow(up, index);
+        return x0 * Math.pow(down, d) * Math.pow(up, index);
 
-	}
+    }
 
-	@Override
+    @Override
     public double probability(final int i, final int j, final int branch) {
-		return (branch == 1 ? pu : pd);
-	}
+        return (branch == 1 ? pu : pd);
+    }
 
-	protected double computeUpProb(/* Real */final double k, /* Real */final double dj) {
+    protected double computeUpProb(/* Real */final double k, /* Real */ final double dj) {
         final double alpha = dj / (Math.sqrt(8.0));
         final double alpha2 = alpha * alpha;
         final double alpha3 = alpha * alpha2;

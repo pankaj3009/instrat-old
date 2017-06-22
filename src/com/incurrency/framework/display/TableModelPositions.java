@@ -27,9 +27,9 @@ import javax.swing.table.AbstractTableModel;
  */
 public class TableModelPositions extends AbstractTableModel {
 
-//    private String[] headers={"Symbol","Position","PositionPrice","P&L","HH","LL","Market","CumVol","Slope","20PerThreshold","Volume","MA","Strategy"};
-    private String[] headers = {"Symbol", "Position", "EntryPrice", "P&L", "MTM", "MarketPrice", "Strategy"};
     private static final Logger logger = Logger.getLogger(TableModelPositions.class.getName());
+    //    private String[] headers={"Symbol","Position","PositionPrice","P&L","HH","LL","Market","CumVol","Slope","20PerThreshold","Volume","MA","Strategy"};
+    private String[] headers = {"Symbol", "Position", "EntryPrice", "P&L", "MTM", "MarketPrice", "Strategy"};
     int delay = 1000; //milliseconds
     int display = 0;
     NumberFormat df = DecimalFormat.getInstance();
@@ -92,7 +92,6 @@ public class TableModelPositions extends AbstractTableModel {
             while (MainAlgorithm.getInstance().getMinPNL().size() <= strategyid) {
                 MainAlgorithm.getInstance().getMinPNL().add(0D);
             }
-
 
             switch (columnIndex) {
                 case 0:

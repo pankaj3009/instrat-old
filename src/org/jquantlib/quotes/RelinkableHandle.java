@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006, 2007 StatPro Italia srl
 
@@ -36,8 +36,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.quotes;
 
 import org.jquantlib.util.Observable;
@@ -58,22 +57,22 @@ public class RelinkableHandle<T extends Observable> extends Handle<T> {
         super();
     }
 
-	public RelinkableHandle(final T observable) {
-    	this(observable, true);
+    public RelinkableHandle(final T observable) {
+        this(observable, true);
     }
 
     public RelinkableHandle(final T observable, final boolean isObserver) {
-    	super(observable, isObserver);
+        super(observable, isObserver);
     }
 
     @Override
     public final void linkTo(final T observable) {
-    	super.internalLinkTo(observable, true);
+        super.internalLinkTo(observable, true);
     }
 
     @Override
     public final void linkTo(final T observable, final boolean isObserver) {
-    	super.internalLinkTo(observable, isObserver);
+        super.internalLinkTo(observable, isObserver);
     }
 
 }

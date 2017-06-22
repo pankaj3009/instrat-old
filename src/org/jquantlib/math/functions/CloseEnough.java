@@ -33,13 +33,12 @@ import org.jquantlib.math.Ops;
  */
 public final class CloseEnough implements Ops.BinaryDoublePredicate {
 
-	//
+    //
     // implements BinaryDoublePredicate
     //
-
-	@Override
-	public boolean op(final double a, final double b) {
-		return Closeness.isCloseEnough(a, b);
-	}
+    @Override
+    public boolean op(final double a, final double b) {
+        return Closeness.isCloseEnough(a, b);
+    }
 
 }

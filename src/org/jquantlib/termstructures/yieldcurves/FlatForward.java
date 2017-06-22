@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2007 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -68,11 +67,9 @@ public class FlatForward extends AbstractYieldTermStructure {
     private final Frequency frequency;
     private InterestRate rate;
 
-
     //
     // public constructors
     //
-
     public FlatForward(
             final JDate referenceDate,
             final Handle<? extends Quote> forward,
@@ -103,7 +100,6 @@ public class FlatForward extends AbstractYieldTermStructure {
     }
 
     // --------------------------------------------
-
     public FlatForward(
             final JDate referenceDate,
             final /*@Rate*/ double forward,
@@ -133,7 +129,6 @@ public class FlatForward extends AbstractYieldTermStructure {
     }
 
     // --------------------------------------------
-
     public FlatForward(
             final int settlementDays,
             final Calendar calendar,
@@ -167,7 +162,6 @@ public class FlatForward extends AbstractYieldTermStructure {
     }
 
     // --------------------------------------------
-
     public FlatForward(
             final int settlementDays,
             final Calendar calendar,
@@ -199,11 +193,9 @@ public class FlatForward extends AbstractYieldTermStructure {
         this(settlementDays, calendar, forward, dayCounter, compounding, Frequency.Annual);
     }
 
-
     //
     // public methods
     //
-
     public final Compounding compounding() {
         return compounding;
     }
@@ -212,20 +204,16 @@ public class FlatForward extends AbstractYieldTermStructure {
         return frequency;
     }
 
-
     //
     // private methods
     //
-
     private void updateRate() {
         rate = new InterestRate(forward.currentLink().value(), this.dayCounter(), this.compounding, this.frequency);
     }
 
-
     //
     // overrides YieldTermStructure
     //
-
     @Override
     protected final /*@DiscountFactor*/ double discountImpl(final /*@Time*/ double t) {
         return rate.discountFactor(t);
@@ -234,17 +222,14 @@ public class FlatForward extends AbstractYieldTermStructure {
     //
     // overrides TermStructure
     //
-
     @Override
     public final JDate maxDate() {
         return JDate.maxDate();
     }
 
-
     //
     // implements Observer interface
     //
-
     /**
      * This method implements {@link Observer#update(Observable, Object)}
      *

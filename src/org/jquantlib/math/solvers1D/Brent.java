@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.solvers1D;
 
 import org.jquantlib.math.AbstractSolver1D;
@@ -31,15 +30,17 @@ import org.jquantlib.math.Ops;
  * Brent 1-D solver
  * <p>
  * The implementation of the algorithm was inspired by <br/>
- * <i>Press, Teukolsky, Vetterling, and Flannery, "Numerical Recipes in C", 2nd Edition, Cambridge University Press</i>
- *	
+ * <i>Press, Teukolsky, Vetterling, and Flannery, "Numerical Recipes in C", 2nd
+ * Edition, Cambridge University Press</i>
+ *
  * @author Richard Gomes
- **/
+ *
+ */
 public class Brent extends AbstractSolver1D<Ops.DoubleOp> {
 
     /**
      * Computes the roots of a function by using the Brent method.
-     * 
+     *
      * @param f the function
      * @param xAccuracy the provided accuracy
      * @returns <code>root</code>
@@ -73,8 +74,9 @@ public class Brent extends AbstractSolver1D<Ops.DoubleOp> {
             // Convergence check
             xAcc1 = 2.0 * Constants.QL_EPSILON * Math.abs(root) + 0.5 * xAccuracy;
             xMid = (xMax - root) / 2.0;
-            if (Math.abs(xMid) <= xAcc1 || froot == 0.0)
+            if (Math.abs(xMid) <= xAcc1 || froot == 0.0) {
                 return root;
+            }
 
             if (Math.abs(e) >= xAcc1 && Math.abs(fxMin) > Math.abs(froot)) {
                 // Attempt inverse quadratic interpolation
@@ -89,8 +91,9 @@ public class Brent extends AbstractSolver1D<Ops.DoubleOp> {
                     p = s * (2.0 * xMid * q * (q - r) - (root - xMin) * (r - 1.0));
                     q = (q - 1.0) * (r - 1.0) * (s - 1.0);
                 }
-                if (p > 0.0)
+                if (p > 0.0) {
                     q = -q; // Check whether in bounds
+                }
                 p = Math.abs(p);
                 min1 = 3.0 * xMid * q - Math.abs(xAcc1 * q);
                 min2 = Math.abs(e * q);
@@ -108,10 +111,11 @@ public class Brent extends AbstractSolver1D<Ops.DoubleOp> {
 
             xMin = root;
             fxMin = froot;
-            if (Math.abs(d) > xAcc1)
+            if (Math.abs(d) > xAcc1) {
                 root += d;
-            else
+            } else {
                 root += sign(xAcc1, xMid);
+            }
             froot = f.op(root);
             evaluationNumber++;
         }

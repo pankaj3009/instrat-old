@@ -31,37 +31,36 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.TimeUnit;
 
 /**
- * 
+ *
  * Genuine year-on-year EU HICP (i.e. not a ratio of EU HICP)
- * 
+ *
  * @author Tim Blackler
  *
  */
-
 public class YYEUHICP extends YoYInflationIndex {
 
-	public YYEUHICP(final Frequency frequency,
-   	      final boolean revised,
-   	      final boolean interpolated) {
-			
-	this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>());
-	   
- }
-	
     public YYEUHICP(final Frequency frequency,
-            	  final boolean revised,
-            	  final boolean interpolated,
-            	  final Handle<YoYInflationTermStructure> termStructure) {
-    	
-    	super("YY_HICP",
-              new EURegion(),
-              revised,
-              interpolated,
-              false,
-              frequency,
-              new Period(3, TimeUnit.Months),
-              new EURCurrency(),
-              termStructure);
-    	
-    }    
+            final boolean revised,
+            final boolean interpolated) {
+
+        this(frequency, revised, interpolated, new Handle<YoYInflationTermStructure>());
+
+    }
+
+    public YYEUHICP(final Frequency frequency,
+            final boolean revised,
+            final boolean interpolated,
+            final Handle<YoYInflationTermStructure> termStructure) {
+
+        super("YY_HICP",
+                new EURegion(),
+                revised,
+                interpolated,
+                false,
+                frequency,
+                new Period(3, TimeUnit.Months),
+                new EURCurrency(),
+                termStructure);
+
+    }
 }

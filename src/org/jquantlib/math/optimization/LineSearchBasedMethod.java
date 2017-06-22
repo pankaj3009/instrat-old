@@ -23,23 +23,21 @@ package org.jquantlib.math.optimization;
 
 import org.jquantlib.QL;
 
-
-
 public abstract class LineSearchBasedMethod extends OptimizationMethod {
-    
+
     protected LineSearch lineSearch_;
-    
+
     protected LineSearchBasedMethod() {
-    	QL.validateExperimentalMode();
+        QL.validateExperimentalMode();
     }
-    
-    public LineSearchBasedMethod(final LineSearch lineSearch){
-    	QL.validateExperimentalMode();
+
+    public LineSearchBasedMethod(final LineSearch lineSearch) {
+        QL.validateExperimentalMode();
         lineSearch_ = lineSearch;
         //FIXME: is this correct
-        if(lineSearch_ == null){
+        if (lineSearch_ == null) {
             lineSearch_ = new ArmijoLineSearch();
         }
     }
-    
+
 }

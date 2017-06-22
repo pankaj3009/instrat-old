@@ -8,6 +8,7 @@ package com.incurrency.framework;
  *
  * @author pankaj
  */
-public enum EnumPrimaryApplication { VALUE,SIZE,FLAT,DISTRIBUTE
-    
+public enum EnumPrimaryApplication {
+    VALUE, SIZE, FLAT, DISTRIBUTE
+
 }

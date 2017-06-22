@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2006 Joseph Wang
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.model.volatility;
 
 import java.util.Iterator;
@@ -53,42 +52,41 @@ import org.jquantlib.time.TimeSeries;
 // TODO : Test cases
 public class ConstantEstimator implements VolatilityCompositor {
 
-	private final /* @NonNegative */int size;
+    private final /* @NonNegative */ int size;
 
-	public ConstantEstimator(final/* @NonNegative */int size) {
-		this.size = size;
-	}
+    public ConstantEstimator(final/* @NonNegative */ int size) {
+        this.size = size;
+    }
 
-	@Override
-	public void calibrate(final TimeSeries<Double> timeSeries) {
-		// nothing
-	}
+    @Override
+    public void calibrate(final TimeSeries<Double> timeSeries) {
+        // nothing
+    }
 
-	@Override
-	public TimeSeries<Double> calculate(final TimeSeries<Double> quotes) {
+    @Override
+    public TimeSeries<Double> calculate(final TimeSeries<Double> quotes) {
 
-	    //
-	    // This method employs a different algorithm from original QuantLib/C++ sources. The reasons are:
-	    // 1. The original algorithm is knowingly inefficient, fact pointed out by the original author.
-	    // 2. TimeSeries as it is implemented by JQuantLib/Java does not [intentionally] allow random walk
-	    //    thru its elements, which leaded us to adopt Iterators instead.
-	    //
+        //
+        // This method employs a different algorithm from original QuantLib/C++ sources. The reasons are:
+        // 1. The original algorithm is knowingly inefficient, fact pointed out by the original author.
+        // 2. TimeSeries as it is implemented by JQuantLib/Java does not [intentionally] allow random walk
+        //    thru its elements, which leaded us to adopt Iterators instead.
+        //
+        final TimeSeries<Double> retval = new TimeSeries<Double>(Double.class);
 
-		final TimeSeries<Double> retval = new TimeSeries<Double>(Double.class);
+        final Iterator<JDate> it1 = quotes.navigableKeySet().iterator();
+        double sumu2 = 0.0, sumu = 0.0;
+        JDate d1 = null;
 
-		final Iterator<JDate> it1 = quotes.navigableKeySet().iterator();
-		double sumu2 = 0.0, sumu = 0.0;
-		JDate d1 = null;
-
-		// advance 'size' elements and accumulate results
-		for (int i=0; i<size; i++) {
-		    d1 = it1.next();
-		    final double u = quotes.get(d1);
-            sumu  += u;
+        // advance 'size' elements and accumulate results
+        for (int i = 0; i < size; i++) {
+            d1 = it1.next();
+            final double u = quotes.get(d1);
+            sumu += u;
             sumu2 += u * u;
-		}
-		// assign first result
-		retval.put(d1, Math.sqrt(sumu2/size - sumu*sumu/size/(size+1)) );
+        }
+        // assign first result
+        retval.put(d1, Math.sqrt(sumu2 / size - sumu * sumu / size / (size + 1)));
 
         final Iterator<JDate> it2 = quotes.navigableKeySet().iterator();
         JDate d2;
@@ -96,17 +94,17 @@ public class ConstantEstimator implements VolatilityCompositor {
             // add a new element to calculation
             d1 = it1.next();
             final double u = quotes.get(d1);
-            sumu  += u;
+            sumu += u;
             sumu2 += u * u;
             // remove an old element from calculation
             d2 = it2.next();
             final double v = quotes.get(d2);
-            sumu  -= v;
+            sumu -= v;
             sumu2 -= v * v;
             // assign next result
-            retval.put(d1, Math.sqrt(sumu2/size - sumu*sumu/size/(size+1)) );
+            retval.put(d1, Math.sqrt(sumu2 / size - sumu * sumu / size / (size + 1)));
         }
         return retval;
-	}
+    }
 
 }

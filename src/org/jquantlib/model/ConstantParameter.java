@@ -22,12 +22,13 @@ When applicable, the original copyright notice follows this notice.
 package org.jquantlib.model;
 
 //reviewed once uh.
-
 import org.jquantlib.math.matrixutilities.Array;
 import org.jquantlib.math.optimization.Constraint;
 
 /**
- * Standard constant parameter {@latex$ a(t) = a }
+ * Standard constant parameter {
+ *
+ * @latex$ a(t) = a }
  *
  * @author Praneet Tiwari
  */
@@ -37,26 +38,24 @@ public class ConstantParameter extends Parameter {
         super(1, new Impl(), constraint);
     }
 
-    public ConstantParameter(final double /* @Real */value, final Constraint constraint) {
+    public ConstantParameter(final double /* @Real */ value, final Constraint constraint) {
         super(1, new Impl(), constraint);
         super.params.set(0, value);
-        if (!testParams(params))
+        if (!testParams(params)) {
             throw new IllegalArgumentException(value + ": invalid value");
+        }
 
     }
-
 
     //
     // private inner classes
     //
-
     private static class Impl implements Parameter.Impl {
 
         @Override
-        public double /* @Real */value(final Array params, final double /* @Time */t) {
+        public double /* @Real */ value(final Array params, final double /* @Time */ t) {
             return params.first();
         }
     }
-
 
 }

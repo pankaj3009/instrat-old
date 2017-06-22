@@ -79,7 +79,7 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     public static String newline = System.getProperty("line.separator");
 
-        public static EnumOrderSide switchSide(EnumOrderSide side) {
+    public static EnumOrderSide switchSide(EnumOrderSide side) {
         EnumOrderSide out;
         switch (side) {
             case BUY:
@@ -101,7 +101,7 @@ public class Utilities {
 
         return out;
     }
-        
+
     public static String getJsonUsingPut(String url, int timeout, String body) {
         HttpURLConnection c = null;
         try {
@@ -117,11 +117,11 @@ public class Utilities {
             c.setConnectTimeout(timeout);
             c.setReadTimeout(timeout);
             //c.connect();
-                    OutputStreamWriter osw = new OutputStreamWriter(c.getOutputStream());
-        osw.write(body);
-        osw.flush();
-        osw.close();
-        int status = c.getResponseCode();
+            OutputStreamWriter osw = new OutputStreamWriter(c.getOutputStream());
+            osw.write(body);
+            osw.flush();
+            osw.close();
+            int status = c.getResponseCode();
 
             switch (status) {
                 case 200:
@@ -149,8 +149,8 @@ public class Utilities {
         }
         return null;
     }
-   
-        public static void printSymbolsToFile(List<BeanSymbol> symbolList, String fileName,boolean printLastLine) {
+
+    public static void printSymbolsToFile(List<BeanSymbol> symbolList, String fileName, boolean printLastLine) {
         for (int i = 0; i < symbolList.size(); i++) {
             symbolList.get(i).setSerialno(i + 1);
         }
@@ -200,14 +200,13 @@ public class Utilities {
         }
     }
 
-    
-    public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side, String right,double tickSize) {
-         double price=0D;
-         price = symbols.get(id).getLastPrice();
+    public static double getOptionLimitPriceForRel(List<BeanSymbol> symbols, int id, int underlyingid, EnumOrderSide side, String right, double tickSize) {
+        double price = 0D;
+        price = symbols.get(id).getLastPrice();
 
         try {
-            if (price == 0 ||price==-1) {
-                price=getTheoreticalOptionPrice(symbols,id, underlyingid, side, right,tickSize);
+            if (price == 0 || price == -1) {
+                price = getTheoreticalOptionPrice(symbols, id, underlyingid, side, right, tickSize);
             }
             double bidprice = symbols.get(id).getBidPrice();
             double askprice = symbols.get(id).getAskPrice();
@@ -216,10 +215,10 @@ public class Utilities {
                 case BUY:
                 case COVER:
                     if (bidprice > 0) {
-                        if(price>0){
-                        price = Math.min(bidprice, price);
-                        }else{
-                            price=bidprice;
+                        if (price > 0) {
+                            price = Math.min(bidprice, price);
+                        } else {
+                            price = bidprice;
                         }
                     } else {
                         price = 0.80 * price;
@@ -253,10 +252,10 @@ public class Utilities {
         try {
             double optionlastprice = Utilities.getSettlePrice(symbols.get(id));
             double underlyingpriorclose = Utilities.getSettlePrice(symbols.get(underlyingid));
-            double vol=0;
-            if (optionlastprice >0) {
-                String priorBusinessDay=DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd",1);
-                Date settleDate=DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", Algorithm.timeZone);
+            double vol = 0;
+            if (optionlastprice > 0) {
+                String priorBusinessDay = DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd", 1);
+                Date settleDate = DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", Algorithm.timeZone);
                 vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, settleDate);
                 if (vol == 0) {
                     if (symbols.get(id).getBidPrice() != 0 && symbols.get(id).getAskPrice() != 0 && symbols.get(underlyingid).getLastPrice() != 0) {
@@ -266,18 +265,18 @@ public class Utilities {
                     }
                 }
             }
-                if (vol == 0) {//if vol is still zero
-                    if (side == EnumOrderSide.BUY || side == EnumOrderSide.SELL) {
-                        vol = 0.05;
-                    } else if (side == EnumOrderSide.SHORT || side == EnumOrderSide.COVER) {
-                        vol = 0.50;
-                    }
+            if (vol == 0) {//if vol is still zero
+                if (side == EnumOrderSide.BUY || side == EnumOrderSide.SELL) {
+                    vol = 0.05;
+                } else if (side == EnumOrderSide.SHORT || side == EnumOrderSide.COVER) {
+                    vol = 0.50;
                 }
-                symbols.get(id).setCloseVol(vol);
-            
-           if(underlyingTradePriceExists(symbols.get(id),1)){                
-                        price = Parameters.symbol.get(id).getOptionProcess().NPV();
-                        price = Utilities.roundTo(price, tickSize);
+            }
+            symbols.get(id).setCloseVol(vol);
+
+            if (underlyingTradePriceExists(symbols.get(id), 1)) {
+                price = Parameters.symbol.get(id).getOptionProcess().NPV();
+                price = Utilities.roundTo(price, tickSize);
             }
 
         } catch (Exception e) {
@@ -285,26 +284,26 @@ public class Utilities {
         }
         return price;
     }
-    
-       public static boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
+
+    public static boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
         int underlyingID = s.getUnderlyingID();
         if (underlyingID == -1) {
             return false;
         } else {
             int i = 0;
-            while (s.getUnderlying().value() <= 0 ||s.getUnderlying().value()==Double.MAX_VALUE) {
+            while (s.getUnderlying().value() <= 0 || s.getUnderlying().value() == Double.MAX_VALUE) {
                 if (i < waitSeconds) {
                     try {
                         //see if price in redis
-                        String today=DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-                        ArrayList<Pair>pairs=Utilities.getPrices(Parameters.symbol.get(underlyingID), ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", Algorithm.timeZone), new Date());
-                        if(pairs.size()>0){
-                            int length=pairs.size();
-                            double value=Utilities.getDouble(pairs.get(length-1).getValue(),0);
+                        String today = DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+                        ArrayList<Pair> pairs = Utilities.getPrices(Parameters.symbol.get(underlyingID), ":tick:close", DateUtil.getFormattedDate(today, "yyyy-MM-dd", Algorithm.timeZone), new Date());
+                        if (pairs.size() > 0) {
+                            int length = pairs.size();
+                            double value = Utilities.getDouble(pairs.get(length - 1).getValue(), 0);
                             Parameters.symbol.get(underlyingID).setLastPrice(value);
                             //s.getUnderlying().setValue(value);
-                           return true;
-                        }     
+                            return true;
+                        }
                     } catch (Exception ex) {
                         logger.log(Level.SEVERE, null, ex);
                     }
@@ -317,59 +316,59 @@ public class Utilities {
         }
     }
 
-    public static double getLimitPriceForOrder(List<BeanSymbol> symbols,int id, int underlyingid, EnumOrderSide side,double tickSize,EnumOrderType orderType){
+    public static double getLimitPriceForOrder(List<BeanSymbol> symbols, int id, int underlyingid, EnumOrderSide side, double tickSize, EnumOrderType orderType) {
         double price = symbols.get(id).getLastPrice();
-        String type=symbols.get(id).getType();
-        switch(type){
+        String type = symbols.get(id).getType();
+        switch (type) {
             case "OPT":
-                switch(orderType){
+                switch (orderType) {
                     case LMT:
-                        price=symbols.get(id).getLastPrice();
-                        if(price==-1 || price==0){
-                            String right=symbols.get(id).getRight();
-                            price=getTheoreticalOptionPrice(symbols,id, underlyingid, side, right,tickSize);
+                        price = symbols.get(id).getLastPrice();
+                        if (price == -1 || price == 0) {
+                            String right = symbols.get(id).getRight();
+                            price = getTheoreticalOptionPrice(symbols, id, underlyingid, side, right, tickSize);
                         }
                         break;
                     case MKT:
-                        price=0;
+                        price = 0;
                         break;
                     case CUSTOMREL:
-                        String right=symbols.get(id).getRight();
-                        price=getOptionLimitPriceForRel(symbols,id, underlyingid, side, right,tickSize);
+                        String right = symbols.get(id).getRight();
+                        price = getOptionLimitPriceForRel(symbols, id, underlyingid, side, right, tickSize);
                         break;
                     default:
                         break;
                 }
                 break;
             default:
-            switch(orderType){
-                case MKT:
-                    price=0;
-                    break;
-                case CUSTOMREL:
-                    if (side.equals(EnumOrderSide.BUY) || side.equals(EnumOrderSide.COVER)) {
-                        price = Parameters.symbol.get(id).getBidPrice();
-                        if(price==0 || price==-1){
-                            price=0.05;
-                        }
-                    } else {
-                        price = Parameters.symbol.get(id).getAskPrice();
-                        if(price==0 ||price==-1){
-                            price= Double.MAX_VALUE;
-                        }
-                        
-                    }
-                    if (price == 0 || price == -1) {
-                        price = Parameters.symbol.get(id).getLastPrice();
-                    }
-                    break;
-                }
-            break;
+                switch (orderType) {
+                    case MKT:
+                        price = 0;
+                        break;
+                    case CUSTOMREL:
+                        if (side.equals(EnumOrderSide.BUY) || side.equals(EnumOrderSide.COVER)) {
+                            price = Parameters.symbol.get(id).getBidPrice();
+                            if (price == 0 || price == -1) {
+                                price = 0.05;
+                            }
+                        } else {
+                            price = Parameters.symbol.get(id).getAskPrice();
+                            if (price == 0 || price == -1) {
+                                price = Double.MAX_VALUE;
+                            }
 
-        }       
+                        }
+                        if (price == 0 || price == -1) {
+                            price = Parameters.symbol.get(id).getLastPrice();
+                        }
+                        break;
+                }
+                break;
+
+        }
         return price;
     }
-    
+
     public static double getImpliedVol(BeanSymbol s, double underlying, double price, Date evaluationDate) {
         new Settings().setEvaluationDate(new org.jquantlib.time.JDate(evaluationDate));
         String strike = s.getOption();
@@ -390,18 +389,17 @@ public class Utilities {
         Handle<YieldTermStructure> yield = new Handle<YieldTermStructure>(new FlatForward(0, india, 0.015, new Actual365Fixed()));
         Handle<BlackVolTermStructure> sigma = new Handle<BlackVolTermStructure>(new BlackConstantVol(0, india, 0.20, new Actual365Fixed()));
         BlackScholesMertonProcess process = new BlackScholesMertonProcess(S, yield, rate, sigma);
-        double vol=0;
-        try{
+        double vol = 0;
+        try {
             vol = option.impliedVolatility(price, process);
-        }catch (Exception e){
-            logger.log(Level.SEVERE,"Could not calculte vol for Symbol:{0}. OptionPrice:{1},Underlying:{2}",new Object[]{
-            s.getDisplayname(),price,underlying});
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Could not calculte vol for Symbol:{0}. OptionPrice:{1},Underlying:{2}", new Object[]{
+                s.getDisplayname(), price, underlying});
         }
         new Settings().setEvaluationDate(new org.jquantlib.time.JDate(new Date()));
         return vol;
 
     }
-   
 
     /**
      *
@@ -415,7 +413,6 @@ public class Utilities {
      * of specified output text file
      * @return
      */
-   
     /*
     public static Object[] getSettlePrice(BeanSymbol s, Date d) {
         Object[] obj = new Object[2];
@@ -481,45 +478,49 @@ public class Utilities {
         }
         return obj;
     }
-*/
-    public static ArrayList<Pair> getPrices(BeanSymbol s,String appendString,Date startDate,Date endDate) {
-        ArrayList<Pair> pairs=new ArrayList<>();
-        try(Jedis jedis=Algorithm.marketdatapool.getResource()){
-            Set<String> data=jedis.zrangeByScore(s.getDisplayname()+appendString, startDate.getTime(), endDate.getTime());
-            if(data!=null){
-                Type type = new TypeToken<List<Object>>(){}.getType();
+     */
+    public static ArrayList<Pair> getPrices(BeanSymbol s, String appendString, Date startDate, Date endDate) {
+        ArrayList<Pair> pairs = new ArrayList<>();
+        try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
+            Set<String> data = jedis.zrangeByScore(s.getDisplayname() + appendString, startDate.getTime(), endDate.getTime());
+            if (data != null) {
+                Type type = new TypeToken<List<Object>>() {
+                }.getType();
                 Gson gson = new GsonBuilder().create();
-                String test1=gson.toJson(data);
-               List<Object> myMap = gson.fromJson(test1, type);
-               for(Object o:myMap){
-                  Pair p= gson.fromJson(o.toString(), new TypeToken<Pair>(){}.getType());
-                  pairs.add(p);
-               }
-            }         
+                String test1 = gson.toJson(data);
+                List<Object> myMap = gson.fromJson(test1, type);
+                for (Object o : myMap) {
+                    Pair p = gson.fromJson(o.toString(), new TypeToken<Pair>() {
+                    }.getType());
+                    pairs.add(p);
+                }
+            }
         }
         return pairs;
     }
-    
+
     public static double getSettlePrice(BeanSymbol s) {
-        ArrayList<Pair> pairs=new ArrayList<>();
-        try(Jedis jedis=Algorithm.marketdatapool.getResource()){
-            Set<String> data=jedis.zrange(s.getDisplayname()+":daily:settle", -1, -1);
-            if(data!=null && data.size()>0){
-                Type type = new TypeToken<List<Object>>(){}.getType();
+        ArrayList<Pair> pairs = new ArrayList<>();
+        try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
+            Set<String> data = jedis.zrange(s.getDisplayname() + ":daily:settle", -1, -1);
+            if (data != null && data.size() > 0) {
+                Type type = new TypeToken<List<Object>>() {
+                }.getType();
                 Gson gson = new GsonBuilder().create();
-                String test1=gson.toJson(data);
-               List<Object> myMap = gson.fromJson(test1, type);
-               for(Object o:myMap){
-                  Pair p= gson.fromJson(o.toString(), new TypeToken<Pair>(){}.getType());
-                  pairs.add(p);
-               }
-               int length=pairs.size();
-                return Utilities.getDouble(pairs.get(length-1).getValue(),0);
-            }         
+                String test1 = gson.toJson(data);
+                List<Object> myMap = gson.fromJson(test1, type);
+                for (Object o : myMap) {
+                    Pair p = gson.fromJson(o.toString(), new TypeToken<Pair>() {
+                    }.getType());
+                    pairs.add(p);
+                }
+                int length = pairs.size();
+                return Utilities.getDouble(pairs.get(length - 1).getValue(), 0);
+            }
         }
-           return 0;
+        return 0;
     }
-    
+
     /*
      public static HashMap<Long,String> getPrices(String exchangeSymbol, String expiry,String right,String optionStrike,Date startDate, Date endDate, String metric) {
         HashMap<Long,String> out = new HashMap<>();
@@ -558,7 +559,7 @@ public class Utilities {
     }
 
      */
-    /*
+ /*
     public static Object[] getLastSettlePriceOption(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
         Object[] out = new Object[2];
         HashMap<String, Object> param = new HashMap();
@@ -612,19 +613,18 @@ public class Utilities {
 
         return out;
     }
-    */    
-      
-     public static boolean rolloverDay(int daysBeforeExpiry,Date startDate,String expiryDate) {
+     */
+    public static boolean rolloverDay(int daysBeforeExpiry, Date startDate, String expiryDate) {
         boolean rollover = false;
         try {
             SimpleDateFormat sdf_yyyyMMdd = new SimpleDateFormat("yyyyMMdd");
             String currentDay = sdf_yyyyMMdd.format(startDate);
             Date today = sdf_yyyyMMdd.parse(currentDay);
-            JDate jToday=new JDate(today);
+            JDate jToday = new JDate(today);
             Calendar expiry = Calendar.getInstance();
             expiry.setTime(sdf_yyyyMMdd.parse(expiryDate));
-            JDate jExpiry=new JDate(expiry.getTime());
-            JDate jAdjExpiry=Algorithm.ind.advance(jExpiry, -daysBeforeExpiry, TimeUnit.Days);
+            JDate jExpiry = new JDate(expiry.getTime());
+            JDate jAdjExpiry = Algorithm.ind.advance(jExpiry, -daysBeforeExpiry, TimeUnit.Days);
             //expiry.set(Calendar.DATE, expiry.get(Calendar.DATE) - daysBeforeExpiry);
             if (jAdjExpiry.le(jToday)) {
                 rollover = true;
@@ -634,8 +634,7 @@ public class Utilities {
         }
         return rollover;
     }
-    
-    
+
     public static int openPositionCount(Database<String, String> db, List<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
         int out = 0;
         HashSet<String> temp = new HashSet<>();;
@@ -643,7 +642,7 @@ public class Utilities {
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
         }
-        for (String key : db.getKeys("opentrades_"+strategy)) {
+        for (String key : db.getKeys("opentrades_" + strategy)) {
             if (key.contains("_" + strategy)) {
                 String childdisplayname = Trade.getEntrySymbol(db, key);
                 String parentdisplayname = Trade.getParentSymbol(db, key);
@@ -1165,7 +1164,6 @@ public class Utilities {
         TreeSet<Integer> t = new TreeSet<>(copy);
         return com.google.common.primitives.Ints.toArray(t);
 
-
     }
 
     /**
@@ -1421,10 +1419,9 @@ public class Utilities {
 
     public static long getLong(Object input, long defvalue) {
         try {
-            
-                return Long.parseLong(input.toString().trim());
-            } 
-         catch (Exception e) {
+
+            return Long.parseLong(input.toString().trim());
+        } catch (Exception e) {
             return defvalue;
         }
     }
@@ -1625,7 +1622,7 @@ public class Utilities {
         }
         return -1;
     }
-    
+
     /**
      * Returns symbol id from a String[] containing values as
      * symbol,type,expiry,right,optionstrike.Order is important.
@@ -1664,13 +1661,13 @@ public class Utilities {
      */
     public static int getIDFromDisplayName(List<BeanSymbol> symbols, String displayName) {
         if (displayName != null) {
-            synchronized(symbols){
-            for (BeanSymbol symb : symbols) {
-                //if (symb.getDisplayname().equals(displayName) || symb.getDisplayname().replaceAll("[^A-Za-z0-9\\-\\_]","").equals(displayName)) {
-                if (symb.getDisplayname().equals(displayName)) {
-                    return symb.getSerialno() - 1;
+            synchronized (symbols) {
+                for (BeanSymbol symb : symbols) {
+                    //if (symb.getDisplayname().equals(displayName) || symb.getDisplayname().replaceAll("[^A-Za-z0-9\\-\\_]","").equals(displayName)) {
+                    if (symb.getDisplayname().equals(displayName)) {
+                        return symb.getSerialno() - 1;
+                    }
                 }
-            }
             }
         }
         return -1;
@@ -1694,27 +1691,20 @@ public class Utilities {
         return -1;
     }
 
-    public String incrementString(String value, double increment) {
-        double doubleValue = Utilities.getDouble(value, -1);
-        doubleValue = doubleValue + increment;
-        return String.format("%.1f", doubleValue);
-
-    }
-
     public static int getCashReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {
         String symbol = symbols.get(id).getBrokerSymbol();
         String type = referenceType;
-        if(type!=null){
-             return getIDFromBrokerSymbol(symbols, symbol, type, "", "", "");
-        }else{
-            int ref=getIDFromBrokerSymbol(symbols, symbol, "STK", "", "", "");
-            if(ref<0){
+        if (type != null) {
+            return getIDFromBrokerSymbol(symbols, symbol, type, "", "", "");
+        } else {
+            int ref = getIDFromBrokerSymbol(symbols, symbol, "STK", "", "", "");
+            if (ref < 0) {
                 return getIDFromBrokerSymbol(symbols, symbol, "IND", "", "", "");
-            }else{
+            } else {
                 return ref;
             }
         }
-       
+
     }
 
     public static int getNextExpiryID(List<BeanSymbol> symbols, int id, String expiry) {
@@ -1897,8 +1887,7 @@ public class Utilities {
         return out;
     }
 
-    
-      public static ArrayList<Integer> getOrInsertATMOptionIDForShortSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
+    public static ArrayList<Integer> getOrInsertATMOptionIDForShortSystem(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> positions, int symbolid, EnumOrderSide side, String expiry) {
         int id = -1;
         ArrayList<Integer> out = new ArrayList<>();
         String displayname = symbols.get(symbolid).getDisplayname();
@@ -1964,7 +1953,7 @@ public class Utilities {
         }
         return out;
     }
-   
+
     public static int getATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
         double price = Parameters.symbol.get(id).getLastPrice();
         price = Utilities.roundTo(price, increment);
@@ -1977,7 +1966,7 @@ public class Utilities {
         }
         return -1;
     }
-    
+
     public static int insertATMStrike(List<BeanSymbol> symbols, int id, double increment, String expiry, String right) {
         double price = Parameters.symbol.get(id).getLastPrice();
         if (price == 0) {
@@ -2001,8 +1990,8 @@ public class Utilities {
             s.setDisplayname(ul.getExchangeSymbol() + "_" + "OPT" + "_" + expiry + "_" + right + "_" + strikePrice);
             s.setSerialno(Parameters.symbol.size() + 1);
             s.setAddedToSymbols(true);
-            synchronized (symbols){ 
-            symbols.add(s);
+            synchronized (symbols) {
+                symbols.add(s);
             }
             return s.getSerialno() - 1;
         } else {
@@ -2019,23 +2008,23 @@ public class Utilities {
             int futureid = Utilities.getFutureIDFromBrokerSymbol(symbols, underlyingid, expiry);
             if (futureid >= 0) {
                 String brokerSymbol = exchangeSymbol.replaceAll("[^A-Za-z0-9\\-]", "");
-                brokerSymbol=brokerSymbol.length()>9?brokerSymbol.substring(0, 9):brokerSymbol;
-                if(brokerSymbol.equals("NSENIFTY")){
-                    brokerSymbol="NIFTY50";
+                brokerSymbol = brokerSymbol.length() > 9 ? brokerSymbol.substring(0, 9) : brokerSymbol;
+                if (brokerSymbol.equals("NSENIFTY")) {
+                    brokerSymbol = "NIFTY50";
                 }
                 BeanSymbol s = new BeanSymbol(brokerSymbol, exchangeSymbol, "OPT", expiry, right, strike);
                 s.setCurrency(symbols.get(underlyingid).getCurrency());
                 s.setExchange(symbols.get(underlyingid).getExchange());
                 s.setPrimaryexchange(symbols.get(underlyingid).getPrimaryexchange());
-                s.setMinsize(symbols.get(underlyingid).getMinsize());                
+                s.setMinsize(symbols.get(underlyingid).getMinsize());
                 s.setStreamingpriority(1);
                 s.setStrategy("");
                 s.setUnderlyingID(futureid);
                 s.setDisplayname(exchangeSymbol + "_OPT_" + expiry + "_" + right + "_" + strike);
                 s.setSerialno(Parameters.symbol.size() + 1);
                 s.setAddedToSymbols(true);
-                synchronized (symbols){ 
-                symbols.add(s);
+                synchronized (symbols) {
+                    symbols.add(s);
                 }
                 return s.getSerialno() - 1;
             }
@@ -2043,15 +2032,14 @@ public class Utilities {
         return -1;
     }
 
-    
     public static int getNetPosition(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id, String type) {
-    //Returns net positions, netting buy and sell.
-    //For option, net position netting across all strikes for the specified CALL or PUT. For options, the net positions
-    //are for CALL or PUT.
+        //Returns net positions, netting buy and sell.
+        //For option, net position netting across all strikes for the specified CALL or PUT. For options, the net positions
+        //are for CALL or PUT.
         int out = 0;
         try {
             ArrayList<Integer> tempSymbols = new ArrayList<>();
-            
+
             BeanSymbol ref = symbols.get(id);
             for (BeanSymbol s : symbols) {
                 if (s.getBrokerSymbol().equals(ref.getBrokerSymbol()) && s.getType().equals(type)) {
@@ -2060,7 +2048,7 @@ public class Utilities {
                     }
                 }
             }
-            
+
             for (Integer p : position.keySet()) {
                 if (tempSymbols.contains(p)) {
                     out = out + position.get(p).getPosition();
@@ -2126,8 +2114,8 @@ public class Utilities {
                 file.createNewFile();
             }
 
-                String timeStamp="yyyyMMdd HH:mm:ss";
-                String dateString = DateUtil.getFormatedDate(timeStamp, new Date().getTime(), TimeZone.getTimeZone(timeZone));
+            String timeStamp = "yyyyMMdd HH:mm:ss";
+            String dateString = DateUtil.getFormatedDate(timeStamp, new Date().getTime(), TimeZone.getTimeZone(timeZone));
             if (!appendAtEnd) {
                 if (!file.exists()) {
                     file.createNewFile();
@@ -2144,7 +2132,7 @@ public class Utilities {
             BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
             String result = "";
             for (int i = 0; i < content.length; i++) {
-                result = result + ","+content[i].toString();
+                result = result + "," + content[i].toString();
             }
             bufferWritter.write(dateString + result + newline);
             bufferWritter.close();
@@ -2181,14 +2169,14 @@ public class Utilities {
             return null;
         }
     }
+
     /*
      * Serialize an object to json
      */
-
     public static void writeJson(String fileName, Object o) {
         Class clazz = o.getClass();
         clazz.cast(o);
-        String out=new GsonBuilder().create().toJson(clazz.cast(o));
+        String out = new GsonBuilder().create().toJson(clazz.cast(o));
         Utilities.writeToFile(new File(fileName), out);
 
     }
@@ -2285,7 +2273,7 @@ public class Utilities {
             Calendar cal_expiry = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
             cal_expiry.setTime(expiry);
             if (cal_expiry.get(Calendar.DAY_OF_YEAR) >= cal_today.get(Calendar.DAY_OF_YEAR)) {
-                out= sdf_yyyMMdd.format(expiry);
+                out = sdf_yyyMMdd.format(expiry);
             } else {
                 if (month == 11) {//we are in decemeber
                     //expiry will be at BOD, so we get the next month, till new month==0
@@ -2296,11 +2284,11 @@ public class Utilities {
                     }
                     expiry = getLastThursday(month, year);
                     expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
-                    out= sdf_yyyMMdd.format(expiry);
+                    out = sdf_yyyMMdd.format(expiry);
                 } else {
                     expiry = getLastThursday(month + 1, year);
                     expiry = Utilities.nextGoodDay(expiry, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, null, true);
-                    out= sdf_yyyMMdd.format(expiry);
+                    out = sdf_yyyMMdd.format(expiry);
                 }
             }
         } catch (Exception ex) {
@@ -2322,39 +2310,39 @@ public class Utilities {
         cal.set(GregorianCalendar.DAY_OF_WEEK_IN_MONTH, -1);
         return cal.getTime();
     }
-    
-    public static String getLastThursday(String dateString, String format,int lookForward){
+
+    public static String getLastThursday(String dateString, String format, int lookForward) {
         //datestring is in yyyyMMdd
-        JDate date=formatStringToJdate(dateString, format);
-        Calendar cal=Calendar.getInstance();
+        JDate date = formatStringToJdate(dateString, format);
+        Calendar cal = Calendar.getInstance();
         cal.setTime(date.longDate());
         cal.add(Calendar.MONTH, lookForward);
-        JDate lastWorkDay=JDate.endOfMonth(new JDate(cal.getTime()));
+        JDate lastWorkDay = JDate.endOfMonth(new JDate(cal.getTime()));
         cal.setTime(lastWorkDay.longDate());
-        int adjust=cal.get(Calendar.DAY_OF_WEEK)-5;
+        int adjust = cal.get(Calendar.DAY_OF_WEEK) - 5;
         JDate lastThursday;
-        if(adjust>0){
-            lastThursday=lastWorkDay.sub(adjust);
-        }else if (adjust==0){
-            lastThursday=lastWorkDay;
-        }else{
-            lastThursday=lastWorkDay.sub(7+adjust);
+        if (adjust > 0) {
+            lastThursday = lastWorkDay.sub(adjust);
+        } else if (adjust == 0) {
+            lastThursday = lastWorkDay;
+        } else {
+            lastThursday = lastWorkDay.sub(7 + adjust);
         }
-        lastThursday=Algorithm.ind.adjust(lastThursday, BusinessDayConvention.Preceding);
-        Date javaThursday=lastThursday.isoDate();
-        if(javaThursday.before(date.longDate())){
-            return(getLastThursday(dateString,format,1));
+        lastThursday = Algorithm.ind.adjust(lastThursday, BusinessDayConvention.Preceding);
+        Date javaThursday = lastThursday.isoDate();
+        if (javaThursday.before(date.longDate())) {
+            return (getLastThursday(dateString, format, 1));
         }
         return DateUtil.getFormatedDate("yyyyMMdd", javaThursday.getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
-        
+
     }
-    
-    public static JDate formatStringToJdate(String dateString, String format){
-        Date input=DateUtil.getFormattedDate(dateString, format, Algorithm.timeZone);
+
+    public static JDate formatStringToJdate(String dateString, String format) {
+        Date input = DateUtil.getFormattedDate(dateString, format, Algorithm.timeZone);
         return new JDate(input);
     }
-    
-       public static <K,V> boolean  equalMaps(Map<K, V> m1, Map<K, V> m2) {
+
+    public static <K, V> boolean equalMaps(Map<K, V> m1, Map<K, V> m2) {
         if (m1.size() != m2.size()) {
             return false;
         }
@@ -2365,13 +2353,13 @@ public class Utilities {
         }
         return true;
     }
-   
-       public static String getShorlistedKey(JedisPool jPool,String containingString,String onOrBefore){
-           String cursor = "";
+
+    public static String getShorlistedKey(JedisPool jPool, String containingString, String onOrBefore) {
+        String cursor = "";
         String shortlistedkey = "";
-        int thresholdDate=Integer.valueOf(onOrBefore);
-         //int today=Integer.valueOf(DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)));
-         int date=0;
+        int thresholdDate = Integer.valueOf(onOrBefore);
+        //int today=Integer.valueOf(DateUtil.getFormatedDate("yyyyMMdd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)));
+        int date = 0;
         while (!cursor.equals("0")) {
             cursor = cursor.equals("") ? "0" : cursor;
             try (Jedis jedis = jPool.getResource()) {
@@ -2379,12 +2367,12 @@ public class Utilities {
                 cursor = s.getCursor();
                 for (Object key : s.getResult()) {
                     if (key.toString().contains(containingString)) {
-                        if (shortlistedkey.equals("")&& Integer.valueOf(key.toString().split(":")[1])<thresholdDate) {
+                        if (shortlistedkey.equals("") && Integer.valueOf(key.toString().split(":")[1]) < thresholdDate) {
                             shortlistedkey = key.toString();
                             date = Integer.valueOf(shortlistedkey.split(":")[1]);
                         } else {
                             int newdate = Integer.valueOf(key.toString().split(":")[1]);
-                            if (newdate>date && newdate <= thresholdDate) {
+                            if (newdate > date && newdate <= thresholdDate) {
                                 shortlistedkey = key.toString();//replace with latest nifty setup
                                 date = Integer.valueOf(shortlistedkey.split(":")[1]);
                             }
@@ -2394,13 +2382,20 @@ public class Utilities {
             }
         }
         return shortlistedkey;
-       }
-       
-   public static String listToString(List<?> list) {
-    String result = "+";
-    for (int i = 0; i < list.size(); i++) {
-        result += " " + list.get(i);
     }
-    return result;
-}
+
+    public static String listToString(List<?> list) {
+        String result = "+";
+        for (int i = 0; i < list.size(); i++) {
+            result += " " + list.get(i);
+        }
+        return result;
+    }
+
+    public String incrementString(String value, double increment) {
+        double doubleValue = Utilities.getDouble(value, -1);
+        doubleValue = doubleValue + increment;
+        return String.format("%.1f", doubleValue);
+
+    }
 }

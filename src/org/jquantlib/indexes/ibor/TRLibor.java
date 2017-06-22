@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004, 2005, 2006 StatPro Italia srl
 
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.indexes.ibor;
 
 import org.jquantlib.currencies.Europe.TRYCurrency;
@@ -51,38 +50,39 @@ import org.jquantlib.time.Period;
 import org.jquantlib.time.calendars.Turkey;
 
 /**
- * TRY LIBOR fixed by TBA.
- * See <http://www.trlibor.org/trlibor/english/default.asp>
- * 
+ * TRY LIBOR fixed by TBA. See
+ * <http://www.trlibor.org/trlibor/english/default.asp>
+ *
  * TODO check end-of-month adjustment.
- * 
+ *
  */
 public class TRLibor extends IborIndex {
 
-	public TRLibor(final Period tenor) {
-		this(tenor, new Handle<YieldTermStructure>(
-						new AbstractYieldTermStructure() {
-							@Override
-							protected double discountImpl(final double t) {
-								throw new UnsupportedOperationException();
-							}
-							@Override
-							public JDate maxDate() {
-								throw new UnsupportedOperationException();
-							}
-						}
-				));
-	}
+    public TRLibor(final Period tenor) {
+        this(tenor, new Handle<YieldTermStructure>(
+                new AbstractYieldTermStructure() {
+            @Override
+            protected double discountImpl(final double t) {
+                throw new UnsupportedOperationException();
+            }
 
-	public TRLibor(final Period tenor,
-			final Handle<YieldTermStructure> h) {
-		super("TRLibor", tenor, 0,
-				new TRYCurrency(),
-				new Turkey(),
-				BusinessDayConvention.ModifiedFollowing,
-				false,
-				new Actual360(), 
-				h);
-	}
+            @Override
+            public JDate maxDate() {
+                throw new UnsupportedOperationException();
+            }
+        }
+        ));
+    }
+
+    public TRLibor(final Period tenor,
+            final Handle<YieldTermStructure> h) {
+        super("TRLibor", tenor, 0,
+                new TRYCurrency(),
+                new Turkey(),
+                BusinessDayConvention.ModifiedFollowing,
+                false,
+                new Actual360(),
+                h);
+    }
 
 }

@@ -23,6 +23,7 @@ import javax.swing.JOptionPane;
  * @author admin
  */
 public class BeanConnection implements Serializable, ReaderWriterInterface {
+
     private final static Logger logger = Logger.getLogger(BeanConnection.class.getName());
 
     public static final String PROP_ACCOUNT_NAME = "accountName";
@@ -49,7 +50,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     private transient Long connectionTime;
     private HashMap<OrderQueueKey, ArrayList<OrderBean>> orders = new HashMap<>(); //holds map of <strategy,symbol> and a list of all open orders against the index.
     private HashMap<Index, BeanPosition> Positions = new HashMap<>(); //holds map of <symbol, strategy> and system position.
-     private ArrayList<Integer> ordersMissed = new ArrayList();
+    private ArrayList<Integer> ordersMissed = new ArrayList();
     private ArrayList<Integer> ordersInProgress = new ArrayList();
     private String accountName;
     private PropertyChangeSupport propertySupport;
@@ -60,14 +61,14 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     private HashMap<Index, Double> pnlBySymbol = new HashMap<>(); //holds pnl by each strategy.
     private HashMap<String, Double> maxpnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
     private HashMap<String, Double> minpnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
-    private int ordersHaltTrading=10;
+    private int ordersHaltTrading = 10;
     private String ownerEmail;
-    final Object lockPNLStrategy=new Object();
-    final Object lockActiveOrders=new Object();  
-    final Object lockOrderMapping=new Object();
-    final Object lockOrdersToBeCancelled=new Object();
-    final Object lockOrders=new Object();
-    
+    final Object lockPNLStrategy = new Object();
+    final Object lockActiveOrders = new Object();
+    final Object lockOrderMapping = new Object();
+    final Object lockOrdersToBeCancelled = new Object();
+    final Object lockOrders = new Object();
+
     public BeanConnection() {
         idmanager = new RequestIDManager();
         propertySupport = new PropertyChangeSupport(this);
@@ -82,40 +83,40 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         this.histMessageLimit = histMessageLimit;
         this.tickersLimit = tickersLimit;
         this.strategy = strategy;
-        this.ordersHaltTrading=ordersHaltTrading;
-        this.ownerEmail=ownerEmail;
+        this.ordersHaltTrading = ordersHaltTrading;
+        this.ownerEmail = ownerEmail;
     }
 
     public BeanConnection(String[] input) {
-        try{
-        idmanager = new RequestIDManager();
-        propertySupport = new PropertyChangeSupport(this);
-        this.ip = input[0];
-        this.port = input[1].equals("")?7496:Integer.parseInt(input[1]);
-        this.clientID = input[2].equals("")?0:Integer.parseInt(input[2]);
-        this.purpose = input[3];
-        this.rtMessageLimit = input[4].equals("")?48:Integer.parseInt(input[4]);
-        this.histMessageLimit = input[5].equals("")?10:Integer.parseInt(input[5]);
-        this.tickersLimit = input[6].equals("")?70:Integer.parseInt(input[6]);
-        this.strategy = input[7];
-        this.ordersHaltTrading=input[8].equals("")?7:Integer.parseInt(input[8]);
-        this.ownerEmail=input[9];
-        this.reqHandle.maxreqpersec = this.rtMessageLimit;
-        this.reqHistoricalHandle=new ReqHandleHistorical(ip+"-"+String.valueOf(port)+"-"+String.valueOf(clientID));
-        this.getReqHistoricalHandle().delay=histMessageLimit;
-        }catch (Exception e){
-            logger.log(Level.INFO,null,e);
+        try {
+            idmanager = new RequestIDManager();
+            propertySupport = new PropertyChangeSupport(this);
+            this.ip = input[0];
+            this.port = input[1].equals("") ? 7496 : Integer.parseInt(input[1]);
+            this.clientID = input[2].equals("") ? 0 : Integer.parseInt(input[2]);
+            this.purpose = input[3];
+            this.rtMessageLimit = input[4].equals("") ? 48 : Integer.parseInt(input[4]);
+            this.histMessageLimit = input[5].equals("") ? 10 : Integer.parseInt(input[5]);
+            this.tickersLimit = input[6].equals("") ? 70 : Integer.parseInt(input[6]);
+            this.strategy = input[7];
+            this.ordersHaltTrading = input[8].equals("") ? 7 : Integer.parseInt(input[8]);
+            this.ownerEmail = input[9];
+            this.reqHandle.maxreqpersec = this.rtMessageLimit;
+            this.reqHistoricalHandle = new ReqHandleHistorical(ip + "-" + String.valueOf(port) + "-" + String.valueOf(clientID));
+            this.getReqHistoricalHandle().delay = histMessageLimit;
+        } catch (Exception e) {
+            logger.log(Level.INFO, null, e);
             JOptionPane.showMessageDialog(null, "The connection file has invalid data. inStrat will close.");
             System.exit(0);
         }
     }
 
-    public void initializeConnection(String strategyName,int id) {
-        if(id==-1){
-        this.pnlByStrategy.put(strategyName, 0D);
-        if(this.mtmByStrategy.get(strategyName)==null){
-            this.mtmByStrategy.put(strategyName, 0D);
-        }
+    public void initializeConnection(String strategyName, int id) {
+        if (id == -1) {
+            this.pnlByStrategy.put(strategyName, 0D);
+            if (this.mtmByStrategy.get(strategyName) == null) {
+                this.mtmByStrategy.put(strategyName, 0D);
+            }
             this.maxpnlByStrategy.put(strategyName, 0D);
             this.minpnlByStrategy.put(strategyName, 0D);
 
@@ -150,15 +151,14 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         b.setStrategy(orig.getStrategy().toLowerCase());
         return b;
     }
-    
-    public  ArrayList <OrderBean> getLiveOrders(){
-        return new ArrayList(TradingUtil.getLiveOrders(Algorithm.db, this,"OQ:*:"+this.getAccountName()+":"));
-    }
-    
-    public ArrayList <OrderBean> getRestingOrders(){
-        return new ArrayList(TradingUtil.getRestingOrders(Algorithm.db, this,"OQ:*:"+this.getAccountName()+":"));
+
+    public ArrayList<OrderBean> getLiveOrders() {
+        return new ArrayList(TradingUtil.getLiveOrders(Algorithm.db, this, "OQ:*:" + this.getAccountName() + ":"));
     }
 
+    public ArrayList<OrderBean> getRestingOrders() {
+        return new ArrayList(TradingUtil.getRestingOrders(Algorithm.db, this, "OQ:*:" + this.getAccountName() + ":"));
+    }
 
     /**
      * @return the ip
@@ -314,8 +314,6 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         this.reqHandle = reqHandle;
     }
 
-
-
     /**
      * @return the connectionTime
      */
@@ -330,20 +328,19 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         this.connectionTime = connectionTime;
     }
 
-
     /**
      * @return the ordersSymbols
      */
     public HashMap<OrderQueueKey, ArrayList<OrderBean>> getOrders() {
         return orders;
     }
-    
+
     /**
      * @param oqki
      * @return the ordersSymbols
      */
     public OrderBean getOrderBean(OrderQueueKey oqki) {
-        int index=orders.get(oqki).size()-1;
+        int index = orders.get(oqki).size() - 1;
         return orders.get(oqki).get(index);
     }
 
@@ -367,8 +364,6 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     public void setPositions(HashMap<Index, BeanPosition> Positions) {
         this.Positions = Positions;
     }
-
- 
 
     /**
      * @return the ordersMissed
@@ -432,8 +427,8 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @return the pnlByAccount
      */
     public double getPnlByAccount() {
-        synchronized(lockPNLStrategy){
-        return pnlByAccount;
+        synchronized (lockPNLStrategy) {
+            return pnlByAccount;
         }
     }
 
@@ -441,7 +436,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @param pnlByAccount the pnlByAccount to set
      */
     public void setPnlByAccount(double pnlByAccount) {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             this.pnlByAccount = pnlByAccount;
         }
     }
@@ -450,7 +445,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @return the pnlByStrategy
      */
     public HashMap<String, Double> getPnlByStrategy() {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             return pnlByStrategy;
         }
     }
@@ -459,7 +454,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @param pnlByStrategy the pnlByStrategy to set
      */
     public void setPnlByStrategy(HashMap<String, Double> pnlByStrategy) {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             this.pnlByStrategy = pnlByStrategy;
         }
     }
@@ -468,7 +463,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @return the pnlBySymbol
      */
     public HashMap<Index, Double> getPnlBySymbol() {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             return pnlBySymbol;
         }
     }
@@ -477,7 +472,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @param pnlBySymbol the pnlBySymbol to set
      */
     public void setPnlBySymbol(HashMap<Index, Double> pnlBySymbol) {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             this.pnlBySymbol = pnlBySymbol;
         }
     }
@@ -486,7 +481,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @return the maxpnlByStrategy
      */
     public HashMap<String, Double> getMaxpnlByStrategy() {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             return maxpnlByStrategy;
         }
     }
@@ -495,7 +490,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @param maxpnlByStrategy the maxpnlByStrategy to set
      */
     public void setMaxpnlByStrategy(HashMap<String, Double> maxpnlByStrategy) {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             this.maxpnlByStrategy = maxpnlByStrategy;
         }
     }
@@ -504,7 +499,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @return the minpnlByStrategy
      */
     public HashMap<String, Double> getMinpnlByStrategy() {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             return minpnlByStrategy;
         }
     }
@@ -513,12 +508,10 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @param minpnlByStrategy the minpnlByStrategy to set
      */
     public void setMinpnlByStrategy(HashMap<String, Double> minpnlByStrategy) {
-        synchronized(lockPNLStrategy){
+        synchronized (lockPNLStrategy) {
             this.minpnlByStrategy = minpnlByStrategy;
         }
     }
-
-
 
     @Override
     public void reader(String inputfile, List target) {
@@ -528,11 +521,11 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
                 List<String> existingConnectionsLoad = Files.readAllLines(Paths.get(inputfile), StandardCharsets.UTF_8);
                 existingConnectionsLoad.remove(0);
                 for (String connectionLine : existingConnectionsLoad) {
-                    if(!connectionLine.equals("")){
-                    String[] input = connectionLine.split(",");
-                    target.add(new BeanConnection(input));
+                    if (!connectionLine.equals("")) {
+                        String[] input = connectionLine.split(",");
+                        target.add(new BeanConnection(input));
                     }
-                    }                    
+                }
             } catch (IOException ex) {
                 logger.log(Level.SEVERE, null, ex);
             }

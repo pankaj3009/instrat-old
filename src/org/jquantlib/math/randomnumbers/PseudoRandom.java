@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.math.randomnumbers;
 
 import org.jquantlib.QL;
@@ -31,19 +30,17 @@ import org.jquantlib.math.distributions.InverseCumulativeNormal;
 public class PseudoRandom /* <RNG extends MersenneTwisterUniformRng, IC extends InverseCumulativeNormal> */
         extends GenericPseudoRandom<MersenneTwisterUniformRng, InverseCumulativeNormal> {
 
-	public PseudoRandom(final Class<? extends UniformRandomSequenceGenerator> classRNG, final Class<? extends InverseCumulative> classIC) {
-		super(classRNG, classIC);
-	}
-	
-	
-	
+    public PseudoRandom(final Class<? extends UniformRandomSequenceGenerator> classRNG, final Class<? extends InverseCumulative> classIC) {
+        super(classRNG, classIC);
+    }
+
     @Override
     public InverseCumulativeRsg<RandomSequenceGenerator<MersenneTwisterUniformRng>, InverseCumulativeNormal> makeSequenceGenerator(
-            final /*@NonNegative*/ int dimension, 
+            final /*@NonNegative*/ int dimension,
             final /*@NonNegative*/ long seed) {
 
-    	QL.validateExperimentalMode();
-    	return super.makeSequenceGenerator(dimension, seed);
+        QL.validateExperimentalMode();
+        return super.makeSequenceGenerator(dimension, seed);
     }
 
 }

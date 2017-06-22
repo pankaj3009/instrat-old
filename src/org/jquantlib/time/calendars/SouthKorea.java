@@ -60,9 +60,11 @@ import static org.jquantlib.time.Weekday.Sunday;
  * <li>Christmas Day, December 25th</li>
  * </ul>
  *
- * Other holidays for which no rule is given (data available for 2004-2010 only:)
+ * Other holidays for which no rule is given (data available for 2004-2010
+ * only:)
  * <ul>
- * <li>Lunar New Year, the last day of the previous lunar year, JANUARY 1st, 2nd in lunar calendar</li>
+ * <li>Lunar New Year, the last day of the previous lunar year, JANUARY 1st, 2nd
+ * in lunar calendar</li>
  * <li>Election Days</li>
  * <li>National Assemblies</li>
  * <li>Presidency</li>
@@ -71,7 +73,8 @@ import static org.jquantlib.time.Weekday.Sunday;
  * <li>Harvest Moon Day, August 14th, 15th, 16th in lunar calendar</li>
  * </ul>
  *
- * Holidays for the Korea exchange (data from <http://www.krx.co.kr> or <http://www.dooriworld.com/daishin/holiday/holiday.html>):
+ * Holidays for the Korea exchange (data from <http://www.krx.co.kr> or
+ * <http://www.dooriworld.com/daishin/holiday/holiday.html>):
  * <ul>
  * <li>Public holidays as listed above</li>
  * <li>Year-end closing</li>
@@ -83,16 +86,34 @@ import static org.jquantlib.time.Weekday.Sunday;
  * @author Zahid Hussain
  *
  */
-
-@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = { "Zahid Hussain" })
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = {"Zahid Hussain"})
 public class SouthKorea extends Calendar {
+
+    //
+    // public constructors
+    //
+    public SouthKorea() {
+        this(Market.KRX);
+    }
+
+    public SouthKorea(final Market m) {
+        switch (m) {
+            case Settlement:
+                impl = new SettlementImpl();
+                break;
+            case KRX:
+                impl = new KrxImpl();
+                break;
+            default:
+                throw new LibraryException(UNKNOWN_MARKET);
+        }
+    }
 
     public enum Market {
         /**
          * Public holidays
          */
         Settlement,
-
         /**
          * Korea Exchange
          */
@@ -100,30 +121,8 @@ public class SouthKorea extends Calendar {
     }
 
     //
-    // public constructors
-    //
-
-    public SouthKorea() {
-        this(Market.KRX);
-    }
-
-    public SouthKorea(final Market m) {
-        switch (m) {
-        case Settlement:
-            impl = new SettlementImpl();
-            break;
-        case KRX:
-            impl = new KrxImpl();
-            break;
-        default:
-            throw new LibraryException(UNKNOWN_MARKET);
-        }
-    }
-
-    //
     // private inner classes
     //
-
     private class SettlementImpl extends Impl {
 
         @Override
@@ -164,7 +163,6 @@ public class SouthKorea extends Calendar {
                     || (d == 3 && m == October)
                     // Christmas Day
                     || (d == 25 && m == December)
-
                     // Lunar New Year
                     || ((d == 21 || d == 22 || d == 23) && m == January && y == 2004)
                     || ((d == 8 || d == 9 || d == 10) && m == February && y == 2005)
@@ -201,6 +199,7 @@ public class SouthKorea extends Calendar {
     }
 
     private class KrxImpl extends SettlementImpl {
+
         @Override
         public String name() {
             return "South-Korea exchange";
@@ -218,7 +217,7 @@ public class SouthKorea extends Calendar {
             final int y = date.year();
 
             if (// Year-end closing
-            (d == 31 && m == December && y == 2004) || (d == 30 && m == December && y == 2005)
+                    (d == 31 && m == December && y == 2004) || (d == 30 && m == December && y == 2005)
                     || (d == 29 && m == December && y == 2006) || (d == 31 && m == December && y == 2007)) {
                 return false;
             }

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2002, 2003, 2004 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,7 +36,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.termstructures.volatilities;
 
 import org.jquantlib.daycounters.DayCounter;
@@ -125,8 +124,8 @@ public class LocalConstantVol extends LocalVolTermStructure {
 
     @Override
     protected final /*@Volatility*/ double localVolImpl(
-            final /*@Time*/ double maturity,
-            final /*@Real*/ double strike) {
+                    final /*@Time*/ double maturity,
+                    final /*@Real*/ double strike) {
         return this.volatility.currentLink().value();
     }
 

@@ -19,7 +19,6 @@ FOR A PARTICULAR PURPOSE.  See the license for more details.
 JQuantLib is based on QuantLib. http://quantlib.org/
 When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.model;
 
 import java.util.ArrayList;
@@ -40,43 +39,47 @@ import org.jquantlib.util.DefaultObservable;
 import org.jquantlib.util.Observable;
 import org.jquantlib.util.Observer;
 
-
 /**
  * Calibrated model class
  *
  * @author Ueli Hofstetter
  */
-@QualityAssurance(quality=Quality.Q3_DOCUMENTATION, version=Version.V097, reviewers="Richard Gomes")
+@QualityAssurance(quality = Quality.Q3_DOCUMENTATION, version = Version.V097, reviewers = "Richard Gomes")
 public abstract class CalibratedModel implements Observer, Observable {
 
     private static final String parameter_array_to_small = "parameter array to small";
     private static final String parameter_array_to_big = "parameter array to big";
 
-
     //
     // protected fields
     //
-
-    protected List< Parameter > arguments_;
+    protected List< Parameter> arguments_;
     protected Constraint constraint_;
     protected EndCriteria.Type shortRateEndCriteria_;
+    //
+    // implements Observable
+    //
 
+    private final DefaultObservable delegatedObservable = new DefaultObservable(this);
 
     //
     // public methods
     //
-
     public CalibratedModel(final int nArguments) {
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
         this.arguments_ = new ArrayList<Parameter>(nArguments);
         this.constraint_ = new PrivateConstraint(arguments_);
         this.shortRateEndCriteria_ = EndCriteria.Type.None;
     }
 
     /**
-     * <p>Calibrate to a set of market instruments (caps/swaptions). </p>
-     * <p>An additional constraint can be passed which must be satisfied in addition to the constraints of the model. </p>
+     * <p>
+     * Calibrate to a set of market instruments (caps/swaptions). </p>
+     * <p>
+     * An additional constraint can be passed which must be satisfied in
+     * addition to the constraints of the model. </p>
      */
     public void calibrate(
             final List<CalibrationHelper> instruments,
@@ -85,8 +88,8 @@ public abstract class CalibratedModel implements Observer, Observable {
             final Constraint additionalConstraint,
             final double[] weights) {
 
-        QL.require(weights==null || weights.length == instruments.size(),
-        "mismatch between number of instruments and weights"); // TODO: message
+        QL.require(weights == null || weights.length == instruments.size(),
+                "mismatch between number of instruments and weights"); // TODO: message
 
         Constraint c;
         if (additionalConstraint.empty()) {
@@ -96,7 +99,7 @@ public abstract class CalibratedModel implements Observer, Observable {
         }
 
         final double[] w = new double[instruments.size()];
-        if (weights==null) {
+        if (weights == null) {
             Arrays.fill(w, 1.0);
         } else {
             System.arraycopy(weights, 0, w, 0, w.length);
@@ -113,7 +116,7 @@ public abstract class CalibratedModel implements Observer, Observable {
         notifyObservers();
     }
 
-    public double value(final Array  params, final List<CalibrationHelper> instruments) {
+    public double value(final Array params, final List<CalibrationHelper> instruments) {
         final double[] w = new double[instruments.size()];
         Arrays.fill(w, 1.0);
         final CalibrationFunction f = new CalibrationFunction(this, instruments, w);
@@ -125,24 +128,26 @@ public abstract class CalibratedModel implements Observer, Observable {
     }
 
     /**
-     * <p>returns end criteria result </p>
+     * <p>
+     * returns end criteria result </p>
      */
     public EndCriteria.Type endCriteria() {
         return this.shortRateEndCriteria_;
     }
 
     /**
-     * <p>Returns array of arguments on which calibration is done. </p>
+     * <p>
+     * Returns array of arguments on which calibration is done. </p>
      */
     public Array params() /* @ReadOnly */ {
         int size = 0;
-        for (int i=0; i<arguments_.size(); i++) {
+        for (int i = 0; i < arguments_.size(); i++) {
             size += arguments_.get(i).size();
         }
         final Array params = new Array(size);
         int k = 0;
-        for (int i=0; i<arguments_.size(); i++) {
-            for (int j=0; j<arguments_.get(i).size(); j++, k++) {
+        for (int i = 0; i < arguments_.size(); i++) {
+            for (int j = 0; j < arguments_.get(i).size(); j++, k++) {
                 final double value = arguments_.get(i).params().get(j);
                 params.set(k, value);
             }
@@ -160,59 +165,45 @@ public abstract class CalibratedModel implements Observer, Observable {
 //              arguments_[i].setParam(j, *p);
 //          }
 //      }
-
         final double[] from = params.$;
         int pos = 0;
-        for (int i=0; i<arguments_.size(); i++) {
+        for (int i = 0; i < arguments_.size(); i++) {
             final double[] to = arguments_.get(i).params.$;
             System.arraycopy(from, pos, to, 0, to.length);
             pos += to.length;
         }
 
-        QL.require(pos==params.size(), "parameter array too big"); // TODO: message
+        QL.require(pos == params.size(), "parameter array too big"); // TODO: message
         update();
     }
-
 
     //
     // protected methods
     //
-
     protected void generateArguments() {
         // nothing
     }
 
-
     //
     // implements Observer
     //
-
-
 //    @Override
 //XXX::OBS    public void update(final Observable o, final Object arg) {
 //        generateArguments();
 //        notifyObservers();
 //    }
-
     /**
      * This method must be implemented in derived classes.
      * <p>
-     * An instance of Observer does not call this method directly: instead, it will be called by
-     * the observables the instance registered with when they need to notify any changes.
+     * An instance of Observer does not call this method directly: instead, it
+     * will be called by the observables the instance registered with when they
+     * need to notify any changes.
      */
     @Override
-    public void update(){
+    public void update() {
         generateArguments();
         notifyObservers();
     }
-
-
-
-    //
-    // implements Observable
-    //
-
-    private final DefaultObservable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public void addObserver(final org.jquantlib.util.Observer observer) {
@@ -252,11 +243,9 @@ public abstract class CalibratedModel implements Observer, Observable {
 
     }
 
-
     //
     // private inner classes
     //
-
     private final class CalibrationFunction extends CostFunction {
 
         private final CalibratedModel model;
@@ -266,34 +255,35 @@ public abstract class CalibratedModel implements Observer, Observable {
         public CalibrationFunction(
                 final CalibratedModel model,
                 final List<CalibrationHelper> instruments,
-                final double[] weights){
+                final double[] weights) {
             this.model = model;
             this.instruments = instruments;
             this.weights = weights.clone();
         }
 
         @Override
-        public double value(final Array  params) /* @ReadOnly */ {
+        public double value(final Array params) /* @ReadOnly */ {
             model.setParams(params);
 
             double value = 0.0;
-            for (int i=0; i<instruments.size(); i++) {
+            for (int i = 0; i < instruments.size(); i++) {
                 final double diff = instruments.get(i).calibrationError();
-                value += diff*diff*weights[i];
+                value += diff * diff * weights[i];
             }
 
             return Math.sqrt(value);
         }
 
         /**
-         * <p>method to overload to compute the cost function values in x </p>
+         * <p>
+         * method to overload to compute the cost function values in x </p>
          */
         @Override
-        public Array values(final Array  params) /* @ReadOnly */ {
+        public Array values(final Array params) /* @ReadOnly */ {
             model.setParams(params);
 
             final Array values = new Array(instruments.size());
-            for (int i=0; i<instruments.size(); i++) {
+            for (int i = 0; i < instruments.size(); i++) {
                 final double value = instruments.get(i).calibrationError() * Math.sqrt(weights[i]);
                 values.set(i, value);
             }
@@ -309,22 +299,18 @@ public abstract class CalibratedModel implements Observer, Observable {
         }
     }
 
-
     private final class PrivateConstraint extends Constraint {
 
         //
         // public constructors
         //
-
         public PrivateConstraint(final List<Parameter> arguments) {
             super.impl = new Impl(arguments);
         }
 
-
         //
         // private inner classes
         //
-
         /**
          * Base class for constraint implementations.
          */
@@ -333,28 +319,23 @@ public abstract class CalibratedModel implements Observer, Observable {
             //
             // private fields
             //
-
             private final List<Parameter> arguments;
-
 
             //
             // private constructors
             //
-
             private Impl(final List<Parameter> arguments) {
                 this.arguments = arguments;
             }
 
-
             //
             // public abstract methods
             //
-
             /**
              * Tests if params satisfy the constraint.
              */
             @Override
-            public boolean test(final Array  params) /* @ReadOnly */ {
+            public boolean test(final Array params) /* @ReadOnly */ {
                 int k = 0;
                 for (int i = 0; i < arguments_.size(); i++) {
                     final int size = arguments_.get(i).size();
@@ -362,8 +343,9 @@ public abstract class CalibratedModel implements Observer, Observable {
                     for (int j = 0; j < size; j++, k++) {
                         testParams.set(j, params.get(k));
                     }
-                    if (!arguments_.get(i).testParams(testParams))
+                    if (!arguments_.get(i).testParams(testParams)) {
                         return false;
+                    }
                 }
                 return true;
             }

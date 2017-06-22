@@ -14,18 +14,18 @@ import java.util.logging.Logger;
  * @author Pankaj
  */
 public class SimulationTimer implements Runnable {
-    
-    Date triggerDate=new Date(0);
+
+    Date triggerDate = new Date(0);
     TimerTask task;
-    
-    public SimulationTimer(Date triggerDate,TimerTask task){
-    this.triggerDate=triggerDate;
-    this.task=task;
+
+    public SimulationTimer(Date triggerDate, TimerTask task) {
+        this.triggerDate = triggerDate;
+        this.task = task;
     }
 
     @Override
     public void run() {
-        while (TradingUtil.getAlgoDate().compareTo(new Date(0))>0 && triggerDate.compareTo(TradingUtil.getAlgoDate()) > 0) {
+        while (TradingUtil.getAlgoDate().compareTo(new Date(0)) > 0 && triggerDate.compareTo(TradingUtil.getAlgoDate()) > 0) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
@@ -35,6 +35,4 @@ public class SimulationTimer implements Runnable {
         task.run();
     }
 
-    
-    
 }

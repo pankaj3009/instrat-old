@@ -19,7 +19,7 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-/*
+ /*
  Copyright (C) 2001, 2002, 2003 Sadruddin Rejeb
  Copyright (C) 2004, 2005 StatPro Italia srl
 
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.methods.lattices;
 
 import java.util.Vector;
@@ -49,9 +48,8 @@ import org.jquantlib.time.TimeGrid;
 /**
  * Tree-based lattice-method base class
  * <p>
- * This class defines a lattice method that is able to rollback
- * (with discount) a discretized asset object. It will be based
- * on one or more trees.
+ * This class defines a lattice method that is able to rollback (with discount)
+ * a discretized asset object. It will be based on one or more trees.
  *
  * @category lattices
  *
@@ -65,26 +63,23 @@ public abstract class TreeLattice extends Lattice {
     // Arrow-Debrew state prices
     protected Vector<Array> statePrices;
 
-
     //
     // public constructors
     //
-
     public TreeLattice(final TimeGrid t, final int n) {
         super(t);
         this.n = n;
-        if (n <= 0)
+        if (n <= 0) {
             throw new IllegalStateException("there is no zeronomial lattice!");
+        }
         statePrices = new Vector<Array>();
         statePrices.add(new Array(1).fill(1.0));//ZH: Verified with QL097
         statePricesLimit = 0;
     }
 
-
     //
     // public abstract methods
     //
-
     public abstract double discount(int i, int index);
 
     public abstract int descendant(int i, int index, int branch);
@@ -93,11 +88,9 @@ public abstract class TreeLattice extends Lattice {
 
     public abstract int size(int i);
 
-
     //
     // protected methods
     //
-
     protected void computeStatePrices(final int until) {
         for (int i = statePricesLimit; i < until; i++) {
             statePrices.add(new Array(size(i + 1)));
@@ -115,32 +108,30 @@ public abstract class TreeLattice extends Lattice {
         statePricesLimit = until;
     }
 
-
     //
     // public methods
     //
-
     public Array statePrices(final int i) {
-        if (i > statePricesLimit)
+        if (i > statePricesLimit) {
             computeStatePrices(i);
+        }
         return statePrices.get(i);
     }
 
     public void stepback(final int i, final Array values, final Array newValues) {
         for (int j = 0; j < size(i); j++) {
             double value = 0.0;
-            for (int l = 0; l < n; l++)
+            for (int l = 0; l < n; l++) {
                 value += probability(i, j, l) * values.get(descendant(i, j, l));
+            }
             value *= discount(i, j);
             newValues.set(j, value);
         }
     }
 
-
     //
     // overrides Lattice
     //
-
     /**
      * Computes the present value of an asset using Arrow-Debrew prices
      */
@@ -168,8 +159,9 @@ public abstract class TreeLattice extends Lattice {
 
         final double from = asset.time();
 
-        if (Closeness.isClose(from, to))
+        if (Closeness.isClose(from, to)) {
             return;
+        }
 
         QL.require(from > to, "cannot roll the asset"); // TODO: message
 
@@ -182,8 +174,9 @@ public abstract class TreeLattice extends Lattice {
             asset.setTime(t.get(i));
             asset.setValues(newValues);
             // skip the very last adjustment
-            if (i != iTo)
+            if (i != iTo) {
                 asset.adjustValues();
+            }
         }
     }
 

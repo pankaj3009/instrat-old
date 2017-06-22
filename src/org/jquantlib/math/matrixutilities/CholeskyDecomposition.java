@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2004 Ferdinando Ametrano
 
  This file is part of QuantLib, a free-software/open-source library
@@ -35,8 +35,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.math.matrixutilities;
 
 import org.jquantlib.QL;
@@ -48,41 +47,45 @@ import org.jquantlib.lang.exceptions.LibraryException;
 /**
  * Cholesky Decomposition.
  * <P>
- * For a symmetric, positive definite matrix A, the Cholesky decomposition is an lower triangular matrix L so that A = L*L'.
+ * For a symmetric, positive definite matrix A, the Cholesky decomposition is an
+ * lower triangular matrix L so that A = L*L'.
  * <P>
- * If the matrix is not symmetric or positive definite, the constructor returns a partial decomposition and sets an internal flag
- * that may be queried by the isSPD() method.
+ * If the matrix is not symmetric or positive definite, the constructor returns
+ * a partial decomposition and sets an internal flag that may be queried by the
+ * isSPD() method.
  *
- * @note  This class is adapted from JAMA
+ * @note This class is adapted from JAMA
  * @see <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a>
  *
  * @author Richard Gomes
  */
 // FIXME: http://bugs.jquantlib.org/view.php?id=340
-@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = {"Richard Gomes"})
 public class CholeskyDecomposition {
 
     private final static String MATRIX_IS_NOT_SIMMETRIC_POSITIVE = "Matrix is not symmetric positive definite.";
 
-
     //
     // private fields
     //
-
-    /** Row and column dimension (square matrix). */
+    /**
+     * Row and column dimension (square matrix).
+     */
     private final int n;
 
-    /** Matrix for internal storage of decomposition. */
+    /**
+     * Matrix for internal storage of decomposition.
+     */
     private final Matrix L;
 
-    /** Symmetric and positive definite flag. */
+    /**
+     * Symmetric and positive definite flag.
+     */
     private boolean isspd;
-
 
     //
     // public constructors
     //
-
     /**
      * Cholesky algorithm for symmetric and positive definite matrix.
      *
@@ -120,7 +123,6 @@ public class CholeskyDecomposition {
     //
     // public methods
     //
-
     /**
      * Is the matrix symmetric and positive definite?
      *
@@ -147,11 +149,11 @@ public class CholeskyDecomposition {
      * @exception IllegalArgumentException Matrix row dimensions must agree.
      * @exception LibraryException Matrix is not symmetric positive definite.
      */
-
     public Matrix solve(final Matrix B) {
         QL.require(B.rows() == this.n, Matrix.MATRIX_IS_INCOMPATIBLE); // QA:[RG]::verified
-        if (!this.isSPD())
+        if (!this.isSPD()) {
             throw new LibraryException(MATRIX_IS_NOT_SIMMETRIC_POSITIVE);
+        }
 
         // Copy right hand side.
         final int nx = B.cols();

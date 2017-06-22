@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2000, 2001, 2002, 2003 RiskMap srl
  Copyright (C) 2003, 2004 StatPro Italia srl
  Copyright (C) 2003 Nicolas Di C�sar�
@@ -40,8 +40,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.cashflow;
 
 import org.jquantlib.QL;
@@ -94,46 +93,47 @@ public class FloatingRateCoupon extends Coupon implements Observer {
         this.gearing_ = gearing;
         this.spread_ = spread;
         this.isInArrears_ = isInArrears;
-        
-        QL.require(gearing != 0 , "Null gearing not allowed");
 
-        if (dayCounter_.empty())
+        QL.require(gearing != 0, "Null gearing not allowed");
+
+        if (dayCounter_.empty()) {
             dayCounter_ = index.dayCounter();
+        }
 
         JDate evaluationDate = new Settings().evaluationDate();
         this.index_.addObserver(this);
         evaluationDate.addObserver(this);
     }
 
-    public void setPricer(final FloatingRateCouponPricer pricer){
+    public void setPricer(final FloatingRateCouponPricer pricer) {
         if (pricer_ != null) {
-        	pricer_.deleteObserver(this);
+            pricer_.deleteObserver(this);
         }
         pricer_ = pricer;
-        if ( pricer_ != null ) {
-        	pricer_.addObserver(this);
+        if (pricer_ != null) {
+            pricer_.addObserver(this);
         }
         update();
     }
-    
+
     public FloatingRateCouponPricer pricer() {
         return pricer_;
     }
-    
+
     public double amount() {
         return rate() * accrualPeriod() * nominal();
     }
 
     public /*Real*/ double accruedAmount(final JDate d) {
-    	
+
         if (d.le(accrualStartDate_) || d.gt(paymentDate_)) {
             return 0.0;
         } else {
-            return nominal() * rate() *
-                dayCounter().yearFraction(accrualStartDate_,
-                                          JDate.min(d,accrualEndDate_),
-                                          refPeriodStart_,
-                                          refPeriodEnd_);
+            return nominal() * rate()
+                    * dayCounter().yearFraction(accrualStartDate_,
+                            JDate.min(d, accrualEndDate_),
+                            refPeriodStart_,
+                            refPeriodEnd_);
         }
     }
 
@@ -144,7 +144,7 @@ public class FloatingRateCoupon extends Coupon implements Observer {
     public DayCounter dayCounter() {
         return dayCounter_;
     }
-    
+
     public InterestRateIndex index() {
         return index_;
     }
@@ -159,14 +159,14 @@ public class FloatingRateCoupon extends Coupon implements Observer {
         return index_.fixingCalendar().advance(refDate, new Period(-fixingDays_, TimeUnit.Days), BusinessDayConvention.Preceding);
     }
 
-
     public double gearing() {
         return gearing_;
     }
+
     public double spread() {
         return spread_;
     }
-    
+
     public /*Rate*/ double indexFixing() {
         return index_.fixing(fixingDate());
     }
@@ -177,22 +177,22 @@ public class FloatingRateCoupon extends Coupon implements Observer {
         return pricer_.swapletRate();
     }
 
-    public /*Rate*/ double adjustedFixing()  {
-        return (rate()-spread())/gearing();
+    public /*Rate*/ double adjustedFixing() {
+        return (rate() - spread()) / gearing();
     }
 
     public boolean isInArrears() {
         return isInArrears_;
     }
-    
+
     public /*Rate*/ double convexityAdjustmentImpl(double /*Rate*/ f) {
-        return (gearing() == 0.0 ? 0.0 : adjustedFixing()-f);
+        return (gearing() == 0.0 ? 0.0 : adjustedFixing() - f);
     }
-    
+
     public /*Rate*/ double convexityAdjustment() {
         return convexityAdjustmentImpl(indexFixing());
     }
-    
+
     public void update() {
         notifyObservers();
     }
@@ -200,10 +200,9 @@ public class FloatingRateCoupon extends Coupon implements Observer {
     //
     // implements TypeVisitable
     //
-    
     @Override
     public void accept(final PolymorphicVisitor pv) {
-        final Visitor<FloatingRateCoupon> v = (pv!=null) ? pv.visitor(this.getClass()) : null;
+        final Visitor<FloatingRateCoupon> v = (pv != null) ? pv.visitor(this.getClass()) : null;
         if (v != null) {
             v.visit(this);
         } else {

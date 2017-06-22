@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures.yieldcurves;
 
 import java.util.List;
@@ -44,23 +43,30 @@ public interface PiecewiseCurve<I extends Interpolator> extends YieldTermStructu
 
     @Override
     public JDate maxDate();
+
     public RateHelper[] instruments() /* @ReadOnly */;
+
     public JDate[] dates() /* @ReadOnly */;
+
     public/* @Time */ double[] times() /* @ReadOnly */;
+
     public double accuracy() /* @ReadOnly */;
 
     public JDate[] jumpDates() /* @ReadOnly */;
+
     public/* @Time */ double[] jumpTimes() /* @ReadOnly */;
-    
-    public List<Pair<JDate, /* @Rate */Double>> nodes() /* @ReadOnly */;
+
+    public List<Pair<JDate, /* @Rate */ Double>> nodes() /* @ReadOnly */;
+
     public double[] data();
 
     public Traits traits() /* @ReadOnly */;
 
-    public Interpolator                         interpolator() /* @ReadOnly */;
-    public Interpolation                        interpolation() /* @ReadOnly */;
-    public void                                 setInterpolation(final Interpolation interpolation);
+    public Interpolator interpolator() /* @ReadOnly */;
 
+    public Interpolation interpolation() /* @ReadOnly */;
+
+    public void setInterpolation(final Interpolation interpolation);
 
     //FIXME:: remove these methods. SEE: http://bugs.jquantlib.org/view.php?id=464
     // Ideally, we should employ Array<T> which could mimick closer std::vector (which is a dynamic array).
@@ -68,8 +74,10 @@ public interface PiecewiseCurve<I extends Interpolator> extends YieldTermStructu
     // data structure, but we could simply rezise it and add more data.
     // Then these 3 methods below could be removed.
     // The same issue happens in Traits.Curve
-    public void setDates (final JDate[] dates);
-    public void setTimes (/*@Time*/ double[] times);
-    public void setData (final double[] data);
+    public void setDates(final JDate[] dates);
+
+    public void setTimes(/*@Time*/double[] times);
+
+    public void setData(final double[] data);
 
 }

@@ -12,31 +12,33 @@ import java.util.TreeMap;
  *
  * @author pankaj
  */
-public class TreeMapExtension<K,V> extends TreeMap<K,V> {
+public class TreeMapExtension<K, V> extends TreeMap<K, V> {
 
-    public TreeMapExtension(){
+    public TreeMapExtension() {
         super();
     }
-    
-    public V getValue(int i)
-    {
-       Map.Entry<K, V>entry = this.getEntry(i);
-       if(entry == null) return null;
 
-       return entry.getValue();
+    public V getValue(int i) {
+        Map.Entry<K, V> entry = this.getEntry(i);
+        if (entry == null) {
+            return null;
+        }
+
+        return entry.getValue();
     }
 
-    public Map.Entry<K, V> getEntry(int i)
-    {
+    public Map.Entry<K, V> getEntry(int i) {
         // check if negetive index provided
-        Set<Map.Entry<K,V>>entries = entrySet();
+        Set<Map.Entry<K, V>> entries = entrySet();
         int j = 0;
 
-        for(Map.Entry<K, V>entry : entries)
-            if(j++ == i)return entry;
+        for (Map.Entry<K, V> entry : entries) {
+            if (j++ == i) {
+                return entry;
+            }
+        }
 
         return null;
 
     }
 }
-

@@ -9,6 +9,7 @@ package com.incurrency.framework;
  * @author pankaj
  */
 public class SymbolOrderMap {
+
     public int symbolid;
     public int externalOrderId;
 
@@ -16,6 +17,5 @@ public class SymbolOrderMap {
         this.symbolid = symbolid;
         this.externalOrderId = externalOrderId;
     }
-    
-    
+
 }

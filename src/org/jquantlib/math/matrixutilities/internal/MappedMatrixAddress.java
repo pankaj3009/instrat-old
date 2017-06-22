@@ -34,7 +34,7 @@ AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 package org.jquantlib.math.matrixutilities.internal;
 
 import java.util.EnumSet;
@@ -42,12 +42,12 @@ import java.util.Set;
 import org.jquantlib.lang.exceptions.LibraryException;
 import org.jquantlib.math.matrixutilities.Matrix;
 
-
 /**
  * This accessor provides indexed addressing on matrices
  * <p>
- * By indexed access we mean that there's an index which maps a contiguous addressing onto
- * another another data structure, where some elements are included whilst some not.
+ * By indexed access we mean that there's an index which maps a contiguous
+ * addressing onto another another data structure, where some elements are
+ * included whilst some not.
  *
  * @see Matrix
  *
@@ -91,18 +91,17 @@ public class MappedMatrixAddress extends MappedAddress implements Address.Matrix
     //
     // implements MatrixAddress
     //
-
     @Override
     public MatrixAddress toFortran() {
-        return isFortran() ? this :
-            new DirectMatrixAddress(data, row0, row1, this.chain, col0, col1, EnumSet.of(Address.Flags.FORTRAN), contiguous, rows, cols);
+        return isFortran() ? this
+                : new DirectMatrixAddress(data, row0, row1, this.chain, col0, col1, EnumSet.of(Address.Flags.FORTRAN), contiguous, rows, cols);
     }
 
     @Override
     public MatrixAddress toJava() {
-        return isFortran() ?
-            new DirectMatrixAddress(data, row0+1, row1+1, this.chain, col0+1, col1+1, EnumSet.noneOf(Address.Flags.class), contiguous, rows, cols)
-            : this;
+        return isFortran()
+                ? new DirectMatrixAddress(data, row0 + 1, row1 + 1, this.chain, col0 + 1, col1 + 1, EnumSet.noneOf(Address.Flags.class), contiguous, rows, cols)
+                : this;
     }
 
     @Override
@@ -117,14 +116,12 @@ public class MappedMatrixAddress extends MappedAddress implements Address.Matrix
 
     @Override
     public int op(final int row, final int col) {
-        return (row0+ridx[row])*cols + (col0+cidx[col]);
+        return (row0 + ridx[row]) * cols + (col0 + cidx[col]);
     }
-
 
     //
     // implements Cloneable
     //
-
     @Override
     public MappedMatrixAddress clone() {
         try {
@@ -134,16 +131,14 @@ public class MappedMatrixAddress extends MappedAddress implements Address.Matrix
         }
     }
 
-
     //
     // private inner classes
     //
-
     private class FastMatrixIndexAddressOffset extends FastIndexAddressOffset implements Address.MatrixAddress.MatrixOffset {
 
         public FastMatrixIndexAddressOffset(final int row, final int col) {
-            super.row = row0+row;
-            super.col = col0+col;
+            super.row = row0 + row;
+            super.col = col0 + col;
         }
 
         @Override
@@ -168,17 +163,17 @@ public class MappedMatrixAddress extends MappedAddress implements Address.Matrix
 
         @Override
         public void setRow(final int row) {
-            super.row = row0+row;
+            super.row = row0 + row;
         }
 
         @Override
         public void setCol(final int col) {
-            super.col = col0+col;
+            super.col = col0 + col;
         }
 
         @Override
         public int op() {
-            return ridx[row]*cols + cidx[col];
+            return ridx[row] * cols + cidx[col];
         }
 
     }

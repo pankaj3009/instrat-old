@@ -21,7 +21,6 @@
  */
 package org.jquantlib.indexes;
 
-
 import org.jquantlib.currencies.Europe.EURCurrency;
 import org.jquantlib.daycounters.Actual360;
 import org.jquantlib.quotes.Handle;
@@ -33,37 +32,39 @@ import org.jquantlib.time.calendars.Target;
 /**
  * Base class for the one day deposit BBA EUR LIBOR indexes
  * <p>
- * Euro O/N LIBOR fixed by BBA. It can be also used for T/N and S/N
- * indexes, even if such indexes do not have BBA fixing.
+ * Euro O/N LIBOR fixed by BBA. It can be also used for T/N and S/N indexes,
+ * even if such indexes do not have BBA fixing.
  *
- * @note This is the London fixing by BBA . Use Euribor if you're interested in the rate fixed by the ECB.
+ * @note This is the London fixing by BBA . Use Euribor if you're interested in
+ * the rate fixed by the ECB.
  *
  * @author Tim Blackler
- **/
+ *
+ */
 public class DailyTenorEURLibor extends IborIndex {
-    
-    
-	/**
+
+    /**
      * JoinBusinessDays is the fixing calendar for all indexes but o/n
      *
-     * @see <a href="http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412">http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412</a>
+     * @see
+     * <a href="http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412">http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412</a>
      */
     public DailyTenorEURLibor(final int settlementDays) {
-    	this(settlementDays, new Handle<YieldTermStructure>());
+        this(settlementDays, new Handle<YieldTermStructure>());
     }
-	
+
     public DailyTenorEURLibor(final int settlementDays, final Handle<YieldTermStructure> h) {
-        super(	"EURLibor",
-                new Period (1,TimeUnit.Days),
-                settlementDays, 
+        super("EURLibor",
+                new Period(1, TimeUnit.Days),
+                settlementDays,
                 new EURCurrency(),
                 // http://www.bba.org.uk/bba/jsp/polopoly.jsp?d=225&a=1412 :
                 // no o/n or s/n fixings (as the case may be) will take place
                 // when the principal centre of the currency concerned is
                 // closed but London is open on the fixing day.
                 new Target(),
-                eurliborConvention(new Period (1,TimeUnit.Days)),
-                eurliborEOM(new Period (1,TimeUnit.Days)),
+                eurliborConvention(new Period(1, TimeUnit.Days)),
+                eurliborEOM(new Period(1, TimeUnit.Days)),
                 new Actual360(),
                 h);
     }

@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 RiskMap srl
 
  This file is part of QuantLib, a free-software/open-source library
@@ -36,16 +36,15 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.util;
 
 import java.util.List;
 
-
 /**
  * Framework for calculation on demand and result caching.
  *
- * @see <a href="http://c2.com/cgi/wiki?LazyObject">Lazy Object Design Pattern</a>
+ * @see <a href="http://c2.com/cgi/wiki?LazyObject">Lazy Object Design
+ * Pattern</a>
  * @see Observer
  * @see Observable
  *
@@ -56,16 +55,40 @@ public abstract class LazyObject implements Observer, Observable {
     //
     // protected fields
     //
-
     protected boolean calculated;
     protected boolean frozen;
 
+    //
+    // implements Observable
+    //
+    /**
+     * Implements multiple inheritance via delegate pattern to an inner class
+     *
+     * @see Observable
+     * @see DefaultObservable
+     */
+    private final Observable delegatedObservable = new DefaultObservable(this);
+
+    //
+    // public constructors
+    //
+    /**
+     * Creates a new LazyObject instance which is potentially able to perform
+     * calculations on demand every time it observes a change in a
+     * {@link Observable} object. A LazyObject is an {@link Observer} and an
+     * {@link Observable} at the same time.
+     */
+    public LazyObject() {
+        this.calculated = false;
+        this.frozen = false;
+    }
     //
     // protected abstract methods
     //
 
     /**
-     * This method must implement any calculations which must be (re)done in order to calculate the desired results.
+     * This method must implement any calculations which must be (re)done in
+     * order to calculate the desired results.
      *
      * @throws ArithmeticException
      *
@@ -73,27 +96,16 @@ public abstract class LazyObject implements Observer, Observable {
     protected abstract void performCalculations() throws ArithmeticException;
 
     //
-    // public constructors
-    //
-
-    /**
-     * Creates a new LazyObject instance which is potentially able to perform calculations on demand every time it observes a change
-     * in a {@link Observable} object. A LazyObject is an {@link Observer} and an {@link Observable} at the same time.
-     */
-    public LazyObject() {
-        this.calculated = false;
-        this.frozen = false;
-    }
-
-    //
     // public final methods
     //
-
     /**
-     * This method force the recalculation of any results which would otherwise be cached.
+     * This method force the recalculation of any results which would otherwise
+     * be cached.
      *
-     * @note Explicit invocation of this method is <b>not</b> necessary if the object registered itself as observer with the
-     *       structures on which such results depend. It is strongly advised to follow this policy when possible.
+     * @note Explicit invocation of this method is <b>not</b> necessary if the
+     * object registered itself as observer with the structures on which such
+     * results depend. It is strongly advised to follow this policy when
+     * possible.
      */
     public final void recalculate() {
         final boolean wasFrozen = frozen;
@@ -107,15 +119,17 @@ public abstract class LazyObject implements Observer, Observable {
     }
 
     /**
-     * This method constrains the object to return the presently cached results on successive invocations, even if arguments upon
-     * which they depend should change.
+     * This method constrains the object to return the presently cached results
+     * on successive invocations, even if arguments upon which they depend
+     * should change.
      */
     public final void freeze() {
         frozen = true;
     }
 
     /**
-     * This method reverts the effect of the <i><b>freeze</b></i> method, thus re-enabling recalculations.
+     * This method reverts the effect of the <i><b>freeze</b></i> method, thus
+     * re-enabling recalculations.
      */
     public final void unfreeze() {
         frozen = false;
@@ -126,14 +140,16 @@ public abstract class LazyObject implements Observer, Observable {
     //
     // protected methods
     //
-
     /**
-     * This method performs all needed calculations by calling the <i><b>performCalculations</b></i> method.
+     * This method performs all needed calculations by calling the
+     * <i><b>performCalculations</b></i> method.
      * <p>
      *
-     * @note Objects cache the results of the previous calculation. Such results will be returned upon later invocations of <i><b>calculate</b></i>.
-     *       When the results depend on arguments which could change between invocations, the lazy object must register itself as
-     *       observer of such objects for the calculations to be performed again when they change.
+     * @note Objects cache the results of the previous calculation. Such results
+     * will be returned upon later invocations of <i><b>calculate</b></i>. When
+     * the results depend on arguments which could change between invocations,
+     * the lazy object must register itself as observer of such objects for the
+     * calculations to be performed again when they change.
      */
     protected void calculate() {
         if (!calculated && !frozen) {
@@ -151,7 +167,6 @@ public abstract class LazyObject implements Observer, Observable {
     //
     // implements Observer
     //
-
     // XXX:registerWith
     //    @Override
     //    public void registerWith(final Observable o) {
@@ -162,31 +177,18 @@ public abstract class LazyObject implements Observer, Observable {
     //    public void unregisterWith(final Observable o) {
     //        o.deleteObserver(this);
     //    }
-
     @Override
     //XXX::OBS public void update(final Observable o, final Object arg) {
     public void update() {
         // observers don't expect notifications from frozen objects
         // LazyObject forwards notifications only once until it has been
         // recalculated
-        if (!frozen && calculated)
-            //XXX::OBS notifyObservers(arg);
+        if (!frozen && calculated) //XXX::OBS notifyObservers(arg);
+        {
             notifyObservers();
+        }
         calculated = false;
     }
-
-
-    //
-    // implements Observable
-    //
-
-    /**
-     * Implements multiple inheritance via delegate pattern to an inner class
-     *
-     * @see Observable
-     * @see DefaultObservable
-     */
-    private final Observable delegatedObservable = new DefaultObservable(this);
 
     @Override
     public final void addObserver(final Observer observer) {

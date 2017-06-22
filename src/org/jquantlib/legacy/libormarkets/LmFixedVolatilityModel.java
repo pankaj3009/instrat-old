@@ -20,7 +20,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.legacy.libormarkets;
 
 import org.jquantlib.QL;
@@ -34,19 +33,22 @@ public class LmFixedVolatilityModel extends LmVolatilityModel {
     public LmFixedVolatilityModel(final Array volatilities, final Array startTimes) {
         super(startTimes.size(), 0);
 
-        if (System.getProperty("EXPERIMENTAL") == null)
+        if (System.getProperty("EXPERIMENTAL") == null) {
             throw new UnsupportedOperationException("Work in progress");
+        }
 
         // TODO: code review :: use of clone()
         this.volatilities_ = volatilities;
         this.startTimes_ = startTimes;
 
-        QL.require(startTimes_.size()>1 , "too few dates"); // TODO: message
-        QL.require(volatilities_.size() == startTimes_.size() , "volatility array and fixing time array have to have the same size"); // TODO: message
+        QL.require(startTimes_.size() > 1, "too few dates"); // TODO: message
+        QL.require(volatilities_.size() == startTimes_.size(), "volatility array and fixing time array have to have the same size"); // TODO: message
 
-        for (int i = 1; i < startTimes_.size(); i++)
-            if(startTimes_.get(i) <= startTimes_.get(i-1))
+        for (int i = 1; i < startTimes_.size(); i++) {
+            if (startTimes_.get(i) <= startTimes_.get(i - 1)) {
                 throw new IllegalArgumentException("invalid time (" + startTimes_.get(i) + ", vs " + startTimes_.get(i) + ")");
+            }
+        }
     }
 
     @Override
@@ -56,23 +58,26 @@ public class LmFixedVolatilityModel extends LmVolatilityModel {
 
     @Override
     public Array volatility(final double t, final Array x) {
-        QL.require((t < startTimes_.first() || t > startTimes_.last()) , "invalid time given for volatility model"); // TODO: message
+        QL.require((t < startTimes_.first() || t > startTimes_.last()), "invalid time given for volatility model"); // TODO: message
         final int ti = (int) (startTimes_.upperBound(t) - startTimes_.first() - 1);
 
         final Array tmp = new Array(size_);
 
-        for (int i = ti; i < size_; ++i)
+        for (int i = ti; i < size_; ++i) {
             tmp.set(i, volatilities_.get(i - ti));
+        }
         final Array ret = new Array(tmp.size());//ZH: translation not as QL097
-        for (int i = 0; i < tmp.size(); i++)
+        for (int i = 0; i < tmp.size(); i++) {
             ret.set(i, tmp.get(i));
+        }
         return ret;
     }
 
     @Override
-    public double /* @Volatility */volatility(final int i, /* @Time */final double t, final Array x) {
-        if (t < startTimes_.first() || t > startTimes_.last())
+    public double /* @Volatility */ volatility(final int i, /* @Time */ final double t, final Array x) {
+        if (t < startTimes_.first() || t > startTimes_.last()) {
             throw new IllegalArgumentException("invalid time given for volatility model");
+        }
         final int ti = (int) (startTimes_.upperBound(t) - startTimes_.first() - 1);
 
         return volatilities_.get(i - ti);

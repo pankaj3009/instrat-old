@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2006 Ferdinando Ametrano
  Copyright (C) 2006 Warren Chou
  Copyright (C) 2006 StatPro Italia srl
@@ -38,8 +38,7 @@
  This program is distributed in the hope that it will be useful, but WITHOUT
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
-*/
-
+ */
 package org.jquantlib.instruments;
 
 import org.jquantlib.instruments.Option.Type;
@@ -53,19 +52,18 @@ import org.jquantlib.instruments.Option.Type;
  */
 public abstract class TypePayoff extends Payoff {
 
-	//
+    //
     // protected fields
     //
-
     /**
-     * This protected field represents the {@link Type} backing this {@link Payoff}
+     * This protected field represents the {@link Type} backing this
+     * {@link Payoff}
      */
     protected Option.Type type;
 
-	//
+    //
     // public constructors
     //
-
     /**
      * Constructs a {@link Payoff} backed on a {@link Type}
      *
@@ -74,28 +72,24 @@ public abstract class TypePayoff extends Payoff {
      * @see Option.Type
      */
     public TypePayoff(final Option.Type type) {
-		this.type = type;
-	}
+        this.type = type;
+    }
 
-
-	//
+    //
     // public final methods
     //
-
     /**
      * @return the {@link Type} backing this {@link Payoff}
      *
      * @see Option.Type
      */
     public final Option.Type optionType() {
-		return this.type;
-	}
-
+        return this.type;
+    }
 
     //
     // overrides Payoff
     //
-
     @Override
     public String description() /* @ReadOnly */ {
         final StringBuilder sb = new StringBuilder();

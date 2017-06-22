@@ -1,5 +1,3 @@
-
-
 /*
  Copyright (C) 2008 Richard Gomes
 
@@ -22,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003, 2004 Ferdinando Ametrano
  Copyright (C) 2005 Gary Kennedy
 
@@ -39,9 +37,7 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.pricingengines.asian;
-
 
 import org.jquantlib.QL;
 import org.jquantlib.daycounters.DayCounter;
@@ -57,7 +53,6 @@ import org.jquantlib.termstructures.Compounding;
 import org.jquantlib.time.Frequency;
 import org.jquantlib.time.JDate;
 
-
 /**
  * @author <Richard Gomes>
  */
@@ -68,18 +63,15 @@ public class AnalyticContinuousGeometricAveragePriceAsianEngine extends Continuo
     //
     // private final fields
     //
-
     private final GeneralizedBlackScholesProcess process;
     private final ContinuousAveragingAsianOption.ArgumentsImpl a;
-    private final ContinuousAveragingAsianOption.ResultsImpl   r;
+    private final ContinuousAveragingAsianOption.ResultsImpl r;
     private final Option.GreeksImpl greeks;
     private final Option.MoreGreeksImpl moreGreeks;
-
 
     //
     // public constructors
     //
-
     public AnalyticContinuousGeometricAveragePriceAsianEngine(final GeneralizedBlackScholesProcess process) {
         this.process = process;
         this.a = arguments_;
@@ -89,50 +81,47 @@ public class AnalyticContinuousGeometricAveragePriceAsianEngine extends Continuo
         process.addObserver(this);
     }
 
-
     //
     // implements PricingEngine
     //
-
     @Override
     public void calculate() /*@ReadOnly*/ {
-        QL.require(a.averageType==AverageType.Geometric , "not a geometric average option"); // TODO: message
-        QL.require(a.exercise.type()==Exercise.Type.European , "not an European Option"); // TODO: message
+        QL.require(a.averageType == AverageType.Geometric, "not a geometric average option"); // TODO: message
+        QL.require(a.exercise.type() == Exercise.Type.European, "not an European Option"); // TODO: message
         final JDate exercise = a.exercise.lastDate();
 
-        QL.require(a.payoff instanceof PlainVanillaPayoff , "non-plain payoff given"); // TODO: message
-        final PlainVanillaPayoff payoff = (PlainVanillaPayoff)arguments_.payoff;
+        QL.require(a.payoff instanceof PlainVanillaPayoff, "non-plain payoff given"); // TODO: message
+        final PlainVanillaPayoff payoff = (PlainVanillaPayoff) arguments_.payoff;
 
         /*@Volatility*/ final double volatility = process.blackVolatility().currentLink().blackVol(exercise, payoff.strike());
         /*@Real*/ final double variance = process.blackVolatility().currentLink().blackVariance(exercise, payoff.strike());
-        /*@DiscountFactor*/ final double  riskFreeDiscount = process.riskFreeRate().currentLink().discount(exercise);
-        final DayCounter rfdc  = process.riskFreeRate().currentLink().dayCounter();
+        /*@DiscountFactor*/ final double riskFreeDiscount = process.riskFreeRate().currentLink().discount(exercise);
+        final DayCounter rfdc = process.riskFreeRate().currentLink().dayCounter();
         final DayCounter divdc = process.dividendYield().currentLink().dayCounter();
         final DayCounter voldc = process.blackVolatility().currentLink().dayCounter();
 
-        /*@Spread*/ final double dividendYield = 0.5 * (
-                process.riskFreeRate().currentLink().zeroRate(
+        /*@Spread*/ final double dividendYield = 0.5 * (process.riskFreeRate().currentLink().zeroRate(
+                exercise,
+                rfdc,
+                Compounding.Continuous,
+                Frequency.NoFrequency).rate() + process.dividendYield().currentLink().zeroRate(
                         exercise,
-                        rfdc,
+                        divdc,
                         Compounding.Continuous,
-                        Frequency.NoFrequency).rate() + process.dividendYield().currentLink().zeroRate(
-                                exercise,
-                                divdc,
-                                Compounding.Continuous,
-                                Frequency.NoFrequency).rate() + volatility*volatility/6.0);
+                        Frequency.NoFrequency).rate() + volatility * volatility / 6.0);
 
         /*@Time*/ final double t_q = divdc.yearFraction(
                 process.dividendYield().currentLink().referenceDate(), exercise);
-        /*@DiscountFactor*/ final double dividendDiscount = Math.exp(-dividendYield*t_q);
+        /*@DiscountFactor*/ final double dividendDiscount = Math.exp(-dividendYield * t_q);
         /*@Real*/ final double spot = process.stateVariable().currentLink().value();
         QL.require(spot > 0.0, "negative or null underlying given"); // TODO: message
         /*@Real*/ final double forward = spot * dividendDiscount / riskFreeDiscount;
 
-        final BlackCalculator black = new BlackCalculator(payoff, forward, Math.sqrt(variance/3.0),riskFreeDiscount);
+        final BlackCalculator black = new BlackCalculator(payoff, forward, Math.sqrt(variance / 3.0), riskFreeDiscount);
         r.value = black.value();
         greeks.delta = black.delta(spot);
         greeks.gamma = black.gamma(spot);
-        greeks.dividendRho = black.dividendRho(t_q)/2.0;
+        greeks.dividendRho = black.dividendRho(t_q) / 2.0;
 
         /*@Time*/ final double t_r = rfdc.yearFraction(process.riskFreeRate().currentLink().referenceDate(),
                 a.exercise.lastDate());
@@ -141,8 +130,8 @@ public class AnalyticContinuousGeometricAveragePriceAsianEngine extends Continuo
         /*@Time*/ final double t_v = voldc.yearFraction(
                 process.blackVolatility().currentLink().referenceDate(),
                 a.exercise.lastDate());
-        greeks.vega = black.vega(t_v)/Math.sqrt(3.0) +
-        black.dividendRho(t_q)*volatility/6.0;
+        greeks.vega = black.vega(t_v) / Math.sqrt(3.0)
+                + black.dividendRho(t_q) * volatility / 6.0;
 
         try {
             greeks.theta = black.theta(spot, t_v);

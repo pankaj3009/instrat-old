@@ -32,7 +32,7 @@ class HypersphereCostFunction extends CostFunction {
     private final boolean lowerDiagonal_;
     private final Matrix targetMatrix_;
     private final Array targetVariance_;
-    private final  Matrix currentRoot_;
+    private final Matrix currentRoot_;
     private Matrix tempMatrix_, currentMatrix_;
 
     public HypersphereCostFunction(final Matrix targetMatrix, final Array targetVariance, final boolean lowerDiagonal) {
@@ -51,39 +51,50 @@ class HypersphereCostFunction extends CostFunction {
     }
 
     @Override
-    public double value(final Array x)  {
-        int i,j,k;
+    public double value(final Array x) {
+        int i, j, k;
 
         currentRoot_.fill(1.0);
         if (lowerDiagonal_) {
-            for (i=0; i<size_; i++)
-                for (k=0; k<size_; k++)
-                    if (k>i)
-                        currentRoot_.set(i,k,0);
-                    else
-                        for (j=0; j<=k; j++)
-                            if (j == k && k!=i)
-                                currentRoot_.set(i,k, currentMatrix_.get(i, k) * Math.cos(x.get(i*(i-1)/2+j)));
-                            else if (j!=i)
-                                currentRoot_.set(i,k, currentRoot_.get(i, k)*
-                                        Math.sin(x.get(i*(i-1)/2+j)));
-        } else
-            for (i=0; i<size_; i++)
-                for (k=0; k<size_; k++)
-                    for (j=0; j<=k; j++)
-                        if (j == k && k!=size_-1)
-                            currentRoot_.set(i, k, currentRoot_.get(i,k)
-                                    *Math.cos(x.get(j*size_+i)));
-                        else if (j!=size_-1)
-                            currentRoot_.set(i,k,currentRoot_.get(i, j)*Math.sin(x.get(j*size_+i)));
-        double temp, error=0;
+            for (i = 0; i < size_; i++) {
+                for (k = 0; k < size_; k++) {
+                    if (k > i) {
+                        currentRoot_.set(i, k, 0);
+                    } else {
+                        for (j = 0; j <= k; j++) {
+                            if (j == k && k != i) {
+                                currentRoot_.set(i, k, currentMatrix_.get(i, k) * Math.cos(x.get(i * (i - 1) / 2 + j)));
+                            } else if (j != i) {
+                                currentRoot_.set(i, k, currentRoot_.get(i, k)
+                                        * Math.sin(x.get(i * (i - 1) / 2 + j)));
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            for (i = 0; i < size_; i++) {
+                for (k = 0; k < size_; k++) {
+                    for (j = 0; j <= k; j++) {
+                        if (j == k && k != size_ - 1) {
+                            currentRoot_.set(i, k, currentRoot_.get(i, k)
+                                    * Math.cos(x.get(j * size_ + i)));
+                        } else if (j != size_ - 1) {
+                            currentRoot_.set(i, k, currentRoot_.get(i, j) * Math.sin(x.get(j * size_ + i)));
+                        }
+                    }
+                }
+            }
+        }
+        double temp, error = 0;
         tempMatrix_ = currentRoot_.transpose();
         currentMatrix_ = currentRoot_.mul(tempMatrix_);
-        for (i=0;i<size_;i++)
-            for (j=0;j<size_;j++) {
-                temp = currentMatrix_.get(i, j)*targetVariance_.get(i)*targetVariance_.get(j)-targetMatrix_.get(i, j);
-                error += temp*temp;
+        for (i = 0; i < size_; i++) {
+            for (j = 0; j < size_; j++) {
+                temp = currentMatrix_.get(i, j) * targetVariance_.get(i) * targetVariance_.get(j) - targetMatrix_.get(i, j);
+                error += temp * temp;
             }
+        }
         return error;
     }
 }

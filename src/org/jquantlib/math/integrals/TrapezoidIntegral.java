@@ -20,7 +20,7 @@
  When applicable, the original copyright notice follows this notice.
  */
 
-/*
+ /*
  Copyright (C) 2003 Roman Gitlin
  Copyright (C) 2003 StatPro Italia srl
 
@@ -37,7 +37,6 @@
  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  FOR A PARTICULAR PURPOSE.  See the license for more details.
  */
-
 package org.jquantlib.math.integrals;
 
 import org.jquantlib.lang.exceptions.LibraryException;
@@ -48,16 +47,25 @@ import org.jquantlib.math.Ops.DoubleOp;
  * Integral of a one-dimensional function
  *
  * <p>
- * Given a target accuracy {@latex$ \epsilon }, the integral of a function {@latex$ f } between {@latex$ a } and {@latex$ b }
- * is calculated by means of the trapezoid formula
+ * Given a target accuracy {
  *
- * {@latex[
- *    \int_{a}^{b} f \mathrm{d}x = \frac{1}{2} f(x_{0}) + f(x_{1}) + f(x_{2}) + \dots + f(x_{N-1}) + \frac{1}{2} f(x_{N})
- * }
+ * @latex$ \epsilon }, the integral of a function {
+ * @latex$ f } between {
+ * @latex$ a } and {
+ * @latex$ b } is calculated by means of the trapezoid formula
  *
- * where {@latex$ x_0 = a }, {@latex$ x_N = b }, and {@latex$ x_i = a+i \Delta x } with {@latex$ \Delta x = (b-a)/N }.
- * The number {@latex$ N } of intervals is repeatedly increased until the target accuracy is reached. \test the correctness of the
- * result is tested by checking it against known good values.
+ * {
+ * @latex[ \int_{a}^{b} f \mathrm{d}x = \frac{1}{2} f(x_{0}) + f(x_{1}) +
+ * f(x_{2}) + \dots + f(x_{N-1}) + \frac{1}{2} f(x_{N}) }
+ *
+ * where {
+ * @latex$ x_0 = a }, {
+ * @latex$ x_N = b }, and {
+ * @latex$ x_i = a+i \Delta x } with {
+ * @latex$ \Delta x = (b-a)/N }. The number {
+ * @latex$ N } of intervals is repeatedly increased until the target accuracy is
+ * reached. \test the correctness of the result is tested by checking it against
+ * known good values.
  *
  * @author Dominik Holenstein
  * @author Richard Gomes
@@ -67,38 +75,33 @@ public class TrapezoidIntegral<T extends TrapezoidIntegral.IntegrationPolicy> ex
     //
     // final protected fields
     //
-
     final protected IntegrationPolicy policy;
-
 
     //
     // public constructors
     //
-
     public TrapezoidIntegral(
             final Class<? extends TrapezoidIntegral.IntegrationPolicy> klass,
             final double accuracy,
             final int maxEvaluations) {
         super(accuracy, maxEvaluations);
-        if (klass==Default.class) {
+        if (klass == Default.class) {
             this.policy = new Default();
-        } else if (klass==MidPoint.class) {
+        } else if (klass == MidPoint.class) {
             this.policy = new MidPoint();
         } else {
             throw new LibraryException(ReflectConstants.WRONG_ARGUMENT_TYPE);
         }
     }
 
-
     //
     // overrides Integrator
     //
-
     @Override
     protected double integrate(final DoubleOp f, final double a, final double b) /* @ReadOnly */ {
         // start from the coarsest trapezoid...
         int N = 1;
-        double I = (f.op(a) + f.op(b)) * (b-a) / 2.0;
+        double I = (f.op(a) + f.op(b)) * (b - a) / 2.0;
 
         // ...and refine it
         int i = 1;
@@ -106,7 +109,7 @@ public class TrapezoidIntegral<T extends TrapezoidIntegral.IntegrationPolicy> ex
             final double newI = policy.integrate(f, a, b, I, N);
             N *= policy.nbEvalutions();
             // good enough? Also, don't run away immediately
-            if (Math.abs(I-newI) <= super.absoluteAccuracy() && i > 5) {
+            if (Math.abs(I - newI) <= super.absoluteAccuracy() && i > 5) {
                 // ok, exit
                 return newI;
             }
@@ -117,37 +120,23 @@ public class TrapezoidIntegral<T extends TrapezoidIntegral.IntegrationPolicy> ex
         throw new ArithmeticException("max number of iterations reached"); // TODO: message
     }
 
-
-
-    //
-    // protected inner interfaces
-    //
-
-    protected interface IntegrationPolicy {
-        public double integrate(final DoubleOp f, final double a, final double b, final double I, final int N) /* @ReadOnly */;
-        public int nbEvalutions() /* @ReadOnly */;
-    }
-
-
     //
     // protected static inner classes
     //
-
     public static class Default implements IntegrationPolicy {
 
         //
         // implements IntegrationPolicy
         //
-
         @Override
         public double integrate(final DoubleOp f, final double a, final double b, final double I, final int N) {
             double sum = 0.0;
-            final double dx = (b-a)/N;
-            double x = a + dx/2.0;
-            for (int i=0; i<N; x += dx, ++i) {
+            final double dx = (b - a) / N;
+            double x = a + dx / 2.0;
+            for (int i = 0; i < N; x += dx, ++i) {
                 sum += f.op(x);
             }
-            return (I + dx*sum)/2.0;
+            return (I + dx * sum) / 2.0;
         }
 
         @Override
@@ -157,23 +146,21 @@ public class TrapezoidIntegral<T extends TrapezoidIntegral.IntegrationPolicy> ex
 
     }
 
-
     public static class MidPoint implements IntegrationPolicy {
 
         //
         // implements IntegrationPolicy
         //
-
         @Override
         public double integrate(final DoubleOp f, final double a, final double b, final double I, final int N) {
             double sum = 0.0;
-            final double dx = (b-a)/N;
-            double x = a + dx/6.0;
-            final double D = 2.0*dx/3.0;
-            for (int i=0; i<N; x += dx, ++i) {
-                sum += f.op(x) + f.op(x+D);
+            final double dx = (b - a) / N;
+            double x = a + dx / 6.0;
+            final double D = 2.0 * dx / 3.0;
+            for (int i = 0; i < N; x += dx, ++i) {
+                sum += f.op(x) + f.op(x + D);
             }
-            return (I + dx*sum)/3.0;
+            return (I + dx * sum) / 3.0;
         }
 
         @Override
@@ -181,6 +168,16 @@ public class TrapezoidIntegral<T extends TrapezoidIntegral.IntegrationPolicy> ex
             return 3;
         }
 
+    }
+    //
+    // protected inner interfaces
+    //
+
+    protected interface IntegrationPolicy {
+
+        public double integrate(final DoubleOp f, final double a, final double b, final double I, final int N) /* @ReadOnly */;
+
+        public int nbEvalutions() /* @ReadOnly */;
     }
 
 }

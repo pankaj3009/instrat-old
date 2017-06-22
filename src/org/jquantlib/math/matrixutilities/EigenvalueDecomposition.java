@@ -29,63 +29,73 @@ import org.jquantlib.lang.annotation.QualityAssurance.Version;
 /**
  * Eigenvalues and eigenvectors of a real matrix.
  * <P>
- * If A is symmetric, then A = V*D*V' where the eigenvalue matrix D is diagonal and the eigenvector matrix V is orthogonal. I.e. A =
- * V.times(D.times(V.transpose())) and V.times(V.transpose()) equals the identity matrix.
+ * If A is symmetric, then A = V*D*V' where the eigenvalue matrix D is diagonal
+ * and the eigenvector matrix V is orthogonal. I.e. A =
+ * V.times(D.times(V.transpose())) and V.times(V.transpose()) equals the
+ * identity matrix.
  * <P>
- * If A is not symmetric, then the eigenvalue matrix D is block diagonal with the real eigenvalues in 1-by-1 blocks and any complex
- * eigenvalues, lambda + i*mu, in 2-by-2 blocks, [lambda, mu; -mu, lambda]. The columns of V represent the eigenvectors in the sense
- * that A*V = V*D, i.e. A.times(V) equals V.times(D). The matrix V may be badly conditioned, or even singular, so the validity of
- * the equation A = V*D*inverse(V) depends upon V.cond().
+ * If A is not symmetric, then the eigenvalue matrix D is block diagonal with
+ * the real eigenvalues in 1-by-1 blocks and any complex eigenvalues, lambda +
+ * i*mu, in 2-by-2 blocks, [lambda, mu; -mu, lambda]. The columns of V represent
+ * the eigenvectors in the sense that A*V = V*D, i.e. A.times(V) equals
+ * V.times(D). The matrix V may be badly conditioned, or even singular, so the
+ * validity of the equation A = V*D*inverse(V) depends upon V.cond().
  *
- * @note  This class is adapted from JAMA
+ * @note This class is adapted from JAMA
  * @see <a href="http://math.nist.gov/javanumerics/jama/">JAMA</a>
  *
  * @author Richard Gomes
  */
-@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = { "Richard Gomes" })
+@QualityAssurance(quality = Quality.Q1_TRANSLATION, version = Version.OTHER, reviewers = {"Richard Gomes"})
 public class EigenvalueDecomposition {
 
     //
     // private fields
     //
-
-    /** Row and column dimension (square matrix). */
+    /**
+     * Row and column dimension (square matrix).
+     */
     private final int n;
 
-    /** Symmetry flag. */
+    /**
+     * Symmetry flag.
+     */
     private boolean issymmetric;
 
-    /** Arrays for internal storage of eigenvalues. */
+    /**
+     * Arrays for internal storage of eigenvalues.
+     */
     private final double[] d, e;
 
-    /** Array for internal storage of eigenvectors. */
+    /**
+     * Array for internal storage of eigenvectors.
+     */
     private final Matrix V;
 
-    /** Array for internal storage of nonsymmetric Hessenberg form. */
+    /**
+     * Array for internal storage of nonsymmetric Hessenberg form.
+     */
     private Matrix H;
 
-    /** Working storage for nonsymmetric algorithm. */
+    /**
+     * Working storage for nonsymmetric algorithm.
+     */
     private double[] ort;
-
 
     //
     // private transient fields
     //
-
     private transient double cdivr, cdivi;
-
 
     //
     // public constructors
     //
-
     /**
      * Check for symmetry, then construct the eigenvalue decomposition
      *
      * @param A is a square matrix
      * @return Structure to access D and V.
      */
-
     public EigenvalueDecomposition(final Matrix A) {
         QL.require(A.rows() == A.cols(), Matrix.MATRIX_MUST_BE_SQUARE); // QA:[RG]::verified
 
@@ -135,7 +145,6 @@ public class EigenvalueDecomposition {
     //
     // public methods
     //
-
     /**
      * Return the eigenvector matrix
      *
@@ -184,11 +193,9 @@ public class EigenvalueDecomposition {
         return D;
     }
 
-
     //
     // private methods
     //
-
     /**
      * Symmetric Householder reduction to tridiagonal form.
      */
@@ -198,17 +205,14 @@ public class EigenvalueDecomposition {
         // Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
         // Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
         // Fortran subroutine in EISPACK.
-
         for (int j = 0; j < n; j++) {
             d[j] = V.$[V.addr.op(n - 1, j)];
         }
 
         // Householder reduction to tridiagonal form.
-
         for (int i = n - 1; i > 0; i--) {
 
             // Scale to avoid under/overflow.
-
             double scale = 0.0;
             double h = 0.0;
             for (int k = 0; k < i; k++) {
@@ -224,7 +228,6 @@ public class EigenvalueDecomposition {
             } else {
 
                 // Generate Householder vector.
-
                 for (int k = 0; k < i; k++) {
                     d[k] /= scale;
                     h += d[k] * d[k];
@@ -242,7 +245,6 @@ public class EigenvalueDecomposition {
                 }
 
                 // Apply similarity transformation to remaining columns.
-
                 for (int j = 0; j < i; j++) {
                     f = d[j];
                     V.$[V.addr.op(j, i)] = f;
@@ -276,7 +278,6 @@ public class EigenvalueDecomposition {
         }
 
         // Accumulate transformations.
-
         for (int i = 0; i < n - 1; i++) {
             V.$[V.addr.op(n - 1, i)] = V.$[V.addr.op(i, i)];
             V.$[V.addr.op(i, i)] = 1.0;
@@ -316,7 +317,6 @@ public class EigenvalueDecomposition {
         // Bowdler, Martin, Reinsch, and Wilkinson, Handbook for
         // Auto. Comp., Vol.ii-Linear Algebra, and the corresponding
         // Fortran subroutine in EISPACK.
-
         for (int i = 1; i < n; i++) {
             e[i - 1] = e[i];
         }
@@ -328,7 +328,6 @@ public class EigenvalueDecomposition {
         for (int l = 0; l < n; l++) {
 
             // Find small subdiagonal element
-
             tst1 = Math.max(tst1, Math.abs(d[l]) + Math.abs(e[l]));
             int m = l;
             while (m < n) {
@@ -340,14 +339,12 @@ public class EigenvalueDecomposition {
 
             // If m == l, d[l] is an eigenvalue,
             // otherwise, iterate.
-
             if (m > l) {
                 int iter = 0;
                 do {
                     iter = iter + 1; // (Could check iteration count here.)
 
                     // Compute implicit shift
-
                     double g = d[l];
                     double p = (d[l + 1] - g) / (2.0 * e[l]);
                     double r = Math.hypot(p, 1.0);
@@ -364,7 +361,6 @@ public class EigenvalueDecomposition {
                     f = f + h;
 
                     // Implicit QL transformation.
-
                     p = d[m];
                     double c = 1.0;
                     double c2 = c;
@@ -386,7 +382,6 @@ public class EigenvalueDecomposition {
                         d[i + 1] = h + s * (c * g + s * d[i]);
 
                         // Accumulate transformation.
-
                         for (int k = 0; k < n; k++) {
                             h = V.$[V.addr.op(k, i + 1)];
                             V.$[V.addr.op(k, i + 1)] = s * V.$[V.addr.op(k, i)] + c * h;
@@ -398,7 +393,6 @@ public class EigenvalueDecomposition {
                     d[l] = c * p;
 
                     // Check for convergence.
-
                 } while (Math.abs(e[l]) > eps * tst1);
             }
             d[l] = d[l] + f;
@@ -406,7 +400,6 @@ public class EigenvalueDecomposition {
         }
 
         // Sort eigenvalues and corresponding vectors.
-
         for (int i = 0; i < n - 1; i++) {
             int k = i;
             double p = d[i];
@@ -437,14 +430,12 @@ public class EigenvalueDecomposition {
         // by Martin and Wilkinson, Handbook for Auto. Comp.,
         // Vol.ii-Linear Algebra, and the corresponding
         // Fortran subroutines in EISPACK.
-
         final int low = 0;
         final int high = n - 1;
 
         for (int m = low + 1; m <= high - 1; m++) {
 
             // Scale column.
-
             double scale = 0.0;
             for (int i = m; i <= high; i++) {
                 scale = scale + Math.abs(H.$[H.addr.op(i, m - 1)]);
@@ -452,7 +443,6 @@ public class EigenvalueDecomposition {
             if (scale != 0.0) {
 
                 // Compute Householder transformation.
-
                 double h = 0.0;
                 for (int i = high; i >= m; i--) {
                     ort[i] = H.$[H.addr.op(i, m - 1)] / scale;
@@ -467,7 +457,6 @@ public class EigenvalueDecomposition {
 
                 // Apply Householder similarity transformation
                 // H = (I-u*u'/h)*H*(I-u*u')/h)
-
                 for (int j = m; j < n; j++) {
                     double f = 0.0;
                     for (int i = high; i >= m; i--) {
@@ -495,7 +484,6 @@ public class EigenvalueDecomposition {
         }
 
         // Accumulate transformations (Algol's ortran).
-
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 V.$[V.addr.op(i, j)] = (i == j ? 1.0 : 0.0);
@@ -546,16 +534,13 @@ public class EigenvalueDecomposition {
     }
 
     // Nonsymmetric reduction from Hessenberg to real Schur form.
-
     private void hqr2() {
 
         // This is derived from the Algol procedure hqr2,
         // by Martin and Wilkinson, Handbook for Auto. Comp.,
         // Vol.ii-Linear Algebra, and the corresponding
         // Fortran subroutine in EISPACK.
-
         // Initialize
-
         final int nn = this.n;
         int n = nn - 1;
         final int low = 0;
@@ -565,7 +550,6 @@ public class EigenvalueDecomposition {
         double p = 0, q = 0, r = 0, s = 0, z = 0, t, w, x, y;
 
         // Store roots isolated by balanc and compute matrix norm
-
         double norm = 0.0;
         for (int i = 0; i < nn; i++) {
             if (i < low | i > high) {
@@ -578,12 +562,10 @@ public class EigenvalueDecomposition {
         }
 
         // Outer loop over eigenvalue index
-
         int iter = 0;
         while (n >= low) {
 
             // Look for single small sub-diagonal element
-
             int l = n;
             while (l > low) {
                 s = Math.abs(H.$[H.addr.op(l - 1, l - 1)]) + Math.abs(H.$[H.addr.op(l, l)]);
@@ -598,7 +580,6 @@ public class EigenvalueDecomposition {
 
             // Check for convergence
             // One root found
-
             if (l == n) {
                 H.$[H.addr.op(n, n)] = H.$[H.addr.op(n, n)] + exshift;
                 d[n] = H.$[H.addr.op(n, n)];
@@ -607,7 +588,6 @@ public class EigenvalueDecomposition {
                 iter = 0;
 
                 // Two roots found
-
             } else if (l == n - 1) {
                 w = H.$[H.addr.op(n, n - 1)] * H.$[H.addr.op(n - 1, n)];
                 p = (H.$[H.addr.op(n - 1, n - 1)] - H.$[H.addr.op(n, n)]) / 2.0;
@@ -618,7 +598,6 @@ public class EigenvalueDecomposition {
                 x = H.$[H.addr.op(n, n)];
 
                 // Real pair
-
                 if (q >= 0) {
                     if (p >= 0) {
                         z = p + z;
@@ -641,7 +620,6 @@ public class EigenvalueDecomposition {
                     q = q / r;
 
                     // Row modification
-
                     for (int j = n - 1; j < nn; j++) {
                         z = H.$[H.addr.op(n - 1, j)];
                         H.$[H.addr.op(n - 1, j)] = q * z + p * H.$[H.addr.op(n, j)];
@@ -649,7 +627,6 @@ public class EigenvalueDecomposition {
                     }
 
                     // Column modification
-
                     for (int i = 0; i <= n; i++) {
                         z = H.$[H.addr.op(i, n - 1)];
                         H.$[H.addr.op(i, n - 1)] = q * z + p * H.$[H.addr.op(i, n)];
@@ -657,7 +634,6 @@ public class EigenvalueDecomposition {
                     }
 
                     // Accumulate transformations
-
                     for (int i = low; i <= high; i++) {
                         z = V.$[V.addr.op(i, n - 1)];
                         V.$[V.addr.op(i, n - 1)] = q * z + p * V.$[V.addr.op(i, n)];
@@ -665,7 +641,6 @@ public class EigenvalueDecomposition {
                     }
 
                     // Complex pair
-
                 } else {
                     d[n - 1] = x + p;
                     d[n] = x + p;
@@ -676,11 +651,9 @@ public class EigenvalueDecomposition {
                 iter = 0;
 
                 // No convergence yet
-
             } else {
 
                 // Form shift
-
                 x = H.$[H.addr.op(n, n)];
                 y = 0.0;
                 w = 0.0;
@@ -690,7 +663,6 @@ public class EigenvalueDecomposition {
                 }
 
                 // Wilkinson's original ad hoc shift
-
                 if (iter == 10) {
                     exshift += x;
                     for (int i = low; i <= n; i++) {
@@ -702,7 +674,6 @@ public class EigenvalueDecomposition {
                 }
 
                 // MATLAB's new ad hoc shift
-
                 if (iter == 30) {
                     s = (y - x) / 2.0;
                     s = s * s + w;
@@ -723,7 +694,6 @@ public class EigenvalueDecomposition {
                 iter = iter + 1; // (Could check iteration count here.)
 
                 // Look for two consecutive small sub-diagonal elements
-
                 int m = n - 2;
                 while (m >= l) {
                     z = H.$[H.addr.op(m, m)];
@@ -741,7 +711,7 @@ public class EigenvalueDecomposition {
                     }
                     if (Math.abs(H.$[H.addr.op(m, m - 1)]) * (Math.abs(q) + Math.abs(r)) < eps
                             * (Math.abs(p) * (Math.abs(H.$[H.addr.op(m - 1, m - 1)]) + Math.abs(z) + Math.abs(H.$[H.addr.op(
-                                    m + 1, m + 1)])))) {
+                            m + 1, m + 1)])))) {
                         break;
                     }
                     m--;
@@ -755,7 +725,6 @@ public class EigenvalueDecomposition {
                 }
 
                 // Double QR step involving rows l:n and columns m:n
-
                 for (int k = m; k <= n - 1; k++) {
                     final boolean notlast = (k != n - 1);
                     if (k != m) {
@@ -790,7 +759,6 @@ public class EigenvalueDecomposition {
                         r = r / p;
 
                         // Row modification
-
                         for (int j = k; j < nn; j++) {
                             p = H.$[H.addr.op(k, j)] + q * H.$[H.addr.op(k + 1, j)];
                             if (notlast) {
@@ -802,7 +770,6 @@ public class EigenvalueDecomposition {
                         }
 
                         // Column modification
-
                         for (int i = 0; i <= Math.min(n, k + 3); i++) {
                             p = x * H.$[H.addr.op(i, k)] + y * H.$[H.addr.op(i, k + 1)];
                             if (notlast) {
@@ -814,7 +781,6 @@ public class EigenvalueDecomposition {
                         }
 
                         // Accumulate transformations
-
                         for (int i = low; i <= high; i++) {
                             p = x * V.$[V.addr.op(i, k)] + y * V.$[V.addr.op(i, k + 1)];
                             if (notlast) {
@@ -830,16 +796,15 @@ public class EigenvalueDecomposition {
         } // while (n >= low)
 
         // Backsubstitute to find vectors of upper triangular form
-
-        if (norm == 0.0)
+        if (norm == 0.0) {
             return;
+        }
 
         for (n = nn - 1; n >= 0; n--) {
             p = d[n];
             q = e[n];
 
             // Real vector
-
             if (q == 0) {
                 int l = n;
                 H.$[H.addr.op(n, n)] = 1.0;
@@ -862,7 +827,6 @@ public class EigenvalueDecomposition {
                             }
 
                             // Solve real equations
-
                         } else {
                             x = H.$[H.addr.op(i, i + 1)];
                             y = H.$[H.addr.op(i + 1, i)];
@@ -877,7 +841,6 @@ public class EigenvalueDecomposition {
                         }
 
                         // Overflow control
-
                         t = Math.abs(H.$[H.addr.op(i, n)]);
                         if ((eps * t) * t > 1) {
                             for (int j = i; j <= n; j++) {
@@ -888,12 +851,10 @@ public class EigenvalueDecomposition {
                 }
 
                 // Complex vector
-
             } else if (q < 0) {
                 int l = n - 1;
 
                 // Last vector component imaginary so matrix is triangular
-
                 if (Math.abs(H.$[H.addr.op(n, n - 1)]) > Math.abs(H.$[H.addr.op(n - 1, n)])) {
                     H.$[H.addr.op(n - 1, n - 1)] = q / H.$[H.addr.op(n, n - 1)];
                     H.$[H.addr.op(n - 1, n)] = -(H.$[H.addr.op(n, n)] - p) / H.$[H.addr.op(n, n - 1)];
@@ -927,7 +888,6 @@ public class EigenvalueDecomposition {
                         } else {
 
                             // Solve complex equations
-
                             x = H.$[H.addr.op(i, i + 1)];
                             y = H.$[H.addr.op(i + 1, i)];
                             vr = (d[i] - p) * (d[i] - p) + e[i] * e[i] - q * q;
@@ -952,7 +912,6 @@ public class EigenvalueDecomposition {
                         }
 
                         // Overflow control
-
                         t = Math.max(Math.abs(H.$[H.addr.op(i, n - 1)]), Math.abs(H.$[H.addr.op(i, n)]));
                         if ((eps * t) * t > 1) {
                             for (int j = i; j <= n; j++) {
@@ -966,7 +925,6 @@ public class EigenvalueDecomposition {
         }
 
         // Vectors of isolated roots
-
         for (int i = 0; i < nn; i++) {
             if (i < low | i > high) {
                 for (int j = i; j < nn; j++) {
@@ -976,7 +934,6 @@ public class EigenvalueDecomposition {
         }
 
         // Back transformation to get eigenvectors of original matrix
-
         for (int j = nn - 1; j >= low; j--) {
             for (int i = low; i <= high; i++) {
                 z = 0.0;

@@ -12,28 +12,29 @@ import java.util.logging.Logger;
  * @author pankaj
  */
 public class BeanChildPosition implements Serializable {
-    
-private int position;
-private double price;
-private double profit;
-private int symbolid; //zero based
-private double pointValue;
-private int buildingblockSize;
-private int parentPositionPotential;
-public final Object lock=new Object();
-private final static Logger logger = Logger.getLogger(BeanChildPosition.class.getName());
+
+    private final static Logger logger = Logger.getLogger(BeanChildPosition.class.getName());
+
+    private int position;
+    private double price;
+    private double profit;
+    private int symbolid; //zero based
+    private double pointValue;
+    private int buildingblockSize;
+    private int parentPositionPotential;
+    public final Object lock = new Object();
 
     public BeanChildPosition(int id, int size) {
-        this.symbolid=id;
-        this.buildingblockSize=size;
+        this.symbolid = id;
+        this.buildingblockSize = size;
     }
-
 
     /**
      * @return the position
      */
     public synchronized int getPosition() {
-        synchronized(lock){return position;
+        synchronized (lock) {
+            return position;
         }
     }
 
@@ -41,7 +42,7 @@ private final static Logger logger = Logger.getLogger(BeanChildPosition.class.ge
      * @param position the position to set
      */
     public synchronized void setPosition(int position) {
-        synchronized(lock){
+        synchronized (lock) {
             this.position = position;
         }
     }
@@ -100,7 +101,7 @@ private final static Logger logger = Logger.getLogger(BeanChildPosition.class.ge
      */
     public void setPointValue(double pointValue) {
         this.pointValue = pointValue;
-    }   
+    }
 
     /**
      * @return the buildingblockSize
@@ -129,5 +130,5 @@ private final static Logger logger = Logger.getLogger(BeanChildPosition.class.ge
     public void setParentPositionPotential(int parentPositionPotential) {
         this.parentPositionPotential = parentPositionPotential;
     }
-    
+
 }

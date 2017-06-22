@@ -19,7 +19,6 @@
  JQuantLib is based on QuantLib. http://quantlib.org/
  When applicable, the original copyright notice follows this notice.
  */
-
 package org.jquantlib.termstructures;
 
 import java.io.Serializable;
@@ -36,9 +35,9 @@ import java.util.Comparator;
  */
 public class RateHelperSorter<T extends RateHelper> implements Comparator<T>, Serializable {
 
-	private static final long serialVersionUID = 6335152611463577317L;
+    private static final long serialVersionUID = 6335152611463577317L;
 
-	public int compare(final T h1, final T h2) /* @ReadOnly */ {
-		return h1.latestDate().compareTo(h2.latestDate());
-	}
+    public int compare(final T h1, final T h2) /* @ReadOnly */ {
+        return h1.latestDate().compareTo(h2.latestDate());
+    }
 }
