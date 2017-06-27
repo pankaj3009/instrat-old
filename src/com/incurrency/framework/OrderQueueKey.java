@@ -151,4 +151,33 @@ public class OrderQueueKey {
     public void setChildorderidint(int childorderidint) {
         this.childorderidint = childorderidint;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof OrderQueueKey)) {
+            return false;
+        }
+        OrderQueueKey oqk = (OrderQueueKey) obj;
+        return oqk.getAccountName().equals(this.getAccountName())
+                && (oqk.getChildDisplayName() == null ? this.getChildDisplayName() == null : oqk.getChildDisplayName().equals(this.getChildDisplayName()))
+                && oqk.getChildorderidint() == this.getChildorderidint()
+                && oqk.getExternalorderid() == this.getExternalorderid()
+                && (oqk.getParentDisplayName() == null ? this.getParentDisplayName() == null : oqk.getParentDisplayName().equals(this.getParentDisplayName()))
+                && oqk.getParentorderidint() == this.getParentorderidint()
+                && (oqk.getStrategy() == null ? this.getStrategy() == null : oqk.getStrategy().equals(this.getStrategy()));
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + this.childorderidint + this.externalorderid + this.parentorderidint + this.accountName == null ? 0 : this.accountName.hashCode()
+                + this.childDisplayName == null ? 0 : childDisplayName.hashCode() + this.parentDisplayName == null ? 0 : this.parentDisplayName.hashCode()
+                        + this.strategy == null ? 0 : this.strategy.hashCode();
+        return result;
+    }
+
 }

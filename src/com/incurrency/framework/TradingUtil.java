@@ -1245,7 +1245,7 @@ public class TradingUtil {
     public static int getIDFromComboLongName(String comboLongName) {
         for (BeanSymbol symb : Parameters.symbol) {
             if (symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO")) {
-                return symb.getSerialno() - 1;
+                return symb.getSerialno();
             }
         }
         return -1;
@@ -1845,7 +1845,7 @@ public class TradingUtil {
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
                 int parentEntryOrderIDInt = Trade.getParentExitOrderIDInternal(db, key);
                 for (Map.Entry<BeanSymbol, Integer> comboComponent : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-                    int childid = comboComponent.getKey().getSerialno() - 1;
+                    int childid = comboComponent.getKey().getSerialno();
                     for (String subkey : db.getKeys("opentrades")) {
                         int sparentEntryOrderIDInt = Trade.getParentEntryOrderIDInternal(db, key);
                         if (sparentEntryOrderIDInt == parentEntryOrderIDInt && !Trade.getEntrySymbol(db, subkey).equals(Trade.getParentSymbol(db, subkey))) {
@@ -2257,7 +2257,7 @@ public class TradingUtil {
         String parentDisplayName = Parameters.symbol.get(parentid).getDisplayname();
         for (String childDisplayName : childDisplayNames) {
             String searchString = "OQ:*" + c.getAccountName() + ":" + strategy + ":" + parentDisplayName + ":" + childDisplayName;
-            Set<String> oqks = db.getKeys("", searchString);
+            Set<String> oqks = db.getKeysOfList("", searchString);
             for (String oqki : oqks) {
                 OrderQueueKey oqk = new OrderQueueKey(oqki);
                 if (TradingUtil.isLiveOrder(c, oqk)) {
@@ -2343,7 +2343,7 @@ public class TradingUtil {
 
     public static Set<OrderQueueKey> getAllOrderKeys(Database db, BeanConnection c, String searchString) {
         Set<OrderQueueKey> out = new HashSet<>();
-        Set<String> oqks = db.getKeys("", searchString);
+        Set<String> oqks = db.getKeysOfList("", searchString);
         for (String oqki : oqks) { //for each orderqueuekey string
             OrderQueueKey oqk = new OrderQueueKey(oqki);
             out.add(oqk);
@@ -2394,5 +2394,12 @@ public class TradingUtil {
      */
     public static synchronized int getInternalOrderID() {
         return Algorithm.orderidint.addAndGet(1);
+    }
+    
+    public static String constructOrderKey(BeanConnection c,OrderBean ob){
+        String key="OQ:"+ob.getExternalOrderID()+":"+c.getAccountName()+":"+ob.getOrderReference()+":"+
+                ob.getParentDisplayName()+":"+ob.getChildDisplayName()+":"+
+                ob.getParentInternalOrderID()+":"+ob.getInternalOrderID();
+        return key;
     }
 }

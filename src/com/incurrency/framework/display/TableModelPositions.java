@@ -108,7 +108,6 @@ public class TableModelPositions extends AbstractTableModel {
                     } else {
                         return "";
                     }
-
                 case 2:
                     if (Parameters.connection.get(display).getPositions().size() > 0) {
                         return df.format(Parameters.connection.get(display) == null || Parameters.connection.get(display).getPositions() == null || Parameters.connection.get(display).getPositions().get(ind) == null ? 0 : Parameters.connection.get(display).getPositions().get(ind).getPrice());

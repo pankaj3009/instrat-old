@@ -54,13 +54,17 @@ public interface Database<K, V> {
 
     public void rename(String storeName, String newStoreName);
 
-    public Set<String> getKeys(String storeName, String searchString);
+    public Set<String> getMembers(String storeName, String searchString);
+
+    public Set<String> getKeysOfList(String storeName, String searchString);
 
     public OrderBean getLatestOrderBean(String key);
 
     public OrderBean getTradeBean(String key);
 
     public void insertOrder(String key, OrderBean ob);
+
+    public void updateOrderBean(String key, OrderBean ob);
     //public int loadVariables();
     //public int saveVariables();
     //public Set<String> getKeys(String pattern);

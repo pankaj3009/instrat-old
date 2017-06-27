@@ -70,7 +70,7 @@ public class SymbolFileFundamentals {
                 tempContract.setType("STK");
                 tempContract.setExchangeSymbol(exchangeSymbol);
                 tempContract.setBrokerSymbol(brokerSymbol);
-                tempContract.setSerialno(symbols.size() + 1);
+                tempContract.setSerialno(symbols.size());
                 symbols.add(tempContract);
             }
 
@@ -159,7 +159,7 @@ public class SymbolFileFundamentals {
 
             //Fix sequential serial numbers
             for (int i = 0; i < interimout.size(); i++) {
-                interimout.get(i).setSerialno(i + 1);
+                interimout.get(i).setSerialno(i);
             }
 
             //Capture Strike levels
@@ -183,7 +183,7 @@ public class SymbolFileFundamentals {
             logger.log(Level.SEVERE, null, e);
         }
         for (int i = 0; i < out.size(); i++) {
-            out.get(i).setSerialno(i + 1);
+            out.get(i).setSerialno(i);
         }
         return out;
 
@@ -209,7 +209,7 @@ public class SymbolFileFundamentals {
                 }
             }
             for (int i = 0; i < out.size(); i++) {
-                out.get(i).setSerialno(i + 1);
+                out.get(i).setSerialno(i);
             }
 
             //Capture Strike levels

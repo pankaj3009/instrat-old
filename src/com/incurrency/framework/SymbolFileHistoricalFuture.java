@@ -95,7 +95,7 @@ public class SymbolFileHistoricalFuture {
                 tempContract.setType("STK");
                 tempContract.setExchangeSymbol(exchangeSymbol);
                 tempContract.setBrokerSymbol(brokerSymbol);
-                tempContract.setSerialno(symbols.size() + 1);
+                tempContract.setSerialno(symbols.size());
                 symbols.add(tempContract);
             }
 
@@ -126,7 +126,7 @@ public class SymbolFileHistoricalFuture {
                 }
             }
             for (int i = 0; i < out.size(); i++) {
-                out.get(i).setSerialno(i + 1);
+                out.get(i).setSerialno(i);
             }
 
             //Capture Strike levels
@@ -173,7 +173,7 @@ public class SymbolFileHistoricalFuture {
                             s1.setMinsize(minsize);
                             s1.setStrategy("DATA");
                             s1.setStreamingpriority(2);
-                            s1.setSerialno(out.size() + 1);
+                            s1.setSerialno(out.size());
                             interimout.add(s1);
                         } else {
                             logger.log(Level.SEVERE, "Exchange Symbol {0} not found in IB database", new Object[]{exchangeSymbol});
@@ -184,7 +184,7 @@ public class SymbolFileHistoricalFuture {
 
             //Fix sequential serial numbers
             for (int i = 0; i < interimout.size(); i++) {
-                interimout.get(i).setSerialno(i + 1);
+                interimout.get(i).setSerialno(i);
             }
 
             //Capture Strike levels
@@ -208,7 +208,7 @@ public class SymbolFileHistoricalFuture {
             logger.log(Level.SEVERE, null, e);
         }
         for (int i = 0; i < out.size(); i++) {
-            out.get(i).setSerialno(i + 1);
+            out.get(i).setSerialno(i);
         }
         return out;
 
@@ -234,7 +234,7 @@ public class SymbolFileHistoricalFuture {
                 }
             }
             for (int i = 0; i < out.size(); i++) {
-                out.get(i).setSerialno(i + 1);
+                out.get(i).setSerialno(i);
             }
 
             //Capture Strike levels

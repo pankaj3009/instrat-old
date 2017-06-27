@@ -167,7 +167,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
     //}
 
     @Override
-    public Set<String> getKeys(String storeName, String searchString) {
+    public Set<String> getMembers(String storeName, String searchString) {
         Set<String> shortlist = new HashSet<>();
         String cursor = "";
         while (!cursor.equals("0")) {
@@ -204,6 +204,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
 
     @Override
     public void insertOrder(String key, OrderBean ob) {
+        ob.setUpdateTime();
         try (Jedis jedis = pool.getResource()) {
             Gson gson = new GsonBuilder().create();
             String string = gson.toJson(ob);
@@ -226,6 +227,35 @@ public class RedisConnect<K, V> implements Database<K, V> {
             }
         }
         return ob;
+    }
+
+    @Override
+    public void updateOrderBean(String key, OrderBean ob) {
+        try (Jedis jedis = pool.getResource()) {
+            Gson gson = new GsonBuilder().create();
+            String string = gson.toJson(ob);
+            jedis.lpush(key, string);
+        }
+
+    }
+
+    @Override
+    public Set<String> getKeysOfList(String storeName, String searchString) {
+        Set<String> shortlist = new HashSet<>();
+        String cursor = "";
+        while (!cursor.equals("0")) {
+            cursor = cursor.equals("") ? "0" : cursor;
+            try (Jedis jedis = pool.getResource()) {
+                ScanResult s = jedis.scan(cursor);
+                cursor = s.getCursor();
+                for (Object key : s.getResult()) {
+                    if (key.toString().contains(searchString)) {
+                        shortlist.add(key.toString());
+                    }
+                }
+            }
+        }
+        return shortlist;
     }
 
 }

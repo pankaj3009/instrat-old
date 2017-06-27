@@ -114,7 +114,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         }
                     }
                     this.severeEmailSent.set(Boolean.FALSE);
-                    String orderid = startingOrderID.poll(2, TimeUnit.SECONDS);
+                    String orderid = startingOrderID.poll(5, TimeUnit.SECONDS);
                     //  String orderid="1";
                     getC().getIdmanager().initializeOrderId(Utilities.getInt(orderid, this.requestIDManager.getNextOrderId()));
                     logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4},OrderID={5}",
@@ -285,7 +285,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 
         HashMap<Integer, Double> tickValue = new HashMap<>();
         for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-            int childid = entry.getKey().getSerialno() - 1;
+            int childid = entry.getKey().getSerialno();
             tickValue.put(childid, Math.abs(Parameters.symbol.get(childid).getTickSize() * entry.getValue()));
         }
         return tickValue;
@@ -384,7 +384,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     @Override
     public Order createBrokerOrder(OrderBean e) {
         Order order = new Order();
-        int size = e.getCurrentOrderSize();
+        int size = e.getOriginalOrderSize();
         EnumOrderSide ordSide = e.getOrderSide();
         EnumOrderReason reason = e.getOrderReason();
         EnumOrderType orderType = e.getOrderType();
@@ -400,6 +400,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         order.m_tif = ordValidity;
         order.m_goodAfterTime = effectiveFrom;
         order.m_displaySize = e.getDisplaySize();
+        order.m_totalQuantity = e.getOriginalOrderSize();
 
         switch (orderType) {
             case MKT:
@@ -433,7 +434,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         }
 
         order.m_orderRef = orderRef;
-        order.m_totalQuantity = size;
         order.m_account = getC().getAccountName().toUpperCase();
         order.m_transmit = true;
         //order.m_tif = validity; //All orders go as DAY orders after expireminutes logic was removed
@@ -458,7 +458,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         double pairPrice = 0;
         int i = 0;
         for (Map.Entry<BeanSymbol, Integer> entry : combo.entrySet()) {
-            pairPrice = pairPrice + limitPrices.get(entry.getKey().getSerialno() - 1) * entry.getValue();
+            pairPrice = pairPrice + limitPrices.get(entry.getKey().getSerialno()) * entry.getValue();
             i = i + 1;
         }
         return pairPrice;
@@ -490,11 +490,11 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         } else {
             for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(id).getCombo().entrySet()) { //ordering of orders and combo should be the same. This appears to be a correct assumption
                 Contract contract = new Contract();
-                if (Parameters.symbol.get(entry.getKey().getSerialno() - 1).getContractID() > 0) {
-                    contract.m_conId = Parameters.symbol.get(entry.getKey().getSerialno() - 1).getContractID();
+                if (Parameters.symbol.get(entry.getKey().getSerialno()).getContractID() > 0) {
+                    contract.m_conId = Parameters.symbol.get(entry.getKey().getSerialno()).getContractID();
                 }
-                contract.m_currency = Parameters.symbol.get(entry.getKey().getSerialno() - 1).getCurrency();
-                contract.m_exchange = Parameters.symbol.get(entry.getKey().getSerialno() - 1).getExchange();
+                contract.m_currency = Parameters.symbol.get(entry.getKey().getSerialno()).getCurrency();
+                contract.m_exchange = Parameters.symbol.get(entry.getKey().getSerialno()).getExchange();
                 if (Parameters.symbol.get(id).getBrokerSymbol() != null) {
                     contract.m_symbol = Parameters.symbol.get(id).getBrokerSymbol();
                 }
@@ -549,11 +549,14 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             if (c.getReqHandle().getHandle()) {
                 int mOrderID = order.m_orderId == 0 ? c.getIdmanager().getNextOrderId() : order.m_orderId;
                 event.put("ExternalOrderID", String.valueOf(mOrderID));
+                order.m_orderId = mOrderID;
                 int parentid = event.getParentSymbolID();
                 //save orderIDs at two places
                 //1st location
-                event.put("OrderTime", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
-                event.put("OrderSize", String.valueOf(order.m_totalQuantity));
+                event.setOrderTime();
+                event.setOriginalOrderSize(order.m_totalQuantity);
+//                event.put("OrderTime", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
+//                event.put("OrderSize", String.valueOf(order.m_totalQuantity));
                 int displaySize = 0;
                 int value = event.getMaximumOrderValue();
                 double bidPrice = Parameters.symbol.get(parentid).getBidPrice();
@@ -571,7 +574,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 }
                 double impactCost = Math.abs((askPrice - bidPrice) * 2 / (askPrice + bidPrice));
                 double impactCostThreshold = event.getMaxPermissibleImpactCost();
-                if (displaySize > 0 && (impactCostThreshold == 0 || impactCost < impactCostThreshold)) {
+                if (displaySize > 0 && impactCostThreshold!=0 && impactCost > impactCostThreshold) {
                     double rand = random.nextGaussian();
                     displaySize = (int) (displaySize * rand);
                     displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
@@ -580,23 +583,22 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 logger.log(Level.FINE, "500,DisplaySizeSet,{0}", new Object[]{displaySize});
                 order.m_displaySize = displaySize;
                 //event.put("DisplaySize",String.valueOf(order.m_displaySize));
-                boolean singlelegorder = TradingUtil.isSyntheticSymbol(event.getParentSymbolID());
+                boolean singlelegorder = !TradingUtil.isSyntheticSymbol(event.getParentSymbolID());
                 if (singlelegorder) {
                     if (event.getChildSymbolID() == 0) {
-                        event.put("ChildDisplayName", Parameters.symbol.get(parentid).getDisplayname());
+                        event.setChildDisplayName(Parameters.symbol.get(parentid).getDisplayname());
                     }
-                    event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
-                    event.put("LimitPrice", String.valueOf(order.m_lmtPrice));
-                    event.put("TriggerPrice", String.valueOf(order.m_auxPrice));
-                    event.put("OrderStatus", "SUBMITTED");
+                    event.setCurrentOrderSize(order.m_totalQuantity);
+                    event.setLimitPrice(order.m_lmtPrice);
+                    event.setTriggerPrice(order.m_auxPrice);
+                    event.setOrderStatus(EnumOrderStatus.SUBMITTED);
                     ArrayList<Contract> contracts = c.getWrapper().createContract(event.getChildSymbolID());
                     if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0 && !event.getOrderStage().equals(EnumOrderStage.AMEND)) {
-                        String key = "OQ:*" + c.getAccountName() + ":" + event.getOrderReference() + ":" + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":" + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
-                        event.put("OrderStage", "INIT");
-                        event.put("CurrentFillSize", "0");
-                        order.m_totalQuantity = Math.min(order.m_displaySize, (event.getOriginalOrderSize() - event.getTotalFillSize()));
-                        event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
-                        int connectionid = Parameters.connection.indexOf(this.getC());
+                        event.setOrderStage(EnumOrderStage.INIT);
+                        event.setCurrentFillSize(0);
+//                        order.m_totalQuantity = Math.min(order.m_displaySize, (event.getOriginalOrderSize() - event.getTotalFillSize()));
+//                        event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
+//                        int connectionid = Parameters.connection.indexOf(this.getC());
                         logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize())});
                         if (Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
                             double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), event.getOrderSide(), oms.tickSize, event.getOrderType());
@@ -723,6 +725,11 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 }
             }
         }
+        String key = "OQ:" + event.getExternalOrderID() + ":" + c.getAccountName() + ":" + event.getOrderReference() + ":"
+                + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":"
+                + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
+        Algorithm.db.insertOrder(key, event);
+        c.setOrder(new OrderQueueKey(key), event);
 
         return orderids;
     }
@@ -762,6 +769,12 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     public void cancelOrder(BeanConnection c, OrderBean ob) {
         if (!ob.isCancelRequested()) {
             ob.put("CancelRequested", "TRUE");
+            String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
+                    + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
+                    + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
+            Algorithm.db.insertOrder(key, ob);
+            c.setOrder(new OrderQueueKey(key), ob);
+
             if (ob.getExternalOrderID() > 0) {
                 this.eClientSocket.cancelOrder(ob.getExternalOrderID());
                 logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
@@ -774,6 +787,11 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 OrderBean obvi = c.getOrders().get(oqki).get(obindex);
                 if (!obvi.isCancelRequested() && obvi.getExternalOrderID() > 0) {
                     this.eClientSocket.cancelOrder(obvi.getExternalOrderID());
+                    key = "OQ:" + obvi.getExternalOrderID() + ":" + c.getAccountName() + ":" + obvi.getOrderReference() + ":"
+                            + obvi.getParentDisplayName() + ":" + obvi.getChildDisplayName() + ":"
+                            + obvi.getParentInternalOrderID() + ":" + obvi.getInternalOrderID();
+                    Algorithm.db.insertOrder(key, obvi);
+                    c.setOrder(new OrderQueueKey(key), obvi);
                     logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
                             new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
 
@@ -929,7 +947,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 boolean snapshot = false;
                 boolean proceed = true;
                 int serialno = requestDetails.get(tickerId) != null ? (int) requestDetails.get(tickerId).symbol.getSerialno() : 0;
-                int id = serialno - 1;
+                int id = serialno;
                 if (requestDetails.get(tickerId) != null) {
                     snapshot = requestDetails.get(tickerId).requestType == EnumRequestType.SNAPSHOT ? true : false;
                 } else {
@@ -999,7 +1017,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         try {
             boolean proceed = true;
             int serialno = requestDetails.get(tickerId) != null ? (int) requestDetails.get(tickerId).symbol.getSerialno() : 0;
-            int id = serialno - 1;
+            int id = serialno;
             boolean snapshot = false;
             if (requestDetails.get(tickerId) != null) {
                 snapshot = requestDetails.get(tickerId).requestType == EnumRequestType.SNAPSHOT ? true : false;
@@ -1094,7 +1112,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     if (r != null) {
                         r.requestStatus = EnumRequestStatus.SERVICED;
                     }
-                    int id = serialno - 1;
+                    int id = serialno;
                     if (id >= 0) {
                         if (field == TickType.BID_SIZE) {
                             Parameters.symbol.get(id).setBidSize(size);
@@ -1156,7 +1174,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         try {
             boolean proceed = true;
             int serialno = requestDetails.get(tickerId) != null ? (int) requestDetails.get(tickerId).symbol.getSerialno() : 0;
-            int id = serialno - 1;
+            int id = serialno;
 
             boolean snapshot = false;
             if (requestDetails.get(tickerId) != null) {
@@ -1214,7 +1232,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             if (r != null) {
                 r.requestStatus = EnumRequestStatus.SERVICED;
             }
-            int id = serialno - 1;
+            int id = serialno;
             if (id >= 0) {
                 switch (field) {
                     case 10:
@@ -1252,7 +1270,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 } else {
                     boolean proceed = true;
                     int serialno = requestDetails.get(tickerId) != null ? (int) requestDetails.get(tickerId).symbol.getSerialno() : 0;
-                    int id = serialno - 1;
+                    int id = serialno;
                     boolean snapshot = false;
                     if (requestDetails.get(tickerId) != null) {
                         snapshot = requestDetails.get(tickerId).requestType == EnumRequestType.SNAPSHOT ? true : false;
@@ -1310,7 +1328,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         try {
             boolean proceed = true;
             int serialno = requestDetails.get(tickerId) != null ? (int) requestDetails.get(tickerId).symbol.getSerialno() : 0;
-            int id = serialno - 1;
+            int id = serialno;
             boolean snapshot = false;
             if (requestDetails.get(tickerId) != null) {
                 snapshot = requestDetails.get(tickerId).requestType == EnumRequestType.SNAPSHOT ? true : false;
@@ -1431,7 +1449,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         try {
             //System.out.println("orderid:"+orderId);
             //  c.getIdmanager().initializeOrderId(orderId);
-            startingOrderID.offer(String.valueOf(orderId));
+            startingOrderID.offer(String.valueOf(orderId), 5, TimeUnit.SECONDS);
             Thread.yield();
         } catch (Exception ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -1449,7 +1467,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             if (r != null) {
                 r.requestStatus = EnumRequestStatus.SERVICED;
             }
-            int id = serialno - 1;
+            int id = serialno;
             logger.log(Level.INFO, "402,ContractDetailsReceived,{0}:{1}:{2}:{3}:{4},ContractID={5}:MinTick:{6}",
                     new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), -1, -1, String.valueOf(contractDetails.m_summary.m_conId), contractDetails.m_minTick});
             Parameters.symbol.get(id).setTickSize(contractDetails.m_minTick);
@@ -1566,7 +1584,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             } else {
                 logger.log(Level.INFO, "Request ID not found, requestID:{0},serialno:{1}", new Object[]{reqId, serialno});
             }
-            int id = serialno - 1;
+            int id = serialno;
             if (requestDetails.get(reqId) == null) {
                 //System.out.println("NULL");
             }
@@ -1683,7 +1701,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             if (r != null) {
                 r.requestStatus = EnumRequestStatus.SERVICED;
             }
-            int id = serialno - 1;
+            int id = serialno;
             //System.out.println("RealTime Bar: Symbol:"+Parameters.symbol.get(id).getSymbol() +"timeMS: "+time*1000+ "time: "+DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", time*1000) +" volume:"+volume);
             if (id >= 0) {
                 //Parameters.symbol.get(id).getFiveSecondBars().setFiveSecOHLC(time, open, high, low, close, volume);

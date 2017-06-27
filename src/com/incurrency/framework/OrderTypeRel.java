@@ -306,7 +306,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
                                 //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                 oms.orderReceived(ob);
-
                             }
                             break;
                         case SHORT:

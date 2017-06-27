@@ -16,13 +16,12 @@ import redis.clients.jedis.JedisPubSub;
 public class RedisSubscribe extends JedisPubSub {
 
     private static final Logger logger = Logger.getLogger(RedisSubscribe.class.getName());
-    public static TradingEventSupport tes;
+    public static TradingEventSupport tes = new TradingEventSupport();
     ExecutorService taskPool;
     final String topic;
 
     public RedisSubscribe(String topic) {
         this.topic = topic;
-        tes = new TradingEventSupport();
         if (globalProperties.getProperty("threadlimit") != null) {
             int limit = Integer.valueOf(globalProperties.getProperty("threadlimit").toString().trim());
             taskPool = Executors.newFixedThreadPool(limit);

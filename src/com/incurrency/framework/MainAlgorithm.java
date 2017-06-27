@@ -432,7 +432,7 @@ public class MainAlgorithm extends Algorithm {
     private void subscribeMarketData() {
         //Request Market Data
         Collections.sort(Parameters.symbol, new BeanSymbolCompare()); //sorts symbols in order of preference streaming priority. low priority is higher
-        int serialno = 1;
+        int serialno = 0;
         for (BeanSymbol s : Parameters.symbol) {
             s.setSerialno(serialno);
             serialno = serialno + 1;

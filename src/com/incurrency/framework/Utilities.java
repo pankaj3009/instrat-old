@@ -152,7 +152,7 @@ public class Utilities {
 
     public static void printSymbolsToFile(List<BeanSymbol> symbolList, String fileName, boolean printLastLine) {
         for (int i = 0; i < symbolList.size(); i++) {
-            symbolList.get(i).setSerialno(i + 1);
+            symbolList.get(i).setSerialno(i);
         }
 
         //now write data to file
@@ -640,7 +640,7 @@ public class Utilities {
         HashSet<String> temp = new HashSet<>();;
         HashMap<Integer, BeanPosition> position = new HashMap<>();
         for (BeanSymbol s : symbols) {
-            position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, strategy));
+            position.put(s.getSerialno(), new BeanPosition(s.getSerialno(), strategy));
         }
         for (String key : db.getKeys("opentrades_" + strategy)) {
             if (key.contains("_" + strategy)) {
@@ -1596,7 +1596,7 @@ public class Utilities {
             String oi = option == null ? "" : option;
             if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei) == 0
                     && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
-                return symb.getSerialno() - 1;
+                return symb.getSerialno();
             }
         }
         return -1;
@@ -1617,7 +1617,7 @@ public class Utilities {
             String oi = option == null ? "" : option;
             if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei) == 0
                     && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
-                return symb.getSerialno() - 1;
+                return symb.getSerialno();
             }
         }
         return -1;
@@ -1646,7 +1646,7 @@ public class Utilities {
             String o = symb.getOption() == null ? "" : symb.getOption();
             if (s.compareToIgnoreCase(si) == 0 && t.compareToIgnoreCase(ti) == 0 && e.compareToIgnoreCase(ei) == 0
                     && r.compareToIgnoreCase(ri) == 0 && o.compareToIgnoreCase(oi) == 0) {
-                return symb.getSerialno() - 1;
+                return symb.getSerialno();
             }
         }
         return -1;
@@ -1665,7 +1665,7 @@ public class Utilities {
                 for (BeanSymbol symb : symbols) {
                     //if (symb.getDisplayname().equals(displayName) || symb.getDisplayname().replaceAll("[^A-Za-z0-9\\-\\_]","").equals(displayName)) {
                     if (symb.getDisplayname().equals(displayName)) {
-                        return symb.getSerialno() - 1;
+                        return symb.getSerialno();
                     }
                 }
             }
@@ -1684,7 +1684,7 @@ public class Utilities {
         if (subStringDisplay != null) {
             for (BeanSymbol symb : symbols) {
                 if (symb.getDisplayname().toLowerCase().contains(subStringDisplay.toLowerCase()) && symb.getType().equalsIgnoreCase(type)) {
-                    return symb.getSerialno() - 1;
+                    return symb.getSerialno();
                 }
             }
         }
@@ -1961,7 +1961,7 @@ public class Utilities {
         String underlying = symbols.get(id).getDisplayname().split("_")[0];
         for (BeanSymbol s : Parameters.symbol) {
             if (s.getDisplayname().contains(underlying) && s.getType().equals("OPT") && s.getRight().equals(right) && s.getOption().equals(strikePrice) && s.getExpiry().equals(expiry)) {
-                return s.getSerialno() - 1;
+                return s.getSerialno();
             }
         }
         return -1;
@@ -1988,12 +1988,12 @@ public class Utilities {
             s.setStrategy("");
             //s.setMinsize(id);
             s.setDisplayname(ul.getExchangeSymbol() + "_" + "OPT" + "_" + expiry + "_" + right + "_" + strikePrice);
-            s.setSerialno(Parameters.symbol.size() + 1);
+            s.setSerialno(Parameters.symbol.size());
             s.setAddedToSymbols(true);
             synchronized (symbols) {
                 symbols.add(s);
             }
-            return s.getSerialno() - 1;
+            return s.getSerialno();
         } else {
             return -1; //no strike inserted
         }
@@ -2021,12 +2021,12 @@ public class Utilities {
                 s.setStrategy("");
                 s.setUnderlyingID(futureid);
                 s.setDisplayname(exchangeSymbol + "_OPT_" + expiry + "_" + right + "_" + strike);
-                s.setSerialno(Parameters.symbol.size() + 1);
+                s.setSerialno(Parameters.symbol.size());
                 s.setAddedToSymbols(true);
                 synchronized (symbols) {
                     symbols.add(s);
                 }
-                return s.getSerialno() - 1;
+                return s.getSerialno();
             }
         }
         return -1;
@@ -2044,7 +2044,7 @@ public class Utilities {
             for (BeanSymbol s : symbols) {
                 if (s.getBrokerSymbol().equals(ref.getBrokerSymbol()) && s.getType().equals(type)) {
                     if ((ref.getRight() == null && s.getRight() == null) || (ref.getRight().equals(s.getRight()))) {
-                        tempSymbols.add(s.getSerialno() - 1);
+                        tempSymbols.add(s.getSerialno());
                     }
                 }
             }
@@ -2379,6 +2379,8 @@ public class Utilities {
                         }
                     }
                 }
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, null, e);
             }
         }
         return shortlistedkey;

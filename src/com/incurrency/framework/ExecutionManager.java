@@ -382,7 +382,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 //                    p.setUnrealizedPNLPriorDay(p.getPosition() * (mtmPrice - p.getPrice()));
                     //add childPositions and set it to null
                     for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-                        p.getChildPosition().add(new BeanChildPosition(entry.getKey().getSerialno() - 1, entry.getValue()));
+                        p.getChildPosition().add(new BeanChildPosition(entry.getKey().getSerialno(), entry.getValue()));
                     }
                 }
             }
@@ -462,7 +462,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         //for each connection eligible for trading
         // System.out.println(Thread.currentThread().getName());
         try {
-            if (event.get("OrderReference").compareToIgnoreCase(orderReference) == 0) {
+            if (event.getOrderReference().compareToIgnoreCase(orderReference) == 0) {
                 //we first handle initial orders given by EnumOrderStage=INIT
                 if (EnumOrderStage.valueOf(event.get("OrderStage")) == EnumOrderStage.INIT) {
                     int id = event.getParentSymbolID();
@@ -719,7 +719,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 //    }
     private ArrayList<OrderBean> getExternalOpenOrders(BeanConnection c, String searchString, EnumOrderSide orderSide) {
         ArrayList<OrderBean> out = new ArrayList<>();
-        Set<String> oqks = db.getKeys("", searchString);
+        Set<String> oqks = db.getKeysOfList("", searchString);
         for (String oqki : oqks) {
             OrderQueueKey oqk = new OrderQueueKey(oqki);
             ArrayList<OrderBean> oqv = c.getOrders().get(oqk);
@@ -949,8 +949,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 Set<OrderQueueKey> oqks = TradingUtil.getAllOrderKeys(db, c, "OQ:" + orderid + ":" + c.getAccountName() + ":");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
-                        int index = c.getOrders().get(oqk).size() - 1;
-                        OrderBean ob = c.getOrders().get(oqk).get(index);
+                        OrderBean ob = c.getOrderBean(oqk);
                         if (ob != null && ob.getOrderReference().compareToIgnoreCase(orderReference) == 0) {
                             int parentid = ob.getParentSymbolID();
                             int childid = ob.getChildSymbolID();
@@ -1155,7 +1154,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int stubSize = 0;
 
         for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-            int id = entry.getKey().getSerialno() - 1;
+            int id = entry.getKey().getSerialno();
             if (id == childid) {//get child expected position
                 for (BeanChildPosition cp : p.getChildPosition()) {
                     if (cp.getSymbolid() == childid) {
@@ -1180,11 +1179,26 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             int internalorderid = ob.getInternalOrderID();
             //if this was a requested cancellation, fire any event if needed
             int connectionid = Parameters.connection.indexOf(c);
+            if(ob.linkedActionExists()){
+                ArrayList<EnumOrderStatus>os=ob.getLinkStatusTrigger();
+                ArrayList<Integer> oid=ob.getLinkInternalOrderID();
+                int i=0;
+                for(EnumOrderStatus s:os){
+                    String key="OQ:*:"+oid.get(i)+":"+oid.get(i);
+                    Set<OrderQueueKey>oqks=TradingUtil.getAllOrderKeys(db, c, key);
+                    for(OrderQueueKey oqki:oqks){
+                        OrderBean obi=c.getOrderBean(oqki);
+                        if(obi.getOrderStatus())
+                    }
+                }
+                
+            }
             synchronized (lockLinkedAction) {
                 ArrayList<LinkedAction> cancelledOrders = (ArrayList<LinkedAction>) getCancellationRequestsForTracking().get(connectionid).clone();
                 ArrayList<LinkedAction> itemsToRemove = new ArrayList<>();
                 ArrayList<LinkedAction> actionsToFire = new ArrayList<>();
                 int i = 0;
+                String[] linkedActions=ob.getLinkDelay()
                 for (LinkedAction f : cancelledOrders) {
                     if (f.orderID == orderid && i == 0 && (ob.getOrderStatus().equals(EnumOrderStatus.CANCELLEDNOFILL) || ob.getOrderStatus().equals(EnumOrderStatus.CANCELLEDPARTIALFILL) || ob.getOrderStatus().equals(EnumOrderStatus.COMPLETEFILLED))) { //only fire one linkedaction at one time.
                         new java.util.Timer().schedule(
@@ -1245,7 +1259,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private synchronized void removeLinkedActions(BeanConnection c, OrderBean ob) {
         int orderid = ob.getExternalOrderID();
         if (orderid >= 0) {
-            int parentid = ob.getParentSymbolID() - 1;
+            int parentid = ob.getParentSymbolID();
             int internalorderid = ob.getInternalOrderID();
             //if this was a requested cancellation, fire any event if needed
             int connectionid = Parameters.connection.indexOf(c);
@@ -1287,7 +1301,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private synchronized void removeLinkedActions(BeanConnection c, OrderBean ob, EnumLinkedAction f) {
         int orderid = ob.getExternalOrderID();
         if (orderid >= 0) {
-            int parentid = ob.getParentSymbolID() - 1;
+            int parentid = ob.getParentSymbolID();
             int internalorderid = ob.getInternalOrderID();
             //if this was a requested cancellation, fire any event if needed
             int connectionid = Parameters.connection.indexOf(c);
@@ -1512,7 +1526,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
     public Boolean zilchOpenOrders(BeanConnection c, int id, String strategy) {
         String searchString = "OQ:*" + c.getAccountName() + ":" + strategy + ":" + Parameters.symbol.get(id).getDisplayname();
-        Set<String> oqks = db.getKeys("", searchString);
+        Set<String> oqks = db.getKeysOfList("", searchString);
         for (String oqki : oqks) {
             OrderQueueKey oqk = new OrderQueueKey(oqki);
             if (TradingUtil.isLiveOrder(c, oqk)) {
@@ -1545,7 +1559,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
      * @param searchString
      */
     private void cancelOpenOrders(BeanConnection c, String searchString) {
-        Set<String> oqks = db.getKeys("", searchString);
+        Set<String> oqks = db.getKeysOfList("", searchString);
         for (String oqki : oqks) { //for each orderqueuekey string
             OrderQueueKey oqk = new OrderQueueKey(oqki);
             if (TradingUtil.isLiveOrder(c, oqk)) { //if the order is live
@@ -1566,8 +1580,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private boolean updateFilledOrders(BeanConnection c, OrderBean ob, int filled, double avgFillPrice, double lastFillPrice) {
         int orderid = ob.getExternalOrderID();
         int internalorderid = ob.getInternalOrderID();
-        int parentid = ob.getParentSymbolID() - 1;
-        int childid = ob.getChildSymbolID() - 1;
+        int parentid = ob.getParentSymbolID();
+        int childid = ob.getChildSymbolID();
         boolean combo = parentid != childid;
         String strategy = ob.getOrderReference();
         Index ind = new Index(strategy.toLowerCase(), parentid);
@@ -1603,7 +1617,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             BeanPosition p = c.getPositions().get(ind) == null ? new BeanPosition() : c.getPositions().get(ind);
             if (c.getPositions().get(ind) == null) {//add combos legs
                 for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-                    p.getChildPosition().add(new BeanChildPosition(entry.getKey().getSerialno() - 1, entry.getValue()));
+                    p.getChildPosition().add(new BeanChildPosition(entry.getKey().getSerialno(), entry.getValue()));
                 }
             }
             p.setSymbolid(parentid);
@@ -1626,6 +1640,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 p.setPosition(origposition + fill);
                 c.getPositions().put(ind, p);
                 ob.setCurrentFillSize(filled);
+                String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
+                        + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
+                        + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
+                Algorithm.db.insertOrder(key, ob);
+                c.setOrder(new OrderQueueKey(key), ob);
             } else {
                 //3b. Update combo position
                 ArrayList startingLowerBoundPosition = lowerBoundParentPosition(p);
@@ -1654,14 +1673,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 //3b.2 Update Parent Legs
                 ArrayList lowerBoundPosition = lowerBoundParentPosition(p);
                 ArrayList upperBoundPosition = upperBoundParentPosition(p);
-                OrderBean pob = TradingUtil.getSyntheticOrder(db, c, ob);
-                int parentNewPosition = pob.getOrderSide().equals(EnumOrderSide.BUY) || pob.getOrderSide().equals(EnumOrderSide.SHORT) ? (int) lowerBoundPosition.get(0) : (int) upperBoundPosition.get(0);
+                OrderBean obp = TradingUtil.getSyntheticOrder(db, c, ob);
+                int parentNewPosition = obp.getOrderSide().equals(EnumOrderSide.BUY) || obp.getOrderSide().equals(EnumOrderSide.SHORT) ? (int) lowerBoundPosition.get(0) : (int) upperBoundPosition.get(0);
                 if (parentNewPosition != p.getPosition()) {//there is a combo parent fill
                     int origposition = p.getPosition();
                     int parentfill = parentNewPosition - p.getPosition();
                     double parentfillprice = 0D;
                     double positionPrice = p.getPrice();
-                    if (pob.getOrderSide().equals(EnumOrderSide.BUY) || pob.getOrderSide().equals(EnumOrderSide.SHORT)) {
+                    if (obp.getOrderSide().equals(EnumOrderSide.BUY) || obp.getOrderSide().equals(EnumOrderSide.SHORT)) {
                         parentfillprice = ((double) lowerBoundPosition.get(1) * (int) lowerBoundPosition.get(0) - p.getPosition() * p.getPrice()) / parentfill;
                         positionPrice = (double) lowerBoundPosition.get(1);
                     } else {
@@ -1679,6 +1698,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     p.setPointValue(1);
                     p.setProfit(realizedPL);
                 }
+                String key = "OQ:" + obp.getExternalOrderID() + ":" + c.getAccountName() + ":" + obp.getOrderReference() + ":"
+                        + obp.getParentDisplayName() + ":" + obp.getChildDisplayName() + ":"
+                        + obp.getParentInternalOrderID() + ":" + obp.getInternalOrderID();
+                Algorithm.db.insertOrder(key, obp);
+                c.setOrder(new OrderQueueKey(key), obp);
             }
 
             if (combo) {
@@ -1720,6 +1744,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
             //For exits we send incremental fill = abs(fill) as tradeupdate ** for exits only ** aggregates fills.
             //For entry, there each fill with the same internal order id is updated.
+            String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
+                    + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
+                    + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
+            Algorithm.db.insertOrder(key, ob);
+            c.setOrder(new OrderQueueKey(key), ob);
+
             updateTrades(c, ob, p, tradeFill, avgFillPrice);
             if (ob.getOrderSide() == EnumOrderSide.SELL || ob.getOrderSide() == EnumOrderSide.COVER) {
                 //if (fill != 0 && ((ob.getChildFillSize()==ob.getChildOrderSize())||(ob.getParentFillSize()==ob.getParentOrderSize()))) { //do not reduce open position count if duplicate message, in which case fill == 0
@@ -1773,6 +1803,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 logger.log(Level.INFO, "206,OpenPosition,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + openpositioncount});
 
             }
+            String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
+                    + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
+                    + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
+            Algorithm.db.insertOrder(key, ob);
+            c.setOrder(new OrderQueueKey(key), ob);
+
         }
 
         //Process combo stubs
@@ -1849,7 +1885,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (c.getPositions().get(ind) == null) {
                 //add combos information 
                 for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-                    p.getChildPosition().add(new BeanChildPosition(entry.getKey().getSerialno() - 1, entry.getValue()));
+                    p.getChildPosition().add(new BeanChildPosition(entry.getKey().getSerialno(), entry.getValue()));
                 }
             }
 
@@ -1873,6 +1909,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 p.setStrategy(strategy);
                 c.getPositions().put(ind, p);
                 ob.setCurrentFillSize(filled);
+                String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
+                        + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
+                        + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
+                Algorithm.db.insertOrder(key, ob);
+                c.setOrder(new OrderQueueKey(key), ob);
             } else {
                 //3b. Update Combo Position
                 ArrayList startingLowerBoundPosition = lowerBoundParentPosition(p);
@@ -1925,7 +1966,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 }
                 if (TradingUtil.getLinkedOrderIds(orderid, c).size() > 0) {
                     obp.setOrderStatus(EnumOrderStatus.PARTIALFILLED);
-
+                    String key = "OQ:" + obp.getExternalOrderID() + ":" + c.getAccountName() + ":" + obp.getOrderReference() + ":"
+                            + obp.getParentDisplayName() + ":" + obp.getChildDisplayName() + ":"
+                            + obp.getParentInternalOrderID() + ":" + obp.getInternalOrderID();
+                    Algorithm.db.insertOrder(key, obp);
+                    c.setOrder(new OrderQueueKey(key), obp);
                 }
                 // Moved check for setting childorderstatus = COMPLETEFILLED to later in the code
 
@@ -1955,6 +2000,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
             //For exits we send incremental fill = abs(fill) as tradeupdate ** for exits only ** aggregates fills.
             //For entry, there each fill with the same internal order id is updated.
+            String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
+                    + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
+                    + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
+            Algorithm.db.insertOrder(key, ob);
+            c.setOrder(new OrderQueueKey(key), ob);
+
             updateTrades(c, ob, p, Math.abs(fill), avgFillPrice);
             //if this was a requested cancellation, fire any event if needed
             fireLinkedActions(c, ob);
@@ -1965,8 +2016,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private boolean updateTrades(BeanConnection c, OrderBean ob, BeanPosition p, int filled, double avgFillPrice) {
         try {
             boolean exitCompleted = false;
-            int parentid = ob.getParentSymbolID() - 1;
-            int childid = ob.getChildSymbolID() - 1;
+            int parentid = ob.getParentSymbolID();
+            int childid = ob.getChildSymbolID();
             int orderid = ob.getExternalOrderID();
             int parentInternalOrderIDEntry;
             Index ind = new Index(orderReference, parentid);
@@ -2156,7 +2207,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (orderSize == 0) { //run this condition just once
                 orderSize = obp.getOrderSide().equals(EnumOrderSide.BUY) || obp.getOrderSide().equals(EnumOrderSide.COVER) ? ob.getCurrentOrderSize() : -ob.getCurrentOrderSize();
             }
-            int id = ob.getChildSymbolID() - 1;
+            int id = ob.getChildSymbolID();
             int last = 0;
             int current = 0;
             double lastfillprice = 0D;
@@ -2173,7 +2224,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int maxcombosize = Integer.MAX_VALUE;
         int mincombosize = Integer.MIN_VALUE;
         for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-            int childid = entry.getKey().getSerialno() - 1;
+            int childid = entry.getKey().getSerialno();
             if (orderSize > 0) {
                 maxcombosize = Math.min(maxcombosize, fill.get(childid) / entry.getValue());
             } else if (orderSize < 0) {
@@ -2186,7 +2237,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         double comboprice = 0;
         if (combosize != 0) {
             for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(parentid).getCombo().entrySet()) {
-                int childid = entry.getKey().getSerialno() - 1;
+                int childid = entry.getKey().getSerialno();
                 comboprice = comboprice + entry.getValue() * fillprice.get(childid);
             }
             //comboprice = comboprice / Math.abs(combosize);
@@ -2215,8 +2266,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int baselineSize = ob.getCurrentOrderSize();
         HashMap<Integer, Integer> comboChildFillSize = new HashMap();
         for (Map.Entry<BeanSymbol, Integer> entry : Parameters.symbol.get(ob.getParentSymbolID()).getCombo().entrySet()) {
-            comboSpecs.put(entry.getKey().getSerialno() - 1, entry.getValue());
-            comboChildFillSize.put(entry.getKey().getSerialno() - 1, entry.getValue() * baselineSize);
+            comboSpecs.put(entry.getKey().getSerialno(), entry.getValue());
+            comboChildFillSize.put(entry.getKey().getSerialno(), entry.getValue() * baselineSize);
         }
         synchronized (c.lockOrderMapping) {
             ArrayList<OrderBean> obs = TradingUtil.getLinkedOrderBeansGivenParentBean(ob, c);

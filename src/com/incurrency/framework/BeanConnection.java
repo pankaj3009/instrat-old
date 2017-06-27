@@ -347,8 +347,15 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @param ordersSymbols the ordersSymbols to set
      */
-    public void setOrders(HashMap<OrderQueueKey, ArrayList<OrderBean>> ordersSymbols) {
-        this.orders = ordersSymbols;
+    public void setOrder(OrderQueueKey oqk, OrderBean order) {
+        order.setUpdateTime();
+        if (orders.get(oqk) == null) {
+            ArrayList<OrderBean> temp = new ArrayList<OrderBean>();
+            temp.add(order);
+            orders.put(oqk, temp);
+        } else {
+            orders.get(oqk).add(order);
+        }
     }
 
     /**

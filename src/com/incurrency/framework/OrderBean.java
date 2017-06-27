@@ -5,9 +5,12 @@
  */
 package com.incurrency.framework;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -156,12 +159,12 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public double getCurrentFillPrice() {
         return Utilities.getDouble("CurrentFillPrice", 0);
     }
-    
-    public double getStopLoss(){
+
+    public double getStopLoss() {
         return Utilities.getDouble("StopLoss", Double.NaN);
     }
-    
-    public double getTakeProfit(){
+
+    public double getTakeProfit() {
         return Utilities.getDouble("TakeProfit", Double.NaN);
     }
 
@@ -233,7 +236,69 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("OrderTime"), Algorithm.timeZone);
     }
 
+    public Date getUpdateTime() {
+        return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("UpdateTime"), Algorithm.timeZone);
+    }
+    
+    public ArrayList<Integer> getLinkInternalOrderID() {
+        ArrayList<Integer> out = new ArrayList<>();
+        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkInternalOrderID").split(":")));
+        for (String i : in) {
+            out.add(Integer.valueOf(i));
+        }
+        return out;
+    }
+    
+    public ArrayList<EnumOrderStatus> getLinkStatusTrigger() {
+        ArrayList<EnumOrderStatus> out = new ArrayList<>();
+        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkInternalOrderID").split(":")));
+        for (String i : in) {
+            out.add(EnumOrderStatus.valueOf(i));
+        }
+        return out;
+    }
+    
+        public ArrayList<EnumLinkedAction> getLinkAction() {
+        ArrayList<EnumLinkedAction> out = new ArrayList<>();
+        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkAction").split(":")));
+        for (String i : in) {
+            out.add(EnumLinkedAction.valueOf(i));
+        }
+        return out;
+    }
+
+    public ArrayList<Integer> getLinkDelay(){
+       ArrayList<Integer> out = new ArrayList<>();
+       ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkDelay").split(":")));
+       for (String i : in) {
+            out.add(Integer.valueOf(i));
+        }
+       return out; 
+    }
+    
+
     //Setters
+    
+    public void setLinkInternalOrderID(ArrayList<Integer> value) {
+        String in=value.stream().map(Object::toString).collect(Collectors.joining(":"));
+        this.put("LinkInternalOrderID", in);
+    }
+    
+    public void setLinkStatusTrigger(ArrayList<EnumOrderStatus> value) {
+        String in=value.stream().map(Object::toString).collect(Collectors.joining(":"));
+        this.put("LinkInternalOrderID", in);
+    }
+    
+    public void setLinkAction(ArrayList<EnumLinkedAction> value) {
+        String in = value.stream().map(Object::toString).collect(Collectors.joining(":"));
+        this.put("LinkAction", in);
+    }
+
+    public void setLinkDelay(ArrayList<Integer> value){
+        String in = value.stream().map(Object::toString).collect(Collectors.joining(":"));
+        this.put("LinkDelay", in);
+    }
+    
     public void setScale(Boolean value) {
         this.put("Scale", String.valueOf(value));
     }
@@ -306,6 +371,10 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.put("OrderTime", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
     }
 
+    public void setUpdateTime() {
+        this.put("UpdateTime", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
+    }
+
     public void setOrderStage(EnumOrderStage value) {
         this.put("OrderStage", String.valueOf(value));
     }
@@ -315,7 +384,7 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     }
 
     public void setCurrentFillPrice(double value) {
-        this.put("CurrentFillPrice", String.valueOf(this));
+        this.put("CurrentFillPrice", String.valueOf(value));
     }
 
     public void setTotalFillSize(int value) {
@@ -337,15 +406,14 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public void setOrderType(EnumOrderType orderType) {
         this.put("OrderType", String.valueOf(orderType));
     }
-    
-    public void setStopLoss(double stoploss){
+
+    public void setStopLoss(double stoploss) {
         this.put("StopLoss", String.valueOf(stoploss));
     }
-    
-    public void setTakeProfit(double takeProfit){
+
+    public void setTakeProfit(double takeProfit) {
         this.put("TakeProfit", String.valueOf(takeProfit));
     }
-
 
     //Order Attributes
     public int getOrdersPerMinute() {

@@ -260,7 +260,7 @@ public class Validator {
                     if (!TradingUtil.isInteger(input[0])) {
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_1"});
-                    } else if (Integer.parseInt(input[0]) != i) {
+                    } else if (Integer.parseInt(input[0])+1 != i) {
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_1"});
                     }

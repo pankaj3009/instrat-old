@@ -5,6 +5,8 @@
  */
 package com.incurrency.framework;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -32,10 +34,10 @@ import javax.swing.JOptionPane;
  * @author pankaj
  */
 public class Strategy implements NotificationListener {
+    private static HashMap<String, String> combosAdded = new HashMap<>();
 
     private static final Logger logger = Logger.getLogger(Strategy.class.getName());
     public static String newline = System.getProperty("line.separator");
-    private static HashMap<String, String> combosAdded = new HashMap<>();
 
     /**
      * @return the combosAdded
@@ -50,76 +52,50 @@ public class Strategy implements NotificationListener {
     public static synchronized void setCombosAdded(HashMap<String, String> aCombosAdded) {
         combosAdded = aCombosAdded;
     }
-
-    //--common parameters required for all strategies
-    MainAlgorithm m;
-    public HashMap<Integer, Integer> internalOpenOrders = new HashMap(); //holds mapping of symbol id to latest initialization internal order
-    private ConcurrentHashMap<Integer, BeanPosition> position = new ConcurrentHashMap<>();
-    private double tickSize;
-    private double pointValue = 1;
-    //private int internalOrderID = 1;
-    private int numberOfContracts = 0;
-    private double exposure;
-    private Date endDate;
-    private Date startDate;
-    private Date shutdownDate;
-    private transient AtomicBoolean longOnly = new AtomicBoolean(Boolean.TRUE);
-    private transient AtomicBoolean shortOnly = new AtomicBoolean(Boolean.TRUE);
+    private ArrayList<String> accounts;
     private Boolean aggression = true;
+    public String allAccounts;
+    private ArrayList<BrokerageRate> brokerageRate = new ArrayList<>();
     private double clawProfitTarget = 0;
+    private int connectionidForMarketData = 0;
     private double dayProfitTarget = 0;
     private double dayStopLoss = 0;
-    private double maxSlippageEntry = 0;
-    private double maxSlippageExit = 0;
-    private int maxOrderDuration = 3;
-    private int dynamicOrderDuration = 1;
-    private int maxOpenPositions = 1;
-    private String futBrokerageFile;
-    private ArrayList<BrokerageRate> brokerageRate = new ArrayList<>();
-    private String tradeFile;
-    private String orderFile;
-    public String timeZone;
-    private double startingCapital;
-    private ProfitLossManager plmanager;
-    private List<Integer> strategySymbols = new ArrayList();
-    ExecutionManager oms;
-    private String strategy;
-    private ArrayList<String> accounts;
-    private Properties prop;
-    private String parameterFile;
-    private String tradedType;
-    public String allAccounts;
-    private Integer stratCount;
-    //Locks
-    private final Object lockOMS = new Object();
-    private final Object lockPLManager = new Object();
-    private final Object lockPL = new Object();
-    private boolean validation = true;
-    public final String delimiter = "_";
-    private boolean strategyLog;
-    private boolean stopOrders = false;
     private Database<String, String> db;
     private Database<String, String> dbParameters;
-    private Boolean useRedis;
-    private String redisDatabaseID;
-    private int connectionidForMarketData = 0;
+    public final String delimiter = "_";
+    private int dynamicOrderDuration = 1;
+    private Date endDate;
+    private double exposure;
+    private double fallbackAskVol = 0.50;
+    private double fallbackBidVol = 0.10;
+    private String futBrokerageFile;
     private String headerStrategy;
+    private String iamail;
+    public HashMap<Integer, Integer> internalOpenOrders = new HashMap(); //holds mapping of symbol id to latest initialization internal order
+
+    //Locks
+    private final Object lockOMS = new Object();
+    private final Object lockPL = new Object();
+    private final Object lockPLManager = new Object();
+    private transient AtomicBoolean longOnly = new AtomicBoolean(Boolean.TRUE);
+    //--common parameters required for all strategies
+    MainAlgorithm m;
+    private int maxOpenPositions = 1;
+    private int maxOrderDuration = 3;
+    private double maxSlippageEntry = 0;
+    private double maxSlippageExit = 0;
+    //private int internalOrderID = 1;
+    private int numberOfContracts = 0;
+    ExecutionManager oms;
     private EnumOrderType ordType;
     private HashMap<String, Object> orderAttributes = new HashMap<>();
-    public AtomicBoolean tradingWindow = new AtomicBoolean();
-    private double fallbackBidVol = 0.10;
-    private double fallbackAskVol = 0.50;
-    private String iamail;
-    private final Object syncDB = new Object();
-    TimerTask runOpenTradingWindow = new TimerTask() {
-
-        @Override
-        public void run() {
-            tradingWindow.set(Boolean.TRUE);
-            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
-                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
-        }
-    };
+    private String orderFile;
+    private String parameterFile;
+    private ProfitLossManager plmanager;
+    private double pointValue = 1;
+    private ConcurrentHashMap<Integer, BeanPosition> position = new ConcurrentHashMap<>();
+    private Properties prop;
+    private String redisDatabaseID;
     TimerTask runCloseTradingWindow = new TimerTask() {
 
         @Override
@@ -145,6 +121,15 @@ public class Strategy implements NotificationListener {
             }
         }
     };
+    TimerTask runOpenTradingWindow = new TimerTask() {
+        
+        @Override
+        public void run() {
+            tradingWindow.set(Boolean.TRUE);
+            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
+                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
+        }
+    };
     TimerTask runPrintOrders = new TimerTask() {
         @Override
         public void run() {
@@ -153,6 +138,23 @@ public class Strategy implements NotificationListener {
             printOrders("", Strategy.this);
         }
     };
+    private transient AtomicBoolean shortOnly = new AtomicBoolean(Boolean.TRUE);
+    private Date shutdownDate;
+    private Date startDate;
+    private double startingCapital;
+    private boolean stopOrders = false;
+    private Integer stratCount;
+    private String strategy;
+    private boolean strategyLog;
+    private List<Integer> strategySymbols = new ArrayList();
+    private final Object syncDB = new Object();
+    private double tickSize;
+    public String timeZone;
+    private String tradeFile;
+    private String tradedType;
+    public AtomicBoolean tradingWindow = new AtomicBoolean();
+    private Boolean useRedis;
+    private boolean validation = true;
 
     public Strategy(MainAlgorithm m, String headerStrategy, String type, Properties prop, String parameterFileName, ArrayList<String> accounts, Integer stratCount) {
         try {
@@ -232,12 +234,12 @@ public class Strategy implements NotificationListener {
                     s.setStreamingpriority(1);
                     s.setStrategy(headerStrategy.toUpperCase());
                     s.setDisplayname(parentsymbolname);
-                    s.setSerialno(Parameters.symbol.size() + 1);
+                    s.setSerialno(Parameters.symbol.size());
                     s.setAddedToSymbols(true);
                     synchronized (Parameters.symbol) {
                         Parameters.symbol.add(s);
                     }
-                    id = s.getSerialno() - 1;
+                    id = s.getSerialno();
                     switch (s.getType()) {
                         case "OPT":
                             if (s.getMinsize() == 0) {
@@ -246,12 +248,15 @@ public class Strategy implements NotificationListener {
                                     referenceCashType = "STK";
                                 }
                                 int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id, referenceCashType);
-                                String expiry = Parameters.symbol.get(id).getExpiry();
-                                //         if (optionPricingUsingFutures) {
-                                //we assume option pricing uses futures. Will not work for a non-indian option  
-                                underlyingid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, underlyingid, expiry);
-                                //           }
-                                Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                                if (underlyingid >= 0) {
+                                    String expiry = Parameters.symbol.get(id).getExpiry();
+                                    //         if (optionPricingUsingFutures) {
+                                    //we assume option pricing uses futures. Will not work for a non-indian option  
+                                    underlyingid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, underlyingid, expiry);
+                                    //           }
+                                    Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+
+                                }
                             }
                             break;
                         case "FUT":
@@ -276,8 +281,8 @@ public class Strategy implements NotificationListener {
             }
             for (BeanSymbol s : Parameters.symbol) {
                 if (Pattern.compile(Pattern.quote(headerStrategy), Pattern.CASE_INSENSITIVE).matcher(s.getStrategy()).find()) {
-                    strategySymbols.add(s.getSerialno() - 1);
-                    position.put(s.getSerialno() - 1, new BeanPosition(s.getSerialno() - 1, getStrategy()));
+                    strategySymbols.add(s.getSerialno());
+                    position.put(s.getSerialno(), new BeanPosition(s.getSerialno(), getStrategy()));
                 }
             }
 
@@ -399,370 +404,63 @@ public class Strategy implements NotificationListener {
         }
     }
 
-    /**
-     * @return the db
-     */
-    public Database<String, String> getDb() {
-        synchronized (syncDB) {
-            return db;
-        }
-    }
 
-    /**
-     * @return the iamail
-     */
-    public String getIamail() {
-        return iamail;
-    }
-
-    /**
-     * @param iamail the iamail to set
-     */
-    public void setIamail(String iamail) {
-        this.iamail = iamail;
-    }
-
-    public void displayStrategyValues() {
-    }
-
-    private void loadParameters(String strategy, String type, Properties p) {
-        setTimeZone(p.getProperty("TradeTimeZone") == null ? "Asia/Kolkata" : p.getProperty("TradeTimeZone"));
-        // String currDateStr = DateUtil.getFormattedDate("yyyyMMddHHmmss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
-        //Date currDate=DateUtil.parseDate("yyyyMMddHHmmss", currDateStr, TimeZone.getDefault().toString());
-        stopOrders = Boolean.valueOf(p.getProperty("StopOrders", "false"));
-        Date currDate = TradingUtil.getAlgoDate();
-        DateFormat df = new SimpleDateFormat("yyyyMMdd");
-        df.setTimeZone(TimeZone.getTimeZone(timeZone));
-        String currDateStr = df.format(currDate);
-        String startDateStr = currDateStr + " " + p.getProperty("StartTime");
-        String endDateStr = currDateStr + " " + p.getProperty("EndTime");
-        String shutdownDateStr = currDateStr + " " + p.getProperty("ShutDownTime", "15:31:00");
-        setStartDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr, timeZone));
-        setEndDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, timeZone));
-        shutdownDate = DateUtil.parseDate("yyyyMMdd HH:mm:ss", shutdownDateStr, timeZone);
-        if (new Date().after(endDate)) {
-            String endDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", getEndDate().getTime(), TimeZone.getTimeZone(timeZone));
-            endDateStrTemp = DateUtil.getNextBusinessDay(endDateStrTemp, "yyyy-MM-dd");
-            endDateStr = endDateStrTemp + endDateStr.substring(8);
-            setEndDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", endDateStr, timeZone));
-            String startDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", getStartDate().getTime(), TimeZone.getTimeZone(timeZone));
-            startDateStrTemp = DateUtil.getNextBusinessDay(startDateStrTemp, "yyyy-MM-dd");
-            startDateStr = startDateStrTemp + startDateStr.substring(8);
-            setStartDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", startDateStr, timeZone));
-            String shutdownDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", shutdownDate.getTime(), TimeZone.getTimeZone(timeZone));
-            shutdownDateStrTemp = DateUtil.getNextBusinessDay(shutdownDateStrTemp, "yyyy-MM-dd");
-            shutdownDateStr = shutdownDateStrTemp + shutdownDateStr.substring(8);
-            shutdownDate = DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", shutdownDateStr, timeZone);
-        }
-        setMaxSlippageEntry(p.getProperty("MaxSlippageEntry") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageEntry")) / 100); // divide by 100 as input was a percentage
-        setMaxSlippageExit(p.getProperty("MaxSlippageExit") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageExit")) / 100); // divide by 100 as input was a percentage
-        setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
-        setDynamicOrderDuration(p.getProperty("DynamicOrderDuration") == null ? 1 : Integer.parseInt(p.getProperty("DynamicOrderDuration")));
-        fallbackBidVol = Utilities.getDouble(p.getProperty("FallbackBidVol", "0.10"), 0.10);
-        fallbackAskVol = Utilities.getDouble(p.getProperty("FallbackAskVol", "0.50"), 0.50);
-        if (MainAlgorithm.isUseForTrading()) {
-            MainAlgorithm.setCloseDate(DateUtil.addSeconds(shutdownDate, 240));
-        }
-        if (this.getDynamicOrderDuration() == 0) {
-            this.setAggression(false);
-        }
-        setStrategyLog(Boolean.parseBoolean(p.getProperty("StrategyLog", "true").toString().trim()));
-        setTickSize(Double.parseDouble(p.getProperty("TickSize")));
-        setNumberOfContracts(p.getProperty("NumberOfContracts") == null ? 0 : Integer.parseInt(p.getProperty("NumberOfContracts")));
-        setExposure(p.getProperty("Exposure") == null ? 0D : Double.parseDouble(p.getProperty("Exposure")));
-        if (getExposure() == 0D && getNumberOfContracts() == 0) {
-            setNumberOfContracts(1); //set minimum trade size if both exposure and contracts are not mentioned
-        }
-        setPointValue(p.getProperty("PointValue") == null ? 1 : Double.parseDouble(p.getProperty("PointValue")));
-        setClawProfitTarget(p.getProperty("ClawProfitTarget") != null ? Double.parseDouble(p.getProperty("ClawProfitTarget")) : 0D);
-        setDayProfitTarget(p.getProperty("DayProfitTarget") != null ? Double.parseDouble(p.getProperty("DayProfitTarget")) : 0D);
-        setDayStopLoss(p.getProperty("DayStopLoss") != null ? Double.parseDouble(p.getProperty("DayStopLoss")) : 0D);
-        setMaxOpenPositions(p.getProperty("MaximumOpenPositions") == null ? 1 : Integer.parseInt(p.getProperty("MaximumOpenPositions")));
-        setFutBrokerageFile(p.getProperty("BrokerageFile") == null ? "" : p.getProperty("BrokerageFile"));
-        if (!useRedis) {
-            setTradeFile(p.getProperty("TradeFile"));
-            if (stratCount == null) {
-                setOrderFile(p.getProperty("OrderFile"));
-            } else {
-                setOrderFile(p.getProperty("OrderFile").split("\\.")[0] + stratCount + "." + p.getProperty("OrderFile").split("\\.")[1]);
-
+//    public HashSet<Integer> getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
+//        HashSet<Integer> out = new HashSet<>();
+//        String symbol = Parameters.symbol.get(id).getDisplayname();
+//        EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
+//        for (String key : getDb().getKeys("opentrades_" + strategy)) {
+//            if (key.contains("_" + this.getStrategy()) && Trade.getAccountName(getDb(), key).equals(accountName) && Trade.getParentSymbol(getDb(), key).equals(symbol) && Trade.getEntrySide(getDb(), key).equals(entrySide) && Trade.getEntrySize(getDb(), key) > Trade.getExitSize(getDb(), key)) {
+//                out.add(Trade.getEntryOrderIDInternal(getDb(), key));
+//                //return Trade.getEntryOrderIDInternal(db, key);
+//            }
+//        }
+//        return out;
+//    }
+    public int ParentInternalOrderIDForSquareOff(String accountName, OrderBean ob) {
+        if (ob.getOrderIDForSquareOff() > 0) {
+            return ob.getOrderIDForSquareOff();
+        } else {
+            HashSet<Integer> out = new HashSet<>();
+            String symbol = ob.getParentDisplayName();
+            if (TradingUtil.isSyntheticSymbol(ob.getParentSymbolID())) {
+                symbol = ob.getParentDisplayName();
             }
-        }
-        setStartingCapital(p.getProperty("StartingCapital") == null ? 0D : Double.parseDouble(p.getProperty("StartingCapital")));
-        setIamail(p.getProperty("iamail", "psharma@incurrency.com"));
-        String ordTypeString = p.getProperty("OrderType", "LMT");
-        int i = 0;
-        for (String s : ordTypeString.split(":")) {
-            if (i == 0) {
-                setOrdType(EnumOrderType.valueOf(ordTypeString.split(":")[i]));
-            } else {
-                getOrderAttributes().put(s.split("=")[0], s.split("=")[1]);
-            }
-            i++;
-        }
-        longOnly = p.getProperty("Long") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Long")));
-        shortOnly = p.getProperty("Short") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Short")));
-        connectionidForMarketData = Utilities.getInt(p.getProperty("ConnectionIDForMarketData", "0"), 0);
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Accounts" + delimiter + allAccounts});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartDate" + delimiter + getStartDate()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EndDate" + delimiter + getEndDate()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PrintTime" + delimiter + com.incurrency.framework.DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 1) * 60)});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Shutdown" + delimiter + DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 2) * 60)});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TickSize" + delimiter + getTickSize()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ContractSize" + delimiter + getNumberOfContracts()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Exposure" + delimiter + getExposure()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ClawProfit" + delimiter + getClawProfitTarget()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayProfit" + delimiter + getDayProfitTarget()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayStopLoss" + delimiter + getDayStopLoss()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PointValue" + delimiter + getPointValue()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EntrySlippage" + delimiter + getMaxSlippageEntry()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ExitSlippage" + delimiter + getMaxSlippageExit()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderDuration" + delimiter + getMaxOrderDuration()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DynamicDuration" + delimiter + getDynamicOrderDuration()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "MaxOpenPositions" + delimiter + getMaxOpenPositions()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "BrokerageFile" + delimiter + getFutBrokerageFile()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TradeFile" + delimiter + getTradeFile()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderFile" + delimiter + getOrderFile()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TimeZone" + delimiter + getTimeZone()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartingCapital" + delimiter + getStartingCapital()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "LongAllowed" + delimiter + getLongOnly()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ShortAllowed" + delimiter + getShortOnly()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderAtributes" + delimiter + getOrderAttributes().toString()});
-
-        if (getFutBrokerageFile().compareTo("") != 0) {
-            Properties pBrokerage = TradingUtil.loadParameters(getFutBrokerageFile());
-            String brokerage1 = pBrokerage.getProperty("Brokerage");
-            String addOn1 = pBrokerage.getProperty("AddOn1");
-            String addOn2 = pBrokerage.getProperty("AddOn2");
-            String addOn3 = pBrokerage.getProperty("AddOn3");
-            String addOn4 = pBrokerage.getProperty("AddOn4");
-
-            if (brokerage1 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(brokerage1, type));
-            }
-            if (addOn1 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn1, type));
-            }
-            if (addOn2 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn2, type));
-            }
-            if (addOn3 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn3, type));
-            }
-            if (addOn4 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn4, type));
-            }
-
-        }
-    }
-
-    public void updatePositions() {
-        //Initialize open notional orders and positions
-        for (BeanPosition p : position.values()) {
-            p.setPosition(0);
-            p.setBrokerage(0);
-            p.setPrice(0);
-        }
-        for (String key : getDb().getKeys("opentrades_" + strategy)) {
-            String parentsymbolname = Trade.getParentSymbol(getDb(), key);
-            int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
-            int tempPosition = 0;
-            double tempPositionPrice = 0D;
-            if (id >= 0) {
-                if (!Parameters.symbol.get(id).getStrategy().contains(this.getStrategy().toUpperCase())) {
-                    String oldstrategy = Parameters.symbol.get(id).getStrategy();
-                    Parameters.symbol.get(id).setStrategy(oldstrategy + ":" + this.getStrategy().toUpperCase());
-                }
-                if (Trade.getAccountName(getDb(), key).equals("Order") && key.contains("_" + strategy)) {
-                    BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
-                    tempPosition = p.getPosition();
-                    tempPositionPrice = p.getPrice();
-                    int entrySize = Trade.getEntrySize(getDb(), key);
-                    double entryPrice = Trade.getEntryPrice(getDb(), key);
-                    switch (Trade.getEntrySide(getDb(), key)) {
-                        case BUY:
-                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
-                            tempPosition = tempPosition + entrySize;
-                            p.setPosition(tempPosition);
-                            p.setPrice(tempPositionPrice);
-                            p.setPointValue(pointValue);
-                            p.setStrategy(strategy);
-                            position.put(id, p);
-                            break;
-                        case SHORT:
-                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice - entrySize * entryPrice) / (-entrySize + tempPosition) : 0D;
-                            tempPosition = tempPosition - entrySize;
-                            p.setPosition(tempPosition);
-                            p.setPrice(tempPositionPrice);
-                            p.setPointValue(pointValue);
-                            p.setStrategy(strategy);
-                            position.put(id, p);
-                            break;
-                        default:
-                            break;
-                    }
-                    int exitSize = Trade.getExitSize(getDb(), key);
-                    double exitPrice = Trade.getExitPrice(getDb(), key);
-                    switch (Trade.getExitSide(getDb(), key)) {
-                        case COVER:
-                            tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
-                            tempPosition = tempPosition + exitSize;
-                            p.setPosition(tempPosition);
-                            p.setPrice(tempPositionPrice);
-                            p.setPointValue(pointValue);
-                            p.setStrategy(strategy);
-                            position.put(id, p);
-                            break;
-                        case SELL:
-                            tempPositionPrice = -exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice - exitSize * exitPrice) / (-exitSize + tempPosition) : 0D;
-                            tempPosition = tempPosition - exitSize;
-                            p.setPosition(tempPosition);
-                            p.setPrice(tempPositionPrice);
-                            p.setPointValue(pointValue);
-                            p.setStrategy(strategy);
-                            position.put(id, p);
-                            break;
-                        default:
-                            break;
+            EnumOrderSide entrySide = ob.getOrderSide() == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
+            for (String key : getDb().getKeys("opentrades")) {
+                if (key.contains("_" + getStrategy())) {
+                    if (Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key) && Trade.getParentSymbol(db, key).equals(Trade.getEntrySymbol(db, key))) {
+                        out.add(Trade.getEntryOrderIDInternal(db, key));
                     }
                 }
             }
+            for (int o : out) {
+                return o;
+            }
+            return -1;
         }
+
     }
 
-    public synchronized void printOrders(String prefix, Strategy s) {
-        double[] profitGrid = new double[5];
-        DecimalFormat df = new DecimalFormat("#.##");
-        Map args = new HashMap<>();
-        try {
-            File dir = new File("logs");
-            File file;
-            File equityFile;
-            String equityFileName;
-            if (stratCount == null) {
-                file = new File(dir, "body.txt");
-                equityFileName = "Equity.csv";
-                equityFile = new File(dir, equityFileName);
-            } else {
-                file = new File(dir, "body" + stratCount + ".txt");
-                equityFileName = "Equity" + stratCount + ".csv";
-                equityFile = new File(dir, equityFileName);
-
-            }
-
-            if (prefix.equals("")) {
-                if (file.exists()) {
-                    file.delete();
-                }
-                if (equityFile.exists()) {
-                    equityFile.delete();
-                }
-            }
-            String orderFileFullName = s.getOrderFile();
-            if (prefix.equals("")) {
-                profitGrid = TradingUtil.applyBrokerage(getDb(), s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName, s.getStrategy());
-                TradingUtil.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
-                TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
-                TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
-                TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
-                TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
-                TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
-                TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
-                TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
-                TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
-                TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
-                TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
-                TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
-                TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
-
-            }
-            if (!useRedis) {
-                logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
-            }
-            //Now write trade file 
-//            String tradeFileFullName = "logs" + File.separator + prefix + s.getTradeFile();
-            String tradeFileFullName = s.getTradeFile();
-            if (prefix.equals("")) {
-                for (BeanConnection c : Parameters.connection) {
-                    if (s.accounts.contains(c.getAccountName())) {
-                        profitGrid = TradingUtil.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTradeFile(), s.getTimeZone(), s.getStartingCapital(), c.getAccountName(), equityFileName, s.getStrategy());
-                        TradingUtil.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
-                        TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
-                        TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
-                        TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
-                        TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
-                        TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
-                        TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
-                        TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
-                        TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
-                        TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
-                        TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
-                        TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
-                        TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
-
-                        String message
-                                = "Strategy Name:" + s.strategy + Strategy.newline
-                                + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
-                                + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
-                                + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
-                                + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
-                                + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
-                                + "# days in history: " + df.format(profitGrid[9]) + Strategy.newline
-                                + "Average Drawdown Cycle:  " + df.format(profitGrid[10]) + Strategy.newline
-                                + "# days in current drawdown: " + df.format(profitGrid[11]) + Strategy.newline
-                                + "Average Drawdown Value:  " + df.format(profitGrid[12]) + Strategy.newline
-                                + "Current Drawdown Value: " + df.format(profitGrid[13]);
-
-                        String openPositions = Validator.openPositions(c.getAccountName(), s);
-
-                        if (openPositions.equals("")) {
-                            message = message + newline + "No open trade positions";
-                        } else {
-                            message = message + newline + openPositions;
-                        }
-                        message = message + "\n" + "\n";
-                        message = message + "PNL Summary" + "\n";
-
-                        message = message + Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
-                        Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
-                        t.start();
-                        try {
-                            Thread.sleep(10000);
-                        } catch (InterruptedException ex) {
-                            logger.log(Level.INFO, "101", ex);
-                        }
-                    }
-                }
-            }
-            if (!useRedis) {
-                logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
-            }
-            for (BeanConnection c : Parameters.connection) {
-                if (s.accounts.contains(c.getAccountName())) {
-                    Validator.reconcile(prefix, getDb(), s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
-                }
-                //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
-            }
-            if (Algorithm.useForSimulation) {
-                System.exit(0);
-            }
-
-        } catch (Exception e) {
-            logger.log(Level.INFO, "101", e);
-        }
-    }
-
-    public HashSet<Integer> getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
+    public int ParentInternalOrderIDForSquareOff(int id, String accountName, EnumOrderSide side) {
         HashSet<Integer> out = new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
+
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-        for (String key : getDb().getKeys("opentrades_" + strategy)) {
-            if (key.contains("_" + this.getStrategy()) && Trade.getAccountName(getDb(), key).equals(accountName) && Trade.getParentSymbol(getDb(), key).equals(symbol) && Trade.getEntrySide(getDb(), key).equals(entrySide) && Trade.getEntrySize(getDb(), key) > Trade.getExitSize(getDb(), key)) {
-                out.add(Trade.getEntryOrderIDInternal(getDb(), key));
-                //return Trade.getEntryOrderIDInternal(db, key);
+        for (String key : getDb().getKeys("opentrades")) {
+            if (key.contains("_" + getStrategy())) {
+                if (Trade.getAccountName(db, key).equals(accountName) && Trade.getParentSymbol(db, key).equals(symbol) && Trade.getEntrySide(db, key).equals(entrySide) && Trade.getEntrySize(db, key) > Trade.getExitSize(db, key) && Trade.getParentSymbol(db, key).equals(Trade.getEntrySymbol(db, key))) {
+                    out.add(Trade.getEntryOrderIDInternal(db, key));
+                }
             }
         }
-        return out;
+        for (int o : out) {
+            return o;
+        }
+        return -1;
+
+    }
+    public void displayStrategyValues() {
     }
 
 //    public int entry(HashMap<String, Object> order) {
@@ -848,10 +546,11 @@ public class Strategy implements NotificationListener {
         order.setInternalOrderID(internalorderid);
         order.setParentInternalOrderID(internalorderid);
         order.setOrderIDForSquareOff(internalorderid);
+        order.setOrderReference(getStrategy());
         this.internalOpenOrders.put(id, internalorderid);
-        String log = order.get("log") != null ? order.get("log").toString() : "";
+        String log = order.getOrderLog()!=null? order.getOrderLog().toString() : "";
         double lastprice = Parameters.symbol.get(id).getLastPrice();
-        lastprice = lastprice == 0 ? Utilities.getDouble(order.get("limitprice"), 0) : lastprice;
+        lastprice = lastprice == 0 ? order.getLimitPrice() : lastprice;
         new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getCurrentOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
         logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
         if (MainAlgorithm.isUseForTrading()) {
@@ -864,35 +563,40 @@ public class Strategy implements NotificationListener {
 
     public synchronized void exit(OrderBean order) {
         int id = order.getParentSymbolID();
-        int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getCurrentOrderSize();
-        order.setCurrentOrderSize(tradeSize);
-        double expectedFillPrice = 0;
-        if (order.getOrderSide() == EnumOrderSide.COVER) {
-            BeanPosition pd = getPosition().get(id);
-            expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-            int symbolPosition = pd.getPosition() + tradeSize;
-            double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-            pd.setPosition(symbolPosition);
-            pd.setPositionInitDate(TradingUtil.getAlgoDate());
-            pd.setPrice(positionPrice);
-            pd.setStrategy(strategy);
-            getPosition().put(id, pd);
-        } else {
-            BeanPosition pd = getPosition().get(id);
-            expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-            int symbolPosition = pd.getPosition() - tradeSize;
-            double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
-            pd.setPosition(symbolPosition);
-            pd.setPositionInitDate(TradingUtil.getAlgoDate());
-            pd.setPrice(positionPrice);
-            pd.setStrategy(strategy);
-            getPosition().put(id, pd);
+        int orderidforsquareoff = order.getOrderIDForSquareOff();
+        if (orderidforsquareoff <= 0) {
+            orderidforsquareoff = this.ParentInternalOrderIDForSquareOff("Order", order);
         }
-        //int tempinternalOrderID = Utilities.getInt(order.get("entryorderidint"),-1)>0?Utilities.getInt(order.get("entryorderidint"),-1):getFirstInternalOpenOrder(id, side, "Order");
-        HashSet<Integer> tempinternalOrderIDs = getFirstInternalOpenOrder(id, order.getOrderSide(), "Order");
-        for (int tempinternalOrderID : tempinternalOrderIDs) {
+        if (orderidforsquareoff > 0) {
+            int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getCurrentOrderSize();
+            order.setCurrentOrderSize(tradeSize);
+            double expectedFillPrice = 0;
+            if (order.getOrderSide() == EnumOrderSide.COVER) {
+                BeanPosition pd = getPosition().get(id);
+                expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
+                int symbolPosition = pd.getPosition() + tradeSize;
+                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
+                pd.setPosition(symbolPosition);
+                pd.setPositionInitDate(TradingUtil.getAlgoDate());
+                pd.setPrice(positionPrice);
+                pd.setStrategy(strategy);
+                getPosition().put(id, pd);
+            } else {
+                BeanPosition pd = getPosition().get(id);
+                expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
+                int symbolPosition = pd.getPosition() - tradeSize;
+                double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
+                pd.setPosition(symbolPosition);
+                pd.setPositionInitDate(TradingUtil.getAlgoDate());
+                pd.setPrice(positionPrice);
+                pd.setStrategy(strategy);
+                getPosition().put(id, pd);
+            }
+            //int tempinternalOrderID = Utilities.getInt(order.get("entryorderidint"),-1)>0?Utilities.getInt(order.get("entryorderidint"),-1):getFirstInternalOpenOrder(id, side, "Order");
+//        HashSet<Integer> tempinternalOrderIDs = getFirstInternalOpenOrder(id, order.getOrderSide(), "Order");
+//        for (int tempinternalOrderID : tempinternalOrderIDs) {
             if (tradeSize > 0) { //only update trades if tradeSize>0
-                String key = this.getStrategy() + ":" + tempinternalOrderID + ":" + "Order";
+                String key = this.getStrategy() + ":" + orderidforsquareoff + ":" + "Order";
                 boolean entryTradeExists = Trade.getEntrySize(getDb(), key) > 0 ? true : false;
                 if (entryTradeExists) {
                     int internalorderid = getInternalOrderID();
@@ -905,8 +609,9 @@ public class Strategy implements NotificationListener {
                     int newexitSize = adjTradeSize + exitSize;
                     tradeSize = tradeSize - adjTradeSize;
                     double newexitPrice = (exitPrice * exitSize + adjTradeSize * expectedFillPrice) / (newexitSize);
-                    order.setOrderIDForSquareOff(tempinternalOrderID);
-                    String log = order.get("log") != null ? order.get("log").toString() : "";
+                    order.setOrderIDForSquareOff(orderidforsquareoff);
+                    order.setOrderReference(getStrategy());
+                    String log = order.getOrderLog() != null ? order.getOrderLog().toString() : "";
                     Trade.updateExit(getDb(), id, order.getOrderReason(), order.getOrderSide(), newexitPrice, newexitSize, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
                     if (newexitSize == entrySize) {
                         Trade.closeTrade(getDb(), key);
@@ -916,17 +621,471 @@ public class Strategy implements NotificationListener {
 
                 } else {
                     logger.log(Level.INFO, "201,ExitInternalIDNotFound,{0}:{1}:{2}:{3}:{4},Key={5}",
-                            new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), tempinternalOrderID, -1, key});
+                            new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), orderidforsquareoff, -1, key});
                 }
             }
-        }
-        if (MainAlgorithm.isUseForTrading() && order.get("orderidint") != null) {
-            oms.tes.fireOrderEvent(order);
+//        }
+            if (MainAlgorithm.isUseForTrading() && order.getInternalOrderID() != 0) {
+                oms.tes.fireOrderEvent(order);
+            }
+        } else {
+            Gson gson = new GsonBuilder().create();
+            String string = gson.toJson(order);
+            logger.log(Level.INFO, "201,SquareOff Order Not Found,{0}", string);
         }
 
     }
+    /**
+     * @return the accounts
+     */
+    public ArrayList<String> getAccounts() {
+        return accounts;
+    }
+    /**
+     * @param accounts the accounts to set
+     */
+    public void setAccounts(ArrayList<String> accounts) {
+        this.accounts = accounts;
+    }
 
-//    public synchronized void exit(HashMap<String, Object> order) {
+
+    /**
+     * @return the aggression
+     */
+    public synchronized Boolean getAggression() {
+        return aggression;
+    }
+
+    /**
+     * @param aggression the aggression to set
+     */
+    public synchronized void setAggression(Boolean aggression) {
+        this.aggression = aggression;
+    }
+    /**
+     * @return the brokerageRate
+     */
+    public ArrayList<BrokerageRate> getBrokerageRate() {
+        return brokerageRate;
+    }
+    /**
+     * @param brokerageRate the brokerageRate to set
+     */
+    public void setBrokerageRate(ArrayList<BrokerageRate> brokerageRate) {
+        this.brokerageRate = brokerageRate;
+    }
+
+    /**
+     * @return the clawProfitTarget
+     */
+    public synchronized double getClawProfitTarget() {
+        return clawProfitTarget;
+    }
+
+    /**
+     * @param clawProfitTarget the clawProfitTarget to set
+     */
+    public synchronized void setClawProfitTarget(double clawProfitTarget) {
+        this.clawProfitTarget = clawProfitTarget;
+    }
+
+    /**
+     * @return the dayProfitTarget
+     */
+    public synchronized double getDayProfitTarget() {
+        return dayProfitTarget;
+    }
+
+    /**
+     * @param dayProfitTarget the dayProfitTarget to set
+     */
+    public synchronized void setDayProfitTarget(double dayProfitTarget) {
+        this.dayProfitTarget = dayProfitTarget;
+    }
+
+    /**
+     * @return the dayStopLoss
+     */
+    public synchronized double getDayStopLoss() {
+        return dayStopLoss;
+    }
+
+    /**
+     * @param dayStopLoss the dayStopLoss to set
+     */
+    public void setDayStopLoss(double dayStopLoss) {
+        this.dayStopLoss = dayStopLoss;
+    }
+    /**
+     * @return the db
+     */
+    public Database<String, String> getDb() {
+        synchronized (syncDB) {
+            return db;
+        }
+    }
+
+
+    /**
+     * @return the dynamicOrderDuration
+     */
+    public int getDynamicOrderDuration() {
+        return dynamicOrderDuration;
+    }
+
+    /**
+     * @param dynamicOrderDuration the dynamicOrderDuration to set
+     */
+    public void setDynamicOrderDuration(int dynamicOrderDuration) {
+        this.dynamicOrderDuration = dynamicOrderDuration;
+    }
+    /**
+     * @return the endDate
+     */
+    public Date getEndDate() {
+        return endDate;
+    }
+    /**
+     * @param endDate the endDate to set
+     */
+    public void setEndDate(Date endDate) {
+        this.endDate = endDate;
+    }
+    /**
+     * @return the exposure
+     */
+    public double getExposure() {
+        return exposure;
+    }
+    /**
+     * @param exposure the exposure to set
+     */
+    public void setExposure(double exposure) {
+        this.exposure = exposure;
+    }
+    /**
+     * @return the futBrokerageFile
+     */
+    public String getFutBrokerageFile() {
+        return futBrokerageFile;
+    }
+    /**
+     * @param futBrokerageFile the futBrokerageFile to set
+     */
+    public void setFutBrokerageFile(String futBrokerageFile) {
+        this.futBrokerageFile = futBrokerageFile;
+    }
+    /**
+     * @return the iamail
+     */
+    public String getIamail() {
+        return iamail;
+    }
+    /**
+     * @param iamail the iamail to set
+     */
+    public void setIamail(String iamail) {
+        this.iamail = iamail;
+    }
+    /**
+     * @return the internalOrderID
+     */
+    public synchronized int getInternalOrderID() {
+        return Algorithm.orderidint.addAndGet(1);
+    }
+    /**
+     * @return the longOnly
+     */
+    public synchronized Boolean getLongOnly() {
+        return longOnly.get();
+    }
+    /**
+     * @param longOnly the longOnly to set
+     */
+    public synchronized void setLongOnly(Boolean l) {
+        logger.log(Level.INFO, "200,LongOnlySet,{0}:{1}:{2}:{3}:{4},LongOnlyValue={5}",
+                new Object[]{strategy, "Order", "Unknown", -1, -1, l});
+        this.longOnly = new AtomicBoolean(l);
+    }
+    /**
+     * @return the maxOpenPositions
+     */
+    public int getMaxOpenPositions() {
+        return maxOpenPositions;
+    }
+    /**
+     * @param maxOpenPositions the maxOpenPositions to set
+     */
+    public void setMaxOpenPositions(int maxOpenPositions) {
+        this.maxOpenPositions = maxOpenPositions;
+    }
+    /**
+     * @return the maxOrderDuration
+     */
+    public int getMaxOrderDuration() {
+        return maxOrderDuration;
+    }
+    /**
+     * @param maxOrderDuration the maxOrderDuration to set
+     */
+    public void setMaxOrderDuration(int maxOrderDuration) {
+        this.maxOrderDuration = maxOrderDuration;
+    }
+
+    /**
+     * @return the maxSlippageEntry
+     */
+    public double getMaxSlippageEntry() {
+        return maxSlippageEntry;
+    }
+
+    /**
+     * @param maxSlippageEntry the maxSlippageEntry to set
+     */
+    public void setMaxSlippageEntry(double maxSlippageEntry) {
+        this.maxSlippageEntry = maxSlippageEntry;
+    }
+    /**
+     * @return the maxSlippageExit
+     */
+    public double getMaxSlippageExit() {
+        return maxSlippageExit;
+    }
+    /**
+     * @param maxSlippageExit the maxSlippageExit to set
+     */
+    public void setMaxSlippageExit(double maxSlippageExit) {
+        this.maxSlippageExit = maxSlippageExit;
+    }
+
+
+    /**
+     * @return the numberOfContracts
+     */
+    public int getNumberOfContracts() {
+        return numberOfContracts;
+    }
+
+    /**
+     * @param numberOfContracts the numberOfContracts to set
+     */
+    public void setNumberOfContracts(int numberOfContracts) {
+        this.numberOfContracts = numberOfContracts;
+    }
+    /**
+     * @return the oms
+     */
+    public ExecutionManager getOms() {
+        synchronized (lockOMS) {
+            return oms;
+        }
+    }
+    /**
+     * @param oms the oms to set
+     */
+    public void setOms(ExecutionManager oms) {
+        synchronized (lockOMS) {
+            this.oms = oms;
+        }
+    }
+    /**
+     * @return the ordType
+     */
+    public EnumOrderType getOrdType() {
+        return ordType;
+    }
+    /**
+     * @param ordType the ordType to set
+     */
+    public void setOrdType(EnumOrderType ordType) {
+        this.ordType = ordType;
+    }
+    /**
+     * @return the orderAttributes
+     */
+    public HashMap<String, Object> getOrderAttributes() {
+        return orderAttributes;
+    }
+    /**
+     * @param orderAttributes the orderAttributes to set
+     */
+    public void setOrderAttributes(HashMap<String, Object> orderAttributes) {
+        this.orderAttributes = orderAttributes;
+    }
+    /**
+     * @return the orderFile
+     */
+    public String getOrderFile() {
+        return orderFile;
+    }
+    /**
+     * @param orderFile the orderFile to set
+     */
+    public void setOrderFile(String orderFile) {
+        this.orderFile = orderFile;
+    }
+    /**
+     * @return the plmanager
+     */
+    public ProfitLossManager getPlmanager() {
+        synchronized (lockPLManager) {
+            return plmanager;
+        }
+    }
+    /**
+     * @param plmanager the plmanager to set
+     */
+    public synchronized void setPlmanager(ProfitLossManager plmanager) {
+        synchronized (lockPLManager) {
+            this.plmanager = plmanager;
+        }
+    }
+
+    /**
+     * @return the pointValue
+     */
+    public double getPointValue() {
+        return pointValue;
+    }
+
+    /**
+     * @param pointValue the pointValue to set
+     */
+    public void setPointValue(double pointValue) {
+        this.pointValue = pointValue;
+    }
+    /**
+     * @return the position
+     */
+    public ConcurrentHashMap<Integer, BeanPosition> getPosition() {
+        synchronized (lockPL) {
+            return position;
+        }
+    }
+    /**
+     * @param position the position to set
+     */
+    public void setPosition(ConcurrentHashMap<Integer, BeanPosition> position) {
+        synchronized (lockPL) {
+            this.position = position;
+        }
+    }
+    /**
+     * @return the redisDatabaseID
+     */
+    public String getRedisDatabaseID() {
+        return redisDatabaseID;
+    }
+    /**
+     * @param redisDatabaseID the redisDatabaseID to set
+     */
+    public void setRedisDatabaseID(String redisDatabaseID) {
+        this.redisDatabaseID = redisDatabaseID;
+    }
+    /**
+     * @return the shortOnly
+     */
+    public synchronized Boolean getShortOnly() {
+        return shortOnly.get();
+    }
+    /**
+     * @param shortOnly the shortOnly to set
+     */
+    public synchronized void setShortOnly(Boolean s) {
+        logger.log(Level.INFO, "200,ShortOnlySet,{0}:{1}:{2}:{3}:{4},ShortOnlyValue={5}",
+                new Object[]{strategy, "Order", "Unknown", -1, -1, s});
+        this.shortOnly = new AtomicBoolean(s);
+    }
+    /**
+     * @return the startDate
+     */
+    public Date getStartDate() {
+        return startDate;
+    }
+    /**
+     * @param startDate the startDate to set
+     */
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
+    }
+
+
+    /**
+     * @return the startingCapital
+     */
+    public double getStartingCapital() {
+        return startingCapital;
+    }
+
+    /**
+     * @param startingCapital the startingCapital to set
+     */
+    public void setStartingCapital(double startingCapital) {
+        this.startingCapital = startingCapital;
+    }
+    /**
+     * @return the strategy
+     */
+    public String getStrategy() {
+        return strategy;
+    }
+    /**
+     * @param strategy the strategy to set
+     */
+    public void setStrategy(String strategy) {
+        this.strategy = strategy;
+    }
+
+    /**
+     * @return the strategySymbols
+     */
+    public List<Integer> getStrategySymbols() {
+        return strategySymbols;
+    }
+
+    /**
+     * @param strategySymbols the strategySymbols to set
+     */
+    public void setStrategySymbols(List<Integer> strategySymbols) {
+        this.strategySymbols = strategySymbols;
+    }
+    /**
+     * @return the tickSize
+     */
+    public double getTickSize() {
+        return tickSize;
+    }
+    /**
+     * @param tickSize the tickSize to set
+     */
+    public void setTickSize(double tickSize) {
+        this.tickSize = tickSize;
+    }
+    /**
+     * @return the timeZone
+     */
+    public String getTimeZone() {
+        return timeZone;
+    }
+    /**
+     * @param timeZone the timeZone to set
+     */
+    public void setTimeZone(String timeZone) {
+        this.timeZone = timeZone;
+    }
+    /**
+     * @return the tradeFile
+     */
+    public String getTradeFile() {
+        return tradeFile;
+    }
+    /**
+     * @param tradeFile the tradeFile to set
+     */
+    public void setTradeFile(String tradeFile) {
+        this.tradeFile = tradeFile;
+    }
+    //    public synchronized void exit(HashMap<String, Object> order) {
 //        EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
 //        //if ((!getLongOnly() && side.equals(EnumOrderSide.COVER)) || (!getShortOnly() && side.equals(EnumOrderSide.SELL))) {
 //        //    return;
@@ -1066,464 +1225,16 @@ public class Strategy implements NotificationListener {
             }
         }
     }
-
     public void insertSymbol(List<BeanSymbol> symbols, String displayName, boolean optionPricingUsingFutures, String referenceCashType) {
         BeanSymbol s = new BeanSymbol(displayName);
         s.setExchange(Algorithm.defaultExchange);
         s.setPrimaryexchange(Algorithm.defaultPrimaryExchange);
         s.setCurrency(Algorithm.defaultCurrency);
         int id = Parameters.symbol.size();
-        s.setSerialno(id + 1);
+        s.setSerialno(id);
         Parameters.symbol.add(s);
         Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
-        initSymbol(s.getSerialno() - 1, optionPricingUsingFutures, referenceCashType);
-    }
-
-    @Override
-    public void notificationReceived(NotificationEvent event) {
-    }
-
-    /**
-     * @return the oms
-     */
-    public ExecutionManager getOms() {
-        synchronized (lockOMS) {
-            return oms;
-        }
-    }
-
-    /**
-     * @param oms the oms to set
-     */
-    public void setOms(ExecutionManager oms) {
-        synchronized (lockOMS) {
-            this.oms = oms;
-        }
-    }
-
-    /**
-     * @return the longOnly
-     */
-    public synchronized Boolean getLongOnly() {
-        return longOnly.get();
-    }
-
-    /**
-     * @param longOnly the longOnly to set
-     */
-    public synchronized void setLongOnly(Boolean l) {
-        logger.log(Level.INFO, "200,LongOnlySet,{0}:{1}:{2}:{3}:{4},LongOnlyValue={5}",
-                new Object[]{strategy, "Order", "Unknown", -1, -1, l});
-        this.longOnly = new AtomicBoolean(l);
-    }
-
-    /**
-     * @return the shortOnly
-     */
-    public synchronized Boolean getShortOnly() {
-        return shortOnly.get();
-    }
-
-    /**
-     * @param shortOnly the shortOnly to set
-     */
-    public synchronized void setShortOnly(Boolean s) {
-        logger.log(Level.INFO, "200,ShortOnlySet,{0}:{1}:{2}:{3}:{4},ShortOnlyValue={5}",
-                new Object[]{strategy, "Order", "Unknown", -1, -1, s});
-        this.shortOnly = new AtomicBoolean(s);
-    }
-
-    /**
-     * @return the aggression
-     */
-    public synchronized Boolean getAggression() {
-        return aggression;
-    }
-
-    /**
-     * @param aggression the aggression to set
-     */
-    public synchronized void setAggression(Boolean aggression) {
-        this.aggression = aggression;
-    }
-
-    /**
-     * @return the clawProfitTarget
-     */
-    public synchronized double getClawProfitTarget() {
-        return clawProfitTarget;
-    }
-
-    /**
-     * @param clawProfitTarget the clawProfitTarget to set
-     */
-    public synchronized void setClawProfitTarget(double clawProfitTarget) {
-        this.clawProfitTarget = clawProfitTarget;
-    }
-
-    /**
-     * @return the dayProfitTarget
-     */
-    public synchronized double getDayProfitTarget() {
-        return dayProfitTarget;
-    }
-
-    /**
-     * @param dayProfitTarget the dayProfitTarget to set
-     */
-    public synchronized void setDayProfitTarget(double dayProfitTarget) {
-        this.dayProfitTarget = dayProfitTarget;
-    }
-
-    /**
-     * @return the dayStopLoss
-     */
-    public synchronized double getDayStopLoss() {
-        return dayStopLoss;
-    }
-
-    /**
-     * @param dayStopLoss the dayStopLoss to set
-     */
-    public void setDayStopLoss(double dayStopLoss) {
-        this.dayStopLoss = dayStopLoss;
-    }
-
-    /**
-     * @return the plmanager
-     */
-    public ProfitLossManager getPlmanager() {
-        synchronized (lockPLManager) {
-            return plmanager;
-        }
-    }
-
-    /**
-     * @param plmanager the plmanager to set
-     */
-    public synchronized void setPlmanager(ProfitLossManager plmanager) {
-        synchronized (lockPLManager) {
-            this.plmanager = plmanager;
-        }
-    }
-
-    /**
-     * @return the maxOrderDuration
-     */
-    public int getMaxOrderDuration() {
-        return maxOrderDuration;
-    }
-
-    /**
-     * @param maxOrderDuration the maxOrderDuration to set
-     */
-    public void setMaxOrderDuration(int maxOrderDuration) {
-        this.maxOrderDuration = maxOrderDuration;
-    }
-
-    /**
-     * @return the dynamicOrderDuration
-     */
-    public int getDynamicOrderDuration() {
-        return dynamicOrderDuration;
-    }
-
-    /**
-     * @param dynamicOrderDuration the dynamicOrderDuration to set
-     */
-    public void setDynamicOrderDuration(int dynamicOrderDuration) {
-        this.dynamicOrderDuration = dynamicOrderDuration;
-    }
-
-    /**
-     * @return the maxSlippageExit
-     */
-    public double getMaxSlippageExit() {
-        return maxSlippageExit;
-    }
-
-    /**
-     * @param maxSlippageExit the maxSlippageExit to set
-     */
-    public void setMaxSlippageExit(double maxSlippageExit) {
-        this.maxSlippageExit = maxSlippageExit;
-    }
-
-    /**
-     * @return the strategy
-     */
-    public String getStrategy() {
-        return strategy;
-    }
-
-    /**
-     * @param strategy the strategy to set
-     */
-    public void setStrategy(String strategy) {
-        this.strategy = strategy;
-    }
-
-    /**
-     * @return the accounts
-     */
-    public ArrayList<String> getAccounts() {
-        return accounts;
-    }
-
-    /**
-     * @param accounts the accounts to set
-     */
-    public void setAccounts(ArrayList<String> accounts) {
-        this.accounts = accounts;
-    }
-
-    /**
-     * @return the tickSize
-     */
-    public double getTickSize() {
-        return tickSize;
-    }
-
-    /**
-     * @param tickSize the tickSize to set
-     */
-    public void setTickSize(double tickSize) {
-        this.tickSize = tickSize;
-    }
-
-    /**
-     * @return the maxSlippageEntry
-     */
-    public double getMaxSlippageEntry() {
-        return maxSlippageEntry;
-    }
-
-    /**
-     * @param maxSlippageEntry the maxSlippageEntry to set
-     */
-    public void setMaxSlippageEntry(double maxSlippageEntry) {
-        this.maxSlippageEntry = maxSlippageEntry;
-    }
-
-    /**
-     * @return the startDate
-     */
-    public Date getStartDate() {
-        return startDate;
-    }
-
-    /**
-     * @param startDate the startDate to set
-     */
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
-    }
-
-    /**
-     * @return the endDate
-     */
-    public Date getEndDate() {
-        return endDate;
-    }
-
-    /**
-     * @param endDate the endDate to set
-     */
-    public void setEndDate(Date endDate) {
-        this.endDate = endDate;
-    }
-
-    /**
-     * @return the numberOfContracts
-     */
-    public int getNumberOfContracts() {
-        return numberOfContracts;
-    }
-
-    /**
-     * @param numberOfContracts the numberOfContracts to set
-     */
-    public void setNumberOfContracts(int numberOfContracts) {
-        this.numberOfContracts = numberOfContracts;
-    }
-
-    /**
-     * @return the exposure
-     */
-    public double getExposure() {
-        return exposure;
-    }
-
-    /**
-     * @param exposure the exposure to set
-     */
-    public void setExposure(double exposure) {
-        this.exposure = exposure;
-    }
-
-    /**
-     * @return the pointValue
-     */
-    public double getPointValue() {
-        return pointValue;
-    }
-
-    /**
-     * @param pointValue the pointValue to set
-     */
-    public void setPointValue(double pointValue) {
-        this.pointValue = pointValue;
-    }
-
-    /**
-     * @return the maxOpenPositions
-     */
-    public int getMaxOpenPositions() {
-        return maxOpenPositions;
-    }
-
-    /**
-     * @param maxOpenPositions the maxOpenPositions to set
-     */
-    public void setMaxOpenPositions(int maxOpenPositions) {
-        this.maxOpenPositions = maxOpenPositions;
-    }
-
-    /**
-     * @return the futBrokerageFile
-     */
-    public String getFutBrokerageFile() {
-        return futBrokerageFile;
-    }
-
-    /**
-     * @param futBrokerageFile the futBrokerageFile to set
-     */
-    public void setFutBrokerageFile(String futBrokerageFile) {
-        this.futBrokerageFile = futBrokerageFile;
-    }
-
-    /**
-     * @return the brokerageRate
-     */
-    public ArrayList<BrokerageRate> getBrokerageRate() {
-        return brokerageRate;
-    }
-
-    /**
-     * @param brokerageRate the brokerageRate to set
-     */
-    public void setBrokerageRate(ArrayList<BrokerageRate> brokerageRate) {
-        this.brokerageRate = brokerageRate;
-    }
-
-    /**
-     * @return the tradeFile
-     */
-    public String getTradeFile() {
-        return tradeFile;
-    }
-
-    /**
-     * @param tradeFile the tradeFile to set
-     */
-    public void setTradeFile(String tradeFile) {
-        this.tradeFile = tradeFile;
-    }
-
-    /**
-     * @return the orderFile
-     */
-    public String getOrderFile() {
-        return orderFile;
-    }
-
-    /**
-     * @param orderFile the orderFile to set
-     */
-    public void setOrderFile(String orderFile) {
-        this.orderFile = orderFile;
-    }
-
-    /**
-     * @return the timeZone
-     */
-    public String getTimeZone() {
-        return timeZone;
-    }
-
-    /**
-     * @param timeZone the timeZone to set
-     */
-    public void setTimeZone(String timeZone) {
-        this.timeZone = timeZone;
-    }
-
-    /**
-     * @return the startingCapital
-     */
-    public double getStartingCapital() {
-        return startingCapital;
-    }
-
-    /**
-     * @param startingCapital the startingCapital to set
-     */
-    public void setStartingCapital(double startingCapital) {
-        this.startingCapital = startingCapital;
-    }
-
-    /**
-     * @return the strategySymbols
-     */
-    public List<Integer> getStrategySymbols() {
-        return strategySymbols;
-    }
-
-    /**
-     * @param strategySymbols the strategySymbols to set
-     */
-    public void setStrategySymbols(List<Integer> strategySymbols) {
-        this.strategySymbols = strategySymbols;
-    }
-
-    /**
-     * @return the position
-     */
-    public ConcurrentHashMap<Integer, BeanPosition> getPosition() {
-        synchronized (lockPL) {
-            return position;
-        }
-    }
-
-    /**
-     * @param position the position to set
-     */
-    public void setPosition(ConcurrentHashMap<Integer, BeanPosition> position) {
-        synchronized (lockPL) {
-            this.position = position;
-        }
-    }
-
-    /**
-     * @return the internalOrderID
-     */
-    public synchronized int getInternalOrderID() {
-        return Algorithm.orderidint.addAndGet(1);
-    }
-
-    /**
-     * @return the strategyLog
-     */
-    public boolean isStrategyLog() {
-        return strategyLog;
-    }
-
-    /**
-     * @param strategyLog the strategyLog to set
-     */
-    public void setStrategyLog(boolean strategyLog) {
-        this.strategyLog = strategyLog;
+        initSymbol(s.getSerialno(), optionPricingUsingFutures, referenceCashType);
     }
 
     /**
@@ -1545,47 +1256,344 @@ public class Strategy implements NotificationListener {
             this.stopOrders = stopOrders;
         }
     }
-
     /**
-     * @return the redisDatabaseID
+     * @return the strategyLog
      */
-    public String getRedisDatabaseID() {
-        return redisDatabaseID;
+    public boolean isStrategyLog() {
+        return strategyLog;
     }
-
     /**
-     * @param redisDatabaseID the redisDatabaseID to set
+     * @param strategyLog the strategyLog to set
      */
-    public void setRedisDatabaseID(String redisDatabaseID) {
-        this.redisDatabaseID = redisDatabaseID;
+    public void setStrategyLog(boolean strategyLog) {
+        this.strategyLog = strategyLog;
     }
-
-    /**
-     * @return the orderAttributes
-     */
-    public HashMap<String, Object> getOrderAttributes() {
-        return orderAttributes;
+    private void loadParameters(String strategy, String type, Properties p) {
+        setTimeZone(p.getProperty("TradeTimeZone") == null ? "Asia/Kolkata" : p.getProperty("TradeTimeZone"));
+        // String currDateStr = DateUtil.getFormattedDate("yyyyMMddHHmmss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+        //Date currDate=DateUtil.parseDate("yyyyMMddHHmmss", currDateStr, TimeZone.getDefault().toString());
+        stopOrders = Boolean.valueOf(p.getProperty("StopOrders", "false"));
+        Date currDate = TradingUtil.getAlgoDate();
+        DateFormat df = new SimpleDateFormat("yyyyMMdd");
+        df.setTimeZone(TimeZone.getTimeZone(timeZone));
+        String currDateStr = df.format(currDate);
+        String startDateStr = currDateStr + " " + p.getProperty("StartTime");
+        String endDateStr = currDateStr + " " + p.getProperty("EndTime");
+        String shutdownDateStr = currDateStr + " " + p.getProperty("ShutDownTime", "15:31:00");
+        setStartDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", startDateStr, timeZone));
+        setEndDate(DateUtil.parseDate("yyyyMMdd HH:mm:ss", endDateStr, timeZone));
+        shutdownDate = DateUtil.parseDate("yyyyMMdd HH:mm:ss", shutdownDateStr, timeZone);
+        if (new Date().after(endDate)) {
+            String endDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", getEndDate().getTime(), TimeZone.getTimeZone(timeZone));
+            endDateStrTemp = DateUtil.getNextBusinessDay(endDateStrTemp, "yyyy-MM-dd");
+            endDateStr = endDateStrTemp + endDateStr.substring(8);
+            setEndDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", endDateStr, timeZone));
+            String startDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", getStartDate().getTime(), TimeZone.getTimeZone(timeZone));
+            startDateStrTemp = DateUtil.getNextBusinessDay(startDateStrTemp, "yyyy-MM-dd");
+            startDateStr = startDateStrTemp + startDateStr.substring(8);
+            setStartDate(DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", startDateStr, timeZone));
+            String shutdownDateStrTemp = DateUtil.getFormatedDate("yyyy-MM-dd", shutdownDate.getTime(), TimeZone.getTimeZone(timeZone));
+            shutdownDateStrTemp = DateUtil.getNextBusinessDay(shutdownDateStrTemp, "yyyy-MM-dd");
+            shutdownDateStr = shutdownDateStrTemp + shutdownDateStr.substring(8);
+            shutdownDate = DateUtil.parseDate("yyyy-MM-dd HH:mm:ss", shutdownDateStr, timeZone);
+        }
+        setMaxSlippageEntry(p.getProperty("MaxSlippageEntry") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageEntry")) / 100); // divide by 100 as input was a percentage
+        setMaxSlippageExit(p.getProperty("MaxSlippageExit") == null ? 0.005 : Double.parseDouble(p.getProperty("MaxSlippageExit")) / 100); // divide by 100 as input was a percentage
+        setMaxOrderDuration(p.getProperty("MaxOrderDuration") == null ? 3 : Integer.parseInt(p.getProperty("MaxOrderDuration")));
+        setDynamicOrderDuration(p.getProperty("DynamicOrderDuration") == null ? 1 : Integer.parseInt(p.getProperty("DynamicOrderDuration")));
+        fallbackBidVol = Utilities.getDouble(p.getProperty("FallbackBidVol", "0.10"), 0.10);
+        fallbackAskVol = Utilities.getDouble(p.getProperty("FallbackAskVol", "0.50"), 0.50);
+        if (MainAlgorithm.isUseForTrading()) {
+            MainAlgorithm.setCloseDate(DateUtil.addSeconds(shutdownDate, 240));
+        }
+        if (this.getDynamicOrderDuration() == 0) {
+            this.setAggression(false);
+        }
+        setStrategyLog(Boolean.parseBoolean(p.getProperty("StrategyLog", "true").toString().trim()));
+        setTickSize(Double.parseDouble(p.getProperty("TickSize")));
+        setNumberOfContracts(p.getProperty("NumberOfContracts") == null ? 0 : Integer.parseInt(p.getProperty("NumberOfContracts")));
+        setExposure(p.getProperty("Exposure") == null ? 0D : Double.parseDouble(p.getProperty("Exposure")));
+        if (getExposure() == 0D && getNumberOfContracts() == 0) {
+            setNumberOfContracts(1); //set minimum trade size if both exposure and contracts are not mentioned
+        }
+        setPointValue(p.getProperty("PointValue") == null ? 1 : Double.parseDouble(p.getProperty("PointValue")));
+        setClawProfitTarget(p.getProperty("ClawProfitTarget") != null ? Double.parseDouble(p.getProperty("ClawProfitTarget")) : 0D);
+        setDayProfitTarget(p.getProperty("DayProfitTarget") != null ? Double.parseDouble(p.getProperty("DayProfitTarget")) : 0D);
+        setDayStopLoss(p.getProperty("DayStopLoss") != null ? Double.parseDouble(p.getProperty("DayStopLoss")) : 0D);
+        setMaxOpenPositions(p.getProperty("MaximumOpenPositions") == null ? 1 : Integer.parseInt(p.getProperty("MaximumOpenPositions")));
+        setFutBrokerageFile(p.getProperty("BrokerageFile") == null ? "" : p.getProperty("BrokerageFile"));
+        if (!useRedis) {
+            setTradeFile(p.getProperty("TradeFile"));
+            if (stratCount == null) {
+                setOrderFile(p.getProperty("OrderFile"));
+            } else {
+                setOrderFile(p.getProperty("OrderFile").split("\\.")[0] + stratCount + "." + p.getProperty("OrderFile").split("\\.")[1]);
+                
+            }
+        }
+        setStartingCapital(p.getProperty("StartingCapital") == null ? 0D : Double.parseDouble(p.getProperty("StartingCapital")));
+        setIamail(p.getProperty("iamail", "psharma@incurrency.com"));
+        String ordTypeString = p.getProperty("OrderType", "LMT");
+        int i = 0;
+        for (String s : ordTypeString.split(":")) {
+            if (i == 0) {
+                setOrdType(EnumOrderType.valueOf(ordTypeString.split(":")[i]));
+            } else {
+                getOrderAttributes().put(s.split("=")[0], s.split("=")[1]);
+            }
+            i++;
+        }
+        longOnly = p.getProperty("Long") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Long")));
+        shortOnly = p.getProperty("Short") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Short")));
+        connectionidForMarketData = Utilities.getInt(p.getProperty("ConnectionIDForMarketData", "0"), 0);
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Accounts" + delimiter + allAccounts});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartDate" + delimiter + getStartDate()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EndDate" + delimiter + getEndDate()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PrintTime" + delimiter + com.incurrency.framework.DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 1) * 60)});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Shutdown" + delimiter + DateUtil.addSeconds(getEndDate(), (this.getMaxOrderDuration() + 2) * 60)});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TickSize" + delimiter + getTickSize()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ContractSize" + delimiter + getNumberOfContracts()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Exposure" + delimiter + getExposure()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ClawProfit" + delimiter + getClawProfitTarget()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayProfit" + delimiter + getDayProfitTarget()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayStopLoss" + delimiter + getDayStopLoss()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PointValue" + delimiter + getPointValue()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EntrySlippage" + delimiter + getMaxSlippageEntry()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ExitSlippage" + delimiter + getMaxSlippageExit()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderDuration" + delimiter + getMaxOrderDuration()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DynamicDuration" + delimiter + getDynamicOrderDuration()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "MaxOpenPositions" + delimiter + getMaxOpenPositions()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "BrokerageFile" + delimiter + getFutBrokerageFile()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TradeFile" + delimiter + getTradeFile()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderFile" + delimiter + getOrderFile()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TimeZone" + delimiter + getTimeZone()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartingCapital" + delimiter + getStartingCapital()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "LongAllowed" + delimiter + getLongOnly()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ShortAllowed" + delimiter + getShortOnly()});
+        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderAtributes" + delimiter + getOrderAttributes().toString()});
+        
+        if (getFutBrokerageFile().compareTo("") != 0) {
+            Properties pBrokerage = TradingUtil.loadParameters(getFutBrokerageFile());
+            String brokerage1 = pBrokerage.getProperty("Brokerage");
+            String addOn1 = pBrokerage.getProperty("AddOn1");
+            String addOn2 = pBrokerage.getProperty("AddOn2");
+            String addOn3 = pBrokerage.getProperty("AddOn3");
+            String addOn4 = pBrokerage.getProperty("AddOn4");
+            
+            if (brokerage1 != null) {
+                getBrokerageRate().add(TradingUtil.parseBrokerageString(brokerage1, type));
+            }
+            if (addOn1 != null) {
+                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn1, type));
+            }
+            if (addOn2 != null) {
+                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn2, type));
+            }
+            if (addOn3 != null) {
+                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn3, type));
+            }
+            if (addOn4 != null) {
+                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn4, type));
+            }
+            
+        }
     }
-
-    /**
-     * @param orderAttributes the orderAttributes to set
-     */
-    public void setOrderAttributes(HashMap<String, Object> orderAttributes) {
-        this.orderAttributes = orderAttributes;
+    @Override
+    public void notificationReceived(NotificationEvent event) {
     }
-
-    /**
-     * @return the ordType
-     */
-    public EnumOrderType getOrdType() {
-        return ordType;
+    public synchronized void printOrders(String prefix, Strategy s) {
+        double[] profitGrid = new double[5];
+        DecimalFormat df = new DecimalFormat("#.##");
+        Map args = new HashMap<>();
+        try {
+            File dir = new File("logs");
+            File file;
+            File equityFile;
+            String equityFileName;
+            if (stratCount == null) {
+                file = new File(dir, "body.txt");
+                equityFileName = "Equity.csv";
+                equityFile = new File(dir, equityFileName);
+            } else {
+                file = new File(dir, "body" + stratCount + ".txt");
+                equityFileName = "Equity" + stratCount + ".csv";
+                equityFile = new File(dir, equityFileName);
+                
+            }
+            
+            if (prefix.equals("")) {
+                if (file.exists()) {
+                    file.delete();
+                }
+                if (equityFile.exists()) {
+                    equityFile.delete();
+                }
+            }
+            String orderFileFullName = s.getOrderFile();
+            if (prefix.equals("")) {
+                profitGrid = TradingUtil.applyBrokerage(getDb(), s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName, s.getStrategy());
+                TradingUtil.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
+                TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
+                TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
+                TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
+                TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
+                TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
+                TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
+                TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
+                TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
+                TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
+                TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
+                TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
+                TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
+                
+            }
+            if (!useRedis) {
+                logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
+            }
+            //Now write trade file
+//            String tradeFileFullName = "logs" + File.separator + prefix + s.getTradeFile();
+String tradeFileFullName = s.getTradeFile();
+if (prefix.equals("")) {
+    for (BeanConnection c : Parameters.connection) {
+        if (s.accounts.contains(c.getAccountName())) {
+            profitGrid = TradingUtil.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTradeFile(), s.getTimeZone(), s.getStartingCapital(), c.getAccountName(), equityFileName, s.getStrategy());
+            TradingUtil.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
+            TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
+            TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
+            TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
+            TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
+            TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
+            TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
+            TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
+            TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
+            TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
+            TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
+            TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
+            TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
+            
+            String message
+                    = "Strategy Name:" + s.strategy + Strategy.newline
+                    + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
+                    + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
+                    + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
+                    + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
+                    + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
+                    + "# days in history: " + df.format(profitGrid[9]) + Strategy.newline
+                    + "Average Drawdown Cycle:  " + df.format(profitGrid[10]) + Strategy.newline
+                    + "# days in current drawdown: " + df.format(profitGrid[11]) + Strategy.newline
+                    + "Average Drawdown Value:  " + df.format(profitGrid[12]) + Strategy.newline
+                    + "Current Drawdown Value: " + df.format(profitGrid[13]);
+            
+            String openPositions = Validator.openPositions(c.getAccountName(), s);
+            
+            if (openPositions.equals("")) {
+                message = message + newline + "No open trade positions";
+            } else {
+                message = message + newline + openPositions;
+            }
+            message = message + "\n" + "\n";
+            message = message + "PNL Summary" + "\n";
+            
+            message = message + Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
+            Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
+            t.start();
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException ex) {
+                logger.log(Level.INFO, "101", ex);
+            }
+        }
     }
+}
+if (!useRedis) {
+    logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
+}
+for (BeanConnection c : Parameters.connection) {
+    if (s.accounts.contains(c.getAccountName())) {
+        Validator.reconcile(prefix, getDb(), s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
+    }
+    //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
+}
+if (Algorithm.useForSimulation) {
+    System.exit(0);
+}
 
-    /**
-     * @param ordType the ordType to set
-     */
-    public void setOrdType(EnumOrderType ordType) {
-        this.ordType = ordType;
+        } catch (Exception e) {
+            logger.log(Level.INFO, "101", e);
+        }
+    }
+    public void updatePositions() {
+        //Initialize open notional orders and positions
+        for (BeanPosition p : position.values()) {
+            p.setPosition(0);
+            p.setBrokerage(0);
+            p.setPrice(0);
+        }
+        for (String key : getDb().getKeys("opentrades_" + strategy)) {
+            String parentsymbolname = Trade.getParentSymbol(getDb(), key);
+            int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
+            int tempPosition = 0;
+            double tempPositionPrice = 0D;
+            if (id >= 0) {
+                if (!Parameters.symbol.get(id).getStrategy().contains(this.getStrategy().toUpperCase())) {
+                    String oldstrategy = Parameters.symbol.get(id).getStrategy();
+                    Parameters.symbol.get(id).setStrategy(oldstrategy + ":" + this.getStrategy().toUpperCase());
+                }
+                if (Trade.getAccountName(getDb(), key).equals("Order") && key.contains("_" + strategy)) {
+                    BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
+                    tempPosition = p.getPosition();
+                    tempPositionPrice = p.getPrice();
+                    int entrySize = Trade.getEntrySize(getDb(), key);
+                    double entryPrice = Trade.getEntryPrice(getDb(), key);
+                    switch (Trade.getEntrySide(getDb(), key)) {
+                        case BUY:
+                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice + entrySize * entryPrice) / (entrySize + tempPosition) : 0D;
+                            tempPosition = tempPosition + entrySize;
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            p.setStrategy(strategy);
+                            position.put(id, p);
+                            break;
+                        case SHORT:
+                            tempPositionPrice = entrySize + tempPosition != 0 ? (tempPosition * tempPositionPrice - entrySize * entryPrice) / (-entrySize + tempPosition) : 0D;
+                            tempPosition = tempPosition - entrySize;
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            p.setStrategy(strategy);
+                            position.put(id, p);
+                            break;
+                        default:
+                            break;
+                    }
+                    int exitSize = Trade.getExitSize(getDb(), key);
+                    double exitPrice = Trade.getExitPrice(getDb(), key);
+                    switch (Trade.getExitSide(getDb(), key)) {
+                        case COVER:
+                            tempPositionPrice = exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice + exitSize * exitPrice) / (exitSize + tempPosition) : 0D;
+                            tempPosition = tempPosition + exitSize;
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            p.setStrategy(strategy);
+                            position.put(id, p);
+                            break;
+                        case SELL:
+                            tempPositionPrice = -exitSize + tempPosition != 0 ? (tempPosition * tempPositionPrice - exitSize * exitPrice) / (-exitSize + tempPosition) : 0D;
+                            tempPosition = tempPosition - exitSize;
+                            p.setPosition(tempPosition);
+                            p.setPrice(tempPositionPrice);
+                            p.setPointValue(pointValue);
+                            p.setStrategy(strategy);
+                            position.put(id, p);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
     }
 
 }

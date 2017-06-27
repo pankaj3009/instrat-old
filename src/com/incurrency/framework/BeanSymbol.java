@@ -177,7 +177,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         //Symbol1_type_expiry_right_option_signedsize:symbol2_type_expiry_right_option_signedsize
         //set mandatory fields
         this.type = "COMBO";
-        this.setSerialno(Parameters.symbol.size() + 1);
+        this.setSerialno(Parameters.symbol.size());
         this.setBrokerSymbol(comboString);
         this.happyName = happyName;
         this.setDisplayname(happyName);
@@ -319,7 +319,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void SetOptionProcess() {//expiry,right,strike
         if (getCloseVol() == 0) {
             double optionlastprice = Utilities.getSettlePrice(this);
-            int futureid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.getSerialno() - 1, expiry);
+            int futureid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.getSerialno(), expiry);
             double underlyingpriorclose = Utilities.getSettlePrice(Parameters.symbol.get(futureid));
 
             if (optionlastprice != 0) {
@@ -351,7 +351,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         if (underlyingID.get() >= 0) {
             getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());
         } else {
-            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno - 1, this.getExpiry()));
+            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno, this.getExpiry()));
             getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());
             Thread.yield();
         }
@@ -1100,7 +1100,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                     double tempLastPrice = 0;
                     boolean pricesAvailable = true;
                     for (Map.Entry<BeanSymbol, Integer> entry : getCombo().entrySet()) {
-                        int id = entry.getKey().getSerialno() - 1;
+                        int id = entry.getKey().getSerialno();
                         if (Parameters.symbol.get(id).getLastPrice() > 0) {
                             tempLastPrice = tempLastPrice + Parameters.symbol.get(id).getLastPrice() * entry.getValue();
                         } else {
@@ -1111,7 +1111,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                         this.lastPrice = tempLastPrice;
                         getTradedPrices().push(getLastPrice());
                         if (Parameters.symbol.size() >= serialno) {
-                            MainAlgorithm.tes.fireTradeEvent(serialno - 1, com.ib.client.TickType.LAST);
+                            MainAlgorithm.tes.fireTradeEvent(serialno, com.ib.client.TickType.LAST);
                         }
                         if (MainAlgorithm.getCollectTicks()) {
                             TradingUtil.writeToFile("tick_" + this.getDisplayname() + ".csv", "Trade," + lastPrice);
@@ -1125,7 +1125,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                         //bidprice receieved and i am buying this brokerSymbol.
                         //change in bidprice will reflect change in bidprice of the combo
                         for (Map.Entry<BeanSymbol, Integer> entry : getCombo().entrySet()) {
-                            int id = entry.getKey().getSerialno() - 1;
+                            int id = entry.getKey().getSerialno();
                             if (Parameters.symbol.get(id).getBidPrice() == 0 || Parameters.symbol.get(id).getAskPrice() == 0) {
                                 tempBidPrice = 0;
                                 setBidPrice(0D);
@@ -1135,7 +1135,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                         }
                         setBidPrice(tempBidPrice);
                         if (Parameters.symbol.size() >= serialno) {
-                            MainAlgorithm.tes.fireBidAskChange(serialno - 1);
+                            MainAlgorithm.tes.fireBidAskChange(serialno);
                         }
                         if (MainAlgorithm.getCollectTicks()) {
                             TradingUtil.writeToFile("tick_" + this.getDisplayname() + ".csv", "Bid," + bidPrice);
@@ -1155,7 +1155,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                         //askprice receieved and i am selling this brokerSymbol.
                         //change in askprice will not affect price of combo
                         for (Map.Entry<BeanSymbol, Integer> entry : getCombo().entrySet()) {
-                            int id = entry.getKey().getSerialno() - 1;
+                            int id = entry.getKey().getSerialno();
                             if (Parameters.symbol.get(id).getBidPrice() == 0 || Parameters.symbol.get(id).getAskPrice() == 0) {
                                 tempAskPrice = 0;
                                 setAskPrice(0D);
@@ -1165,7 +1165,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                         }
                         setAskPrice(tempAskPrice);
                         if (Parameters.symbol.size() >= serialno) {
-                            MainAlgorithm.tes.fireBidAskChange(serialno - 1);
+                            MainAlgorithm.tes.fireBidAskChange(serialno);
                         }
                         if (MainAlgorithm.getCollectTicks()) {
                             TradingUtil.writeToFile("tick_" + this.getDisplayname() + ".csv", "Ask," + askPrice);
@@ -2589,7 +2589,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         if (underlyingID.get() >= 0) {
             return underlyingID.get();
         } else {
-            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno - 1, this.getExpiry()));
+            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno, this.getExpiry()));
             return underlyingID.get();
         }
 
