@@ -400,7 +400,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         order.m_tif = ordValidity;
         order.m_goodAfterTime = effectiveFrom;
         order.m_displaySize = e.getDisplaySize();
-        order.m_totalQuantity = e.getOriginalOrderSize();
+        order.m_totalQuantity = e.getOriginalOrderSize()-e.getTotalFillSize();
 
         switch (orderType) {
             case MKT:
@@ -541,85 +541,85 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             return orderids;
         }
         int i = -1;
-        boolean comboOrderMapsUpdated = false;
         for (Map.Entry<Integer, Order> entry1 : orders.entrySet()) {//loop for each order and place order
             i = i + 1;
             Order order = entry1.getValue();
-            int symbolid = entry1.getKey();
-            if (c.getReqHandle().getHandle()) {
-                int mOrderID = order.m_orderId == 0 ? c.getIdmanager().getNextOrderId() : order.m_orderId;
-                event.put("ExternalOrderID", String.valueOf(mOrderID));
-                order.m_orderId = mOrderID;
-                int parentid = event.getParentSymbolID();
-                //save orderIDs at two places
-                //1st location
-                event.setOrderTime();
-                event.setOriginalOrderSize(order.m_totalQuantity);
+            if (event.getOrderStage() == EnumOrderStage.INIT) {
+                if (c.getReqHandle().getHandle()) {
+                    int mOrderID = order.m_orderId <=0 ? c.getIdmanager().getNextOrderId() : order.m_orderId;
+                    event.setExternalOrderID(mOrderID);
+//                    event.put("ExternalOrderID", String.valueOf(mOrderID));
+                    order.m_orderId = mOrderID;
+                    int parentid = event.getParentSymbolID();
+                    //save orderIDs at two places
+                    //1st location
+                    event.setOrderTime();
+                    //event.setOriginalOrderSize(order.m_totalQuantity);
 //                event.put("OrderTime", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime()));
 //                event.put("OrderSize", String.valueOf(order.m_totalQuantity));
-                int displaySize = 0;
-                int value = event.getMaximumOrderValue();
-                double bidPrice = Parameters.symbol.get(parentid).getBidPrice();
-                double askPrice = Parameters.symbol.get(parentid).getAskPrice();
-                double lastPrice = Parameters.symbol.get(parentid).getLastPrice();
-                if (value > 0) {
-                    if (lastPrice <= 0) {
-                        lastPrice = Math.max(bidPrice, askPrice);
+                    int displaySize = 0;
+                    int value = event.getMaximumOrderValue();
+                    double bidPrice = Parameters.symbol.get(parentid).getBidPrice();
+                    double askPrice = Parameters.symbol.get(parentid).getAskPrice();
+                    double lastPrice = Parameters.symbol.get(parentid).getLastPrice();
+                    if (value > 0) {
+                        if (lastPrice <= 0) {
+                            lastPrice = Math.max(bidPrice, askPrice);
+                        }
+                        if (lastPrice > 0) {
+                            displaySize = (int) (value / lastPrice);
+                        }
+                    } else {
+                        displaySize = event.getDisplaySize() * Parameters.symbol.get(parentid).getMinsize();
                     }
-                    if (lastPrice > 0) {
-                        displaySize = (int) (value / lastPrice);
+                    double impactCost = Math.abs((askPrice - bidPrice) * 2 / (askPrice + bidPrice));
+                    double impactCostThreshold = event.getMaxPermissibleImpactCost();
+                    if (displaySize > 0 && impactCostThreshold != 0 && impactCost > impactCostThreshold) {
+                        double rand = random.nextGaussian();
+                        displaySize = (int) (displaySize * rand);
+                        displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
+                        displaySize = Math.max(Parameters.symbol.get(parentid).getMinsize(), displaySize);
                     }
-                } else {
-                    displaySize = event.getDisplaySize() * Parameters.symbol.get(parentid).getMinsize();
-                }
-                double impactCost = Math.abs((askPrice - bidPrice) * 2 / (askPrice + bidPrice));
-                double impactCostThreshold = event.getMaxPermissibleImpactCost();
-                if (displaySize > 0 && impactCostThreshold!=0 && impactCost > impactCostThreshold) {
-                    double rand = random.nextGaussian();
-                    displaySize = (int) (displaySize * rand);
-                    displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
-                    displaySize = Math.max(Parameters.symbol.get(parentid).getMinsize(), displaySize);
-                }
-                logger.log(Level.FINE, "500,DisplaySizeSet,{0}", new Object[]{displaySize});
-                order.m_displaySize = displaySize;
-                //event.put("DisplaySize",String.valueOf(order.m_displaySize));
-                boolean singlelegorder = !TradingUtil.isSyntheticSymbol(event.getParentSymbolID());
-                if (singlelegorder) {
-                    if (event.getChildSymbolID() == 0) {
-                        event.setChildDisplayName(Parameters.symbol.get(parentid).getDisplayname());
-                    }
-                    event.setCurrentOrderSize(order.m_totalQuantity);
-                    event.setLimitPrice(order.m_lmtPrice);
-                    event.setTriggerPrice(order.m_auxPrice);
-                    event.setOrderStatus(EnumOrderStatus.SUBMITTED);
-                    ArrayList<Contract> contracts = c.getWrapper().createContract(event.getChildSymbolID());
-                    if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0 && !event.getOrderStage().equals(EnumOrderStage.AMEND)) {
-                        event.setOrderStage(EnumOrderStage.INIT);
-                        event.setCurrentFillSize(0);
+                    logger.log(Level.FINE, "500,DisplaySizeSet,{0}", new Object[]{displaySize});
+                    order.m_displaySize = displaySize;
+                    //event.put("DisplaySize",String.valueOf(order.m_displaySize));
+                    boolean singlelegorder = !TradingUtil.isSyntheticSymbol(event.getParentSymbolID());
+                    if (singlelegorder) {
+                        if (event.getChildSymbolID() == 0) {
+                            event.setChildDisplayName(Parameters.symbol.get(parentid).getDisplayname());
+                        }
+                        event.setCurrentOrderSize(order.m_totalQuantity);
+                        event.setLimitPrice(order.m_lmtPrice);
+                        event.setTriggerPrice(order.m_auxPrice);
+                        event.setOrderStatus(EnumOrderStatus.SUBMITTED);
+                        if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0) {
+                           order.m_totalQuantity=displaySize;
+                           event.setCurrentOrderSize(order.m_totalQuantity);
+//                            event.setOrderStage(EnumOrderStage.INIT);
+                            event.setCurrentFillSize(0);
 //                        order.m_totalQuantity = Math.min(order.m_displaySize, (event.getOriginalOrderSize() - event.getTotalFillSize()));
 //                        event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
 //                        int connectionid = Parameters.connection.indexOf(this.getC());
-                        logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize())});
-                        if (Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
-                            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), event.getOrderSide(), oms.tickSize, event.getOrderType());
-                            if (limitprice > 0) {
-                                order.m_lmtPrice = limitprice;
+                            logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize())});
+                            if (Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
+                                double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), event.getOrderSide(), oms.tickSize, event.getOrderType());
+                                if (limitprice > 0) {
+                                    order.m_lmtPrice = limitprice;
+                                }
                             }
+                            event.createLinkedAction(event.getInternalOrderID(), "PROPOGATE", "COMPLETEFILLED", String.valueOf(event.getSubOrderDelay()));
+                            //oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE,delay));
                         }
-                        event.createLinkedAction(event.getInternalOrderID(), "PROPOGATE", "COMPLETEFILLED", String.valueOf(event.getLinkDelay()));
-                        //oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE,delay));
-                    }
-                    order.m_displaySize = 0; //reset display size to zero as we do not use IB's displaysize feature
-                    eClientSocket.placeOrder(mOrderID, contracts.get(0), order);
-                    if (event.getOrderStage() != EnumOrderStage.AMEND) {
-                        getRecentOrders().add(new Date().getTime());
-                    }
-                    logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
-                            new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(event.getParentSymbolID()).getDisplayname(), Integer.toString(event.getInternalOrderID()),
-                                String.valueOf(mOrderID), event.getOrderSide(), String.valueOf(order.m_totalQuantity), order.m_orderType, String.valueOf(order.m_lmtPrice),
-                                String.valueOf(order.m_auxPrice)});
-                    orderids.add(mOrderID);
-                } else {//combo order
+                        order.m_displaySize = 0; //reset display size to zero as we do not use IB's displaysize feature
+                        if (event.getOrderStage() != EnumOrderStage.AMEND) {
+                            getRecentOrders().add(new Date().getTime());
+                        }
+                        logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
+                                new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(event.getParentSymbolID()).getDisplayname(), Integer.toString(event.getInternalOrderID()),
+                                    String.valueOf(mOrderID), event.getOrderSide(), String.valueOf(order.m_totalQuantity), order.m_orderType, String.valueOf(order.m_lmtPrice),
+                                    String.valueOf(order.m_auxPrice)});
+                        orderids.add(mOrderID);
+                    } else {//combo order
 //                    if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
 //                        //do nothing
 //                    } else if (orders.size() > 1 && tag.equals("")) {//combo new order
@@ -722,15 +722,20 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 //                    }
 //                    logger.log(Level.INFO, "101,OrderPlacedWithBroker,{0}", new Object[]{c.getAccountName() + delimiter + order.m_orderRef + delimiter + Parameters.symbol.get(ob.getParentSymbolID() - 1).getDisplayname() + delimiter + Parameters.symbol.get(ob.getChildSymbolID() - 1).getDisplayname() + delimiter + mOrderID + delimiter + ob.getParentOrderSide() + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate + delimiter});
 //                    orderids.add(mOrderID);
+                    }
                 }
+            } else if (event.getOrderStage().equals(EnumOrderStage.AMEND)) {
+                order.m_lmtPrice = event.getLimitPrice();
             }
+            ArrayList<Contract> contracts = c.getWrapper().createContract(event.getChildSymbolID());
+            eClientSocket.placeOrder(order.m_orderId, contracts.get(0), order);
         }
+
         String key = "OQ:" + event.getExternalOrderID() + ":" + c.getAccountName() + ":" + event.getOrderReference() + ":"
                 + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":"
                 + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
         Algorithm.db.insertOrder(key, event);
         c.setOrder(new OrderQueueKey(key), event);
-
         return orderids;
     }
 
@@ -780,11 +785,10 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
             }
-            String searchString = "OQ:*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getInternalOrderID() + ":";
+            String searchString = "OQ:.*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getInternalOrderID() + ":";
             Set<OrderQueueKey> oqks = TradingUtil.getLiveOrderKeys(Algorithm.db, c, searchString);
             for (OrderQueueKey oqki : oqks) {
-                int obindex = c.getOrders().get(oqki).size() - 1;
-                OrderBean obvi = c.getOrders().get(oqki).get(obindex);
+                OrderBean obvi = c.getOrderBean(oqki);
                 if (!obvi.isCancelRequested() && obvi.getExternalOrderID() > 0) {
                     this.eClientSocket.cancelOrder(obvi.getExternalOrderID());
                     key = "OQ:" + obvi.getExternalOrderID() + ":" + c.getAccountName() + ":" + obvi.getOrderReference() + ":"

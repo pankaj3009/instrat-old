@@ -183,14 +183,18 @@ public class DateUtil {
 
     //parse the date string in the given format and timezone to return a date object
     public static Date parseDate(String format, String date) {
-        Date dt = null;
-        try {
-            SimpleDateFormat sdf1 = new SimpleDateFormat(format);
-            dt = sdf1.parse(date);
-        } catch (Exception e) {
-            logger.log(Level.INFO, "101", e);
+        if (date != null) {
+            Date dt = null;
+            try {
+                SimpleDateFormat sdf1 = new SimpleDateFormat(format);
+                dt = sdf1.parse(date);
+            } catch (Exception e) {
+                logger.log(Level.INFO, "101", e);
+            }
+            return dt;
+        } else {
+            return null;
         }
-        return dt;
     }
 
     public static Date parseDate(String format, String date, String timeZone) {

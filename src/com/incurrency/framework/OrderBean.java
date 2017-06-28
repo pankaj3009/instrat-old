@@ -34,7 +34,7 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     }
 
     public boolean linkedActionExists() {
-        return this.get("LinkInternalOrderID") != null ? Boolean.TRUE : Boolean.FALSE;
+        return this.get("LinkAction") != null ? Boolean.TRUE : Boolean.FALSE;
     }
 
     public int getParentSymbolID() {
@@ -226,6 +226,7 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
 
     public Date getEffectiveTillDate() {
         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", this.get("EffectiveTill"), Algorithm.timeZone);
+        
     }
 
     public Date getEffectiveFromDate() {
@@ -242,36 +243,36 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     
     public ArrayList<Integer> getLinkInternalOrderID() {
         ArrayList<Integer> out = new ArrayList<>();
-        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkInternalOrderID").split(":")));
+        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkInternalOrderID").split(",")));
         for (String i : in) {
-            out.add(Integer.valueOf(i));
+            if(Utilities.isInteger(i)){
+                out.add(Integer.valueOf(i));
+            }else{
+                return null;
+            }
         }
         return out;
     }
     
-    public ArrayList<EnumOrderStatus> getLinkStatusTrigger() {
-        ArrayList<EnumOrderStatus> out = new ArrayList<>();
-        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkInternalOrderID").split(":")));
-        for (String i : in) {
-            out.add(EnumOrderStatus.valueOf(i));
-        }
-        return out;
+    public ArrayList<String> getLinkStatusTrigger() {
+        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkStatusTrigger").split(",")));
+        return in;
     }
     
         public ArrayList<EnumLinkedAction> getLinkAction() {
         ArrayList<EnumLinkedAction> out = new ArrayList<>();
-        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkAction").split(":")));
+        ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkAction").split(",")));
         for (String i : in) {
             out.add(EnumLinkedAction.valueOf(i));
         }
         return out;
     }
 
-    public ArrayList<Integer> getLinkDelay(){
+    public ArrayList<Integer> getLinkDelays(){
        ArrayList<Integer> out = new ArrayList<>();
-       ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkDelay").split(":")));
+       ArrayList<String> in = new ArrayList<String>(Arrays.asList(this.get("LinkDelay").split(",")));
        for (String i : in) {
-            out.add(Integer.valueOf(i));
+            out.add(Utilities.getInt(i, 0));
         }
        return out; 
     }
@@ -280,22 +281,22 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     //Setters
     
     public void setLinkInternalOrderID(ArrayList<Integer> value) {
-        String in=value.stream().map(Object::toString).collect(Collectors.joining(":"));
+        String in=value.stream().map(Object::toString).collect(Collectors.joining(","));
         this.put("LinkInternalOrderID", in);
     }
     
-    public void setLinkStatusTrigger(ArrayList<EnumOrderStatus> value) {
-        String in=value.stream().map(Object::toString).collect(Collectors.joining(":"));
-        this.put("LinkInternalOrderID", in);
+    public void setLinkStatusTrigger(ArrayList<String> value) {
+        String in=value.stream().map(Object::toString).collect(Collectors.joining(","));
+        this.put("LinkStatusTrigger", in);
     }
     
     public void setLinkAction(ArrayList<EnumLinkedAction> value) {
-        String in = value.stream().map(Object::toString).collect(Collectors.joining(":"));
+        String in = value.stream().map(Object::toString).collect(Collectors.joining(","));
         this.put("LinkAction", in);
     }
 
     public void setLinkDelay(ArrayList<Integer> value){
-        String in = value.stream().map(Object::toString).collect(Collectors.joining(":"));
+        String in = value.stream().map(Object::toString).collect(Collectors.joining(","));
         this.put("LinkDelay", in);
     }
     
@@ -456,15 +457,6 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.put("StickyPeriod", String.valueOf(value));
     }
 
-    public void setLinkDelay(int value) {
-        this.put("LinkDelay", String.valueOf(value));
-    }
-
-    public int getLinkDelay() {
-        String linkDelay = this.get("LinkDelay");
-        return Utilities.getInt(linkDelay, 0);
-    }
-
     public void setMaxPermissibleImpactCost(double value) {
         this.put("MaxPermissibleImpactCost", String.valueOf(value));
     }
@@ -472,6 +464,15 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public double getMaxPermissibleImpactCost() {
         String maxPermissibleImpactCost = this.get("MaxPermissibleImpactCost");
         return Utilities.getDouble(maxPermissibleImpactCost, 0);
+    }
+    
+    public void setSubOrderDelay(int value) {
+        this.put("suborderdelay", String.valueOf(value));
+    }
+
+    public double getSubOrderDelay() {
+        String subOrderDelay = this.get("suborderdelay");
+        return Utilities.getInt(subOrderDelay, 0);
     }
 
     public void setValue(double value) {
@@ -496,7 +497,7 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.setDisplaySize(Utilities.getInt(orderAttributes.get("displaysize"), 0));
         this.setValue(Utilities.getInt(orderAttributes.get("value"), 0));
         this.setMaxPermissibleImpactCost(Utilities.getDouble(orderAttributes.get("thresholdimpactcost"), 0));
-        this.setLinkDelay(Utilities.getInt(orderAttributes.get("delay"), 1));
+        this.setSubOrderDelay(Utilities.getInt(orderAttributes.get("suborderdelay"), 1));
         this.setImproveProbability(Utilities.getDouble(orderAttributes.get("improveprob"), 1));
         this.setOrdersPerMinute(Utilities.getInt(orderAttributes.get("orderspermin"), 1));
         this.setImproveAmount(Utilities.getInt(orderAttributes.get("improveamt"), 1));

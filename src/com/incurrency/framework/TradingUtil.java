@@ -2153,11 +2153,10 @@ public class TradingUtil {
                 boolean combo = TradingUtil.isSyntheticSymbol(id);
                 if (combo) {
                     int parentorderidint = oqki.getParentorderidint();
-                    searchString = "OQ:*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
+                    searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
                     Set<OrderQueueKey> oqksnew = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
                     for (OrderQueueKey oqkinew : oqksnew) {
-                        int obsize = c.getOrders().get(oqkinew).size();
-                        OrderBean ob = c.getOrders().get(oqkinew).get(obsize - 1);
+                        OrderBean ob = c.getOrderBean(oqkinew);
                         if (ob.getExternalOrderID() >= 0 && TradingUtil.isLiveOrder(c, oqkinew)) {
                             out.add(ob.getExternalOrderID());
                         }
@@ -2193,11 +2192,10 @@ public class TradingUtil {
                 boolean combo = TradingUtil.isSyntheticSymbol(id);
                 if (combo) {
                     int parentorderidint = oqki.getParentorderidint();
-                    searchString = "OQ:*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
+                    searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
                     Set<OrderQueueKey> oqksnew = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
                     for (OrderQueueKey oqkinew : oqksnew) {
-                        int obsize = c.getOrders().get(oqkinew).size();
-                        OrderBean ob = c.getOrders().get(oqkinew).get(obsize - 1);
+                        OrderBean ob = c.getOrderBean(oqkinew);
                         if (ob.getExternalOrderID() > 0 && TradingUtil.isLiveOrder(c, oqkinew)) {
                             out.add(ob);
                         }
@@ -2211,18 +2209,17 @@ public class TradingUtil {
 
     static ArrayList<OrderBean> getLinkedOrderBeansGivenParentBean(OrderBean ob, BeanConnection c) {
         ArrayList<OrderBean> out = new ArrayList<>();
-        String searchString = "OQ:*" + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":" + ob.getParentInternalOrderID() + ":*";
+        String searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":" + ob.getParentInternalOrderID() + ":.*";
         Set<OrderQueueKey> oqks = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
         for (OrderQueueKey oqki : oqks) {
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
             boolean combo = TradingUtil.isSyntheticSymbol(id);
             if (combo) {
                 int parentorderidint = oqki.getParentorderidint();
-                searchString = "OQ:*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
+                searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
                 Set<OrderQueueKey> oqksnew = TradingUtil.getAllOrderKeys(Algorithm.db, c, searchString);
                 for (OrderQueueKey oqkinew : oqksnew) {
-                    int obsize = c.getOrders().get(oqkinew).size();
-                    OrderBean obi = c.getOrders().get(oqkinew).get(obsize - 1);
+                    OrderBean obi = c.getOrderBean(oqkinew);
                     if (ob.getExternalOrderID() > 0 && TradingUtil.isLiveOrder(c, oqkinew)) {
                         out.add(obi);
                     }
@@ -2256,13 +2253,12 @@ public class TradingUtil {
         String[] childDisplayNames = TradingUtil.getChildDisplayNames(parentid);
         String parentDisplayName = Parameters.symbol.get(parentid).getDisplayname();
         for (String childDisplayName : childDisplayNames) {
-            String searchString = "OQ:*" + c.getAccountName() + ":" + strategy + ":" + parentDisplayName + ":" + childDisplayName;
+            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + parentDisplayName + ":" + childDisplayName;
             Set<String> oqks = db.getKeysOfList("", searchString);
             for (String oqki : oqks) {
                 OrderQueueKey oqk = new OrderQueueKey(oqki);
                 if (TradingUtil.isLiveOrder(c, oqk)) {
-                    int lastindex = c.getOrders().get(oqk).size() - 1;
-                    orderids.add(c.getOrders().get(oqk).get(lastindex).getExternalOrderID());
+                    orderids.add(c.getOrderBean(oqk).getExternalOrderID());
                 }
             }
         }
@@ -2289,9 +2285,8 @@ public class TradingUtil {
      * @return
      */
     public static boolean isLiveOrder(BeanConnection c, OrderQueueKey oqk) {
-        ArrayList<OrderBean> oqvs = c.getOrders().get(oqk);
-        if (oqvs != null) {
-            OrderBean oqv = oqvs.get(oqvs.size() - 1);
+        OrderBean oqv = c.getOrderBean(oqk);
+        if (oqv != null) {
             if (oqv.getOrderStatus() == EnumOrderStatus.ACKNOWLEDGED || oqv.getOrderStatus() == EnumOrderStatus.PARTIALFILLED || oqv.getOrderStatus() == EnumOrderStatus.SUBMITTED) {
                 return true;
             } else {
@@ -2302,9 +2297,8 @@ public class TradingUtil {
     }
 
     public static boolean isRestingOrder(BeanConnection c, OrderQueueKey oqk) {
-        ArrayList<OrderBean> oqvs = c.getOrders().get(oqk);
-        if (oqvs != null) {
-            OrderBean oqv = oqvs.get(oqvs.size() - 1);
+        OrderBean oqv = c.getOrderBean(oqk);
+        if (oqv != null) {
             if (oqv.getOrderStatus() == EnumOrderStatus.UNDEFINED) {
                 return true;
             } else {

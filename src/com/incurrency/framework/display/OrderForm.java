@@ -300,7 +300,7 @@ public class OrderForm extends javax.swing.JFrame {
                 ob.setDisplaySize(Utilities.getInt(s.getOrderAttributes().get("displaysize"), 0));
                 ob.setValue(Utilities.getInt(s.getOrderAttributes().get("value"), 0));
                 ob.setMaxPermissibleImpactCost(Utilities.getDouble(s.getOrderAttributes().get("thresholdimpactcost"), 0));
-                ob.setLinkDelay(Utilities.getInt(s.getOrderAttributes().get("delay"), 1));
+                ob.setSubOrderDelay(Utilities.getInt(s.getOrderAttributes().get("suborderdelay"), 1));
                 ob.setImproveProbability(Utilities.getDouble(s.getOrderAttributes().get("improveprob"), 1));
                 ob.setOrdersPerMinute(Utilities.getInt(s.getOrderAttributes().get("orderspermin"), 1));
                 ob.setImproveAmount(Utilities.getInt(s.getOrderAttributes().get("improveamt"), 1));

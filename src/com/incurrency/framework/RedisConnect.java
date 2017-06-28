@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -249,7 +250,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
                 ScanResult s = jedis.scan(cursor);
                 cursor = s.getCursor();
                 for (Object key : s.getResult()) {
-                    if (key.toString().contains(searchString)) {
+                    if (Pattern.compile(searchString).matcher(key.toString()).find()) {
                         shortlist.add(key.toString());
                     }
                 }

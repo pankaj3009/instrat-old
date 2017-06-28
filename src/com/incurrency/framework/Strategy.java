@@ -551,7 +551,7 @@ public class Strategy implements NotificationListener {
         String log = order.getOrderLog()!=null? order.getOrderLog().toString() : "";
         double lastprice = Parameters.symbol.get(id).getLastPrice();
         lastprice = lastprice == 0 ? order.getLimitPrice() : lastprice;
-        new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getCurrentOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+        new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getOriginalOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
         logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
         if (MainAlgorithm.isUseForTrading()) {
             oms.tes.fireOrderEvent(order);
@@ -569,7 +569,7 @@ public class Strategy implements NotificationListener {
         }
         if (orderidforsquareoff > 0) {
             int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getCurrentOrderSize();
-            order.setCurrentOrderSize(tradeSize);
+            order.setOriginalOrderSize(tradeSize);
             double expectedFillPrice = 0;
             if (order.getOrderSide() == EnumOrderSide.COVER) {
                 BeanPosition pd = getPosition().get(id);

@@ -340,8 +340,10 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @return the ordersSymbols
      */
     public OrderBean getOrderBean(OrderQueueKey oqki) {
-        int index = orders.get(oqki).size() - 1;
-        return orders.get(oqki).get(index);
+        if(orders.get(oqki)!=null)
+        return orders.get(oqki).get(0);
+        else
+            return null;
     }
 
     /**
