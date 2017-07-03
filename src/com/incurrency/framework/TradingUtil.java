@@ -2285,15 +2285,32 @@ public class TradingUtil {
      * @return
      */
     public static boolean isLiveOrder(BeanConnection c, OrderQueueKey oqk) {
-        OrderBean oqv = c.getOrderBean(oqk);
-        if (oqv != null) {
-            if (oqv.getOrderStatus() == EnumOrderStatus.ACKNOWLEDGED || oqv.getOrderStatus() == EnumOrderStatus.PARTIALFILLED || oqv.getOrderStatus() == EnumOrderStatus.SUBMITTED) {
-                return true;
+        ArrayList<OrderBean> oqvs = c.getOrders().get(oqk);
+        if(oqvs==null){
+            return false;
+        }
+        int i = 0;
+        for (OrderBean oqvi : oqvs) {
+            if (i < 10) {
+                if (oqvi.getOrderStatus() == EnumOrderStatus.CANCELLEDNOFILL || oqvi.getOrderStatus() == EnumOrderStatus.CANCELLEDPARTIALFILL || oqvi.getOrderStatus() == EnumOrderStatus.COMPLETEFILLED||oqvi.getOrderStatus()==EnumOrderStatus.UNDEFINED) {
+                    return false;
+                }
+                i++;
             } else {
-                return false;
+                break;
             }
         }
-        return false;
+        return true;
+
+//        OrderBean oqv = c.getOrderBean(oqk);
+//        if (oqv != null) {
+//            if (oqv.getOrderStatus() == EnumOrderStatus.ACKNOWLEDGED || oqv.getOrderStatus() == EnumOrderStatus.PARTIALFILLED || oqv.getOrderStatus() == EnumOrderStatus.SUBMITTED) {
+//                return true;
+//            } else {
+//                return false;
+//            }
+//        }
+//        return false;
     }
 
     public static boolean isRestingOrder(BeanConnection c, OrderQueueKey oqk) {
@@ -2373,6 +2390,17 @@ public class TradingUtil {
         for (OrderQueueKey oqki : oqks) {
             if (TradingUtil.isRestingOrder(c, oqki)) {
                 out.add(c.getOrderBean(oqki));
+            }
+        }
+        return out;
+    }
+    
+    public static Set<OrderQueueKey> getRestingOrderKeys(Database db, BeanConnection c, String searchString) {
+        Set<OrderQueueKey> oqks = getAllOrderKeys(db, c, searchString);
+        Set<OrderQueueKey> out = new HashSet<>();
+        for (OrderQueueKey oqki : oqks) {
+            if (TradingUtil.isRestingOrder(c, oqki)) {
+                out.add(oqki);
             }
         }
         return out;

@@ -32,6 +32,17 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.put("LinkAction", action);
         this.put("LinkDelay", delay);
     }
+    
+     public void copyLinkedAction(OrderBean ob) {
+        String internalorderid=ob.getLinkInternalOrderID().stream().map(Object::toString).collect(Collectors.joining(","));
+        String linkstatustrigger=ob.getLinkStatusTrigger().stream().map(Object::toString).collect(Collectors.joining(","));
+        String linkaction=ob.getLinkAction().stream().map(Object::toString).collect(Collectors.joining(","));
+        String linkdelay=ob.getLinkDelays().stream().map(Object::toString).collect(Collectors.joining(","));
+        this.put("LinkInternalOrderID", internalorderid);
+        this.put("LinkStatusTrigger", linkstatustrigger);
+        this.put("LinkAction", linkaction);
+        this.put("LinkDelay", linkdelay);
+    }
 
     public boolean linkedActionExists() {
         return this.get("LinkAction") != null ? Boolean.TRUE : Boolean.FALSE;
@@ -115,9 +126,9 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
 
     }
 
-    public int getTotalFillPrice() {
+    public double getTotalFillPrice() {
         String fillSize = this.get("TotalFillPrice");
-        return Utilities.getInt(fillSize, 0);
+        return Utilities.getDouble(fillSize, 0);
 
     }
 
@@ -307,9 +318,17 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public void setEffectiveTill(Date value) {
         this.put("EffectiveTill", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", value.getTime()));
     }
+    
+    public void setEffectiveTill(String value) {
+        this.put("EffectiveTill", value);
+    }
 
     public void setEffectiveFrom(Date value) {
         this.put("EffectiveFrom", DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", value.getTime()));
+    }
+    
+    public void setEffectiveFrom(String value) {
+        this.put("EffectiveFrom", value);
     }
 
     public void setParentDisplayName(String value) {
@@ -470,7 +489,7 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.put("suborderdelay", String.valueOf(value));
     }
 
-    public double getSubOrderDelay() {
+    public int getSubOrderDelay() {
         String subOrderDelay = this.get("suborderdelay");
         return Utilities.getInt(subOrderDelay, 0);
     }

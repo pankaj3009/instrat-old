@@ -199,21 +199,26 @@ public class DateUtil {
 
     public static Date parseDate(String format, String date, String timeZone) {
         Date dt = null;
-        try {
-            TimeZone tz;
-            SimpleDateFormat sdf1 = new SimpleDateFormat(format);
-            if ("".compareTo(timeZone) == 0) {
-                tz = TimeZone.getDefault();
-            } else {
-                tz = TimeZone.getTimeZone(timeZone);
-            }
-            sdf1.setTimeZone(tz);
-            dt = sdf1.parse(date);
+        if (date != null) {
+            try {
+                TimeZone tz;
+                SimpleDateFormat sdf1 = new SimpleDateFormat(format);
+                if ("".compareTo(timeZone) == 0) {
+                    tz = TimeZone.getDefault();
+                } else {
+                    tz = TimeZone.getTimeZone(timeZone);
+                }
+                sdf1.setTimeZone(tz);
+                dt = sdf1.parse(date);
 
-        } catch (Exception e) {
-            logger.log(Level.INFO, "101", e);
+            } catch (Exception e) {
+                logger.log(Level.INFO, "101", e);
+            }
+            return dt;
+        } else {
+            return null;
         }
-        return dt;
+
     }
 
     public static Date addDays(Date date, int days) {

@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework.display;
 
+import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.EnumOrderReason;
 import com.incurrency.framework.EnumOrderSide;
 import com.incurrency.framework.EnumOrderStage;
@@ -17,6 +18,7 @@ import com.incurrency.framework.Strategy;
 import com.incurrency.framework.TradingUtil;
 import com.incurrency.framework.Utilities;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
@@ -59,9 +61,13 @@ public class OrderForm extends javax.swing.JFrame {
         this.lblSymbol.setText(symbol);
         this.lblSide.setText(side.toString());
         if (ibOrderID > 0) { //retrieve orders
-            String key = "OQ:" + ibOrderID + ":" + Parameters.connection.get(connection).getAccountName() + ":" + strategy + ":" + symbol + ":" + symbol;
-            OrderQueueKey oqk = new OrderQueueKey(key);
-            ob = Parameters.connection.get(connection).getOrderBean(oqk);
+            String key = "OQ:" + ibOrderID + ":" + Parameters.connection.get(connection).getAccountName() + ":" + strategy + ":" + symbol + ":" + symbol+".*";
+            Set<OrderQueueKey> oqks = TradingUtil.getAllOrderKeys(Algorithm.db,Parameters.connection.get(connection) , key);
+            if(oqks!=null && oqks.size()==1){
+                for(OrderQueueKey oqk:oqks){
+                    ob = Parameters.connection.get(connection).getOrderBean(oqk);
+                }
+            }
             if (ob != null) {
                 internalOrderId = ob.getInternalOrderID();
                 internalOrderIdEntry = ob.getOrderIDForSquareOff();
@@ -307,10 +313,15 @@ public class OrderForm extends javax.swing.JFrame {
                 ob.setStickyPeriod(Utilities.getInt(s.getOrderAttributes().get("stickyperiod"), 0));
                 ob.setFatFingerWindow(Utilities.getInt(s.getOrderAttributes().get("fatfingerwindow"), 120));
                 ob.setScale(Boolean.FALSE);
-
+            }else{
+                ob.setOrderType(EnumOrderType.valueOf(comboType.getSelectedItem().toString()));
+                ob.setTriggerPrice(Double.valueOf(this.txtTriggerPrice.getText()));
+                ob.setLimitPrice(Double.valueOf(this.txtLimitPrice.getText()));
+                ob.setOrderStage(EnumOrderStage.AMEND);
             }
+                  
+                s.getOms().tes.fireOrderEvent(ob);
 //                if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
-            s.exit(ob);
             dispose();
 //                    } else {
 //                        oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy());

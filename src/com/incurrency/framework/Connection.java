@@ -44,7 +44,7 @@ public interface Connection {
 
     public Contract createContract(BeanSymbol s);
 
-    public ArrayList<Integer> placeOrder(BeanConnection c, HashMap<Integer, Order> orders, ExecutionManager oms, OrderBean event);
+    public OrderBean placeOrder(BeanConnection c, HashMap<Integer, Order> orders, ExecutionManager oms, OrderBean event);
 
     boolean tradeIntegrityOK(EnumOrderSide side, EnumOrderStage stage, HashMap<Integer, Order> orders, boolean reset);
 

@@ -191,14 +191,17 @@ public class RedisConnect<K, V> implements Database<K, V> {
         OrderBean ob = null;
         try (Jedis jedis = pool.getResource()) {
             Object o = jedis.lrange(key, -1, -1);
-            try {
-                Type type = new TypeToken<List<OrderBean>>() {
-                }.getType();
-                Gson gson = new GsonBuilder().create();
-                ob = gson.fromJson((String) o, type);
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "{0}_{1}", new Object[]{(String) o, key});
+            if (o != null && ((List) o).size() > 0) {
+                try {
+                    Type type = new TypeToken<OrderBean>() {
+                    }.getType();
+                    Gson gson = new GsonBuilder().create();
+                    ob = gson.fromJson((String) ((List) o).get(0), type);
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "{0}_{1}", new Object[]{(String) o, key});
+                }
             }
+            
         }
         return ob;
     }

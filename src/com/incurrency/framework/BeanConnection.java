@@ -153,11 +153,11 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     }
 
     public ArrayList<OrderBean> getLiveOrders() {
-        return new ArrayList(TradingUtil.getLiveOrders(Algorithm.db, this, "OQ:*:" + this.getAccountName() + ":"));
+        return new ArrayList(TradingUtil.getLiveOrders(Algorithm.db, this, "OQ:.*:" + this.getAccountName() + ":.*"));
     }
 
     public ArrayList<OrderBean> getRestingOrders() {
-        return new ArrayList(TradingUtil.getRestingOrders(Algorithm.db, this, "OQ:*:" + this.getAccountName() + ":"));
+        return new ArrayList(TradingUtil.getRestingOrders(Algorithm.db, this, "OQ:.*:" + this.getAccountName() + ":.*"));
     }
 
     /**
@@ -341,7 +341,20 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      */
     public OrderBean getOrderBean(OrderQueueKey oqki) {
         if(orders.get(oqki)!=null)
+//      return Algorithm.db.getLatestOrderBean(oqki.getKey(this.getAccountName()));
         return orders.get(oqki).get(0);
+        else
+            return null;
+    }
+    
+        /**
+     * @param oqki
+     * @return the ordersSymbols
+     */
+    public OrderBean getOrderBeanCopy(OrderQueueKey oqki) {
+        if(orders.get(oqki)!=null)
+//         return new OrderBean(Algorithm.db.getLatestOrderBean(oqki.getKey(this.getAccountName())));
+        return new OrderBean(orders.get(oqki).get(0));
         else
             return null;
     }
@@ -356,9 +369,20 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
             temp.add(order);
             orders.put(oqk, temp);
         } else {
-            orders.get(oqk).add(order);
+            if(TradingUtil.isLiveOrder(this, oqk)){
+                orders.get(oqk).add(0,order);
+            }
         }
     }
+    
+    public void removeOrderKey(OrderQueueKey oqk) {
+        if (orders.get(oqk) == null) {
+            return;
+        } else {
+            orders.remove(oqk);
+        }
+    }
+
 
     /**
      * @return the notionalPositions

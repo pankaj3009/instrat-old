@@ -398,9 +398,12 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         order.m_auxPrice = trigger > 0 ? trigger : 0;
         order.m_lmtPrice = limit > 0 ? limit : 0;
         order.m_tif = ordValidity;
-        order.m_goodAfterTime = effectiveFrom;
         order.m_displaySize = e.getDisplaySize();
-        order.m_totalQuantity = e.getOriginalOrderSize()-e.getTotalFillSize();
+        if(e.getOrderStage()==EnumOrderStage.INIT){
+            order.m_totalQuantity = e.getOriginalOrderSize()-e.getTotalFillSize();
+        }else{
+            order.m_totalQuantity=e.getCurrentOrderSize();
+        }
 
         switch (orderType) {
             case MKT:
@@ -437,9 +440,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         order.m_account = getC().getAccountName().toUpperCase();
         order.m_transmit = true;
         //order.m_tif = validity; //All orders go as DAY orders after expireminutes logic was removed
-        if (effectiveFrom != null) {
-            order.m_goodAfterTime = effectiveFrom;
-        }
         switch (reason) {
             case OCOSL:
                 break;
@@ -535,11 +535,13 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     }
 
     @Override
-    public synchronized ArrayList<Integer> placeOrder(BeanConnection c, HashMap<Integer, Order> orders, ExecutionManager oms, OrderBean event) {
+    public synchronized OrderBean placeOrder(BeanConnection c, HashMap<Integer, Order> orders, ExecutionManager oms, OrderBean event) {
         ArrayList<Integer> orderids = new ArrayList<>();
         if (!tradeIntegrityOK(event.getOrderSide(), event.getOrderStage(), orders, true)) {//reset trading flag set during createorder
-            return orderids;
+            return event;
         }
+
+        event=new OrderBean(event);
         int i = -1;
         for (Map.Entry<Integer, Order> entry1 : orders.entrySet()) {//loop for each order and place order
             i = i + 1;
@@ -728,15 +730,18 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 order.m_lmtPrice = event.getLimitPrice();
             }
             ArrayList<Contract> contracts = c.getWrapper().createContract(event.getChildSymbolID());
-            eClientSocket.placeOrder(order.m_orderId, contracts.get(0), order);
+            String key = "OQ:" + event.getExternalOrderID() + ":" + c.getAccountName() + ":" + event.getOrderReference() + ":"
+                    + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":"
+                    + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
+            if (TradingUtil.isLiveOrder(this.getC(), new OrderQueueKey(key))||this.getC().getOrders().get(new OrderQueueKey(key))==null) {
+                eClientSocket.placeOrder(order.m_orderId, contracts.get(0), order);
+                Algorithm.db.insertOrder(key, event);
+                c.setOrder(new OrderQueueKey(key), event);
+            }
+
         }
 
-        String key = "OQ:" + event.getExternalOrderID() + ":" + c.getAccountName() + ":" + event.getOrderReference() + ":"
-                + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":"
-                + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
-        Algorithm.db.insertOrder(key, event);
-        c.setOrder(new OrderQueueKey(key), event);
-        return orderids;
+        return event;
     }
 
     public synchronized boolean tradeIntegrityOK(EnumOrderSide side, EnumOrderStage stage, HashMap<Integer, Order> orders, boolean reset) {
@@ -772,6 +777,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 
     @Override
     public void cancelOrder(BeanConnection c, OrderBean ob) {
+        ob=new OrderBean(ob);
         if (!ob.isCancelRequested()) {
             ob.put("CancelRequested", "TRUE");
             String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
@@ -1823,11 +1829,12 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 
                 case 321:
                     rd = requestDetails.get(id);
+                    if(rd!=null){
                     logger.log(Level.INFO, "402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestType={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
                             new Object[]{"Unknown", rd.accountName, rd.symbol.getDisplayname(), -1, -1,
-                                rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
+                                rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});                        
+                    }
                     break;
-
                 case 1102: //Reconnected
                     //MainAlgorithm.connectToTWS(c);
                     if (eClientSocket.isConnected()) {

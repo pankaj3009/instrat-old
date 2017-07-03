@@ -81,7 +81,7 @@ public class TableModelOpenOrders extends AbstractTableModel {
 
         switch (columnIndex) {
             case 0:
-                return orders.get(rowIndex).getInternalOrderID();
+                return orders.get(rowIndex).getOrderReference();
             case 1:
                 return orders.get(rowIndex).getChildDisplayName();
 

@@ -524,7 +524,7 @@ public class Strategy implements NotificationListener {
         if (order.getOrderSide() == EnumOrderSide.BUY) {
             BeanPosition pd = getPosition().get(id);
             double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-            int symbolPosition = pd.getPosition() + order.getCurrentOrderSize();
+            int symbolPosition = pd.getPosition() + order.getOriginalOrderSize();
             double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
             pd.setPosition(symbolPosition);
             pd.setPositionInitDate(TradingUtil.getAlgoDate());
@@ -568,7 +568,7 @@ public class Strategy implements NotificationListener {
             orderidforsquareoff = this.ParentInternalOrderIDForSquareOff("Order", order);
         }
         if (orderidforsquareoff > 0) {
-            int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getCurrentOrderSize();
+            int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getOriginalOrderSize();
             order.setOriginalOrderSize(tradeSize);
             double expectedFillPrice = 0;
             if (order.getOrderSide() == EnumOrderSide.COVER) {
@@ -612,7 +612,7 @@ public class Strategy implements NotificationListener {
                     order.setOrderIDForSquareOff(orderidforsquareoff);
                     order.setOrderReference(getStrategy());
                     String log = order.getOrderLog() != null ? order.getOrderLog().toString() : "";
-                    Trade.updateExit(getDb(), id, order.getOrderReason(), order.getOrderSide(), newexitPrice, newexitSize, internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+                    Trade.updateExit(getDb(), id, order.getOrderReason(), order.getOrderSide(), newexitPrice, newexitSize, order.getOrderIDForSquareOff(), 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
                     if (newexitSize == entrySize) {
                         Trade.closeTrade(getDb(), key);
                     }
