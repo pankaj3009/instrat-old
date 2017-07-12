@@ -201,7 +201,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
                     logger.log(Level.SEVERE, "{0}_{1}", new Object[]{(String) o, key});
                 }
             }
-            
+
         }
         return ob;
     }

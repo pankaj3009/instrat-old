@@ -96,7 +96,7 @@ public class DataBars {
                 initialize(getOhlc());
             }
             if (!historicalBarsRequested && mSymbol.getDailyBar().finished && getHistoricalBars().size() > 0 && !Parameters.connection.isEmpty() && Parameters.connection.get(lastConnectionIDUsed.get()) != null) {
-                Parameters.connection.get(lastConnectionIDUsed.get()).getWrapper().requestHistoricalData(mSymbol, DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", TradingUtil.getAlgoDate().getTime()), duration, ibBarSizeString);
+                Parameters.connection.get(lastConnectionIDUsed.get()).getWrapper().requestHistoricalData(mSymbol, DateUtil.getFormattedDate("yyyyMMdd HH:mm:ss", Utilities.getAlgoDate().getTime()), duration, ibBarSizeString);
                 historicalBarsRequested = true;
                 lastConnectionIDUsed.addAndGet(1);
                 if (lastConnectionIDUsed.get() >= Parameters.connection.size()) {
@@ -138,7 +138,7 @@ public class DataBars {
             }
             if (timerDuration > 0) {
                 Timer triggerBars = new Timer("Timer: " + s.getBrokerSymbol() + " DataBars");
-                Date currDate = TradingUtil.getAlgoDate();
+                Date currDate = Utilities.getAlgoDate();
                 DateFormat df = new SimpleDateFormat("yyyyMMdd");
                 df.setTimeZone(TimeZone.getTimeZone(timeZone));
                 String currDateStr = df.format(currDate);
@@ -168,8 +168,8 @@ public class DataBars {
                     default:
                         break;
                 }
-                if (startDate.before(TradingUtil.getAlgoDate())) {
-                    startCal.setTime(TradingUtil.getAlgoDate());
+                if (startDate.before(Utilities.getAlgoDate())) {
+                    startCal.setTime(Utilities.getAlgoDate());
                     startCal.add(Calendar.MINUTE, 1);
                     startCal.set(Calendar.SECOND, 0);
                     startCal.set(Calendar.MILLISECOND, 0);

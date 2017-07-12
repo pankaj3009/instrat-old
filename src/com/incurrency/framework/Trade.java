@@ -33,9 +33,9 @@ public class Trade {
         db.setHash(tradeStatus, key, "exitsize", String.valueOf(size));
         String exitTime;
         if (timeZone.compareTo("") == 0) {
-            exitTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
+            exitTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", Utilities.getAlgoDate().getTime(), TimeZone.getDefault());
         } else {
-            exitTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+            exitTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", Utilities.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         }
         db.setHash(tradeStatus, key, "exittime", String.valueOf(exitTime));
         db.setHash(tradeStatus, key, "exitorderidint", String.valueOf(exitorderidint));
@@ -686,9 +686,9 @@ public class Trade {
 //        db.setHash(tradeStatus, key, "mtmtoday", String.valueOf(price));
         String entryTime;
         if (timeZone.compareTo("") == 0) {
-            entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getDefault());
+            entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", Utilities.getAlgoDate().getTime(), TimeZone.getDefault());
         } else {
-            entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
+            entryTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", Utilities.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         }
 //        Trade.setMtm(db, Parameters.symbol.get(parentid).getDisplayname(), entryTime.substring(0,10),price);
         db.setHash(tradeStatus, key, "entryreason", reason.toString());

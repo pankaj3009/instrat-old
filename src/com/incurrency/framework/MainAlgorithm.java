@@ -221,7 +221,7 @@ public class MainAlgorithm extends Algorithm {
         super(args); //this initializes the connection and symbols
         input = args;
         logStartupData();
-        String today = DateUtil.getFormatedDate("yyyyMMdd", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
+        String today = DateUtil.getFormatedDate("yyyyMMdd", Utilities.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         if (useForTrading) {
             if (!holidays.contains(today)) {
                 JQuantLib.setLogger(logger);
@@ -335,7 +335,7 @@ public class MainAlgorithm extends Algorithm {
             }
         }
 
-        if (!TradingUtil.checkLicense()) {
+        if (!Utilities.checkLicense()) {
             if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                 //Launch.setMessage("No License. If you are only executing on IB paper accounts, please register. If you have a real account setup for trading, please contact support@incurrency.com");
             }
@@ -347,7 +347,7 @@ public class MainAlgorithm extends Algorithm {
     }
 
     private void getContractInformation() throws InterruptedException {
-        if (TradingUtil.checkLicense() && !duplicateAccounts) {
+        if (Utilities.checkLicense() && !duplicateAccounts) {
             //int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
             if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) {
                 for (BeanSymbol s : Parameters.symbol) {
@@ -441,7 +441,7 @@ public class MainAlgorithm extends Algorithm {
         if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use jeromq connector
             new RedisSubscribe(globalProperties.getProperty("topic", "INR").toString().trim());
         } else {
-            if (TradingUtil.checkLicense() && !duplicateAccounts) {
+            if (Utilities.checkLicense() && !duplicateAccounts) {
                 if (globalProperties.getProperty("datasource") == null || "".equals(globalProperties.getProperty("datasource").toString().trim())) { //use IB for market data
                     int count = Parameters.symbol.size();
                     int allocatedCapacity = 0;
@@ -561,7 +561,7 @@ public class MainAlgorithm extends Algorithm {
     }
      */
     private void loadBackTestParameters(String parameterFile) throws ParseException {
-        Properties p = TradingUtil.loadParameters(parameterFile);
+        Properties p = Utilities.loadParameters(parameterFile);
         Enumeration em = p.keys();
         while (em.hasMoreElements()) {
             String str = em.nextElement().toString();
@@ -644,7 +644,7 @@ public class MainAlgorithm extends Algorithm {
             closeProcessing.schedule(closeAlgorithms, closeDate);
         }
         if (MainAlgorithm.isUseForTrading() || MainAlgorithm.isUseForSimulation()) {
-            if (TradingUtil.checkLicense() && !Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
+            if (Utilities.checkLicense() && !Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                 ui = new com.incurrency.framework.display.DashBoardNew(); //Display main UI
             }
         }
@@ -685,7 +685,7 @@ public class MainAlgorithm extends Algorithm {
                 arg[0] = String.class;
             }
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
-            Properties p = TradingUtil.loadParameters(parameterFile);
+            Properties p = Utilities.loadParameters(parameterFile);
             if (useForTrading || simulation || backtest) {
                 //String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
                 String[] tempStrategyArray = parameterFile.split("\\.")[0].split("_");

@@ -153,11 +153,11 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     }
 
     public ArrayList<OrderBean> getLiveOrders() {
-        return new ArrayList(TradingUtil.getLiveOrders(Algorithm.db, this, "OQ:.*:" + this.getAccountName() + ":.*"));
+        return new ArrayList(Utilities.getLiveOrders(Algorithm.db, this, "OQ:.*:" + this.getAccountName() + ":.*"));
     }
 
     public ArrayList<OrderBean> getRestingOrders() {
-        return new ArrayList(TradingUtil.getRestingOrders(Algorithm.db, this, "OQ:.*:" + this.getAccountName() + ":.*"));
+        return new ArrayList(Utilities.getRestingOrders(Algorithm.db, this, "OQ:-1:" + this.getAccountName() + ":.*"));
     }
 
     /**
@@ -340,23 +340,35 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      * @return the ordersSymbols
      */
     public OrderBean getOrderBean(OrderQueueKey oqki) {
-        if(orders.get(oqki)!=null)
-//      return Algorithm.db.getLatestOrderBean(oqki.getKey(this.getAccountName()));
-        return orders.get(oqki).get(0);
-        else
+        if (orders.get(oqki) != null) //      return Algorithm.db.getLatestOrderBean(oqki.getKey(this.getAccountName()));
+        {
+            return orders.get(oqki).get(0);
+        } else {
             return null;
+        }
     }
     
-        /**
+    public OrderBean getOrderBean(OrderBean ob) {
+        String key = Utilities.constructOrderKey(this, ob);
+        OrderQueueKey oqki = new OrderQueueKey(key);
+        if (orders.get(oqki) != null) {
+            return new OrderBean(orders.get(oqki).get(0));
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * @param oqki
      * @return the ordersSymbols
      */
     public OrderBean getOrderBeanCopy(OrderQueueKey oqki) {
-        if(orders.get(oqki)!=null)
-//         return new OrderBean(Algorithm.db.getLatestOrderBean(oqki.getKey(this.getAccountName())));
-        return new OrderBean(orders.get(oqki).get(0));
-        else
+        if (orders.get(oqki) != null) //         return new OrderBean(Algorithm.db.getLatestOrderBean(oqki.getKey(this.getAccountName())));
+        {
+            return new OrderBean(orders.get(oqki).get(0));
+        } else {
             return null;
+        }
     }
 
     /**
@@ -369,12 +381,28 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
             temp.add(order);
             orders.put(oqk, temp);
         } else {
-            if(TradingUtil.isLiveOrder(this, oqk)){
-                orders.get(oqk).add(0,order);
+            if (Utilities.isLiveOrder(this, oqk)) {
+                orders.get(oqk).add(0, order);
             }
         }
     }
     
+    /**
+     * This is a hack function that can potentially update completed orders with new status.Use with care!!
+     * @param oqk
+     * @param order 
+     */
+     public void updateLinkedAction(OrderQueueKey oqk, OrderBean order) {
+        order.setUpdateTime();
+        if (orders.get(oqk) == null) {
+            ArrayList<OrderBean> temp = new ArrayList<OrderBean>();
+            temp.add(order);
+            orders.put(oqk, temp);
+        } else {            
+                orders.get(oqk).add(0, order);            
+        }
+    }
+
     public void removeOrderKey(OrderQueueKey oqk) {
         if (orders.get(oqk) == null) {
             return;
@@ -382,7 +410,6 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
             orders.remove(oqk);
         }
     }
-
 
     /**
      * @return the notionalPositions

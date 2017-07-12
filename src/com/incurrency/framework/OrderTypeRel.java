@@ -160,6 +160,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         try {
             boolean bestPrice = false;
             boolean fatfinger = false;
+            ob=c.getOrderBean(ob);
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
                 //check if there is a case for updating rel price. Only time criteron at present.
                 if (recentOrders.size() == orderspermin
@@ -303,6 +304,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 ob.setOrderStage(EnumOrderStage.AMEND);
                                 ob.setSpecifiedBrokerAccount(c.getAccountName());
                                 String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
+                                ob.setOrderLog(log);
                                 logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
                                 //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                 oms.orderReceived(ob);
@@ -431,6 +433,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 ob.setOrderStage(EnumOrderStage.AMEND);
                                 ob.setSpecifiedBrokerAccount(c.getAccountName());
                                 String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
+                                ob.setOrderLog(log);
                                 logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
                                 //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                 oms.orderReceived(ob);

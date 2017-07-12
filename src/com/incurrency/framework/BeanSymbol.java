@@ -896,7 +896,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             return out.get(out.size() - 1);
         } else {
             Calendar c = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
-            c.setTime(TradingUtil.getAlgoDate());
+            c.setTime(Utilities.getAlgoDate());
             c.set(Calendar.HOUR_OF_DAY, Algorithm.openHour);
             c.set(Calendar.MINUTE, Algorithm.openMinute);
             c.set(Calendar.SECOND, 0);
@@ -937,7 +937,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
             //return 0;
             //return BOD
             Calendar c = Calendar.getInstance(TimeZone.getTimeZone(Algorithm.timeZone));
-            c.setTime(TradingUtil.getAlgoDate());
+            c.setTime(Utilities.getAlgoDate());
             c.set(Calendar.HOUR_OF_DAY, Algorithm.openHour);
             c.set(Calendar.MINUTE, Algorithm.openMinute);
             c.set(Calendar.SECOND, 0);
@@ -1114,7 +1114,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                             MainAlgorithm.tes.fireTradeEvent(serialno, com.ib.client.TickType.LAST);
                         }
                         if (MainAlgorithm.getCollectTicks()) {
-                            TradingUtil.writeToFile("tick_" + this.getDisplayname() + ".csv", "Trade," + lastPrice);
+                            Utilities.writeToFile("tick_" + this.getDisplayname() + ".csv", "Trade," + lastPrice);
                         }
                     }
 
@@ -1138,7 +1138,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                             MainAlgorithm.tes.fireBidAskChange(serialno);
                         }
                         if (MainAlgorithm.getCollectTicks()) {
-                            TradingUtil.writeToFile("tick_" + this.getDisplayname() + ".csv", "Bid," + bidPrice);
+                            Utilities.writeToFile("tick_" + this.getDisplayname() + ".csv", "Bid," + bidPrice);
                         }
 
                     } else {
@@ -1168,7 +1168,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
                             MainAlgorithm.tes.fireBidAskChange(serialno);
                         }
                         if (MainAlgorithm.getCollectTicks()) {
-                            TradingUtil.writeToFile("tick_" + this.getDisplayname() + ".csv", "Ask," + askPrice);
+                            Utilities.writeToFile("tick_" + this.getDisplayname() + ".csv", "Ask," + askPrice);
                         }
 
                     }

@@ -27,10 +27,10 @@ public class OrderQueueKey {
         this.parentorderidint = parentorderidint;
         this.childorderidint = childorderidint;
     }
-    
-    public String getKey(String accountName){
-        String key="OQ:"+this.externalorderid+":"+accountName+":"+this.getStrategy()+":"+
-                this.getParentDisplayName()+":"+this.getChildDisplayName()+":"+this.getParentorderidint()+":"+this.getChildorderidint();
+
+    public String getKey(String accountName) {
+        String key = "OQ:" + this.externalorderid + ":" + accountName + ":" + this.getStrategy() + ":"
+                + this.getParentDisplayName() + ":" + this.getChildDisplayName() + ":" + this.getParentorderidint() + ":" + this.getChildorderidint();
         return key;
     }
 

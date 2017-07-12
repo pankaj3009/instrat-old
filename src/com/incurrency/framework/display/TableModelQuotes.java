@@ -60,7 +60,7 @@ public class TableModelQuotes extends AbstractTableModel {
     @Override
     public int getRowCount() {
         //DashBoardNew.lblTime.setText(com.incurrency.framework.TradingUtil.getAlgoDate().toString());
-        DashBoardNew.lblTime.setText(sdf.format(com.incurrency.framework.TradingUtil.getAlgoDate()));
+        DashBoardNew.lblTime.setText(sdf.format(com.incurrency.framework.Utilities.getAlgoDate()));
         return Parameters.symbol.size();
     }
 

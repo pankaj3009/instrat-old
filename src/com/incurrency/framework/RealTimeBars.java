@@ -40,12 +40,12 @@ public class RealTimeBars implements Runnable {
         int connectionCount = Parameters.connection.size();
         int i = 0;
         for (BeanSymbol s : Parameters.symbol) {
-            if (TradingUtil.isValidTime(s.getBarsstarttime())) {
+            if (Utilities.isValidTime(s.getBarsstarttime())) {
                 size = size + 1;
             }
         }
         for (BeanSymbol s : Parameters.symbol) {
-            if (TradingUtil.isValidTime(s.getBarsstarttime())) {
+            if (Utilities.isValidTime(s.getBarsstarttime())) {
                 //while (Parameters.connection.get(i).getHistMessageLimit() == 0 || Parameters.connection.get(i).getTickersLimit() == 0) {
                 while (Parameters.connection.get(i).getHistMessageLimit() == 0) {
                     i = i + 1;
@@ -106,7 +106,7 @@ public class RealTimeBars implements Runnable {
                     }
                     Parameters.connection.get(i).getWrapper().requestHistoricalData(s, firstBarTime, "2 D", "1 min");
 
-                } else if (TradingUtil.isValidTime(s.getBarsstarttime()) && !s.getOneMinuteBarFromRealTimeBars().getFirstOneMinBarGenerated()) {
+                } else if (Utilities.isValidTime(s.getBarsstarttime()) && !s.getOneMinuteBarFromRealTimeBars().getFirstOneMinBarGenerated()) {
                     barsCompleted = barsCompleted && false;
                     //logger.log(Level.FINE, "Market Data Store, Waiting for the realtime bars to create the first bar for symbol: {0}", new Object[]{s.getSymbol()});
                 } else {

@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.JDate;
+import static com.incurrency.framework.Utilities.*;
 
 /**
  *
@@ -48,14 +49,14 @@ public class Validator {
         TreeMap<String, String> pnlSummary = new TreeMap<>();
         for (String key : db.getKeys("pnl")) {
             if (key.contains(account) && key.contains("_" + s.getStrategy())) {
-                out = TradingUtil.padRight(db.getValue("pnl", key, "todaypnl"), 25)
-                        + TradingUtil.padRight(db.getValue("pnl", key, "ytd"), 25);
+                out = padRight(db.getValue("pnl", key, "todaypnl"), 25)
+                        + padRight(db.getValue("pnl", key, "ytd"), 25);
                 pnlSummary.put(key, out);
             }
         }
-        out = TradingUtil.padRight("Date", 45) + TradingUtil.padRight("Today PNL", 25) + TradingUtil.padRight("YTD PNL", 25) + "\n";
+        out = padRight("Date", 45) + padRight("Today PNL", 25) + padRight("YTD PNL", 25) + "\n";
         for (Entry<String, String> e : pnlSummary.entrySet()) {
-            out = out + TradingUtil.padRight(e.getKey(), 45) + e.getValue() + "\n";
+            out = out + padRight(e.getKey(), 45) + e.getValue() + "\n";
         }
         return out;
     }
@@ -74,7 +75,7 @@ public class Validator {
         String comboChildrenIssues = "";
         Boolean reconStatus = true;
         if (!singleLegReconIssue.isEmpty()) {
-            singleLegIssues = TradingUtil.padRight("Flag", 10) + TradingUtil.padRight("Order File", 25) + TradingUtil.padRight("Trade File", 25) + TradingUtil.padRight("Symbol", 40) + TradingUtil.padRight("Expected Pos:Orders", 25) + TradingUtil.padRight("Actual Pos:Trade", 25);
+            singleLegIssues = padRight("Flag", 10) + padRight("Order File", 25) + padRight("Trade File", 25) + padRight("Symbol", 40) + padRight("Expected Pos:Orders", 25) + padRight("Actual Pos:Trade", 25);
             //singleLegIssues="Symbol\t\t,Expected Position As per Orders\t\t,ActualPosition as per trades";
             for (Map.Entry<String, ArrayList<Integer>> issue : singleLegReconIssue.entrySet()) {
                 int expected = Utilities.getInt(issue.getValue().get(0), 0);
@@ -82,28 +83,28 @@ public class Validator {
                 String flag = Math.abs(expected) < Math.abs(actual) || Integer.signum(expected) == -Integer.signum(actual) ? "Issue" : "Warn";
                 reconStatus = reconStatus && (flag.equals("Issue") ? false : true);
                 singleLegIssues = singleLegIssues + newline
-                        + TradingUtil.padRight(flag, 10) + TradingUtil.padRight("OrderFile", 25) + TradingUtil.padRight("TradeFile", 25) + TradingUtil.padRight(issue.getKey(), 40) + TradingUtil.padRight(String.valueOf(expected), 25) + TradingUtil.padRight(String.valueOf(actual), 25) + newline;
+                        + padRight(flag, 10) + padRight("OrderFile", 25) + padRight("TradeFile", 25) + padRight(issue.getKey(), 40) + padRight(String.valueOf(expected), 25) + padRight(String.valueOf(actual), 25) + newline;
                 //singleLegIssues = singleLegIssues + issue.getKey() + "\t\t," + expected + "\t\t," + actual + newline;
             }
             singleLegIssues = "Single Leg executions did not reconcile with orders. Please verify and correct 'Issue' rows in order and trade files before the next run of inStrat. 'Warn' rows are for information"
                     + newline + singleLegIssues;
         }
         if (!comboReconIssue.isEmpty()) {
-            comboIssues = TradingUtil.padRight("Flag", 10) + TradingUtil.padRight("Order File", 25) + TradingUtil.padRight("Trade File", 25) + TradingUtil.padRight("Combo", 40) + TradingUtil.padRight("Child", 40) + TradingUtil.padRight("Expected Pos:Orders", 25) + TradingUtil.padRight("Actual Pos:Trade", 25);
+            comboIssues = padRight("Flag", 10) + padRight("Order File", 25) + padRight("Trade File", 25) + padRight("Combo", 40) + padRight("Child", 40) + padRight("Expected Pos:Orders", 25) + padRight("Actual Pos:Trade", 25);
             for (Map.Entry<String, ArrayList<Integer>> issue : comboReconIssue.entrySet()) {
                 int expected = issue.getValue().get(0) == null ? 0 : issue.getValue().get(0);
                 int actual = issue.getValue().get(1) == null ? 0 : issue.getValue().get(1);
                 String flag = Math.abs(expected) < Math.abs(actual) || Integer.signum(expected) == -Integer.signum(actual) ? "Issue" : "Warn";
                 reconStatus = reconStatus && (flag.equals("Issue") ? false : true);
                 comboIssues = comboIssues + newline
-                        + TradingUtil.padRight(flag, 10) + TradingUtil.padRight("OrderFile", 25) + TradingUtil.padRight("TradeFile", 25) + TradingUtil.padRight(issue.getKey(), 40) + TradingUtil.padRight("", 25) + TradingUtil.padRight(String.valueOf(expected), 25) + TradingUtil.padRight(String.valueOf(actual), 25) + newline;
+                        + padRight(flag, 10) + padRight("OrderFile", 25) + padRight("TradeFile", 25) + padRight(issue.getKey(), 40) + padRight("", 25) + padRight(String.valueOf(expected), 25) + padRight(String.valueOf(actual), 25) + newline;
 
             }
             comboIssues = "Combo trades did not reconcile with combo orders. Please verify and correct 'Issue' rows in order and trade files before the next run of inStrat. 'Warn' rows are for information"
                     + newline + comboIssues;
         }
         if (!comboChildrenReconIssue.isEmpty()) {
-            comboChildrenIssues = TradingUtil.padRight("Flag", 10) + TradingUtil.padRight("Order File", 25) + TradingUtil.padRight("Trade File", 25) + TradingUtil.padRight("Combo", 25) + TradingUtil.padRight("Child", 25) + TradingUtil.padRight("Expected Pos", 25) + TradingUtil.padRight("Actual Pos", 25);
+            comboChildrenIssues = padRight("Flag", 10) + padRight("Order File", 25) + padRight("Trade File", 25) + padRight("Combo", 25) + padRight("Child", 25) + padRight("Expected Pos", 25) + padRight("Actual Pos", 25);
             for (Map.Entry<String, HashMap<String, ArrayList<Integer>>> issue : comboChildrenReconIssue.entrySet()) {
                 HashMap<String, ArrayList<Integer>> child = issue.getValue();
                 String parent = issue.getKey();
@@ -115,7 +116,7 @@ public class Validator {
                     String flag = "Issue";
                     reconStatus = reconStatus && (flag.equals("Issue") ? false : true);
                     comboChildrenIssues = comboChildrenIssues + newline
-                            + TradingUtil.padRight(flag, 10) + TradingUtil.padRight("", 25) + TradingUtil.padRight("TradeFile", 25) + TradingUtil.padRight(parent, 25) + TradingUtil.padRight(childSymbol, 25) + TradingUtil.padRight(String.valueOf(expected), 25) + TradingUtil.padRight(String.valueOf(actual), 25) + newline;
+                            + padRight(flag, 10) + padRight("", 25) + padRight("TradeFile", 25) + padRight(parent, 25) + padRight(childSymbol, 25) + padRight(String.valueOf(expected), 25) + padRight(String.valueOf(actual), 25) + newline;
                 }
             }
             comboChildrenIssues = "Combo child trades did not reconcile with combo trades. Please verify and correct 'Issue' rows in trade file before the next run of inStrat"
@@ -177,7 +178,7 @@ public class Validator {
             for (String key : singleLegTrades) {
                 if (!headerWritten) {
                     out = out + "List of OpenPositions" + newline;
-                    out = out + TradingUtil.padRight("ID", 10) + TradingUtil.padRight("Time", 25) + TradingUtil.padRight("Symbol", 40) + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + TradingUtil.padRight("Brok", 10) + TradingUtil.padRight("MTM", 10) + TradingUtil.padRight("Position", 10) + newline;
+                    out = out + padRight("ID", 10) + padRight("Time", 25) + padRight("Symbol", 40) + padRight("Side", 10) + padRight("Price", 10) + padRight("Brok", 10) + padRight("MTM", 10) + padRight("Position", 10) + newline;
                     headerWritten = true;
                 }
                 int id = Trade.getEntryOrderIDInternal(s.getOms().getDb(), key);
@@ -190,7 +191,7 @@ public class Validator {
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(), key);
 
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                JDate today = new JDate(TradingUtil.getAlgoDate());
+                JDate today = new JDate(getAlgoDate());
                 String todayString = sdf.format(today.isoDate());
                 JDate yesterday = today.sub(1);
                 yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
@@ -201,7 +202,7 @@ public class Validator {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
                 }
                 if (entrySize - exitSize != 0) {
-                    out = out + TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryPrice, 2)), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(entryBrokerage, 2)), 10) + TradingUtil.padRight(String.valueOf(Utilities.round(mtmToday, 0)), 10) + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
+                    out = out + padRight(String.valueOf(id), 10) + padRight(entryTime, 25) + padRight(childdisplayname, 40) + padRight(String.valueOf(entrySide), 10) + padRight(String.valueOf(Utilities.round(entryPrice, 2)), 10) + padRight(String.valueOf(Utilities.round(entryBrokerage, 2)), 10) + padRight(String.valueOf(Utilities.round(mtmToday, 0)), 10) + padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                 }
             }
             for (String key : comboTrades) {
@@ -209,7 +210,7 @@ public class Validator {
                     out = out + "List of OpenPositions" + newline;
                     int entrySize = Trade.getEntrySize(s.getOms().getDb(), key);
                     int exitSize = Trade.getExitSize(s.getOms().getDb(), key);
-                    out = out + TradingUtil.padRight("ID", 10) + "," + TradingUtil.padRight("Time", 25) + "," + TradingUtil.padRight("Symbol", 20) + "," + TradingUtil.padRight("Side", 10) + TradingUtil.padRight("Price", 10) + "," + TradingUtil.padRight("Brok", 10) + "," + TradingUtil.padRight("MTM", 10) + "," + TradingUtil.padRight("Position", 10) + "," + TradingUtil.padRight(String.valueOf(entrySize - exitSize), 10) + newline;
+                    out = out + padRight("ID", 10) + "," + padRight("Time", 25) + "," + padRight("Symbol", 20) + "," + padRight("Side", 10) + padRight("Price", 10) + "," + padRight("Brok", 10) + "," + padRight("MTM", 10) + "," + padRight("Position", 10) + "," + padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                     headerWritten = true;
                 }
                 int id = Trade.getParentEntryOrderIDInternal(s.getOms().getDb(), key);
@@ -221,7 +222,7 @@ public class Validator {
                 double entryPrice = Trade.getEntryPrice(s.getOms().getDb(), key);
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(), key);
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-                JDate today = new JDate(TradingUtil.getAlgoDate());
+                JDate today = new JDate(getAlgoDate());
                 String todayString = sdf.format(today.isoDate());
                 JDate yesterday = today.sub(1);
                 yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
@@ -232,7 +233,7 @@ public class Validator {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
                 }
                 if (entrySize - exitSize != 0) {
-                    out = out + TradingUtil.padRight(String.valueOf(id), 10) + TradingUtil.padRight(entryTime, 25) + TradingUtil.padRight(childdisplayname, 40) + TradingUtil.padRight(String.valueOf(entrySide), 10) + TradingUtil.padRight(Utilities.formatDouble(entryPrice, new DecimalFormat("#.##")), 10) + "," + TradingUtil.padRight(Utilities.formatDouble(entryPrice, new DecimalFormat("#")), 10) + "," + TradingUtil.padRight(String.valueOf(mtmToday), 10) + newline;
+                    out = out + padRight(String.valueOf(id), 10) + padRight(entryTime, 25) + padRight(childdisplayname, 40) + padRight(String.valueOf(entrySide), 10) + padRight(Utilities.formatDouble(entryPrice, new DecimalFormat("#.##")), 10) + "," + padRight(Utilities.formatDouble(entryPrice, new DecimalFormat("#")), 10) + "," + padRight(String.valueOf(mtmToday), 10) + newline;
                 }
             }
         } catch (Exception e) {
@@ -257,10 +258,10 @@ public class Validator {
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnSize_" + i});
                         //check for unique value in serial no
                     }
-                    if (!TradingUtil.isInteger(input[0])) {
+                    if (!isInteger(input[0])) {
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_1"});
-                    } else if (Integer.parseInt(input[0])+1 != i) {
+                    } else if (Integer.parseInt(input[0]) + 1 != i) {
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_1"});
                     }
@@ -300,14 +301,14 @@ public class Validator {
                     if (input[13] == null) {//streaming
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_14"});
-                    } else if (input[13].equals("") || !TradingUtil.isInteger(input[13])) {
+                    } else if (input[13].equals("") || !isInteger(input[13])) {
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_14"});
                     }
                     if (input[11] == null) {//size
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_12"});
-                    } else if (input[11].equals("") || !TradingUtil.isInteger(input[11])) {
+                    } else if (input[11].equals("") || !isInteger(input[11])) {
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_12"});
                     }
@@ -400,7 +401,7 @@ public class Validator {
                     if (input[9] == null) {//Email
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_10"});
-                    } else if (!TradingUtil.isValidEmailAddress(input[10])) {
+                    } else if (!isValidEmailAddress(input[10])) {
                         correctFormat = correctFormat && false;
                         logger.log(Level.INFO, "104,SymbolFileError,{0}", new Object[]{"IncorrectColumnValue_" + i + "_10"});
                     }
@@ -429,7 +430,7 @@ public class Validator {
     public static boolean isInteger(String input) {
         if (input == null) {//Port
             return false;
-        } else if (input.equals("") || !TradingUtil.isInteger(input)) {
+        } else if (input.equals("") || !isInteger(input)) {
             return false;
         }
         return true;
@@ -720,7 +721,7 @@ public class Validator {
 
             if (accountName.equals(tradeAccount)) {
                 HashMap<String, Integer> lastPosition = new HashMap<>();
-                int parentid = TradingUtil.getIDFromComboLongName(parentdisplayname);
+                int parentid = getIDFromComboLongName(parentdisplayname);
                 if (childPosition.get(Parameters.symbol.get(parentid).getDisplayname()) != null) {
                     lastPosition = childPosition.get(Parameters.symbol.get(parentid).getDisplayname());
                 }
@@ -736,7 +737,7 @@ public class Validator {
                         lastPosition.put(childdisplayname, positionValue + netSize);
                     }
                     String comboLongName = parentdisplayname;
-                    int comboid = TradingUtil.getIDFromComboLongName(comboLongName);
+                    int comboid = getIDFromComboLongName(comboLongName);
                     childPosition.put(Parameters.symbol.get(comboid).getDisplayname(), lastPosition);
                 }
 

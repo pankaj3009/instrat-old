@@ -7,7 +7,6 @@ package com.incurrency.RatesClient;
 import static com.incurrency.RatesClient.RedisSubscribe.tes;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.Parameters;
-import com.incurrency.framework.TradingUtil;
 import com.incurrency.framework.Utilities;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,27 +43,27 @@ public class Task implements Runnable {
                         case com.ib.client.TickType.BID_SIZE: //bidsize
                             Parameters.symbol.get(id).setBidSize(Utilities.getInt(value, 0));
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + value);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + value);
                             }
                             break;
                         case com.ib.client.TickType.BID: //bidprice
                             Parameters.symbol.get(id).setBidPrice(Double.parseDouble(value));
                             tes.fireBidAskChange(id);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + value);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + value);
                             }
                             break;
                         case com.ib.client.TickType.ASK://askprice
                             Parameters.symbol.get(id).setAskPrice(Double.parseDouble(value));
                             tes.fireBidAskChange(id);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + value);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + value);
                             }
                             break;
                         case com.ib.client.TickType.ASK_SIZE: //ask size
                             Parameters.symbol.get(id).setAskSize(Utilities.getInt(value, 0));
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + value);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + value);
                             }
                             break;
                         case com.ib.client.TickType.LAST: //last price
@@ -82,10 +81,10 @@ public class Task implements Runnable {
                             //logger.log(Level.FINER,"Task Data Received, Symbol:{1},Time:{0},Price:{2}",new Object[]{new Date(date),Parameters.symbol.get(id).getDisplayname(),price});
 
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastPrice," + value);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastPrice," + value);
                             }
                             if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
-                                Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(TradingUtil.getAlgoDate().getTime(), com.ib.client.TickType.LAST, String.valueOf(price));
+                                Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(Utilities.getAlgoDate().getTime(), com.ib.client.TickType.LAST, String.valueOf(price));
                             }
                             break;
                         case com.ib.client.TickType.LAST_SIZE: //last size
@@ -122,7 +121,7 @@ public class Task implements Runnable {
                                 tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                             }
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize," + value);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize," + value);
                             }
                             break;
                         case com.ib.client.TickType.HIGH:
@@ -141,7 +140,7 @@ public class Task implements Runnable {
                             Parameters.symbol.get(id).setVolume(size, false);
                             tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
                             }
 
                             break;
@@ -150,7 +149,7 @@ public class Task implements Runnable {
                             Parameters.symbol.get(id).setLastPriceTime(date);
                             tes.fireTradeEvent(id, com.ib.client.TickType.CLOSE);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Close," + value);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Close," + value);
                             }
                             break;
                         case com.ib.client.TickType.OPEN: //open

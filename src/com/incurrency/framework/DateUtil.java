@@ -236,7 +236,7 @@ public class DateUtil {
     }
 
     public static Date timeToDate(String time) {
-        Date startDate = MainAlgorithm.strategyInstances.size() > 0 ? MainAlgorithm.strategyInstances.get(0).getStartDate() : TradingUtil.getAlgoDate();
+        Date startDate = MainAlgorithm.strategyInstances.size() > 0 ? MainAlgorithm.strategyInstances.get(0).getStartDate() : Utilities.getAlgoDate();
         String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", startDate.getTime(), TimeZone.getTimeZone(MainAlgorithm.strategyInstances.get(0).getTimeZone()));
         time = currDateStr + " " + time;
         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", time);
@@ -244,7 +244,7 @@ public class DateUtil {
     }
 
     public static Date timeToDate(String time, String timeZone) {
-        Date startDate = MainAlgorithm.strategyInstances.size() > 0 ? MainAlgorithm.strategyInstances.get(0).getStartDate() : TradingUtil.getAlgoDate();
+        Date startDate = MainAlgorithm.strategyInstances.size() > 0 ? MainAlgorithm.strategyInstances.get(0).getStartDate() : Utilities.getAlgoDate();
         String currDateStr = DateUtil.getFormatedDate("yyyyMMdd", startDate.getTime(), TimeZone.getTimeZone(timeZone));
         time = currDateStr + " " + time;
         return DateUtil.parseDate("yyyyMMdd HH:mm:ss", time);
@@ -253,7 +253,7 @@ public class DateUtil {
 
     //Testing routine
     public static void main(String args[]) {
-        String out = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone("GMT-4:00"));
+        String out = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", Utilities.getAlgoDate().getTime(), TimeZone.getTimeZone("GMT-4:00"));
         System.out.println(out);
 
     }

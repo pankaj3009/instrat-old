@@ -25,7 +25,7 @@ public class SimulationTimer implements Runnable {
 
     @Override
     public void run() {
-        while (TradingUtil.getAlgoDate().compareTo(new Date(0)) > 0 && triggerDate.compareTo(TradingUtil.getAlgoDate()) > 0) {
+        while (Utilities.getAlgoDate().compareTo(new Date(0)) > 0 && triggerDate.compareTo(Utilities.getAlgoDate()) > 0) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {

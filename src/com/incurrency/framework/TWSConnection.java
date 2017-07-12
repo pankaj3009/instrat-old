@@ -307,7 +307,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         if (!tradeIntegrityOK(e.getOrderSide(), e.getOrderStage(), orders, true)) {
             return orders;
         }
-        if (!TradingUtil.isSyntheticSymbol(e.getParentSymbolID())) {
+        if (!Utilities.isSyntheticSymbol(e.getParentSymbolID())) {
             Order order = createBrokerOrder(e);
             orders.put(e.getParentSymbolID(), order);
             return orders;
@@ -399,10 +399,10 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         order.m_lmtPrice = limit > 0 ? limit : 0;
         order.m_tif = ordValidity;
         order.m_displaySize = e.getDisplaySize();
-        if(e.getOrderStage()==EnumOrderStage.INIT){
-            order.m_totalQuantity = e.getOriginalOrderSize()-e.getTotalFillSize();
-        }else{
-            order.m_totalQuantity=e.getCurrentOrderSize();
+        if (e.getOrderStage() == EnumOrderStage.INIT) {
+            order.m_totalQuantity = e.getOriginalOrderSize() - e.getTotalFillSize();
+        } else {
+            order.m_totalQuantity = e.getCurrentOrderSize();
         }
 
         switch (orderType) {
@@ -448,7 +448,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             default:
                 break;
         }
-        logger.log(Level.FINE, "307,OrderDetails,{0}", new Object[]{getC().getAccountName() + delimiter + order.m_orderRef + delimiter + order.m_action + delimiter + order.m_totalQuantity + delimiter + order.m_orderType + delimiter + order.m_lmtPrice + delimiter + order.m_auxPrice + delimiter + order.m_tif + delimiter + order.m_goodTillDate});
         return order;
 
     }
@@ -541,14 +540,14 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             return event;
         }
 
-        event=new OrderBean(event);
+        event = new OrderBean(event);
         int i = -1;
         for (Map.Entry<Integer, Order> entry1 : orders.entrySet()) {//loop for each order and place order
             i = i + 1;
             Order order = entry1.getValue();
             if (event.getOrderStage() == EnumOrderStage.INIT) {
                 if (c.getReqHandle().getHandle()) {
-                    int mOrderID = order.m_orderId <=0 ? c.getIdmanager().getNextOrderId() : order.m_orderId;
+                    int mOrderID = order.m_orderId <= 0 ? c.getIdmanager().getNextOrderId() : order.m_orderId;
                     event.setExternalOrderID(mOrderID);
 //                    event.put("ExternalOrderID", String.valueOf(mOrderID));
                     order.m_orderId = mOrderID;
@@ -585,7 +584,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     logger.log(Level.FINE, "500,DisplaySizeSet,{0}", new Object[]{displaySize});
                     order.m_displaySize = displaySize;
                     //event.put("DisplaySize",String.valueOf(order.m_displaySize));
-                    boolean singlelegorder = !TradingUtil.isSyntheticSymbol(event.getParentSymbolID());
+                    boolean singlelegorder = !Utilities.isSyntheticSymbol(event.getParentSymbolID());
                     if (singlelegorder) {
                         if (event.getChildSymbolID() == 0) {
                             event.setChildDisplayName(Parameters.symbol.get(parentid).getDisplayname());
@@ -595,14 +594,14 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         event.setTriggerPrice(order.m_auxPrice);
                         event.setOrderStatus(EnumOrderStatus.SUBMITTED);
                         if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0) {
-                           order.m_totalQuantity=displaySize;
-                           event.setCurrentOrderSize(order.m_totalQuantity);
+                            order.m_totalQuantity = displaySize;
+                            event.setCurrentOrderSize(order.m_totalQuantity);
 //                            event.setOrderStage(EnumOrderStage.INIT);
                             event.setCurrentFillSize(0);
 //                        order.m_totalQuantity = Math.min(order.m_displaySize, (event.getOriginalOrderSize() - event.getTotalFillSize()));
 //                        event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
 //                        int connectionid = Parameters.connection.indexOf(this.getC());
-                            logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize())});
+                            logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize()-event.getTotalFillSize()-order.m_totalQuantity)});
                             if (Parameters.symbol.get(parentid).getType().equals("OPT") && event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
                                 double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingID(), event.getOrderSide(), oms.tickSize, event.getOrderType());
                                 if (limitprice > 0) {
@@ -610,7 +609,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                                 }
                             }
                             event.createLinkedAction(event.getInternalOrderID(), "PROPOGATE", "COMPLETEFILLED", String.valueOf(event.getSubOrderDelay()));
-                            //oms.getFillRequestsForTracking().get(connectionid).add(new LinkedAction(c, mOrderID, subEvent, EnumLinkedAction.PROPOGATE,delay));
+                            event.createLinkedAction(event.getInternalOrderID(), "PROPOGATE", "COMPLETEFILLED", String.valueOf(event.getSubOrderDelay()));
                         }
                         order.m_displaySize = 0; //reset display size to zero as we do not use IB's displaysize feature
                         if (event.getOrderStage() != EnumOrderStage.AMEND) {
@@ -733,7 +732,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             String key = "OQ:" + event.getExternalOrderID() + ":" + c.getAccountName() + ":" + event.getOrderReference() + ":"
                     + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":"
                     + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
-            if (TradingUtil.isLiveOrder(this.getC(), new OrderQueueKey(key))||this.getC().getOrders().get(new OrderQueueKey(key))==null) {
+            if (Utilities.isLiveOrder(this.getC(), new OrderQueueKey(key)) || this.getC().getOrders().get(new OrderQueueKey(key)) == null) {
                 eClientSocket.placeOrder(order.m_orderId, contracts.get(0), order);
                 Algorithm.db.insertOrder(key, event);
                 c.setOrder(new OrderQueueKey(key), event);
@@ -777,9 +776,9 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 
     @Override
     public void cancelOrder(BeanConnection c, OrderBean ob) {
-        ob=new OrderBean(ob);
+        ob = new OrderBean(ob);
         if (!ob.isCancelRequested()) {
-            ob.put("CancelRequested", "TRUE");
+            ob.setCancelRequested(Boolean.TRUE);
             String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                     + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                     + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
@@ -792,7 +791,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
             }
             String searchString = "OQ:.*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getInternalOrderID() + ":";
-            Set<OrderQueueKey> oqks = TradingUtil.getLiveOrderKeys(Algorithm.db, c, searchString);
+            Set<OrderQueueKey> oqks = Utilities.getLiveOrderKeys(Algorithm.db, c, searchString);
             for (OrderQueueKey oqki : oqks) {
                 OrderBean obvi = c.getOrderBean(oqki);
                 if (!obvi.isCancelRequested() && obvi.getExternalOrderID() > 0) {
@@ -977,13 +976,13 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         if (field == TickType.BID) {
                             Parameters.symbol.get(id).setBidPrice(price);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + price);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Bid," + price);
                             }
                             tes.fireBidAskChange(id);
                         } else if (field == TickType.ASK) {
                             Parameters.symbol.get(id).setAskPrice(price);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Ask," + price);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Ask," + price);
                             }
                             tes.fireBidAskChange(id);
                         } else if ((field == TickType.LAST) && (MainAlgorithm.rtvolume && snapshot || !MainAlgorithm.rtvolume)) {
@@ -994,7 +993,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                             Parameters.symbol.get(id).getTradedPrices().add(price);
                             Parameters.symbol.get(id).getTradedDateTime().add(System.currentTimeMillis());
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Trade," + price);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Trade," + price);
                             }
                             tes.fireTradeEvent(id, com.ib.client.TickType.LAST);
                             if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
@@ -1050,25 +1049,25 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 if (field == com.ib.client.TickType.CLOSE) {
                     Parameters.symbol.get(id).setClosePrice(price);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Close," + price);
+                        Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Close," + price);
                     }
                 } else if (field == com.ib.client.TickType.OPEN) {
                     Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
                     Parameters.symbol.get(id).setOpenPrice(price);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Open," + price);
+                        Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Open," + price);
                     }
                 } else if (field == com.ib.client.TickType.HIGH) {
                     Parameters.symbol.get(id).setHighPrice(price, false);
                     Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "High," + price);
+                        Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "High," + price);
                     }
                 } else if (field == com.ib.client.TickType.LOW) {
                     Parameters.symbol.get(id).setLowPrice(price, false);
                     Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Low," + price);
+                        Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Low," + price);
                     }
                 } else if (field == com.ib.client.TickType.BID || field == com.ib.client.TickType.ASK) {
                     Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + price + "," + symbol);
@@ -1088,7 +1087,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         Rates.rateServer.send(header, com.ib.client.TickType.HIGH + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getHighPrice() + "," + symbol);
                         Rates.rateServer.send(header, com.ib.client.TickType.LOW + "," + new Date().getTime() + "," + Parameters.symbol.get(id).getLowPrice() + "," + symbol);
                         if (MainAlgorithm.getCollectTicks()) {
-                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + price);
+                            Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + price);
                         }
                     }
                 }
@@ -1127,17 +1126,17 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         if (field == TickType.BID_SIZE) {
                             Parameters.symbol.get(id).setBidSize(size);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + size);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "BidSize," + size);
                             }
                         } else if (field == TickType.ASK_SIZE) {
                             Parameters.symbol.get(id).setAskSize(size);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + size);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "AskSize," + size);
                             }
                         } else if (field == TickType.LAST_SIZE) {
                             //Parameters.symbol.get(id).setLastSize(size);
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSizeTick," + size);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSizeTick," + size);
                             }
 
                         } else if (field == TickType.VOLUME) {
@@ -1162,8 +1161,8 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                                     Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
                                 }
                                 if (MainAlgorithm.getCollectTicks()) {
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
-                                    TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
+                                    Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
+                                    Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
                                 }
                             }
                         }
@@ -1214,7 +1213,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
                         Parameters.symbol.get(id).setVolume(size, false);
                         if (MainAlgorithm.getCollectTicks()) {
-                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
+                            Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
                         }
                     }
                 } else if (field == com.ib.client.TickType.LAST_SIZE) {
@@ -1222,7 +1221,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     if ((MainAlgorithm.rtvolume && snapshot) || !MainAlgorithm.rtvolume) {
                         Rates.rateServer.send(header, field + "," + new Date().getTime() + "," + size + "," + symbol);
                         if (MainAlgorithm.getCollectTicks()) {
-                            TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Lastsize," + size);
+                            Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Lastsize," + size);
                         }
                     }
                 }
@@ -1317,11 +1316,11 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                                 Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
                             }
                             if (MainAlgorithm.getCollectTicks()) {
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "ExchangeTimeStamp," + sdfTime.format(new Date(time)));
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + volume);
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize_RT," + last_size);
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + last);
-                                TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "ExchangeTimeStamp," + sdfTime.format(new Date(time)));
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + volume);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize_RT," + last_size);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + last);
+                                Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Calculated LastSize," + calculatedLastSize);
                             }
 
                         }
@@ -1367,10 +1366,10 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     Parameters.symbol.get(id).setVolume(volume, false);
                     Rates.rateServer.send(header, TickType.LAST_SIZE + "," + time + "," + last_size + "," + symbol);
                     if (MainAlgorithm.getCollectTicks()) {
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "ExchangeTimeStamp," + sdfTime.format(new Date(time)));
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + volume);
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize_RT," + last_size);
-                        TradingUtil.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + last);
+                        Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "ExchangeTimeStamp," + sdfTime.format(new Date(time)));
+                        Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + volume);
+                        Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "LastSize_RT," + last_size);
+                        Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Last," + last);
                     }
                 }
             }
@@ -1514,15 +1513,20 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         try {
             logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
                     new Object[]{"Unknown", c.getAccountName(), "Unknown", "-1", String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice)});
-            Set<OrderQueueKey> oqks = TradingUtil.getAllOrderKeys(Algorithm.db, c, "OQ:" + reqId + ":" + c.getAccountName() + ":*");
+            Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.db, c, "OQ:" + reqId + ":" + c.getAccountName() + ":.*");
             if (oqks.size() == 1) {
                 for (OrderQueueKey oqki : oqks) {
                     OrderBean ob = c.getOrderBean(oqki);
+                    if(ob!=null){
                     int remaining = ob.getCurrentOrderSize() - execution.m_cumQty;
                     if (remaining == 0) {
                         tes.fireOrderStatus(getC(), execution.m_orderId, "Filled", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
                     } else {
                         tes.fireOrderStatus(getC(), execution.m_orderId, "Submitted", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                    }
+                    }else{
+            logger.log(Level.INFO, "402,Did not find orderbean,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6},Orderkey={7}",
+                    new Object[]{"Unknown", c.getAccountName(), "Unknown", "-1", String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice),oqki.getKey(c.getAccountName())});
                     }
                 }
             }
@@ -1829,10 +1833,10 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 
                 case 321:
                     rd = requestDetails.get(id);
-                    if(rd!=null){
-                    logger.log(Level.INFO, "402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestType={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
-                            new Object[]{"Unknown", rd.accountName, rd.symbol.getDisplayname(), -1, -1,
-                                rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});                        
+                    if (rd != null) {
+                        logger.log(Level.INFO, "402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestType={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
+                                new Object[]{"Unknown", rd.accountName, rd.symbol.getDisplayname(), -1, -1,
+                                    rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
                     }
                     break;
                 case 1102: //Reconnected

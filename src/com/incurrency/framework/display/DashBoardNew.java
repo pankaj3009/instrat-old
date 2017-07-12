@@ -257,7 +257,7 @@ public class DashBoardNew extends javax.swing.JFrame {
                 position = side.equals(EnumOrderSide.BUY) || side.equals(EnumOrderSide.COVER) ? position : -position;
                 strategy = tblMissedOrders.getValueAt(tblMissedOrders.getSelectedRow(), 0).toString();
                 connectionForPositions = comboDisplay.getSelectedIndex();
-                ibOrderID = (Integer) tblMissedOrders.getValueAt(tblMissedOrders.getSelectedRow(), 2);
+//                ibOrderID = (Integer) tblMissedOrders.getValueAt(tblMissedOrders.getSelectedRow(), 2);
             }
         });
 

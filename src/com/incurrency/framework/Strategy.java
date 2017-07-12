@@ -34,6 +34,7 @@ import javax.swing.JOptionPane;
  * @author pankaj
  */
 public class Strategy implements NotificationListener {
+
     private static HashMap<String, String> combosAdded = new HashMap<>();
 
     private static final Logger logger = Logger.getLogger(Strategy.class.getName());
@@ -122,7 +123,7 @@ public class Strategy implements NotificationListener {
         }
     };
     TimerTask runOpenTradingWindow = new TimerTask() {
-        
+
         @Override
         public void run() {
             tradingWindow.set(Boolean.TRUE);
@@ -404,7 +405,6 @@ public class Strategy implements NotificationListener {
         }
     }
 
-
 //    public HashSet<Integer> getFirstInternalOpenOrder(int id, EnumOrderSide side, String accountName) {
 //        HashSet<Integer> out = new HashSet<>();
 //        String symbol = Parameters.symbol.get(id).getDisplayname();
@@ -423,7 +423,7 @@ public class Strategy implements NotificationListener {
         } else {
             HashSet<Integer> out = new HashSet<>();
             String symbol = ob.getParentDisplayName();
-            if (TradingUtil.isSyntheticSymbol(ob.getParentSymbolID())) {
+            if (Utilities.isSyntheticSymbol(ob.getParentSymbolID())) {
                 symbol = ob.getParentDisplayName();
             }
             EnumOrderSide entrySide = ob.getOrderSide() == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
@@ -460,6 +460,7 @@ public class Strategy implements NotificationListener {
         return -1;
 
     }
+
     public void displayStrategyValues() {
     }
 
@@ -527,7 +528,7 @@ public class Strategy implements NotificationListener {
             int symbolPosition = pd.getPosition() + order.getOriginalOrderSize();
             double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
             pd.setPosition(symbolPosition);
-            pd.setPositionInitDate(TradingUtil.getAlgoDate());
+            pd.setPositionInitDate(Utilities.getAlgoDate());
             pd.setPrice(positionPrice);
             pd.setStrategy(strategy);
             getPosition().put(id, pd);
@@ -537,7 +538,7 @@ public class Strategy implements NotificationListener {
             int symbolPosition = pd.getPosition() - order.getCurrentOrderSize();
             double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
             pd.setPosition(symbolPosition);
-            pd.setPositionInitDate(TradingUtil.getAlgoDate());
+            pd.setPositionInitDate(Utilities.getAlgoDate());
             pd.setPrice(positionPrice);
             pd.setStrategy(strategy);
             getPosition().put(id, pd);
@@ -548,7 +549,7 @@ public class Strategy implements NotificationListener {
         order.setOrderIDForSquareOff(internalorderid);
         order.setOrderReference(getStrategy());
         this.internalOpenOrders.put(id, internalorderid);
-        String log = order.getOrderLog()!=null? order.getOrderLog().toString() : "";
+        String log = order.getOrderLog() != null ? order.getOrderLog().toString() : "";
         double lastprice = Parameters.symbol.get(id).getLastPrice();
         lastprice = lastprice == 0 ? order.getLimitPrice() : lastprice;
         new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getOriginalOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
@@ -577,7 +578,7 @@ public class Strategy implements NotificationListener {
                 int symbolPosition = pd.getPosition() + tradeSize;
                 double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
                 pd.setPosition(symbolPosition);
-                pd.setPositionInitDate(TradingUtil.getAlgoDate());
+                pd.setPositionInitDate(Utilities.getAlgoDate());
                 pd.setPrice(positionPrice);
                 pd.setStrategy(strategy);
                 getPosition().put(id, pd);
@@ -587,7 +588,7 @@ public class Strategy implements NotificationListener {
                 int symbolPosition = pd.getPosition() - tradeSize;
                 double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
                 pd.setPosition(symbolPosition);
-                pd.setPositionInitDate(TradingUtil.getAlgoDate());
+                pd.setPositionInitDate(Utilities.getAlgoDate());
                 pd.setPrice(positionPrice);
                 pd.setStrategy(strategy);
                 getPosition().put(id, pd);
@@ -635,19 +636,20 @@ public class Strategy implements NotificationListener {
         }
 
     }
+
     /**
      * @return the accounts
      */
     public ArrayList<String> getAccounts() {
         return accounts;
     }
+
     /**
      * @param accounts the accounts to set
      */
     public void setAccounts(ArrayList<String> accounts) {
         this.accounts = accounts;
     }
-
 
     /**
      * @return the aggression
@@ -662,12 +664,14 @@ public class Strategy implements NotificationListener {
     public synchronized void setAggression(Boolean aggression) {
         this.aggression = aggression;
     }
+
     /**
      * @return the brokerageRate
      */
     public ArrayList<BrokerageRate> getBrokerageRate() {
         return brokerageRate;
     }
+
     /**
      * @param brokerageRate the brokerageRate to set
      */
@@ -716,6 +720,7 @@ public class Strategy implements NotificationListener {
     public void setDayStopLoss(double dayStopLoss) {
         this.dayStopLoss = dayStopLoss;
     }
+
     /**
      * @return the db
      */
@@ -724,7 +729,6 @@ public class Strategy implements NotificationListener {
             return db;
         }
     }
-
 
     /**
      * @return the dynamicOrderDuration
@@ -739,66 +743,77 @@ public class Strategy implements NotificationListener {
     public void setDynamicOrderDuration(int dynamicOrderDuration) {
         this.dynamicOrderDuration = dynamicOrderDuration;
     }
+
     /**
      * @return the endDate
      */
     public Date getEndDate() {
         return endDate;
     }
+
     /**
      * @param endDate the endDate to set
      */
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
+
     /**
      * @return the exposure
      */
     public double getExposure() {
         return exposure;
     }
+
     /**
      * @param exposure the exposure to set
      */
     public void setExposure(double exposure) {
         this.exposure = exposure;
     }
+
     /**
      * @return the futBrokerageFile
      */
     public String getFutBrokerageFile() {
         return futBrokerageFile;
     }
+
     /**
      * @param futBrokerageFile the futBrokerageFile to set
      */
     public void setFutBrokerageFile(String futBrokerageFile) {
         this.futBrokerageFile = futBrokerageFile;
     }
+
     /**
      * @return the iamail
      */
     public String getIamail() {
         return iamail;
     }
+
     /**
      * @param iamail the iamail to set
      */
     public void setIamail(String iamail) {
         this.iamail = iamail;
     }
+
     /**
      * @return the internalOrderID
      */
     public synchronized int getInternalOrderID() {
         return Algorithm.orderidint.addAndGet(1);
     }
+
     /**
      * @return the longOnly
      */
     public synchronized Boolean getLongOnly() {
         return longOnly.get();
     }
+
     /**
      * @param longOnly the longOnly to set
      */
@@ -807,24 +822,28 @@ public class Strategy implements NotificationListener {
                 new Object[]{strategy, "Order", "Unknown", -1, -1, l});
         this.longOnly = new AtomicBoolean(l);
     }
+
     /**
      * @return the maxOpenPositions
      */
     public int getMaxOpenPositions() {
         return maxOpenPositions;
     }
+
     /**
      * @param maxOpenPositions the maxOpenPositions to set
      */
     public void setMaxOpenPositions(int maxOpenPositions) {
         this.maxOpenPositions = maxOpenPositions;
     }
+
     /**
      * @return the maxOrderDuration
      */
     public int getMaxOrderDuration() {
         return maxOrderDuration;
     }
+
     /**
      * @param maxOrderDuration the maxOrderDuration to set
      */
@@ -845,19 +864,20 @@ public class Strategy implements NotificationListener {
     public void setMaxSlippageEntry(double maxSlippageEntry) {
         this.maxSlippageEntry = maxSlippageEntry;
     }
+
     /**
      * @return the maxSlippageExit
      */
     public double getMaxSlippageExit() {
         return maxSlippageExit;
     }
+
     /**
      * @param maxSlippageExit the maxSlippageExit to set
      */
     public void setMaxSlippageExit(double maxSlippageExit) {
         this.maxSlippageExit = maxSlippageExit;
     }
-
 
     /**
      * @return the numberOfContracts
@@ -872,6 +892,7 @@ public class Strategy implements NotificationListener {
     public void setNumberOfContracts(int numberOfContracts) {
         this.numberOfContracts = numberOfContracts;
     }
+
     /**
      * @return the oms
      */
@@ -880,6 +901,7 @@ public class Strategy implements NotificationListener {
             return oms;
         }
     }
+
     /**
      * @param oms the oms to set
      */
@@ -888,42 +910,49 @@ public class Strategy implements NotificationListener {
             this.oms = oms;
         }
     }
+
     /**
      * @return the ordType
      */
     public EnumOrderType getOrdType() {
         return ordType;
     }
+
     /**
      * @param ordType the ordType to set
      */
     public void setOrdType(EnumOrderType ordType) {
         this.ordType = ordType;
     }
+
     /**
      * @return the orderAttributes
      */
     public HashMap<String, Object> getOrderAttributes() {
         return orderAttributes;
     }
+
     /**
      * @param orderAttributes the orderAttributes to set
      */
     public void setOrderAttributes(HashMap<String, Object> orderAttributes) {
         this.orderAttributes = orderAttributes;
     }
+
     /**
      * @return the orderFile
      */
     public String getOrderFile() {
         return orderFile;
     }
+
     /**
      * @param orderFile the orderFile to set
      */
     public void setOrderFile(String orderFile) {
         this.orderFile = orderFile;
     }
+
     /**
      * @return the plmanager
      */
@@ -932,6 +961,7 @@ public class Strategy implements NotificationListener {
             return plmanager;
         }
     }
+
     /**
      * @param plmanager the plmanager to set
      */
@@ -954,6 +984,7 @@ public class Strategy implements NotificationListener {
     public void setPointValue(double pointValue) {
         this.pointValue = pointValue;
     }
+
     /**
      * @return the position
      */
@@ -962,6 +993,7 @@ public class Strategy implements NotificationListener {
             return position;
         }
     }
+
     /**
      * @param position the position to set
      */
@@ -970,24 +1002,28 @@ public class Strategy implements NotificationListener {
             this.position = position;
         }
     }
+
     /**
      * @return the redisDatabaseID
      */
     public String getRedisDatabaseID() {
         return redisDatabaseID;
     }
+
     /**
      * @param redisDatabaseID the redisDatabaseID to set
      */
     public void setRedisDatabaseID(String redisDatabaseID) {
         this.redisDatabaseID = redisDatabaseID;
     }
+
     /**
      * @return the shortOnly
      */
     public synchronized Boolean getShortOnly() {
         return shortOnly.get();
     }
+
     /**
      * @param shortOnly the shortOnly to set
      */
@@ -996,19 +1032,20 @@ public class Strategy implements NotificationListener {
                 new Object[]{strategy, "Order", "Unknown", -1, -1, s});
         this.shortOnly = new AtomicBoolean(s);
     }
+
     /**
      * @return the startDate
      */
     public Date getStartDate() {
         return startDate;
     }
+
     /**
      * @param startDate the startDate to set
      */
     public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
-
 
     /**
      * @return the startingCapital
@@ -1023,12 +1060,14 @@ public class Strategy implements NotificationListener {
     public void setStartingCapital(double startingCapital) {
         this.startingCapital = startingCapital;
     }
+
     /**
      * @return the strategy
      */
     public String getStrategy() {
         return strategy;
     }
+
     /**
      * @param strategy the strategy to set
      */
@@ -1049,42 +1088,49 @@ public class Strategy implements NotificationListener {
     public void setStrategySymbols(List<Integer> strategySymbols) {
         this.strategySymbols = strategySymbols;
     }
+
     /**
      * @return the tickSize
      */
     public double getTickSize() {
         return tickSize;
     }
+
     /**
      * @param tickSize the tickSize to set
      */
     public void setTickSize(double tickSize) {
         this.tickSize = tickSize;
     }
+
     /**
      * @return the timeZone
      */
     public String getTimeZone() {
         return timeZone;
     }
+
     /**
      * @param timeZone the timeZone to set
      */
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
     }
+
     /**
      * @return the tradeFile
      */
     public String getTradeFile() {
         return tradeFile;
     }
+
     /**
      * @param tradeFile the tradeFile to set
      */
     public void setTradeFile(String tradeFile) {
         this.tradeFile = tradeFile;
     }
+
     //    public synchronized void exit(HashMap<String, Object> order) {
 //        EnumOrderSide side = EnumOrderSide.valueOf(order.get("side") != null ? order.get("side").toString() : "UNDEFINED");
 //        //if ((!getLongOnly() && side.equals(EnumOrderSide.COVER)) || (!getShortOnly() && side.equals(EnumOrderSide.SELL))) {
@@ -1225,6 +1271,7 @@ public class Strategy implements NotificationListener {
             }
         }
     }
+
     public void insertSymbol(List<BeanSymbol> symbols, String displayName, boolean optionPricingUsingFutures, String referenceCashType) {
         BeanSymbol s = new BeanSymbol(displayName);
         s.setExchange(Algorithm.defaultExchange);
@@ -1256,24 +1303,27 @@ public class Strategy implements NotificationListener {
             this.stopOrders = stopOrders;
         }
     }
+
     /**
      * @return the strategyLog
      */
     public boolean isStrategyLog() {
         return strategyLog;
     }
+
     /**
      * @param strategyLog the strategyLog to set
      */
     public void setStrategyLog(boolean strategyLog) {
         this.strategyLog = strategyLog;
     }
+
     private void loadParameters(String strategy, String type, Properties p) {
         setTimeZone(p.getProperty("TradeTimeZone") == null ? "Asia/Kolkata" : p.getProperty("TradeTimeZone"));
         // String currDateStr = DateUtil.getFormattedDate("yyyyMMddHHmmss", TradingUtil.getAlgoDate().getTime(), TimeZone.getTimeZone(timeZone));
         //Date currDate=DateUtil.parseDate("yyyyMMddHHmmss", currDateStr, TimeZone.getDefault().toString());
         stopOrders = Boolean.valueOf(p.getProperty("StopOrders", "false"));
-        Date currDate = TradingUtil.getAlgoDate();
+        Date currDate = Utilities.getAlgoDate();
         DateFormat df = new SimpleDateFormat("yyyyMMdd");
         df.setTimeZone(TimeZone.getTimeZone(timeZone));
         String currDateStr = df.format(currDate);
@@ -1328,7 +1378,7 @@ public class Strategy implements NotificationListener {
                 setOrderFile(p.getProperty("OrderFile"));
             } else {
                 setOrderFile(p.getProperty("OrderFile").split("\\.")[0] + stratCount + "." + p.getProperty("OrderFile").split("\\.")[1]);
-                
+
             }
         }
         setStartingCapital(p.getProperty("StartingCapital") == null ? 0D : Double.parseDouble(p.getProperty("StartingCapital")));
@@ -1371,36 +1421,38 @@ public class Strategy implements NotificationListener {
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "LongAllowed" + delimiter + getLongOnly()});
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ShortAllowed" + delimiter + getShortOnly()});
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderAtributes" + delimiter + getOrderAttributes().toString()});
-        
+
         if (getFutBrokerageFile().compareTo("") != 0) {
-            Properties pBrokerage = TradingUtil.loadParameters(getFutBrokerageFile());
+            Properties pBrokerage = Utilities.loadParameters(getFutBrokerageFile());
             String brokerage1 = pBrokerage.getProperty("Brokerage");
             String addOn1 = pBrokerage.getProperty("AddOn1");
             String addOn2 = pBrokerage.getProperty("AddOn2");
             String addOn3 = pBrokerage.getProperty("AddOn3");
             String addOn4 = pBrokerage.getProperty("AddOn4");
-            
+
             if (brokerage1 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(brokerage1, type));
+                getBrokerageRate().add(Utilities.parseBrokerageString(brokerage1, type));
             }
             if (addOn1 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn1, type));
+                getBrokerageRate().add(Utilities.parseBrokerageString(addOn1, type));
             }
             if (addOn2 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn2, type));
+                getBrokerageRate().add(Utilities.parseBrokerageString(addOn2, type));
             }
             if (addOn3 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn3, type));
+                getBrokerageRate().add(Utilities.parseBrokerageString(addOn3, type));
             }
             if (addOn4 != null) {
-                getBrokerageRate().add(TradingUtil.parseBrokerageString(addOn4, type));
+                getBrokerageRate().add(Utilities.parseBrokerageString(addOn4, type));
             }
-            
+
         }
     }
+
     @Override
     public void notificationReceived(NotificationEvent event) {
     }
+
     public synchronized void printOrders(String prefix, Strategy s) {
         double[] profitGrid = new double[5];
         DecimalFormat df = new DecimalFormat("#.##");
@@ -1418,9 +1470,9 @@ public class Strategy implements NotificationListener {
                 file = new File(dir, "body" + stratCount + ".txt");
                 equityFileName = "Equity" + stratCount + ".csv";
                 equityFile = new File(dir, equityFileName);
-                
+
             }
-            
+
             if (prefix.equals("")) {
                 if (file.exists()) {
                     file.delete();
@@ -1431,97 +1483,98 @@ public class Strategy implements NotificationListener {
             }
             String orderFileFullName = s.getOrderFile();
             if (prefix.equals("")) {
-                profitGrid = TradingUtil.applyBrokerage(getDb(), s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName, s.getStrategy());
-                TradingUtil.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
-                TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
-                TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
-                TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
-                TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
-                TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
-                TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
-                TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
-                TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
-                TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
-                TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
-                TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
-                TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
-                
+                profitGrid = Utilities.applyBrokerage(getDb(), s.getBrokerageRate(), s.getPointValue(), s.getOrderFile(), s.getTimeZone(), s.getStartingCapital(), "Order", equityFileName, s.getStrategy());
+                Utilities.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
+                Utilities.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
+                Utilities.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
+                Utilities.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
+                Utilities.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
+                Utilities.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
+                Utilities.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
+                Utilities.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
+                Utilities.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
+                Utilities.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
+                Utilities.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
+                Utilities.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
+                Utilities.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
+
             }
             if (!useRedis) {
                 logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
             }
             //Now write trade file
 //            String tradeFileFullName = "logs" + File.separator + prefix + s.getTradeFile();
-String tradeFileFullName = s.getTradeFile();
-if (prefix.equals("")) {
-    for (BeanConnection c : Parameters.connection) {
-        if (s.accounts.contains(c.getAccountName())) {
-            profitGrid = TradingUtil.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTradeFile(), s.getTimeZone(), s.getStartingCapital(), c.getAccountName(), equityFileName, s.getStrategy());
-            TradingUtil.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
-            TradingUtil.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
-            TradingUtil.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
-            TradingUtil.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
-            TradingUtil.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
-            TradingUtil.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
-            TradingUtil.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
-            TradingUtil.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
-            TradingUtil.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
-            TradingUtil.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
-            TradingUtil.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
-            TradingUtil.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
-            TradingUtil.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
-            
-            String message
-                    = "Strategy Name:" + s.strategy + Strategy.newline
-                    + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
-                    + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
-                    + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
-                    + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
-                    + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
-                    + "# days in history: " + df.format(profitGrid[9]) + Strategy.newline
-                    + "Average Drawdown Cycle:  " + df.format(profitGrid[10]) + Strategy.newline
-                    + "# days in current drawdown: " + df.format(profitGrid[11]) + Strategy.newline
-                    + "Average Drawdown Value:  " + df.format(profitGrid[12]) + Strategy.newline
-                    + "Current Drawdown Value: " + df.format(profitGrid[13]);
-            
-            String openPositions = Validator.openPositions(c.getAccountName(), s);
-            
-            if (openPositions.equals("")) {
-                message = message + newline + "No open trade positions";
-            } else {
-                message = message + newline + openPositions;
+            String tradeFileFullName = s.getTradeFile();
+            if (prefix.equals("")) {
+                for (BeanConnection c : Parameters.connection) {
+                    if (s.accounts.contains(c.getAccountName())) {
+                        profitGrid = Utilities.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTradeFile(), s.getTimeZone(), s.getStartingCapital(), c.getAccountName(), equityFileName, s.getStrategy());
+                        Utilities.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
+                        Utilities.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
+                        Utilities.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
+                        Utilities.writeToFile(file.getName(), "Net P&L today: " + df.format(profitGrid[2]));
+                        Utilities.writeToFile(file.getName(), "MTD P&L: " + df.format(profitGrid[3]));
+                        Utilities.writeToFile(file.getName(), "YTD P&L: " + df.format(profitGrid[4]));
+                        Utilities.writeToFile(file.getName(), "Max Drawdown (%): " + df.format(profitGrid[5]));
+                        Utilities.writeToFile(file.getName(), "Max Drawdown (days): " + df.format(profitGrid[6]));
+                        Utilities.writeToFile(file.getName(), "Avg Drawdown (days): " + df.format(profitGrid[7]));
+                        Utilities.writeToFile(file.getName(), "Sharpe Ratio: " + df.format(profitGrid[8]));
+                        Utilities.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
+                        Utilities.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
+                        Utilities.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
+
+                        String message
+                                = "Strategy Name:" + s.strategy + Strategy.newline
+                                + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
+                                + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
+                                + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
+                                + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
+                                + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
+                                + "# days in history: " + df.format(profitGrid[9]) + Strategy.newline
+                                + "Average Drawdown Cycle:  " + df.format(profitGrid[10]) + Strategy.newline
+                                + "# days in current drawdown: " + df.format(profitGrid[11]) + Strategy.newline
+                                + "Average Drawdown Value:  " + df.format(profitGrid[12]) + Strategy.newline
+                                + "Current Drawdown Value: " + df.format(profitGrid[13]);
+
+                        String openPositions = Validator.openPositions(c.getAccountName(), s);
+
+                        if (openPositions.equals("")) {
+                            message = message + newline + "No open trade positions";
+                        } else {
+                            message = message + newline + openPositions;
+                        }
+                        message = message + "\n" + "\n";
+                        message = message + "PNL Summary" + "\n";
+
+                        message = message + Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
+                        Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
+                        t.start();
+                        try {
+                            Thread.sleep(10000);
+                        } catch (InterruptedException ex) {
+                            logger.log(Level.INFO, "101", ex);
+                        }
+                    }
+                }
             }
-            message = message + "\n" + "\n";
-            message = message + "PNL Summary" + "\n";
-            
-            message = message + Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
-            Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
-            t.start();
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException ex) {
-                logger.log(Level.INFO, "101", ex);
+            if (!useRedis) {
+                logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
             }
-        }
-    }
-}
-if (!useRedis) {
-    logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
-}
-for (BeanConnection c : Parameters.connection) {
-    if (s.accounts.contains(c.getAccountName())) {
-        Validator.reconcile(prefix, getDb(), s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
-    }
-    //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
-}
-if (Algorithm.useForSimulation) {
-    System.exit(0);
-}
+            for (BeanConnection c : Parameters.connection) {
+                if (s.accounts.contains(c.getAccountName())) {
+                    Validator.reconcile(prefix, getDb(), s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
+                }
+                //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
+            }
+            if (Algorithm.useForSimulation) {
+                System.exit(0);
+            }
 
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
     }
+
     public void updatePositions() {
         //Initialize open notional orders and positions
         for (BeanPosition p : position.values()) {
