@@ -727,6 +727,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 }
             } else if (event.getOrderStage().equals(EnumOrderStage.AMEND)) {
                 order.m_lmtPrice = event.getLimitPrice();
+                event.setOrderStatus(EnumOrderStatus.SUBMITTED);
             }
             ArrayList<Contract> contracts = c.getWrapper().createContract(event.getChildSymbolID());
             String key = "OQ:" + event.getExternalOrderID() + ":" + c.getAccountName() + ":" + event.getOrderReference() + ":"
