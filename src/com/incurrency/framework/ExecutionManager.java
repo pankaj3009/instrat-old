@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -189,7 +190,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             db = Algorithm.db;
         }
         tes.addOrderListener(this); //subscribe to events published by tes owned by the strategy oms
-
+        int maxorderid = Algorithm.orderidint.get();
+        for (String key : db.getKeys("opentrades_")) {
+            String intkey = key.split("_")[1].split(":")[1];
+            maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
+            maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
+        }
+        Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
+             
         for (BeanConnection c : Parameters.connection) {
             c.getWrapper().addOrderStatusListener(this);
             c.getWrapper().addTWSErrorListener(this);
@@ -900,6 +908,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 //                    }
                     ord.m_auxPrice = event.getTriggerPrice() > 0 ? event.getTriggerPrice() : 0;
                     ord.m_lmtPrice = event.getLimitPrice() > 0 ? event.getLimitPrice() : 0;
+                    if(ord.m_lmtPrice>0){
                     if (event.getLimitPrice() > 0 & event.getTriggerPrice() == 0) {
                         ord.m_orderType = "LMT";
                         ord.m_lmtPrice = event.getLimitPrice();
@@ -925,6 +934,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         c.getWrapper().placeOrder(c, amendedOrders, this, event);
                     }
                     //}
+                    }
                 }
 
             }
@@ -1008,17 +1018,25 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             //}
                             switch (fillStatus) {
                                 case COMPLETEFILLED:
+                                    if(ob.getOrderStatus()!=EnumOrderStatus.COMPLETEFILLED){
                                     updateFilledOrders(event.getC(), ob, event.getFilled(), event.getAvgFillPrice(), event.getLastFillPrice());
+                                    }
                                     break;
                                 case PARTIALFILLED:
+                                    if(ob.getOrderStatus()!=EnumOrderStatus.PARTIALFILLED){
                                     updatePartialFills(event.getC(), ob, event.getFilled(), event.getAvgFillPrice(), event.getLastFillPrice());
+                                    }
                                     break;
                                 case CANCELLEDNOFILL:
                                 case CANCELLEDPARTIALFILL:
+                                    if(ob.getOrderStatus()!=EnumOrderStatus.CANCELLEDNOFILL ||ob.getOrderStatus()!=EnumOrderStatus.CANCELLEDPARTIALFILL){
                                     updateCancelledOrders(event.getC(), parentid, ob);
+                                    }
                                     break;
                                 case ACKNOWLEDGED:
+                                     if(ob.getOrderStatus()!=EnumOrderStatus.ACKNOWLEDGED){                                    
                                     updateAcknowledgement(event.getC(), ob);
+                                     }
                                 //logger.log(Level.FINE, "{0},{1},Execution Manager,Order Acknowledged by IB, Parent Symbol: {2}, Child Symbol: {3}, Orderid: {4}", new Object[]{event.getC().getAccountName(), orderReference, Parameters.symbol.get(parentid).getSymbol(), Parameters.symbol.get(childid).getSymbol(), orderid});
                                 default:
                                     break;
@@ -1234,7 +1252,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
 
         }
-
     }
 
     private void fireLinkedAction(BeanConnection c, OrderBean ob, EnumLinkedAction nextAction, int delay) {
