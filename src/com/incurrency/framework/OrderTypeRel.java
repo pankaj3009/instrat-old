@@ -160,7 +160,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
         try {
             boolean bestPrice = false;
             boolean fatfinger = false;
-            ob=c.getOrderBean(ob);
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
                 //check if there is a case for updating rel price. Only time criteron at present.
                 if (recentOrders.size() == orderspermin
@@ -174,6 +173,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 }
                 if (recalculate) {
                     BeanSymbol s = Parameters.symbol.get(id);
+                    ob=c.getOrderBean(ob);
                     internalOrderIDEntry = ob.getOrderIDForSquareOff();
                     limitPrice = ob.getLimitPrice();
                     double newLimitPrice = limitPrice;
