@@ -381,9 +381,10 @@ public class Strategy implements NotificationListener {
                 }
 
                 if (MainAlgorithm.isUseForTrading()) {
-                    Thread t = new Thread(oms = new ExecutionManager(this, getAggression(), this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts, getTradeFile()));
-                    t.setName(strategy + ":" + "OMS");
-                    t.start();
+//                    Thread t = new Thread(oms = new ExecutionManager(this, getAggression(), this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts, getTradeFile()));
+//                    t.setName(strategy + ":" + "OMS");
+//                    t.start();
+                    oms = new ExecutionManager(this, getAggression(), this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts, getTradeFile());
                     plmanager = new ProfitLossManager(this, this.getStrategySymbols(), getPointValue(), getClawProfitTarget(), getDayProfitTarget(), getDayStopLoss(), accounts);
                 }
                 if (MainAlgorithm.isUseForTrading()) {
