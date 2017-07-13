@@ -37,7 +37,7 @@ import org.jquantlib.time.JDate;
  *
  * @author admin
  */
-public class ExecutionManager implements Runnable, OrderListener, OrderStatusListener, TWSErrorListener {
+public class ExecutionManager implements OrderListener, OrderStatusListener, TWSErrorListener {
 
     private final static Logger logger = Logger.getLogger(DataBars.class.getName());
     static boolean logHeaderWritten = false;
@@ -2396,8 +2396,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         notificationListeners.remove(l);
     }
 
-    @Override
-    public synchronized void run() {
+     public synchronized void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 wait();
