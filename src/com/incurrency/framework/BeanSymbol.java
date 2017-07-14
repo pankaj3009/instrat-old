@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
@@ -157,7 +157,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private LimitedQueue<Double> tradedPrices;
     private LimitedQueue<Integer> tradedVolumes;
     private LimitedQueue<Long> tradedDateTime;
-    private HashMap<BeanSymbol, Integer> combo = new HashMap<>(); //holds brokerSymbol and corresponding size
+    private ConcurrentHashMap<BeanSymbol, Integer> combo = new ConcurrentHashMap<>(); //holds brokerSymbol and corresponding size
     private Fundamental fundamental = new Fundamental();
     private AtomicBoolean addedToSymbols = new AtomicBoolean();
     private EuropeanOption optionProcess = null;
@@ -2306,14 +2306,14 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @return the combo
      */
-    public HashMap<BeanSymbol, Integer> getCombo() {
+    public ConcurrentHashMap<BeanSymbol, Integer> getCombo() {
         return combo;
     }
 
     /**
      * @param combo the combo to set
      */
-    public void setCombo(HashMap<BeanSymbol, Integer> combo) {
+    public void setCombo(ConcurrentHashMap<BeanSymbol, Integer> combo) {
         this.combo = combo;
     }
 

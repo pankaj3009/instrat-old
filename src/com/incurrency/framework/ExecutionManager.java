@@ -256,7 +256,7 @@ public class ExecutionManager implements OrderListener, OrderStatusListener, TWS
 
         //update connection with mtm data
         for (BeanConnection c : Parameters.connection) {
-            HashMap<Index, BeanPosition> positions = c.getPositions();
+            ConcurrentHashMap<Index, BeanPosition> positions = c.getPositions();
             Iterator it = positions.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<Index, BeanPosition> position = (Map.Entry) it.next();
@@ -1727,16 +1727,6 @@ public class ExecutionManager implements OrderListener, OrderStatusListener, TWS
                 Thread t = new Thread(new Mail(c.getOwnerEmail(), "Order Completely Executed. Account: " + c.getAccountName() + ", Strategy: " + strategy + ", Combo Symbol: " + Parameters.symbol.get(parentid).getDisplayname() + ",Filled Child: " + Parameters.symbol.get(childid).getBrokerSymbol() + ", Child Fill Size: " + fill + ", Child Position: " + p.getChildPosition().get(cpid).getPosition() + ", Child Fill Price: " + avgFillPrice + ", Combo Position: " + p.getPosition() + ",Combo Price: " + p.getPrice() + " ,Reason:" + ob.getOrderReason().toString(), "Algorithm Alert - " + strategy.toUpperCase()));
                 t.start();
             }
-
-            //if (c.getOrdersInProgress().contains(orderid) && ob.getChildStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-            if (c.getOrdersInProgress().contains(orderid)) {
-                c.getOrdersInProgress().remove(Integer.valueOf(orderid));
-                logger.log(Level.FINE, "307,OrderProgressQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
-            }
-            if (c.getOrdersMissed().contains(orderid) && ob.getOrderStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-                c.getOrdersMissed().remove(Integer.valueOf(orderid));
-                logger.log(Level.FINE, "307,OrderMissedQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid});
-            }
             int tradeFill = 0;
             switch (ob.getOrderSide()) {
                 case BUY:
@@ -1860,11 +1850,6 @@ public class ExecutionManager implements OrderListener, OrderStatusListener, TWS
             pob.setOrderStatus(EnumOrderStatus.PARTIALFILLED);
         }
 
-        if (c.getOrdersInProgress().contains(orderid) && ob.getOrderStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-            c.getOrdersInProgress().remove(Integer.valueOf(orderid));
-            logger.log(Level.FINE, "307,OrderProgressQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
-        }
-
         if (fill > 0) {
             //1. Update orderbean
             ob.setTotalFillPrice((fill * lastFillPrice + ob.getTotalFillSize() * ob.getTotalFillPrice()) / (fill + ob.getTotalFillSize()));
@@ -1985,15 +1970,6 @@ public class ExecutionManager implements OrderListener, OrderStatusListener, TWS
                 t.start();
             }
 
-            if (c.getOrdersInProgress().contains(orderid) && ob.getOrderStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-                c.getOrdersInProgress().remove(Integer.valueOf(orderid));
-                logger.log(Level.FINE, "307,OrderProgressQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid + delimiter + Parameters.symbol.get(parentid).getDisplayname()});
-            }
-
-            if (c.getOrdersMissed().contains(orderid) && ob.getOrderStatus().equals(EnumOrderStatus.COMPLETEFILLED)) {
-                c.getOrdersMissed().remove(Integer.valueOf(orderid));
-                logger.log(Level.FINE, "307,OrderMissedQueueRemoved,{0}", new Object[]{c.getAccountName() + delimiter + orderReference + delimiter + orderid});
-            }
             //For exits we send incremental fill = abs(fill) as tradeupdate ** for exits only ** aggregates fills.
             //For entry, there each fill with the same internal order id is updated.
 

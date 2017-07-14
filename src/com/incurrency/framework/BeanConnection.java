@@ -12,8 +12,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -41,26 +41,18 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     private long timeDiff;
     private transient ReqHandle reqHandle = new ReqHandle();
     private transient ReqHandleHistorical reqHistoricalHandle;
-    //private transient HashMap mReqID = new HashMap();
-    //private transient HashMap<Integer, Integer> mStreamingSymbolRequestID = new HashMap();
-    //private transient HashMap<Integer, Integer> mSnapShotReqID = new HashMap(); // this holds reqID as key
-    //private transient HashMap<Integer, Integer> mStreamingCancellableReqID = new HashMap();// this holds reqid that needs to be cancelled once data is retrieved
-    //private transient HashMap<Integer, RequestID> mSnapShotSymbolID = new HashMap(); //this holds symbolID as key
-    //private transient HashMap mRealTimeBarsReqID = new HashMap();
     private transient Long connectionTime;
-    private HashMap<OrderQueueKey, ArrayList<OrderBean>> orders = new HashMap<>(); //holds map of <strategy,symbol> and a list of all open orders against the index.
-    private HashMap<Index, BeanPosition> Positions = new HashMap<>(); //holds map of <symbol, strategy> and system position.
-    private ArrayList<Integer> ordersMissed = new ArrayList();
-    private ArrayList<Integer> ordersInProgress = new ArrayList();
+    private ConcurrentHashMap<OrderQueueKey, ArrayList<OrderBean>> orders = new ConcurrentHashMap<>(); //holds map of <strategy,symbol> and a list of all open orders against the index.
+    private ConcurrentHashMap<Index, BeanPosition> Positions = new ConcurrentHashMap<>(); //holds map of <symbol, strategy> and system position.
     private String accountName;
     private PropertyChangeSupport propertySupport;
     private double pnlByAccount = 0;
-    private HashMap<String, Double> pnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
-    private HashMap<String, Double> mtmByStrategy = new HashMap<>(); //holds pnl by each strategy.
-    private HashMap<Index, Double> mtmBySymbol = new HashMap<>(); //holds pnl by each strategy.
-    private HashMap<Index, Double> pnlBySymbol = new HashMap<>(); //holds pnl by each strategy.
-    private HashMap<String, Double> maxpnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
-    private HashMap<String, Double> minpnlByStrategy = new HashMap<>(); //holds pnl by each strategy.
+    private ConcurrentHashMap<String, Double> pnlByStrategy = new ConcurrentHashMap<>(); //holds pnl by each strategy.
+    private ConcurrentHashMap<String, Double> mtmByStrategy = new ConcurrentHashMap<>(); //holds pnl by each strategy.
+    private ConcurrentHashMap<Index, Double> mtmBySymbol = new ConcurrentHashMap<>(); //holds pnl by each strategy.
+    private ConcurrentHashMap<Index, Double> pnlBySymbol = new ConcurrentHashMap<>(); //holds pnl by each strategy.
+    private ConcurrentHashMap<String, Double> maxpnlByStrategy = new ConcurrentHashMap<>(); //holds pnl by each strategy.
+    private ConcurrentHashMap<String, Double> minpnlByStrategy = new ConcurrentHashMap<>(); //holds pnl by each strategy.
     private int ordersHaltTrading = 10;
     private String ownerEmail;
     final Object lockPNLStrategy = new Object();
@@ -331,7 +323,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the ordersSymbols
      */
-    public HashMap<OrderQueueKey, ArrayList<OrderBean>> getOrders() {
+    public ConcurrentHashMap<OrderQueueKey, ArrayList<OrderBean>> getOrders() {
         return orders;
     }
 
@@ -414,43 +406,15 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the notionalPositions
      */
-    public HashMap<Index, BeanPosition> getPositions() {
+    public ConcurrentHashMap<Index, BeanPosition> getPositions() {
         return Positions;
     }
 
     /**
      * @param notionalPositions the notionalPositions to set
      */
-    public void setPositions(HashMap<Index, BeanPosition> Positions) {
+    public void setPositions(ConcurrentHashMap<Index, BeanPosition> Positions) {
         this.Positions = Positions;
-    }
-
-    /**
-     * @return the ordersMissed
-     */
-    public synchronized ArrayList<Integer> getOrdersMissed() {
-        return ordersMissed;
-    }
-
-    /**
-     * @param ordersMissed the ordersMissed to set
-     */
-    public synchronized void setOrdersMissed(ArrayList<Integer> ordersMissed) {
-        this.ordersMissed = ordersMissed;
-    }
-
-    /**
-     * @return the ordersInProgress
-     */
-    public synchronized ArrayList<Integer> getOrdersInProgress() {
-        return ordersInProgress;
-    }
-
-    /**
-     * @param ordersInProgress the ordersInProgress to set
-     */
-    public synchronized void setOrdersInProgress(ArrayList<Integer> ordersInProgress) {
-        this.ordersInProgress = ordersInProgress;
     }
 
     /**
@@ -504,7 +468,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the pnlByStrategy
      */
-    public HashMap<String, Double> getPnlByStrategy() {
+    public ConcurrentHashMap<String, Double> getPnlByStrategy() {
         synchronized (lockPNLStrategy) {
             return pnlByStrategy;
         }
@@ -513,7 +477,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @param pnlByStrategy the pnlByStrategy to set
      */
-    public void setPnlByStrategy(HashMap<String, Double> pnlByStrategy) {
+    public void setPnlByStrategy(ConcurrentHashMap<String, Double> pnlByStrategy) {
         synchronized (lockPNLStrategy) {
             this.pnlByStrategy = pnlByStrategy;
         }
@@ -522,7 +486,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the pnlBySymbol
      */
-    public HashMap<Index, Double> getPnlBySymbol() {
+    public ConcurrentHashMap<Index, Double> getPnlBySymbol() {
         synchronized (lockPNLStrategy) {
             return pnlBySymbol;
         }
@@ -531,7 +495,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @param pnlBySymbol the pnlBySymbol to set
      */
-    public void setPnlBySymbol(HashMap<Index, Double> pnlBySymbol) {
+    public void setPnlBySymbol(ConcurrentHashMap<Index, Double> pnlBySymbol) {
         synchronized (lockPNLStrategy) {
             this.pnlBySymbol = pnlBySymbol;
         }
@@ -540,7 +504,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the maxpnlByStrategy
      */
-    public HashMap<String, Double> getMaxpnlByStrategy() {
+    public ConcurrentHashMap<String, Double> getMaxpnlByStrategy() {
         synchronized (lockPNLStrategy) {
             return maxpnlByStrategy;
         }
@@ -549,7 +513,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @param maxpnlByStrategy the maxpnlByStrategy to set
      */
-    public void setMaxpnlByStrategy(HashMap<String, Double> maxpnlByStrategy) {
+    public void setMaxpnlByStrategy(ConcurrentHashMap<String, Double> maxpnlByStrategy) {
         synchronized (lockPNLStrategy) {
             this.maxpnlByStrategy = maxpnlByStrategy;
         }
@@ -558,7 +522,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the minpnlByStrategy
      */
-    public HashMap<String, Double> getMinpnlByStrategy() {
+    public ConcurrentHashMap<String, Double> getMinpnlByStrategy() {
         synchronized (lockPNLStrategy) {
             return minpnlByStrategy;
         }
@@ -567,7 +531,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @param minpnlByStrategy the minpnlByStrategy to set
      */
-    public void setMinpnlByStrategy(HashMap<String, Double> minpnlByStrategy) {
+    public void setMinpnlByStrategy(ConcurrentHashMap<String, Double> minpnlByStrategy) {
         synchronized (lockPNLStrategy) {
             this.minpnlByStrategy = minpnlByStrategy;
         }
@@ -642,28 +606,28 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     /**
      * @return the mtmByStrategy
      */
-    public HashMap<String, Double> getMtmByStrategy() {
+    public ConcurrentHashMap<String, Double> getMtmByStrategy() {
         return mtmByStrategy;
     }
 
     /**
      * @param mtmByStrategy the mtmByStrategy to set
      */
-    public void setMtmByStrategy(HashMap<String, Double> mtmByStrategy) {
+    public void setMtmByStrategy(ConcurrentHashMap<String, Double> mtmByStrategy) {
         this.mtmByStrategy = mtmByStrategy;
     }
 
     /**
      * @return the mtmBySymbol
      */
-    public HashMap<Index, Double> getMtmBySymbol() {
+    public ConcurrentHashMap<Index, Double> getMtmBySymbol() {
         return mtmBySymbol;
     }
 
     /**
      * @param mtmBySymbol the mtmBySymbol to set
      */
-    public void setMtmBySymbol(HashMap<Index, Double> mtmBySymbol) {
+    public void setMtmBySymbol(ConcurrentHashMap<Index, Double> mtmBySymbol) {
         this.mtmBySymbol = mtmBySymbol;
     }
 }

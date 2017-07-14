@@ -59,8 +59,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     //Parameters for dataserver
     private BeanCassandraConnection cassandra = new BeanCassandraConnection();
     public Socket cassandraConnection;
-    public PrintStream output;
-    Jedis jedis = Algorithm.marketdatapool.getResource();
+    public PrintStream output;    
     public RequestIDManager requestIDManager = new RequestIDManager();
     private SimpleDateFormat sdfTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private SynchronousQueue<String> startingOrderID = new SynchronousQueue<>();
@@ -453,7 +452,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     }
 
     public double calculatePairPrice(int pairID, HashMap<Integer, Double> limitPrices) {
-        HashMap<BeanSymbol, Integer> combo = Parameters.symbol.get(pairID).getCombo();
+        ConcurrentHashMap<BeanSymbol, Integer> combo = Parameters.symbol.get(pairID).getCombo();
         double pairPrice = 0;
         int i = 0;
         for (Map.Entry<BeanSymbol, Integer> entry : combo.entrySet()) {
@@ -1011,7 +1010,9 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                             Parameters.symbol.get(id).setOpenPrice(price);
                         }
                         if (Parameters.symbol.get(id).isAddedToSymbols()) {
-                            jedis.publish(this.getCassandraDetails().getTopic(), field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());
+                            try(Jedis jedis=Algorithm.marketdatapool.getResource()){
+                                jedis.publish(this.getCassandraDetails().getTopic(), field + "," + new Date().getTime() + "," + price + "," + Parameters.symbol.get(id).getDisplayname());                                
+                            }
 
                         }
                     }
@@ -1168,7 +1169,9 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                             }
                         }
                         if (Parameters.symbol.get(id).isAddedToSymbols()) {
-                            jedis.publish(this.getCassandraDetails().getTopic(), field + "," + new Date().getTime() + "," + size + "," + Parameters.symbol.get(id).getDisplayname());
+                            try(Jedis jedis=Algorithm.marketdatapool.getResource()){
+                                jedis.publish(this.getCassandraDetails().getTopic(), field + "," + new Date().getTime() + "," + size + "," + Parameters.symbol.get(id).getDisplayname());
+                            }
 
                         }
                     }

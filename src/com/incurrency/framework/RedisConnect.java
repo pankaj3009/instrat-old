@@ -134,6 +134,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
         try (Jedis jedis = pool.getResource()) {
             return jedis.blpop(duration, storeName + key);
         }
+        
         //}
     }
 
