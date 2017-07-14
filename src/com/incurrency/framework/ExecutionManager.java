@@ -37,7 +37,7 @@ import org.jquantlib.time.JDate;
  *
  * @author admin
  */
-public class ExecutionManager implements Runnable,OrderListener, OrderStatusListener, TWSErrorListener {
+public class ExecutionManager implements Runnable, OrderListener, OrderStatusListener, TWSErrorListener {
 
     private final static Logger logger = Logger.getLogger(DataBars.class.getName());
     static boolean logHeaderWritten = false;
@@ -61,7 +61,6 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
     private ArrayList notificationListeners = new ArrayList();
     //copies of global variables
     private ArrayList<Integer> deemedCancellation = new ArrayList<>();
-    private final Object lockLinkedAction = new Object();
     private final String delimiter = "_";
     private double estimatedBrokerage = 0;
     private ConcurrentHashMap<Integer, EnumOrderStatus> orderStatus = new ConcurrentHashMap<>();
@@ -197,7 +196,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
             maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
         }
         Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
-             
+
         for (BeanConnection c : Parameters.connection) {
             c.getWrapper().addOrderStatusListener(this);
             c.getWrapper().addTWSErrorListener(this);
@@ -268,6 +267,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
                     c.getMtmBySymbol().put(position.getKey(), position.getValue().getUnrealizedPNLPriorDay());
                 }
             }
+            c.loadOrdersFromRedis();
         }
 
         //Initialize timers
@@ -749,7 +749,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
 //    }
     private ArrayList<OrderBean> getExternalOpenOrders(BeanConnection c, String searchString, EnumOrderSide orderSide) {
         ArrayList<OrderBean> out = new ArrayList<>();
-        
+
         Set<String> oqks = c.getKeys(searchString);
         for (String oqki : oqks) {
             OrderQueueKey oqk = new OrderQueueKey(oqki);
@@ -909,32 +909,32 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
 //                    }
                     ord.m_auxPrice = event.getTriggerPrice() > 0 ? event.getTriggerPrice() : 0;
                     ord.m_lmtPrice = event.getLimitPrice() > 0 ? event.getLimitPrice() : 0;
-                    if(ord.m_lmtPrice>0){
-                    if (event.getLimitPrice() > 0 & event.getTriggerPrice() == 0) {
-                        ord.m_orderType = "LMT";
-                        ord.m_lmtPrice = event.getLimitPrice();
-                    } else if (event.getLimitPrice() == 0 && event.getTriggerPrice() > 0 && (event.getOrderSide() == EnumOrderSide.SELL || event.getOrderSide() == EnumOrderSide.COVER)) {
-                        ord.m_orderType = "STP";
-                        ord.m_lmtPrice = event.getLimitPrice();
-                        ord.m_auxPrice = event.getTriggerPrice();
-                    } else if (event.getLimitPrice() > 0 && event.getTriggerPrice() > 0) {
-                        ord.m_orderType = "STP LMT";
-                        ord.m_lmtPrice = event.getLimitPrice();
-                        ord.m_auxPrice = event.getTriggerPrice();
-                    } else {
-                        ord.m_orderType = "MKT";
-                        ord.m_lmtPrice = 0;
-                        ord.m_auxPrice = 0;
-                    }
-                    //ord.m_totalQuantity = size;
-                    amendedOrders.put(id, ord);
-                    if (amendedOrders.size() > 0) {
-                        logger.log(Level.INFO, "500,AmendmentOrder,{0}:{1}:{2}:{3}:{4},NewLimitPrice={5}",
-                                new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getParentInternalOrderID()), String.valueOf(ord.m_orderId), String.valueOf(ord.m_lmtPrice)});
-                        event.setOrderTime();
-                        c.getWrapper().placeOrder(c, amendedOrders, this, event);
-                    }
-                    //}
+                    if (ord.m_lmtPrice > 0) {
+                        if (event.getLimitPrice() > 0 & event.getTriggerPrice() == 0) {
+                            ord.m_orderType = "LMT";
+                            ord.m_lmtPrice = event.getLimitPrice();
+                        } else if (event.getLimitPrice() == 0 && event.getTriggerPrice() > 0 && (event.getOrderSide() == EnumOrderSide.SELL || event.getOrderSide() == EnumOrderSide.COVER)) {
+                            ord.m_orderType = "STP";
+                            ord.m_lmtPrice = event.getLimitPrice();
+                            ord.m_auxPrice = event.getTriggerPrice();
+                        } else if (event.getLimitPrice() > 0 && event.getTriggerPrice() > 0) {
+                            ord.m_orderType = "STP LMT";
+                            ord.m_lmtPrice = event.getLimitPrice();
+                            ord.m_auxPrice = event.getTriggerPrice();
+                        } else {
+                            ord.m_orderType = "MKT";
+                            ord.m_lmtPrice = 0;
+                            ord.m_auxPrice = 0;
+                        }
+                        //ord.m_totalQuantity = size;
+                        amendedOrders.put(id, ord);
+                        if (amendedOrders.size() > 0) {
+                            logger.log(Level.INFO, "500,AmendmentOrder,{0}:{1}:{2}:{3}:{4},NewLimitPrice={5}",
+                                    new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getParentInternalOrderID()), String.valueOf(ord.m_orderId), String.valueOf(ord.m_lmtPrice)});
+                            event.setOrderTime();
+                            c.getWrapper().placeOrder(c, amendedOrders, this, event);
+                        }
+                        //}
                     }
                 }
 
@@ -958,90 +958,92 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
             //update HashMap orders
             BeanConnection c = event.getC();
             synchronized (event.getC().lockOrders) {
-                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, c, "OQ:" + orderid + ":" + c.getAccountName() + ":");
+                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, c, "OQ:" + orderid + ":" + c.getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
                         OrderBean ob = c.getOrderBeanCopy(oqk);
                         if (ob != null && ob.getOrderReference().compareToIgnoreCase(orderReference) == 0) {
                             int parentid = ob.getParentSymbolID();
-                            EnumOrderStatus fillStatus = EnumOrderStatus.SUBMITTED;
-                            if (!Utilities.isSyntheticSymbol(parentid)) {//single leg
-                                if (event.getRemaining() == 0) {
-                                    fillStatus = EnumOrderStatus.COMPLETEFILLED;
-                                } else if (event.getRemaining() > 0 && event.getAvgFillPrice() > 0 && !"Cancelled".equals(event.getStatus())) {
-                                    fillStatus = EnumOrderStatus.PARTIALFILLED;
-                                } else if (("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) && ob.getCurrentFillSize() == 0) {
-                                    fillStatus = EnumOrderStatus.CANCELLEDNOFILL;
-                                } else if (("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) && ob.getCurrentFillSize() != 0) {
-                                    fillStatus = EnumOrderStatus.CANCELLEDPARTIALFILL;
-                                } else if ("Submitted".equals(event.getStatus())) {
-                                    fillStatus = EnumOrderStatus.ACKNOWLEDGED;
-                                }
-                            } else {//combo order
-                                ArrayList<OrderBean> obs = Utilities.getLinkedOrderBeans(orderid, c);
-                                HashMap<Integer, Integer> incompleteFills = new HashMap<>();
-                                boolean noFill = true;
-                                boolean acknowledged = true;
-                                for (OrderBean obv : obs) {
-                                    if (obv != null) {
-                                        int incomplete = obv.getCurrentOrderSize() - obv.getCurrentFillSize();
-                                        if (obv.getCurrentFillSize() > 0) {
-                                            noFill = noFill && false;
+                            if (parentid > 0) {
+                                EnumOrderStatus fillStatus = EnumOrderStatus.SUBMITTED;
+                                if (!Utilities.isSyntheticSymbol(parentid)) {//single leg
+                                    if (event.getRemaining() == 0) {
+                                        fillStatus = EnumOrderStatus.COMPLETEFILLED;
+                                    } else if (event.getRemaining() > 0 && event.getAvgFillPrice() > 0 && !"Cancelled".equals(event.getStatus())) {
+                                        fillStatus = EnumOrderStatus.PARTIALFILLED;
+                                    } else if (("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) && ob.getCurrentFillSize() == 0) {
+                                        fillStatus = EnumOrderStatus.CANCELLEDNOFILL;
+                                    } else if (("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) && ob.getCurrentFillSize() != 0) {
+                                        fillStatus = EnumOrderStatus.CANCELLEDPARTIALFILL;
+                                    } else if ("Submitted".equals(event.getStatus())) {
+                                        fillStatus = EnumOrderStatus.ACKNOWLEDGED;
+                                    }
+                                } else {//combo order
+                                    ArrayList<OrderBean> obs = Utilities.getLinkedOrderBeans(orderid, c);
+                                    HashMap<Integer, Integer> incompleteFills = new HashMap<>();
+                                    boolean noFill = true;
+                                    boolean acknowledged = true;
+                                    for (OrderBean obv : obs) {
+                                        if (obv != null) {
+                                            int incomplete = obv.getCurrentOrderSize() - obv.getCurrentFillSize();
+                                            if (obv.getCurrentFillSize() > 0) {
+                                                noFill = noFill && false;
+                                            }
+                                            if (incomplete > 0) {
+                                                incompleteFills.put(obv.getExternalOrderID(), incomplete);
+                                            }
+                                            acknowledged = acknowledged && !obv.getOrderStatus().equals(EnumOrderStatus.SUBMITTED);
+                                        } else {
+                                            System.out.println("-------------Order ID is null!!----------");
+                                            incompleteFills.put(-1, 1);//add any dummy value in incomplete fills
+                                            acknowledged = false;
+
                                         }
-                                        if (incomplete > 0) {
-                                            incompleteFills.put(obv.getExternalOrderID(), incomplete);
+                                    }
+                                    if (incompleteFills.isEmpty() && event.getRemaining() <= 0) {
+                                        fillStatus = EnumOrderStatus.COMPLETEFILLED;
+                                    } else if (incompleteFills.size() >= 0 && event.getFilled() > 0 && !"Cancelled".equals(event.getStatus())) {
+                                        fillStatus = EnumOrderStatus.PARTIALFILLED;
+                                    } else if (("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) && noFill) {
+                                        fillStatus = EnumOrderStatus.CANCELLEDNOFILL;
+                                    } else if (("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) && !noFill) {
+                                        fillStatus = EnumOrderStatus.CANCELLEDPARTIALFILL;
+                                    } else if ("Submitted".equals(event.getStatus()) && !ob.getOrderStatus().equals(EnumOrderStatus.ACKNOWLEDGED)) {
+                                        fillStatus = EnumOrderStatus.ACKNOWLEDGED;
+                                    }
+
+                                }
+                                //if (orderStatus.get(orderid) == null || orderStatus.get(orderid) != fillStatus) {
+                                logger.log(Level.INFO, "302,OrderStatus,{0}:{1}:{2}:{3}:{4},OrderStatus={5}",
+                                        new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(parentid).getDisplayname(), ob.getInternalOrderID(), String.valueOf(orderid), fillStatus});
+                                orderStatus.put(orderid, fillStatus);
+                                //}
+                                switch (fillStatus) {
+                                    case COMPLETEFILLED:
+                                        if (ob.getOrderStatus() != EnumOrderStatus.COMPLETEFILLED) {
+                                            updateFilledOrders(event.getC(), ob, event.getFilled(), event.getAvgFillPrice(), event.getLastFillPrice());
                                         }
-                                        acknowledged = acknowledged && !obv.getOrderStatus().equals(EnumOrderStatus.SUBMITTED);
-                                    } else {
-                                        System.out.println("-------------Order ID is null!!----------");
-                                        incompleteFills.put(-1, 1);//add any dummy value in incomplete fills
-                                        acknowledged = false;
+                                        break;
+                                    case PARTIALFILLED:
+                                        if (ob.getOrderStatus() != EnumOrderStatus.PARTIALFILLED) {
+                                            updatePartialFills(event.getC(), ob, event.getFilled(), event.getAvgFillPrice(), event.getLastFillPrice());
+                                        }
+                                        break;
+                                    case CANCELLEDNOFILL:
+                                    case CANCELLEDPARTIALFILL:
+                                        if (ob.getOrderStatus() != EnumOrderStatus.CANCELLEDNOFILL || ob.getOrderStatus() != EnumOrderStatus.CANCELLEDPARTIALFILL) {
+                                            updateCancelledOrders(event.getC(), parentid, ob);
+                                        }
+                                        break;
+                                    case ACKNOWLEDGED:
+                                        if (ob.getOrderStatus() != EnumOrderStatus.ACKNOWLEDGED) {
+                                            updateAcknowledgement(event.getC(), ob);
+                                        }
+                                    //logger.log(Level.FINE, "{0},{1},Execution Manager,Order Acknowledged by IB, Parent Symbol: {2}, Child Symbol: {3}, Orderid: {4}", new Object[]{event.getC().getAccountName(), orderReference, Parameters.symbol.get(parentid).getSymbol(), Parameters.symbol.get(childid).getSymbol(), orderid});
+                                    default:
+                                        break;
 
-                                    }
                                 }
-                                if (incompleteFills.isEmpty() && event.getRemaining() <= 0) {
-                                    fillStatus = EnumOrderStatus.COMPLETEFILLED;
-                                } else if (incompleteFills.size() >= 0 && event.getFilled() > 0 && !"Cancelled".equals(event.getStatus())) {
-                                    fillStatus = EnumOrderStatus.PARTIALFILLED;
-                                } else if (("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) && noFill) {
-                                    fillStatus = EnumOrderStatus.CANCELLEDNOFILL;
-                                } else if (("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) && !noFill) {
-                                    fillStatus = EnumOrderStatus.CANCELLEDPARTIALFILL;
-                                } else if ("Submitted".equals(event.getStatus()) && !ob.getOrderStatus().equals(EnumOrderStatus.ACKNOWLEDGED)) {
-                                    fillStatus = EnumOrderStatus.ACKNOWLEDGED;
-                                }
-
-                            }
-                            //if (orderStatus.get(orderid) == null || orderStatus.get(orderid) != fillStatus) {
-                            logger.log(Level.INFO, "302,OrderStatus,{0}:{1}:{2}:{3}:{4},OrderStatus={5}",
-                                    new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(parentid).getDisplayname(), ob.getInternalOrderID(), String.valueOf(orderid), fillStatus});
-                            orderStatus.put(orderid, fillStatus);
-                            //}
-                            switch (fillStatus) {
-                                case COMPLETEFILLED:
-                                    if(ob.getOrderStatus()!=EnumOrderStatus.COMPLETEFILLED){
-                                    updateFilledOrders(event.getC(), ob, event.getFilled(), event.getAvgFillPrice(), event.getLastFillPrice());
-                                    }
-                                    break;
-                                case PARTIALFILLED:
-                                    if(ob.getOrderStatus()!=EnumOrderStatus.PARTIALFILLED){
-                                    updatePartialFills(event.getC(), ob, event.getFilled(), event.getAvgFillPrice(), event.getLastFillPrice());
-                                    }
-                                    break;
-                                case CANCELLEDNOFILL:
-                                case CANCELLEDPARTIALFILL:
-                                    if(ob.getOrderStatus()!=EnumOrderStatus.CANCELLEDNOFILL ||ob.getOrderStatus()!=EnumOrderStatus.CANCELLEDPARTIALFILL){
-                                    updateCancelledOrders(event.getC(), parentid, ob);
-                                    }
-                                    break;
-                                case ACKNOWLEDGED:
-                                     if(ob.getOrderStatus()!=EnumOrderStatus.ACKNOWLEDGED){                                    
-                                    updateAcknowledgement(event.getC(), ob);
-                                     }
-                                //logger.log(Level.FINE, "{0},{1},Execution Manager,Order Acknowledged by IB, Parent Symbol: {2}, Child Symbol: {3}, Orderid: {4}", new Object[]{event.getC().getAccountName(), orderReference, Parameters.symbol.get(parentid).getSymbol(), Parameters.symbol.get(childid).getSymbol(), orderid});
-                                default:
-                                    break;
-
                             }
                         }
                     }
@@ -1057,7 +1059,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
     public void TWSErrorReceived(TWSErrorEvent event) {
         try {
             if (deemedCancellation != null && deemedCancellation.contains(event.getErrorCode()) && (!event.getErrorMessage().contains("Cannot cancel the filled order") || !event.getErrorMessage().contains("modify the filled order"))) {//135 is thrown if there is no specified order id with TWS.
-                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":");
+                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
                         OrderBean ob = event.getConnection().getOrderBean(oqk);
@@ -1076,7 +1078,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
             if (event.getErrorCode() == 200) {
                 //contract id not found
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Equity with Loan Value")) { //insufficient margin
-                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":");
+                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
                         OrderBean ob = event.getConnection().getOrderBean(oqk);
@@ -1089,7 +1091,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
                 }
                 //this.getActiveOrders().remove(id); //commented this as activeorders is a part of OMS and impacts all accounts. Insufficient margin is related to a specific account
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:The order price is outside of the allowable price limits")) {
-                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":");
+                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
                         OrderBean ob = event.getConnection().getOrderBean(oqk);
@@ -1103,7 +1105,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
                     }
                 }
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:")) {
-                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":");
+                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
                         OrderBean ob = event.getConnection().getOrderBean(oqk);
@@ -1114,7 +1116,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
                     }
                 }
             } else if (event.getErrorMessage().contains("Cannot cancel the filled order") || event.getErrorMessage().contains("modify the filled order")) {
-                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":");
+                Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
                         OrderBean ob = event.getConnection().getOrderBeanCopy(oqk);
@@ -1209,8 +1211,8 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
     private synchronized void fireLinkedActions(BeanConnection c, OrderBean ob) {
         ob = c.getOrderBean(ob);
         int orderid = ob.getExternalOrderID();
-        logger.log(Level.INFO, "500,LinkedActionOrderID,{0}:{1}:{2}:{3}:{4},OrderUpdateTime={5}", 
-                new Object[]{this.orderReference,c.getAccountName(),ob.getParentDisplayName(),ob.getInternalOrderID(),ob.getExternalOrderID(),ob.getUpdateTime()});
+        logger.log(Level.INFO, "500,LinkedActionOrderID,{0}:{1}:{2}:{3}:{4},OrderUpdateTime={5}",
+                new Object[]{this.orderReference, c.getAccountName(), ob.getParentDisplayName(), ob.getInternalOrderID(), ob.getExternalOrderID(), ob.getUpdateTime()});
         //this function only supports linked actions for cancellation. What about linked action for fills?
         if (orderid >= 0) {
             EnumLinkedAction nextAction = EnumLinkedAction.UNDEFINED;
@@ -1220,7 +1222,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
                 ArrayList<Integer> oid = ob.getLinkInternalOrderID();
                 if (oid != null && oid.size() >= 1) {
                     String orderstatus = os.get(0);
-                    String key = "OQ:.*:" + oid.get(0) + ":" + oid.get(0); //get first orderkey
+                    String key = "OQ:.*:" + oid.get(0) + ":" + oid.get(0) + ".*"; //get first orderkey
                     Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, c, key);
                     if (oqks.size() == 1) {
                         for (OrderQueueKey oqki : oqks) {
@@ -1973,7 +1975,6 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
 
             //For exits we send incremental fill = abs(fill) as tradeupdate ** for exits only ** aggregates fills.
             //For entry, there each fill with the same internal order id is updated.
-
             updateTrades(c, ob, p, Math.abs(fill), avgFillPrice);
             //if this was a requested cancellation, fire any event if needed
             fireLinkedActions(c, ob);
@@ -2005,7 +2006,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
                 if (entry) {
                     String key = getS().getStrategy() + ":" + String.valueOf(ob.getInternalOrderID()) + ":" + account;
                     new Trade(db, childid, parentid, ob.getOrderReason(), ob.getOrderSide(), avgFillPrice, filled, ob.getInternalOrderID(), orderid, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog());
-                    logger.log(Level.INFO, "307,TradeUpdate,{0}:{1}:{2}:{3}:{4},Side={5},Size={6},AvgFillPrice={7},Filled={8}", new Object[]{this.orderReference,c.getAccountName(),Trade.getParentSymbol(db, key),Trade.getEntryOrderIDInternal(db, key),Trade.getEntryOrderIDExternal(db, key), Trade.getEntrySide(db, key),Trade.getEntrySize(db, key),avgFillPrice,filled });
+                    logger.log(Level.INFO, "307,TradeUpdate,{0}:{1}:{2}:{3}:{4},Side={5},Size={6},AvgFillPrice={7},Filled={8}", new Object[]{this.orderReference, c.getAccountName(), Trade.getParentSymbol(db, key), Trade.getEntryOrderIDInternal(db, key), Trade.getEntryOrderIDExternal(db, key), Trade.getEntrySide(db, key), Trade.getEntrySize(db, key), avgFillPrice, filled});
                 } else {
                     String key = getS().getStrategy() + ":" + String.valueOf(ob.getOrderIDForSquareOff()) + ":" + account;
                     if (Trade.getEntrySize(db, key) > 0 && filled > 0) {
@@ -2373,7 +2374,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
         notificationListeners.remove(l);
     }
 
-     public synchronized void run() {
+    public synchronized void run() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 wait();

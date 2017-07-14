@@ -1517,7 +1517,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         try {
             logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
                     new Object[]{"Unknown", c.getAccountName(), "Unknown", "-1", String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice)});
-            Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.db, c, "OQ:" + reqId + ":" + c.getAccountName() + ":.*");
+            Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.db, c, "OQ:" + execution.m_orderId + ":" + c.getAccountName() + ":.*");
             if (oqks.size() == 1) {
                 for (OrderQueueKey oqki : oqks) {
                     OrderBean ob = c.getOrderBean(oqki);

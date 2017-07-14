@@ -191,7 +191,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
     public OrderBean getLatestOrderBean(String key) {
         OrderBean ob = null;
         try (Jedis jedis = pool.getResource()) {
-            Object o = jedis.lrange(key, -1, -1);
+            Object o = jedis.lrange(key, 0, 0);
             if (o != null && ((List) o).size() > 0) {
                 try {
                     Type type = new TypeToken<OrderBean>() {
@@ -218,20 +218,20 @@ public class RedisConnect<K, V> implements Database<K, V> {
     }
 
     @Override
-    public OrderBean getTradeBean(String key) {
-        OrderBean ob = null;
+    public Trade getTradeBean(String key) {
+        Trade tr = null;
         try (Jedis jedis = pool.getResource()) {
             Object o = jedis.hgetAll(key);
             try {
-                Type type = new TypeToken<OrderBean>() {
+                Type type = new TypeToken<Trade>() {
                 }.getType();
                 Gson gson = new GsonBuilder().create();
-                ob = gson.fromJson((String) o, type);
+                tr = gson.fromJson((String) o, type);
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "{0}_{1}", new Object[]{(String) o, key});
             }
         }
-        return ob;
+        return tr;
     }
 
     @Override

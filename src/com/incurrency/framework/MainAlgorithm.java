@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework;
 
+import com.ib.client.ExecutionFilter;
 import com.incurrency.RatesClient.RedisSubscribe;
 import static com.incurrency.framework.Algorithm.globalProperties;
 import com.verhas.licensor.License;
@@ -647,6 +648,10 @@ public class MainAlgorithm extends Algorithm {
             if (Utilities.checkLicense() && !Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                 ui = new com.incurrency.framework.display.DashBoardNew(); //Display main UI
             }
+        }
+        for(BeanConnection c:Parameters.connection){
+            c.getWrapper().requestOpenOrders();
+            c.getWrapper().requestExecutionDetails(new ExecutionFilter());
         }
         instantiated = true;
     }

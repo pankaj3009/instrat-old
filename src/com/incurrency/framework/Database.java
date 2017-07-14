@@ -60,7 +60,7 @@ public interface Database<K, V> {
 
     public OrderBean getLatestOrderBean(String key);
 
-    public OrderBean getTradeBean(String key);
+    public Trade getTradeBean(String key);
 
     public void insertOrder(String key, OrderBean ob);
 

@@ -133,7 +133,7 @@ public class DataStore<K, V> implements Database<K, V> {
     }
 
     @Override
-    public OrderBean getTradeBean(String key) {
+    public Trade getTradeBean(String key) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

@@ -392,6 +392,18 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         return out;
     }
     
+    public void loadOrdersFromRedis() {
+        Set<String> keys = Algorithm.db.getKeysOfList("", "OQ:.*");
+        for (String key : keys) {
+            if (key.contains(this.accountName)) {
+                OrderBean ob = Algorithm.db.getLatestOrderBean(key);
+                ArrayList<OrderBean> obs = new ArrayList<>();
+                obs.add(ob);
+                orders.put(new OrderQueueKey(key), obs);
+            }
+        }
+    }
+    
     /**
      * This is a hack function that can potentially update completed orders with new status.Use with care!!
      * @param oqk
