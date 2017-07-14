@@ -12,7 +12,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -377,6 +379,17 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
                 orders.get(oqk).add(0, order);
             }
         }
+    }
+    
+    public Set<String> getKeys(String searchString){
+        Set<String> out = new HashSet<>();
+        for (OrderQueueKey oqk : orders.keySet()) {
+            String key = oqk.getKey(this.accountName);
+            if (key.matches(searchString)) {
+                out.add(key);
+            }
+        }
+        return out;
     }
     
     /**

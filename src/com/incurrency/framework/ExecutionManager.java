@@ -749,7 +749,8 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
 //    }
     private ArrayList<OrderBean> getExternalOpenOrders(BeanConnection c, String searchString, EnumOrderSide orderSide) {
         ArrayList<OrderBean> out = new ArrayList<>();
-        Set<String> oqks = db.getKeysOfList("", searchString);
+        
+        Set<String> oqks = c.getKeys(searchString);
         for (String oqki : oqks) {
             OrderQueueKey oqk = new OrderQueueKey(oqki);
             OrderBean oqvl = c.getOrderBean(oqk);
@@ -1538,7 +1539,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
 
     public Boolean zilchOpenOrders(BeanConnection c, int id, String strategy) {
         String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + Parameters.symbol.get(id).getDisplayname();
-        Set<String> oqks = db.getKeysOfList("", searchString);
+        Set<String> oqks = c.getKeys(searchString);
         for (String oqki : oqks) {
             OrderQueueKey oqk = new OrderQueueKey(oqki);
             if (Utilities.isLiveOrder(c, oqk)) {
@@ -1571,7 +1572,7 @@ public class ExecutionManager implements Runnable,OrderListener, OrderStatusList
      * @param searchString
      */
     private void cancelOpenOrders(BeanConnection c, String searchString) {
-        Set<String> oqks = db.getKeysOfList("", searchString);
+        Set<String> oqks = c.getKeys(searchString);
         for (String oqki : oqks) { //for each orderqueuekey string
             OrderQueueKey oqk = new OrderQueueKey(oqki);
             if (Utilities.isLiveOrder(c, oqk)) { //if the order is live
