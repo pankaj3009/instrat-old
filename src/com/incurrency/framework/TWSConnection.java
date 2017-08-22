@@ -614,10 +614,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         if (event.getOrderStage() != EnumOrderStage.AMEND) {
                             getRecentOrders().add(new Date().getTime());
                         }
-                        logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
-                                new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(event.getParentSymbolID()).getDisplayname(), Integer.toString(event.getInternalOrderID()),
-                                    String.valueOf(mOrderID), event.getOrderSide(), String.valueOf(order.m_totalQuantity), order.m_orderType, String.valueOf(order.m_lmtPrice),
-                                    String.valueOf(order.m_auxPrice)});
                         orderids.add(mOrderID);
                     } else {//combo order
 //                    if (order.m_orderId > 0 && ob.getIntent() == EnumOrderStage.AMEND) {//combo amendment
@@ -726,8 +722,14 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 }
             } else if (event.getOrderStage().equals(EnumOrderStage.AMEND)) {
                 order.m_lmtPrice = event.getLimitPrice();
+                order.m_displaySize=0;
                 event.setOrderStatus(EnumOrderStatus.SUBMITTED);
             }
+            logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
+                    new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(event.getParentSymbolID()).getDisplayname(), Integer.toString(event.getInternalOrderID()),
+                        String.valueOf(order.m_orderId), event.getOrderSide(), String.valueOf(order.m_totalQuantity), order.m_orderType, String.valueOf(order.m_lmtPrice),
+                        String.valueOf(order.m_auxPrice)});
+
             ArrayList<Contract> contracts = c.getWrapper().createContract(event.getChildSymbolID());
             String key = "OQ:" + event.getExternalOrderID() + ":" + c.getAccountName() + ":" + event.getOrderReference() + ":"
                     + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":"
@@ -736,7 +738,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 eClientSocket.placeOrder(order.m_orderId, contracts.get(0), order);
                 c.setOrder(new OrderQueueKey(key), event);
             }
-
         }
 
         return event;
