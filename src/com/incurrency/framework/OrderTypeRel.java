@@ -173,7 +173,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 }
                 if (recalculate) {
                     BeanSymbol s = Parameters.symbol.get(id);
-                    ob=c.getOrderBean(ob);
+                    ob=c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
                     internalOrderIDEntry = ob.getOrderIDForSquareOff();
                     limitPrice = ob.getLimitPrice();
                     double newLimitPrice = limitPrice;

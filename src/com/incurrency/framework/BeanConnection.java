@@ -329,28 +329,28 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         return orders;
     }
 
-    /**
-     * @param oqki
-     * @return the ordersSymbols
-     */
-    public OrderBean getOrderBean(OrderQueueKey oqki) {
-        if (orders.get(oqki) != null) //      return Algorithm.db.getLatestOrderBean(oqki.getKey(this.getAccountName()));
-        {
-            return orders.get(oqki).get(0);
-        } else {
-            return null;
-        }
-    }
+//    /**
+//     * @param oqki
+//     * @return the ordersSymbols
+//     */
+//    public OrderBean getOrderBean(OrderQueueKey oqki) {
+//        if (orders.get(oqki) != null) //      return Algorithm.db.getLatestOrderBean(oqki.getKey(this.getAccountName()));
+//        {
+//            return orders.get(oqki).get(0);
+//        } else {
+//            return null;
+//        }
+//    }
     
-    public OrderBean getOrderBean(OrderBean ob) {
-        String key = Utilities.constructOrderKey(this, ob);
-        OrderQueueKey oqki = new OrderQueueKey(key);
-        if (orders.get(oqki) != null) {
-            return new OrderBean(orders.get(oqki).get(0));
-        } else {
-            return null;
-        }
-    }
+//    public OrderBean getOrderBean(OrderBean ob) {
+//        String key = Utilities.constructOrderKey(this, ob);
+//        OrderQueueKey oqki = new OrderQueueKey(key);
+//        if (orders.get(oqki) != null) {
+//            return new OrderBean(orders.get(oqki).get(0));
+//        } else {
+//            return null;
+//        }
+//    }
 
     /**
      * @param oqki

@@ -26,6 +26,17 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
 
     }
 
+    public OrderQueueKey generateKey(String account){
+        int iboid=this.getExternalOrderID();
+        String strategy=this.getOrderReference();
+        String pdn=this.getParentDisplayName();
+        String cdn=this.getChildDisplayName();
+        int pid=this.getParentInternalOrderID();
+        int cid=this.getInternalOrderID();
+        String key="OQ:"+iboid+":"+account+":"+strategy+":"+pdn+":"+cdn+":"+pid+":"+cid;
+        return new OrderQueueKey(key);
+    }
+    
     public void createLinkedAction(int parentid, String action, String status, String delay) {
         this.put("LinkInternalOrderID", String.valueOf(parentid));
         this.put("LinkStatusTrigger", status);

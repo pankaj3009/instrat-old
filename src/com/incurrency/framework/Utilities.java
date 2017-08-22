@@ -4043,7 +4043,7 @@ public class Utilities {
                     searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
                     Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.db, c, searchString);
                     for (OrderQueueKey oqkinew : oqksnew) {
-                        OrderBean ob = c.getOrderBean(oqkinew);
+                        OrderBean ob = c.getOrderBeanCopy(oqkinew);
                         if (ob.getExternalOrderID() >= 0 && isLiveOrder(c, oqkinew)) {
                             out.add(ob.getExternalOrderID());
                         }
@@ -4082,7 +4082,7 @@ public class Utilities {
                     searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
                     Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.db, c, searchString);
                     for (OrderQueueKey oqkinew : oqksnew) {
-                        OrderBean ob = c.getOrderBean(oqkinew);
+                        OrderBean ob = c.getOrderBeanCopy(oqkinew);
                         if (ob.getExternalOrderID() > 0 && isLiveOrder(c, oqkinew)) {
                             out.add(ob);
                         }
@@ -4106,7 +4106,7 @@ public class Utilities {
                 searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
                 Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.db, c, searchString);
                 for (OrderQueueKey oqkinew : oqksnew) {
-                    OrderBean obi = c.getOrderBean(oqkinew);
+                    OrderBean obi = c.getOrderBeanCopy(oqkinew);
                     if (ob.getExternalOrderID() > 0 && isLiveOrder(c, oqkinew)) {
                         out.add(obi);
                     }
@@ -4145,7 +4145,7 @@ public class Utilities {
             for (String oqki : oqks) {
                 OrderQueueKey oqk = new OrderQueueKey(oqki);
                 if (isLiveOrder(c, oqk)) {
-                    orderids.add(c.getOrderBean(oqk).getExternalOrderID());
+                    orderids.add(c.getOrderBeanCopy(oqk).getExternalOrderID());
                 }
             }
         }
@@ -4201,7 +4201,7 @@ public class Utilities {
     }
 
     public static boolean isRestingOrder(BeanConnection c, OrderQueueKey oqk) {
-        OrderBean oqv = c.getOrderBean(oqk);
+        OrderBean oqv = c.getOrderBeanCopy(oqk);
         if (oqv != null) {
             if (oqv.getOrderStatus() == EnumOrderStatus.UNDEFINED) {
                 return true;
@@ -4219,7 +4219,7 @@ public class Utilities {
      * @return 
      */
         public static boolean isOpenOrder(BeanConnection c, OrderQueueKey oqk) {
-        OrderBean oqv = c.getOrderBean(oqk);
+        OrderBean oqv = c.getOrderBeanCopy(oqk);
         if (oqv != null) {
            if (oqv.getOrderStatus() == EnumOrderStatus.UNDEFINED||oqv.getOrderStatus()==EnumOrderStatus.ACKNOWLEDGED||oqv.getOrderStatus()==EnumOrderStatus.SUBMITTED||oqv.getOrderStatus()==EnumOrderStatus.PARTIALFILLED) {
              return true;
@@ -4285,7 +4285,7 @@ public class Utilities {
         Set<OrderBean> out = new HashSet<>();
         for (OrderQueueKey oqki : oqks) {
             if (isLiveOrder(c, oqki)) {
-                out.add(c.getOrderBean(oqki));
+                out.add(c.getOrderBeanCopy(oqki));
             }
         }
         return out;
@@ -4296,7 +4296,7 @@ public class Utilities {
         Set<OrderBean> out = new HashSet<>();
         for (OrderQueueKey oqki : oqks) {
             if (isRestingOrder(c, oqki)) {
-                out.add(c.getOrderBean(oqki));
+                out.add(c.getOrderBeanCopy(oqki));
             }
         }
         return out;
@@ -4307,7 +4307,7 @@ public class Utilities {
         Set<OrderBean> out = new HashSet<>();
         for (OrderQueueKey oqki : oqks) {
             if (isOpenOrder(c, oqki)) {
-                out.add(c.getOrderBean(oqki));
+                out.add(c.getOrderBeanCopy(oqki));
             }
         }
         return out;
@@ -4326,7 +4326,7 @@ public class Utilities {
 
     public static OrderBean getSyntheticOrder(Database db, BeanConnection c, OrderBean ob) {
         String key = "OQ:-1:" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getParentDisplayName() + ":" + ob.getInternalOrderID() + ":" + ob.getInternalOrderID();
-        return c.getOrderBean(new OrderQueueKey(key));
+        return c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
     }
 
     /**

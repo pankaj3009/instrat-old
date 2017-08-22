@@ -791,7 +791,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             String searchString = "OQ:.*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getInternalOrderID() + ":";
             Set<OrderQueueKey> oqks = Utilities.getLiveOrderKeys(Algorithm.db, c, searchString);
             for (OrderQueueKey oqki : oqks) {
-                OrderBean obvi = c.getOrderBean(oqki);
+                OrderBean obvi = c.getOrderBeanCopy(oqki);
                 if (!obvi.isCancelRequested() && obvi.getExternalOrderID() > 0) {
                     this.eClientSocket.cancelOrder(obvi.getExternalOrderID());
                     key = "OQ:" + obvi.getExternalOrderID() + ":" + c.getAccountName() + ":" + obvi.getOrderReference() + ":"
@@ -1517,7 +1517,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.db, c, "OQ:" + execution.m_orderId + ":" + c.getAccountName() + ":.*");
             if (oqks.size() == 1) {
                 for (OrderQueueKey oqki : oqks) {
-                    OrderBean ob = c.getOrderBean(oqki);
+                    OrderBean ob = c.getOrderBeanCopy(oqki);
                     if(ob!=null){
                     int remaining = ob.getCurrentOrderSize() - execution.m_cumQty;
                     if (remaining == 0) {

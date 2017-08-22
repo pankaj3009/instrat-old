@@ -64,7 +64,7 @@ public class OrderForm extends javax.swing.JFrame {
             Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.db, Parameters.connection.get(connection), key);
             if (oqks != null && oqks.size() == 1) {
                 for (OrderQueueKey oqk : oqks) {
-                    ob = Parameters.connection.get(connection).getOrderBean(oqk);
+                    ob = Parameters.connection.get(connection).getOrderBeanCopy(oqk);
                 }
             }
             if (ob != null) {

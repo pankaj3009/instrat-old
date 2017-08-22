@@ -484,7 +484,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     for (BeanConnection c : Parameters.connection) {
                                         Set<OrderQueueKey> oqks = Utilities.getRestingOrderKeys(db, c, "OQ:-1:" + c.getAccountName() + ":.*");
                                         for (OrderQueueKey oqki : oqks) {
-                                            OrderBean ob = c.getOrderBean(oqki);
+                                            OrderBean ob = c.getOrderBeanCopy(oqki);
                                             Date effectiveFrom = ob.getEffectiveFromDate();
                                             if (effectiveFrom == null) {
                                                 logger.log(Level.SEVERE, "101,Null effective date,Key={0}", new Object[]{Utilities.constructOrderKey(c, ob)});
@@ -752,7 +752,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         Set<String> oqks = c.getKeys(searchString);
         for (String oqki : oqks) {
             OrderQueueKey oqk = new OrderQueueKey(oqki);
-            OrderBean oqvl = c.getOrderBean(oqk);
+            OrderBean oqvl = c.getOrderBeanCopy(oqk);
             if (Utilities.isLiveOrder(c, oqk) && oqvl.getOrderSide().equals(orderSide)) {
                 out.add(oqvl);
             }
@@ -1061,7 +1061,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
-                        OrderBean ob = event.getConnection().getOrderBean(oqk);
+                        OrderBean ob = event.getConnection().getOrderBeanCopy(oqk);
                         int id = ob.getParentSymbolID();
                         String ref = ob.getOrderReference();
                         if (orderReference.equals(ref)) {
@@ -1080,7 +1080,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
-                        OrderBean ob = event.getConnection().getOrderBean(oqk);
+                        OrderBean ob = event.getConnection().getOrderBeanCopy(oqk);
                         int id = ob.getParentSymbolID();
                         int orderid = event.getId();
                         logger.log(Level.INFO, "303,TWSError.InsufficientMargin,{0}:{1}:{2}:{3}:{4},ErrorCode:{5}:ErrorMsg={6}",
@@ -1093,7 +1093,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
-                        OrderBean ob = event.getConnection().getOrderBean(oqk);
+                        OrderBean ob = event.getConnection().getOrderBeanCopy(oqk);
                         int id = ob.getParentSymbolID();
                         int orderid = event.getId();
                         //send email
@@ -1107,7 +1107,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
                 if (oqks.size() == 1) {
                     for (OrderQueueKey oqk : oqks) {
-                        OrderBean ob = event.getConnection().getOrderBean(oqk);
+                        OrderBean ob = event.getConnection().getOrderBeanCopy(oqk);
                         int id = ob.getParentSymbolID();
                         int orderid = event.getId();
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
@@ -1207,7 +1207,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
     //fireLinkedActions is triggered on partial/ complete fill and on order cancellation
     private synchronized void fireLinkedActions(BeanConnection c, OrderBean ob) {
-        ob = c.getOrderBean(ob);
+        ob = c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
         int orderid = ob.getExternalOrderID();
         logger.log(Level.INFO, "500,LinkedActionOrderID,{0}:{1}:{2}:{3}:{4},OrderUpdateTime={5}",
                 new Object[]{this.orderReference, c.getAccountName(), ob.getParentDisplayName(), ob.getInternalOrderID(), ob.getExternalOrderID(), ob.getUpdateTime()});
@@ -1570,7 +1570,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         for (String oqki : oqks) { //for each orderqueuekey string
             OrderQueueKey oqk = new OrderQueueKey(oqki);
             if (Utilities.isLiveOrder(c, oqk)) { //if the order is live
-                OrderBean oqvl = c.getOrderBean(oqk);
+                OrderBean oqvl = c.getOrderBeanCopy(oqk);
                 if (oqvl.getExternalOrderID() > 0) { //if there is an external order id refering to the broker
                     //check an earlier cancellation request is not pending and if all ok then cancel     }
                     if (!oqvl.isCancelRequested()) { //if there is no prior cancelation requested
@@ -1584,7 +1584,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     }
 
     private boolean updateFilledOrders(BeanConnection c, OrderBean ob, int filled, double avgFillPrice, double lastFillPrice) {
-        ob = c.getOrderBean(ob);
+        ob = c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
         int orderid = ob.getExternalOrderID();
         int parentid = ob.getParentSymbolID();
         int childid = ob.getChildSymbolID();
@@ -1758,7 +1758,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     }
 
     private boolean updateCancelledOrders(BeanConnection c, int id, OrderBean ob) {
-        ob = c.getOrderBean(ob);
+        ob = c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
         int internalorderid = ob.getInternalOrderID();
         boolean stubOrderPlaced = false;
         //ob.setCancelRequested(false);
@@ -1819,7 +1819,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     }
 
     private boolean updatePartialFills(BeanConnection c, OrderBean ob, int filled, double avgFillPrice, double lastFillPrice) {
-        ob = c.getOrderBean(ob);
+        ob = c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
         int orderid = ob.getExternalOrderID();
         int parentid = ob.getParentSymbolID();
         int internalOrderID = ob.getInternalOrderID();
