@@ -370,6 +370,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      */
     public void setOrder(OrderQueueKey oqk, OrderBean order) {
         order.setUpdateTime();
+        Algorithm.db.insertOrder(oqk.getKey(this.getAccountName()), order);
         if (orders.get(oqk) == null) {
             ArrayList<OrderBean> temp = new ArrayList<OrderBean>();
             temp.add(order);

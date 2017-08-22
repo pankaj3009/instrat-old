@@ -681,7 +681,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         String key = "OQ:" + event.getExternalOrderID() + ":" + c.getAccountName() + ":" + event.getOrderReference() + ":"
                 + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":"
                 + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
-        Algorithm.db.insertOrder(key, event);
         c.setOrder(new OrderQueueKey(key), event);
         tes.fireOrderEvent(event);
 
@@ -1130,7 +1129,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             String key = "OQ:" + ob.getExternalOrderID() + ":" + event.getConnection().getAccountName() + ":" + ob.getOrderReference() + ":"
                                     + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                                     + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                            Algorithm.db.insertOrder(key, ob);
                             event.getConnection().setOrder(new OrderQueueKey(key), ob);
                         }
                     }
@@ -1245,7 +1243,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 String key1 = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                                         + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                                         + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                                Algorithm.db.insertOrder(key1, ob);
+                                //Algorithm.db.insertOrder(key1, ob);
                                 c.updateLinkedAction(new OrderQueueKey(key1), ob);
                                 fireLinkedAction(c, ob, nextAction, delay);
                             }
@@ -1281,7 +1279,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                         + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                         + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                Algorithm.db.insertOrder(key, ob);
                 c.setOrder(new OrderQueueKey(key), ob);
                 tes.fireOrderEvent(newob);
                 break;
@@ -1313,7 +1310,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                             + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                             + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                    Algorithm.db.insertOrder(key, ob);
                     c.setOrder(new OrderQueueKey(key), ob);
                     tes.fireOrderEvent(newob);
                 }
@@ -1339,7 +1335,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                             + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                             + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                    Algorithm.db.insertOrder(key, ob);
                     c.setOrder(new OrderQueueKey(key), ob);
                     newob.setOrderLog(newob.getOrderLog() + ";" + "Firelinkedaction CLOSEPOSITION");
                     tes.fireOrderEvent(newob);
@@ -1388,7 +1383,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                             + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                             + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                    Algorithm.db.insertOrder(key, ob);
                     c.setOrder(new OrderQueueKey(key), ob);
                     tes.fireOrderEvent(newob);
                 }
@@ -1410,7 +1404,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 key = "OQ:" + newob.getExternalOrderID() + ":" + c.getAccountName() + ":" + newob.getOrderReference() + ":"
                         + newob.getParentDisplayName() + ":" + newob.getChildDisplayName() + ":"
                         + newob.getParentInternalOrderID() + ":" + newob.getInternalOrderID();
-                Algorithm.db.insertOrder(key, newob);
                 c.setOrder(new OrderQueueKey(key), newob);
                 tes.fireOrderEvent(newob);
                 break;
@@ -1530,7 +1523,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             String keyi = "OQ:" + oqv.getExternalOrderID() + ":" + c.getAccountName() + ":" + oqv.getOrderReference() + ":"
                     + oqv.getParentDisplayName() + ":" + oqv.getChildDisplayName() + ":"
                     + oqv.getParentInternalOrderID() + ":" + oqv.getInternalOrderID();
-            Algorithm.db.insertOrder(keyi, oqv);
             c.setOrder(new OrderQueueKey(keyi), oqv);
             logger.log(Level.INFO, "301,SquareOff,{0}:{1}:{2}:{3}:{4},Size={5}",
                     new Object[]{this.orderReference, c.getAccountName(), oqv.getParentDisplayName(), oqv.getInternalOrderID(), oqv.getExternalOrderID(), oqv.getOriginalOrderSize()});
@@ -1655,7 +1647,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                         + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                         + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                Algorithm.db.insertOrder(key, ob);
                 c.setOrder(new OrderQueueKey(key), ob);
             } else {
                 //3b. Update combo position
@@ -1713,7 +1704,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 String key = "OQ:" + obp.getExternalOrderID() + ":" + c.getAccountName() + ":" + obp.getOrderReference() + ":"
                         + obp.getParentDisplayName() + ":" + obp.getChildDisplayName() + ":"
                         + obp.getParentInternalOrderID() + ":" + obp.getInternalOrderID();
-                Algorithm.db.insertOrder(key, obp);
                 c.setOrder(new OrderQueueKey(key), obp);
             }
 
@@ -1799,7 +1789,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                 + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                 + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-        Algorithm.db.insertOrder(key, ob);
         c.setOrder(new OrderQueueKey(key), ob);
         //Process combo stubs
         if (Utilities.isSyntheticSymbol(ob.getParentSymbolID()) && (ob.getOrderSide().equals(EnumOrderSide.BUY) || ob.getOrderSide().equals(EnumOrderSide.SHORT))) {
@@ -1896,7 +1885,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                         + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                         + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                Algorithm.db.insertOrder(key, ob);
                 c.setOrder(new OrderQueueKey(key), ob);
             } else {
                 //3b. Update Combo Position
@@ -1953,7 +1941,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     String key = "OQ:" + obp.getExternalOrderID() + ":" + c.getAccountName() + ":" + obp.getOrderReference() + ":"
                             + obp.getParentDisplayName() + ":" + obp.getChildDisplayName() + ":"
                             + obp.getParentInternalOrderID() + ":" + obp.getInternalOrderID();
-                    Algorithm.db.insertOrder(key, obp);
                     c.setOrder(new OrderQueueKey(key), obp);
                 }
                 // Moved check for setting childorderstatus = COMPLETEFILLED to later in the code
@@ -2285,7 +2272,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                 + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                 + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-        Algorithm.db.insertOrder(key, ob);
         c.setOrder(new OrderQueueKey(key), ob);
         ArrayList<OrderBean> obs = Utilities.getLinkedOrderBeansGivenParentBean(ob, c);
         boolean parentStatus = true;
@@ -2303,7 +2289,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             key = "OQ:" + obp.getExternalOrderID() + ":" + c.getAccountName() + ":" + obp.getOrderReference() + ":"
                     + obp.getParentDisplayName() + ":" + obp.getChildDisplayName() + ":"
                     + obp.getParentInternalOrderID() + ":" + obp.getInternalOrderID();
-            Algorithm.db.insertOrder(key, obp);
             c.setOrder(new OrderQueueKey(key), obp);
         }
 

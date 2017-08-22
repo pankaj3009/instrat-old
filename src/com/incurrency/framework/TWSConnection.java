@@ -734,7 +734,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
             if (Utilities.isLiveOrder(this.getC(), new OrderQueueKey(key)) || this.getC().getOrders().get(new OrderQueueKey(key)) == null) {
                 eClientSocket.placeOrder(order.m_orderId, contracts.get(0), order);
-                Algorithm.db.insertOrder(key, event);
                 c.setOrder(new OrderQueueKey(key), event);
             }
 
@@ -782,7 +781,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                     + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                     + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-            Algorithm.db.insertOrder(key, ob);
             c.setOrder(new OrderQueueKey(key), ob);
 
             if (ob.getExternalOrderID() > 0) {
@@ -799,7 +797,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     key = "OQ:" + obvi.getExternalOrderID() + ":" + c.getAccountName() + ":" + obvi.getOrderReference() + ":"
                             + obvi.getParentDisplayName() + ":" + obvi.getChildDisplayName() + ":"
                             + obvi.getParentInternalOrderID() + ":" + obvi.getInternalOrderID();
-                    Algorithm.db.insertOrder(key, obvi);
                     c.setOrder(new OrderQueueKey(key), obvi);
                     logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
                             new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
