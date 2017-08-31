@@ -95,7 +95,8 @@ public class TableModelOpenOrders extends AbstractTableModel {
                 return orders.get(rowIndex).getLimitPrice();
             case 6:
                 int id = orders.get(rowIndex).getChildSymbolID();
-                return Parameters.symbol.get(id).getLastPrice();
+                double lastPrice= id>=0?Parameters.symbol.get(id).getLastPrice():0;
+                return lastPrice;
             default:
                 throw new IndexOutOfBoundsException();
         }
