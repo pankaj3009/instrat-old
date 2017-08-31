@@ -388,7 +388,7 @@ public class Utilities {
                 break;
 
         }
-        return price;
+        return price-1;
     }
 
     public static double getImpliedVol(BeanSymbol s, double underlying, double price, Date evaluationDate) {
@@ -4140,7 +4140,7 @@ public class Utilities {
         String[] childDisplayNames = getChildDisplayNames(parentid);
         String parentDisplayName = Parameters.symbol.get(parentid).getDisplayname();
         for (String childDisplayName : childDisplayNames) {
-            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + parentDisplayName + ":" + childDisplayName;
+            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + parentDisplayName + ":" + childDisplayName+":"+".*";
             Set<String> oqks = c.getKeys(searchString);
             for (String oqki : oqks) {
                 OrderQueueKey oqk = new OrderQueueKey(oqki);

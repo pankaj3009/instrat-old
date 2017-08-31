@@ -298,6 +298,7 @@ public class Strategy implements NotificationListener {
                         if (!Parameters.symbol.get(id).getStrategy().contains(this.getStrategy().toUpperCase())) {
                             String oldstrategy = Parameters.symbol.get(id).getStrategy();
                             Parameters.symbol.get(id).setStrategy(oldstrategy + ":" + this.getStrategy().toUpperCase());
+                            this.strategySymbols.add(id);
                         }
                         if (Trade.getAccountName(db, key).equals("Order") && key.contains("_" + strategy)) {
                             BeanPosition p = position.get(id) == null ? new BeanPosition(id, getStrategy()) : position.get(id);
@@ -571,6 +572,7 @@ public class Strategy implements NotificationListener {
         }
         if (orderidforsquareoff > 0) {
             int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getOriginalOrderSize();
+            tradeSize=Math.min(tradeSize, Math.abs(getPosition().get(id).getPosition()));
             order.setOriginalOrderSize(tradeSize);
             double expectedFillPrice = 0;
             if (order.getOrderSide() == EnumOrderSide.COVER) {

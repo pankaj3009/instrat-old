@@ -58,17 +58,17 @@ public class TableModelPNL extends AbstractTableModel {
         Index ind = new Index(strategy, rowIndex);
 
         switch (columnIndex) {
-            case 0:
+            case 0: //Strategy Name
                 return MainAlgorithm.getStrategies().get(rowIndex);
-            case 1:
+            case 1: //Total PNL of open positions till date
                 return ((int) Math.round(Parameters.connection.get(display).getPnlByStrategy().get(strategy) == null ? 0 : Parameters.connection.get(display).getPnlByStrategy().get(strategy) * 100)) / 100;
-            case 2:
+            case 2: //MTM Today
                 double value = Parameters.connection.get(display).getPnlByStrategy().get(strategy) == null ? 0 : Parameters.connection.get(display).getPnlByStrategy().get(strategy) - Parameters.connection.get(display).getMtmByStrategy().get(strategy);
                 return Utilities.round(value, 0);
-            case 3:
+            case 3://Max MTM
                 return ((int) Math.round(Parameters.connection.get(display).getMaxpnlByStrategy().get(strategy) == null ? 0 : Parameters.connection.get(display).getMaxpnlByStrategy().get(strategy) * 100)) / 100;
 
-            case 4:
+            case 4: //Min MTM
                 return ((int) Math.round(Parameters.connection.get(display).getMinpnlByStrategy().get(strategy) == null ? 0 : Parameters.connection.get(display).getMinpnlByStrategy().get(strategy) * 100)) / 100;
 
             default:

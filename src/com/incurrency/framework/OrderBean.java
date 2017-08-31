@@ -179,15 +179,15 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     }
 
     public double getCurrentFillPrice() {
-        return Utilities.getDouble("CurrentFillPrice", 0);
+        return Utilities.getDouble(this.get("CurrentFillPrice"), 0);
     }
 
     public double getStopLoss() {
-        return Utilities.getDouble("StopLoss", Double.NaN);
+        return Utilities.getDouble(this.get("StopLoss"), Double.NaN);
     }
 
     public double getTakeProfit() {
-        return Utilities.getDouble("TakeProfit", Double.NaN);
+        return Utilities.getDouble(this.get("TakeProfit"), Double.NaN);
     }
 
     public boolean isScale() {

@@ -94,7 +94,7 @@ public class TableModelPositions extends AbstractTableModel {
             }
 
             switch (columnIndex) {
-                case 0:
+                case 0: //Symbol
                     if (Parameters.connection.get(display).getPositions().size() > 0) {
                         BeanSymbol s = Parameters.symbol.get(ind.getSymbolID());
                         String symbol = s.getDisplayname();
@@ -102,13 +102,13 @@ public class TableModelPositions extends AbstractTableModel {
                     } else {
                         return "";
                     }
-                case 1:
+                case 1: //Position
                     if (Parameters.connection.get(display).getPositions().size() > 0) {
                         return Parameters.connection.get(display) == null || Parameters.connection.get(display).getPositions() == null || Parameters.connection.get(display).getPositions().get(ind) == null ? 0 : Parameters.connection.get(display).getPositions().get(ind).getPosition();
                     } else {
                         return "";
                     }
-                case 2:
+                case 2: //Position Price
                     if (Parameters.connection.get(display).getPositions().size() > 0) {
                         return df.format(Parameters.connection.get(display) == null || Parameters.connection.get(display).getPositions() == null || Parameters.connection.get(display).getPositions().get(ind) == null ? 0 : Parameters.connection.get(display).getPositions().get(ind).getPrice());
                     } else {
