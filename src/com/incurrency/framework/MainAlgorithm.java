@@ -353,6 +353,7 @@ public class MainAlgorithm extends Algorithm {
             if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) {
                 for (BeanSymbol s : Parameters.symbol) {
                     try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
+                        int e = jedis.getDB();
                         String contractid = jedis.get(s.getDisplayname());
                         s.setContractID(Utilities.getInt(contractid.split(":")[0], 0));
                         s.setTickSize(Utilities.getDouble(contractid.split(":")[1], 0.05));
@@ -410,15 +411,25 @@ public class MainAlgorithm extends Algorithm {
                     Parameters.symbol.add(s);
                 }
             }
-            Iterator<BeanSymbol> symbolitr = Parameters.symbol.iterator();
-            Iterator<Boolean> contractReceived = contractIdAvailable.iterator();
+//            Iterator<BeanSymbol> symbolitr = Parameters.symbol.iterator();
+//            Iterator<Boolean> contractReceived = contractIdAvailable.iterator();
             int rowcount = 1;
-            while (symbolitr.hasNext()) {
-                BeanSymbol s = symbolitr.next(); // must be called before you can call i.remove()
-                Boolean received = contractReceived.next();
+//            while (symbolitr.hasNext()) {
+//                BeanSymbol s = symbolitr.next(); // must be called before you can call i.remove()
+//                Boolean received = contractReceived.next();
+//                if (!received && !(s.getType().equals("IND") || s.getType().equals("COMBO")) || (s.getType().equals("COMBO") && s.isComboSetupFailed())) {
+//                    logger.log(Level.FINE, "103,ContractDetailsNotReceived,{0}", new Object[]{s.getDisplayname()});
+//                    symbolitr.remove();
+//                } else {
+//                    s.setSerialno(rowcount);
+//                    rowcount = rowcount + 1;
+//                }
+//            }
+            for(BeanSymbol s:Parameters.symbol){
+                Boolean received = contractIdAvailable.get(rowcount-1);
                 if (!received && !(s.getType().equals("IND") || s.getType().equals("COMBO")) || (s.getType().equals("COMBO") && s.isComboSetupFailed())) {
                     logger.log(Level.FINE, "103,ContractDetailsNotReceived,{0}", new Object[]{s.getDisplayname()});
-                    symbolitr.remove();
+                    Parameters.symbol.remove(s);
                 } else {
                     s.setSerialno(rowcount);
                     rowcount = rowcount + 1;
