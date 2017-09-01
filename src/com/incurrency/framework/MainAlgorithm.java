@@ -356,6 +356,8 @@ public class MainAlgorithm extends Algorithm {
                         String contractid = jedis.get(s.getDisplayname());
                         s.setContractID(Utilities.getInt(contractid.split(":")[0], 0));
                         s.setTickSize(Utilities.getDouble(contractid.split(":")[1], 0.05));
+                    }catch(Exception e){
+                        logger.log(Level.SEVERE,"101,Error in setting contract information, {0}",e.getStackTrace());
                     }
                 }
 
