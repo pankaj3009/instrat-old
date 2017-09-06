@@ -590,8 +590,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         }
                         event.setCurrentOrderSize(order.m_totalQuantity);
                         event.setLimitPrice(order.m_lmtPrice);
-                        event.setTriggerPrice(order.m_auxPrice);
-                        event.setOrderStatus(EnumOrderStatus.SUBMITTED);
+                        event.setTriggerPrice(order.m_auxPrice);                        
                         if (order.m_displaySize < order.m_totalQuantity && order.m_displaySize > 0) {
                             order.m_totalQuantity = displaySize;
                             event.setCurrentOrderSize(order.m_totalQuantity);
@@ -722,8 +721,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 }
             } else if (event.getOrderStage().equals(EnumOrderStage.AMEND)) {
                 order.m_lmtPrice = event.getLimitPrice();
-                order.m_displaySize=0;
-                event.setOrderStatus(EnumOrderStatus.SUBMITTED);
+                order.m_displaySize=0;                
             }
             logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
                     new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(event.getParentSymbolID()).getDisplayname(), Integer.toString(event.getInternalOrderID()),
@@ -735,6 +733,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":"
                     + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
             if (Utilities.isLiveOrder(this.getC(), new OrderQueueKey(key)) || this.getC().getOrders().get(new OrderQueueKey(key)) == null) {
+                event.setOrderStatus(EnumOrderStatus.SUBMITTED);
                 eClientSocket.placeOrder(order.m_orderId, contracts.get(0), order);
                 c.setOrder(new OrderQueueKey(key), event);
             }
