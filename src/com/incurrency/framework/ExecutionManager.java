@@ -1437,12 +1437,13 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     //</editor-fold>
     public void getOpenOrders() {
         com.ib.client.ExecutionFilter filter = new com.ib.client.ExecutionFilter();
+        
         for (BeanConnection c : Parameters.connection) {
             filter.m_clientId = c.getClientID();
             if ("".compareTo(this.lastExecutionRequestTime) != 0) {
                 filter.m_time = this.lastExecutionRequestTime;
             }
-            this.lastExecutionRequestTime = DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime());
+            this.lastExecutionRequestTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone));
             c.getWrapper().requestOpenOrders();
             c.getWrapper().requestExecutionDetails(filter);
         }
