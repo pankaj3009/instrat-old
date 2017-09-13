@@ -358,17 +358,8 @@ public class Strategy implements NotificationListener {
                         this.internalOpenOrders.put(id, position.get(id).getPosition());
                     }
                 }
-                int maxorderid = 0;
-                for (String key : db.getKeys("closedtrades")) {
-                    String intkey = key.split("_")[1].split(":")[1];
-                    maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
-                    maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
-                }
-                for (String key : db.getKeys("opentrades_" + strategy)) {
-                    String intkey = key.split("_")[1].split(":")[1];
-                    maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
-                    maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
-                }
+                String redisURL = prop.getProperty("redisurl").toString().trim();
+                int maxorderid = Utilities.getMaxExternalOrderID(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), Utilities.getInt(redisURL.split(":")[2], 0), "*");
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
                 logger.log(Level.INFO, "200, OpeningInternalOrderID,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{getStrategy(), "Order", "Unknown", Algorithm.orderidint.get(), -1});

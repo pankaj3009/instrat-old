@@ -114,13 +114,15 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     }
                     this.severeEmailSent.set(Boolean.FALSE);
                     String orderid = startingOrderID.poll(5, TimeUnit.SECONDS);
-                    //  String orderid="1";
-                    getC().getIdmanager().initializeOrderId(Utilities.getInt(orderid, this.requestIDManager.getNextOrderId()));
+                    int referenceExternalOrderID=Utilities.getMaxExternalOrderID(Algorithm.redisURL.split(":")[0], Utilities.getInt(Algorithm.redisURL.split(":")[1], 6379), Utilities.getInt(Algorithm.redisURL.split(":")[2], 0), c.getAccountName());
+                    referenceExternalOrderID++;
+                    int id=Math.max(referenceExternalOrderID, Utilities.getInt(orderid, this.requestIDManager.getNextOrderId()));
+                    getC().getIdmanager().initializeOrderId(id);
                     logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4},OrderID={5}",
                             new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1, orderid});
                     eClientSocket.reqIds(1);
                     logger.log(Level.INFO, "403,Connected,{0}:{1}:{2}:{3}:{4}", new Object[]{"Unknown", c.getAccountName(), c.getStrategy(), -1, -1});
-                    eClientSocket.setServerLogLevel(2);
+                    eClientSocket.setServerLogLevel(2); 
                     return true;
                 } else {
                     logger.log(Level.SEVERE, "402, Could Not Connect,{0}:{1}:{2}:{3}:{4}",

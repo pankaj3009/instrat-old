@@ -189,14 +189,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             db = Algorithm.db;
         }
         tes.addOrderListener(this); //subscribe to events published by tes owned by the strategy oms
-        int maxorderid = Algorithm.orderidint.get();
-        for (String key : db.getKeys("opentrades_")) {
-            String intkey = key.split("_")[1].split(":")[1];
-            maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
-            maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
-        }
-        Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
-
         for (BeanConnection c : Parameters.connection) {
             c.getWrapper().addOrderStatusListener(this);
             c.getWrapper().addTWSErrorListener(this);
