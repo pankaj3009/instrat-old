@@ -321,6 +321,15 @@ public class MainAlgorithm extends Algorithm {
             c.getWrapper().cancelAccountUpdates();
             System.out.println("Account updates cancelled");
         }
+        for (BeanConnection c : Parameters.connection) {
+            int referenceExternalOrderID=Utilities.getMaxExternalOrderID(Algorithm.redisURL.split(":")[0], Utilities.getInt(Algorithm.redisURL.split(":")[1], 6379), Utilities.getInt(Algorithm.redisURL.split(":")[2], 0), c);
+                    referenceExternalOrderID++;
+                    int id=Math.max(referenceExternalOrderID, c.getIdmanager().getNextOrderIdWithoutIncrement());
+                    c.getIdmanager().initializeOrderId(id);
+                    logger.log(Level.INFO, "402, NextOrderIDUpdated,{0}:{1}:{2}:{3}:{4},OrderID={5}",
+                            new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1, id});
+        }
+        
 
         //Confirm no account duplicates exist before proceeding further
         for (int i = 0; i < Parameters.connection.size(); i++) {

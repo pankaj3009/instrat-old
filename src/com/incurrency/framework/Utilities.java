@@ -4343,16 +4343,22 @@ public class Utilities {
         return key;
     }
     
-    public static int getMaxInternalOrderID(String redisURL, int port, int dbid, String accountName) {
+    public static int getMaxInternalOrderID(String redisURL, int port, int dbid, BeanConnection c) {
         int maxorderid = 0;
+        String accountName;
+                if(c==null){
+            accountName="Order";
+        }else{
+            accountName=c.getAccountName();
+        }
         Database db = new RedisConnect(redisURL.split(":")[0], port, dbid);
-        Set<String> s = db.getKeys("opentrades:*:" + accountName);
+        Set<String> s = db.getKeys("opentrades*" + accountName);
         for (String key : s) {
             String intkey = key.split("_")[1].split(":")[1];
             maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
             maxorderid = Math.max(maxorderid, Trade.getExitOrderIDInternal(db, key));
         }
-        s = db.getKeys("closedtrades:*:" + accountName);
+        s = db.getKeys("closedtrades*" + accountName);
         for (String key : s) {
             String intkey = key.split("_")[1].split(":")[1];
             maxorderid = Math.max(Utilities.getInt(intkey, 0), maxorderid);
@@ -4361,15 +4367,22 @@ public class Utilities {
         return maxorderid;
     }
     
-        public static int getMaxExternalOrderID(String redisURL, int port, int dbid, String accountName) {
+        public static int getMaxExternalOrderID(String redisURL, int port, int dbid, BeanConnection c) {
         int maxorderid = 0;
+        String accountName;
         Database db = new RedisConnect(redisURL.split(":")[0], port, dbid);
-        Set<String> s = db.getKeys("opentrades:*:" + accountName);
-        for (String key : s) {
+        if(c==null){
+            accountName="Order";
+        }else{
+            accountName=c.getAccountName();
+        }
+        Set<String> s ;
+        s=db.getKeys("opentrades*"+accountName);
+        for (String key : s) {          
            maxorderid = Math.max(maxorderid, Trade.getExitOrderIDExternal(db, key));
            maxorderid = Math.max(maxorderid, Trade.getEntryOrderIDExternal(db, key));
         }
-        s = db.getKeys("closedtrades:*:" + accountName);
+        s = db.getKeys("closedtrades*"+accountName);
         for (String key : s) {
            maxorderid = Math.max(maxorderid, Trade.getExitOrderIDExternal(db, key));
            maxorderid = Math.max(maxorderid, Trade.getEntryOrderIDExternal(db, key));

@@ -359,7 +359,7 @@ public class Strategy implements NotificationListener {
                     }
                 }
                 String redisURL = prop.getProperty("redisurl").toString().trim();
-                int maxorderid = Utilities.getMaxExternalOrderID(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), Utilities.getInt(redisURL.split(":")[2], 0), "*");
+                int maxorderid = Utilities.getMaxInternalOrderID(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), Utilities.getInt(redisURL.split(":")[2], 0), null);
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
                 logger.log(Level.INFO, "200, OpeningInternalOrderID,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{getStrategy(), "Order", "Unknown", Algorithm.orderidint.get(), -1});

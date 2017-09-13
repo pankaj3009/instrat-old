@@ -26,6 +26,10 @@ public class RequestIDManager {
     public int getNextOrderId() {
         return orderId.getAndIncrement();
     }
+    
+    public int getNextOrderIdWithoutIncrement() {
+        return orderId.get();
+    }
 
     public int getNextRequestId() {
         return requestId.getAndIncrement();

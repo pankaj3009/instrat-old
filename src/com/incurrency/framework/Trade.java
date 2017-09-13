@@ -501,7 +501,7 @@ public class Trade {
      * @return the entryOrderID
      */
     public static int getEntryOrderIDExternal(Database db, Object internalOrderID) {
-        int out1 = Utilities.getInt(db.getValue("opentrades", internalOrderID.toString(), "exitorderidext"), 0);
+        int out1 = Utilities.getInt(db.getValue("opentrades", internalOrderID.toString(), "entryorderidext"), 0);
         if (out1 != 0) {
             return out1;
         } else {
