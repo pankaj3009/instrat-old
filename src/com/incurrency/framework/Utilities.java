@@ -4032,7 +4032,7 @@ public class Utilities {
         String searchString = "OQ:" + orderid + ":" + c.getAccountName() + ":*";
         Set<OrderQueueKey> oqks = getAllOrderKeys(Algorithm.db, c, searchString);
         if (oqks.size() > 1) {
-            logger.log(Level.SEVERE, "501,DuplicateExternalOrderID during linkedid search,Account={0},ExternalOrderID={1}", new Object[]{c.getAccountName(), orderid});
+            logger.log(Level.SEVERE, "501,getLinkedOrderIds: Duplicate OrderID for key,{0}", new Object[]{searchString});
             return out;
         } else if (oqks.size() == 1) {
             for (OrderQueueKey oqki : oqks) {
@@ -4071,7 +4071,7 @@ public class Utilities {
         String searchString = "OQ:" + orderid + ":" + c.getAccountName() + ":*";
         Set<OrderQueueKey> oqks = getAllOrderKeys(Algorithm.db, c, searchString);
         if (oqks.size() > 1) {
-            logger.log(Level.SEVERE, "501,DuplicateExternalOrderID during linkedid search,Account={0},ExternalOrderID={1}", new Object[]{c.getAccountName(), orderid});
+            logger.log(Level.SEVERE, "501,getLinkedOrderBeans: Duplicate OrderID for key,{0}", new Object[]{searchString});
             return out;
         } else if (oqks.size() == 1) {
             for (OrderQueueKey oqki : oqks) {

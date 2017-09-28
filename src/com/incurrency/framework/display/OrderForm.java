@@ -66,6 +66,9 @@ public class OrderForm extends javax.swing.JFrame {
                 for (OrderQueueKey oqk : oqks) {
                     ob = Parameters.connection.get(connection).getOrderBeanCopy(oqk);
                 }
+            }else{
+                logger.log(Level.SEVERE, "501,OrderForm: Duplicate OrderID for key,{0}", new Object[]{key});
+           
             }
             if (ob != null) {
                 internalOrderId = ob.getInternalOrderID();

@@ -92,7 +92,9 @@ public class Algorithm {
         if (useRedis) {
             db = new RedisConnect(redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), Utilities.getInt(redisURL.split(":")[2], 0));
         }
-        marketdatapool = new JedisPool(new JedisPoolConfig(), redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), 2000, null, 9);
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxWaitMillis(60000);
+        marketdatapool = new JedisPool(jedisPoolConfig, redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), 2000, null, 9);
         useForTrading = Boolean.parseBoolean(globalProperties.getProperty("trading", "false").toString().trim());
         useForSimulation = Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim());
         openHour = Integer.valueOf(globalProperties.getProperty("openhour", "9").toString().trim());

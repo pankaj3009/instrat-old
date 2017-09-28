@@ -1530,6 +1530,8 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     new Object[]{"Unknown", c.getAccountName(), "Unknown", "-1", String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice),oqki.getKey(c.getAccountName())});
                     }
                 }
+            }else{
+                 logger.log(Level.SEVERE,"execDetails: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + execution.m_orderId + ":" + c.getAccountName() + ":.*"});
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);

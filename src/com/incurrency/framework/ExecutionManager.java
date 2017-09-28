@@ -725,19 +725,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         return out;
     }
 
-//    private ArrayList<Integer> getExternalOpenOrders(BeanConnection c, String searchString, EnumOrderSide orderSide) {
-//        ArrayList<Integer> out = new ArrayList<>();
-//        Set<String> oqks = db.getKeys("", searchString);
-//        for (String oqki : oqks) {
-//            OrderQueueKey oqk = new OrderQueueKey(oqki);
-//            ArrayList<NewOrderBean> oqv = c.getOrdersSymbols().get(oqk);
-//            NewOrderBean oqvl = oqv.get(oqv.size() - 1);
-//            if (TradingUtil.isLiveOrder(c, oqk) && oqvl.getOrderSide().equals(orderSide)) {
-//                out.add(oqvl.getExternalOrderID());
-//            }
-//        }
-//        return out;
-//    }
     private ArrayList<OrderBean> getExternalOpenOrders(BeanConnection c, String searchString, EnumOrderSide orderSide) {
         ArrayList<OrderBean> out = new ArrayList<>();
 
@@ -1038,6 +1025,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             }
                         }
                     }
+                }else{
+                    logger.log(Level.SEVERE,"501,OrderStatusReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + orderid + ":" + c.getAccountName() + ":.*"});
                 }
 
             }
@@ -1063,6 +1052,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             this.updateCancelledOrders(event.getConnection(), id, ob);
                         }
                     }
+                }else{
+                     logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             }
 
@@ -1079,6 +1070,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 new Object[]{orderReference, event.getConnection().getAccountName(), Parameters.symbol.get(id).getDisplayname(),
                                     ob.getInternalOrderID(), ob.getExternalOrderID(), event.getErrorCode(), event.getErrorMessage()});
                     }
+                }else{
+                     logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
                 //this.getActiveOrders().remove(id); //commented this as activeorders is a part of OMS and impacts all accounts. Insufficient margin is related to a specific account
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:The order price is outside of the allowable price limits")) {
@@ -1094,6 +1087,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
                         this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
                     }
+                }else{
+                    logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:")) {
                 Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
@@ -1105,6 +1100,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + orderReference + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
                         this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
                     }
+                }else{
+                     logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             } else if (event.getErrorMessage().contains("Cannot cancel the filled order") || event.getErrorMessage().contains("modify the filled order")) {
                 Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
@@ -1124,6 +1121,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             event.getConnection().setOrder(new OrderQueueKey(key), ob);
                         }
                     }
+                }else{
+                     logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             }
         } catch (Exception e) {
@@ -1240,6 +1239,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 fireLinkedAction(c, ob, nextAction, delay);
                             }
                         }
+                    }else{
+                         logger.log(Level.SEVERE,"FireLinkedActions:Duplicate OrderID for key ,{0}",new Object[]{key});
                     }
                 }
             }
