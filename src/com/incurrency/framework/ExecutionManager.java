@@ -52,7 +52,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private ArrayList<Integer> openPositionCount = new ArrayList<>();
     private ArrayList<Integer> maxOpenPositions = new ArrayList<>();
     private String timeZone = "";
-    private String lastExecutionRequestTime = "";
     private ArrayList<String> accounts = new ArrayList<>();
     private ArrayList<ArrayList<Integer>> cancelledOrdersAcknowledgedByIB = new ArrayList<>();
     private ArrayList<ArrayList<LinkedAction>> cancellationRequestsForTracking = new ArrayList<>();
@@ -1433,10 +1432,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         
         for (BeanConnection c : Parameters.connection) {
             filter.m_clientId = c.getClientID();
-            if ("".compareTo(this.lastExecutionRequestTime) != 0) {
-                filter.m_time = this.lastExecutionRequestTime;
+            if ("".compareTo(c.getLastExecutionRequestTime()) != 0) {
+                filter.m_time = c.getLastExecutionRequestTime();
             }
-            this.lastExecutionRequestTime = DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone));
+            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone)));
             c.getWrapper().requestOpenOrders();
             c.getWrapper().requestExecutionDetails(filter);
         }

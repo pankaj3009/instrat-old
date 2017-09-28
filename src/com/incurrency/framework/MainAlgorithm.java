@@ -673,8 +673,14 @@ public class MainAlgorithm extends Algorithm {
         }
         for(BeanConnection c:Parameters.connection){
             c.getWrapper().requestOpenOrders();
-            c.getWrapper().requestExecutionDetails(new ExecutionFilter());
-        }
+             com.ib.client.ExecutionFilter filter = new com.ib.client.ExecutionFilter();
+            filter.m_clientId = c.getClientID();
+            if ("".compareTo(c.getLastExecutionRequestTime()) != 0) {
+                filter.m_time = c.getLastExecutionRequestTime();
+            }
+            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone)));
+            c.getWrapper().requestExecutionDetails(filter);
+          }
         instantiated = true;
     }
 

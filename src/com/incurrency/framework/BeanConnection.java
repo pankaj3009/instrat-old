@@ -26,6 +26,20 @@ import javax.swing.JOptionPane;
  */
 public class BeanConnection implements Serializable, ReaderWriterInterface {
 
+    /**
+     * @return the lastExecutionRequestTime
+     */
+    public String getLastExecutionRequestTime() {
+        return lastExecutionRequestTime;
+    }
+
+    /**
+     * @param lastExecutionRequestTime the lastExecutionRequestTime to set
+     */
+    public void setLastExecutionRequestTime(String lastExecutionRequestTime) {
+        this.lastExecutionRequestTime = lastExecutionRequestTime;
+    }
+
     private final static Logger logger = Logger.getLogger(BeanConnection.class.getName());
 
     public static final String PROP_ACCOUNT_NAME = "accountName";
@@ -57,6 +71,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     private ConcurrentHashMap<String, Double> minpnlByStrategy = new ConcurrentHashMap<>(); //holds pnl by each strategy.
     private int ordersHaltTrading = 10;
     private String ownerEmail;
+    private String lastExecutionRequestTime = "";
     final Object lockPNLStrategy = new Object();
     final Object lockActiveOrders = new Object();
     final Object lockOrderMapping = new Object();
