@@ -435,7 +435,7 @@ public class MainAlgorithm extends Algorithm {
 //                }
 //            }
             for(BeanSymbol s:Parameters.symbol){
-                Boolean received = contractIdAvailable.get(rowcount-1);
+                Boolean received = contractIdAvailable.get(rowcount);
                 if (!received && !(s.getType().equals("IND") || s.getType().equals("COMBO")) || (s.getType().equals("COMBO") && s.isComboSetupFailed())) {
                     logger.log(Level.FINE, "103,ContractDetailsNotReceived,{0}", new Object[]{s.getDisplayname()});
                     Parameters.symbol.remove(s);
