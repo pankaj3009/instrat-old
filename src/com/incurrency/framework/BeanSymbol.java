@@ -1215,7 +1215,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
                         break;
                 }
-                int i = 1;
+                int i = 0;
                 for (BeanSymbol s : target) {
                     s.setSerialno(i);
                     i = i + 1;

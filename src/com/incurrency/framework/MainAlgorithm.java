@@ -422,7 +422,7 @@ public class MainAlgorithm extends Algorithm {
             }
 //            Iterator<BeanSymbol> symbolitr = Parameters.symbol.iterator();
 //            Iterator<Boolean> contractReceived = contractIdAvailable.iterator();
-            int rowcount = 1;
+            int rowcount = 0;
 //            while (symbolitr.hasNext()) {
 //                BeanSymbol s = symbolitr.next(); // must be called before you can call i.remove()
 //                Boolean received = contractReceived.next();
