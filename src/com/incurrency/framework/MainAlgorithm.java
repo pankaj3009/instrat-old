@@ -323,7 +323,7 @@ public class MainAlgorithm extends Algorithm {
         }
         for (BeanConnection c : Parameters.connection) {
             int referenceExternalOrderID=Utilities.getMaxExternalOrderID(Algorithm.redisURL.split(":")[0], Utilities.getInt(Algorithm.redisURL.split(":")[1], 6379), Utilities.getInt(Algorithm.redisURL.split(":")[2], 0), c);
-                    referenceExternalOrderID++;
+                    referenceExternalOrderID=referenceExternalOrderID+1;
                     int id=Math.max(referenceExternalOrderID, c.getIdmanager().getNextOrderIdWithoutIncrement());
                     c.getIdmanager().initializeOrderId(id);
                     logger.log(Level.INFO, "402, NextOrderIDUpdated,{0}:{1}:{2}:{3}:{4},OrderID={5}",
