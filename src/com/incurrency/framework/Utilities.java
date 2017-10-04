@@ -4387,6 +4387,11 @@ public class Utilities {
            maxorderid = Math.max(maxorderid, Trade.getExitOrderIDExternal(db, key));
            maxorderid = Math.max(maxorderid, Trade.getEntryOrderIDExternal(db, key));
         }
+        s=db.getKeys("OQ:*"+accountName);
+        for (String key : s) {
+            int id=Utilities.getInt(key.split(":")[1],0);
+            maxorderid=Math.max(maxorderid,id);
+        }
         return maxorderid;
     }
 }
