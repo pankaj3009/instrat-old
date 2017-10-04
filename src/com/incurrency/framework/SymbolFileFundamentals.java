@@ -101,7 +101,7 @@ public class SymbolFileFundamentals {
                 }
             }
             for (int i = 0; i < out.size(); i++) {
-                out.get(i).setSerialno(i + 1);
+                out.get(i).setSerialno(i);
             }
 
             //Capture Strike levels
@@ -148,7 +148,7 @@ public class SymbolFileFundamentals {
                             s1.setMinsize(minsize);
                             s1.setStrategy("DATA");
                             s1.setStreamingpriority(2);
-                            s1.setSerialno(out.size() + 1);
+                            s1.setSerialno(out.size());
                             interimout.add(s1);
                         } else {
                             logger.log(Level.SEVERE, "Exchange Symbol {0} not found in IB database", new Object[]{exchangeSymbol});

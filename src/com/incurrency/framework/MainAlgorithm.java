@@ -422,7 +422,7 @@ public class MainAlgorithm extends Algorithm {
             }
 //            Iterator<BeanSymbol> symbolitr = Parameters.symbol.iterator();
 //            Iterator<Boolean> contractReceived = contractIdAvailable.iterator();
-            int rowcount = 1;
+            int rowcount = 0;
 //            while (symbolitr.hasNext()) {
 //                BeanSymbol s = symbolitr.next(); // must be called before you can call i.remove()
 //                Boolean received = contractReceived.next();
@@ -435,7 +435,7 @@ public class MainAlgorithm extends Algorithm {
 //                }
 //            }
             for(BeanSymbol s:Parameters.symbol){
-                Boolean received = contractIdAvailable.get(rowcount-1);
+                Boolean received = contractIdAvailable.get(rowcount);
                 if (!received && !(s.getType().equals("IND") || s.getType().equals("COMBO")) || (s.getType().equals("COMBO") && s.isComboSetupFailed())) {
                     logger.log(Level.FINE, "103,ContractDetailsNotReceived,{0}", new Object[]{s.getDisplayname()});
                     Parameters.symbol.remove(s);
