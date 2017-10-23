@@ -1435,7 +1435,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if ("".compareTo(c.getLastExecutionRequestTime()) != 0) {
                 filter.m_time = c.getLastExecutionRequestTime();
             }
-            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone)));
+            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone)));
             c.getWrapper().requestOpenOrders();
             c.getWrapper().requestExecutionDetails(filter);
         }

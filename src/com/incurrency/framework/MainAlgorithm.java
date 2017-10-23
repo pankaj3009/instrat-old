@@ -678,7 +678,7 @@ public class MainAlgorithm extends Algorithm {
             if ("".compareTo(c.getLastExecutionRequestTime()) != 0) {
                 filter.m_time = c.getLastExecutionRequestTime();
             }
-            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyy-MM-dd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone)));
+            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone)));
             c.getWrapper().requestExecutionDetails(filter);
           }
         instantiated = true;
