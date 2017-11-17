@@ -94,8 +94,8 @@ public class Algorithm {
         }
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         //jedisPoolConfig.setMaxWaitMillis(60000);
-        jedisPoolConfig.setMaxWaitMillis(2);
-        marketdatapool = new JedisPool(jedisPoolConfig, redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), 2000, null, 9);
+        jedisPoolConfig.setMaxWaitMillis(1000); //write timeout
+        marketdatapool = new JedisPool(jedisPoolConfig, redisURL.split(":")[0], Utilities.getInt(redisURL.split(":")[1], 6379), 10000, null, 9);
         useForTrading = Boolean.parseBoolean(globalProperties.getProperty("trading", "false").toString().trim());
         useForSimulation = Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim());
         openHour = Integer.valueOf(globalProperties.getProperty("openhour", "9").toString().trim());

@@ -61,7 +61,7 @@ public class ZerodhaConnection implements Connection {
 
             JedisPool pool;
             String request_token = null;
-            pool = new JedisPool("127.0.0.1", 6379);
+            pool = new JedisPool("127.0.0.1", 6379); 
             try (Jedis jedis = pool.getResource()) {
                 request_token = jedis.get("requesttoken");
             }

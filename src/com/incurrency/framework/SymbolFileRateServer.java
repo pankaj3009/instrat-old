@@ -29,7 +29,7 @@ public class SymbolFileRateServer {
     private static final Logger logger = Logger.getLogger(SymbolFileRateServer.class.getName());
 
     public static JedisPool RedisConnect(String uri, Integer port, Integer database) {
-        return new JedisPool(new JedisPoolConfig(), uri, port, 2000, null, database);
+        return new JedisPool(new JedisPoolConfig(), uri, port, 10000, null, database);
     }
 
     private JedisPool jPool;

@@ -38,7 +38,7 @@ public class RedisConnect<K, V> implements Database<K, V> {
     public RedisConnect(String uri, int port, int database) {
         this.uri = uri;
         this.port = port;
-        pool = new JedisPool(new JedisPoolConfig(), uri, port, 2000, null, database);
+        pool = new JedisPool(new JedisPoolConfig(), uri, port,10000, null, database);
     }
 
     @Override
