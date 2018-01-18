@@ -8,16 +8,19 @@ package com.incurrency.framework;
 import com.ib.client.Contract;
 import com.ib.client.ExecutionFilter;
 import com.ib.client.Order;
-import com.incurrency.framework.fundamental.FundamentalDataListener;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 /**
  *
  * @author psharma
  */
 public interface Connection {
-
+    
+    static final Logger logger = Logger.getLogger(Connection.class.getName());
+    static final Object lock_request = new Object();
+    
     public boolean connect();
 
     public void disconnect();
@@ -83,10 +86,6 @@ public interface Connection {
     public void addBidAskListener(BidAskListener l);
 
     public void removeBidAskListener(BidAskListener l);
-
-    public void addFundamentalListener(FundamentalDataListener l);
-
-    public void removeFundamentalListener(FundamentalDataListener l);
 
     public void addTradeListener(TradeListener l);
 

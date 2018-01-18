@@ -5,6 +5,7 @@
  */
 package com.incurrency.framework;
 
+import com.incurrency.framework.Order.EnumOrderType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -114,10 +115,26 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         }
     }
 
+    public int getStrategyOrderSize() {
+        String orderSize = this.get("StrategyOrderSize");
+        return Utilities.getInt(orderSize, 0);
+
+    }
+        
     public int getOriginalOrderSize() {
         String orderSize = this.get("OriginalOrderSize");
         return Utilities.getInt(orderSize, 0);
 
+    }
+    
+    public int getStrategyStartingPosition() {
+        String startingPosition=this.get("StrategyStartingPosition");
+        return Utilities.getInt(startingPosition, 0);
+    }
+    
+    public int getStartingPosition() {
+        String startingPosition = this.get("StartingPosition");
+        return Utilities.getInt(startingPosition, 0);
     }
 
     public int getCurrentOrderSize() {
@@ -373,9 +390,22 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.put("ParentInternalOrderID", String.valueOf(value));
     }
 
+    public void setStrategyOrderSize(int value) {
+        this.put("StrategyOrderSize", String.valueOf(value));
+    }
+    
+    public void setStrategyStartingPosition(int value) {
+        this.put("StrategyStartingPosition", String.valueOf(value));
+    }
+    
     public void setOriginalOrderSize(int value) {
         this.put("OriginalOrderSize", String.valueOf(value));
+    }  
+    
+    public void setStartingPosition(int value) {
+        this.put("StartingPosition", String.valueOf(value));
     }
+    
 
     public void setOrderIDForSquareOff(int value) {
         this.put("OrderIDForSquareOff", String.valueOf(value));

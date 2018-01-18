@@ -8,7 +8,7 @@ import com.incurrency.framework.Algorithm;
 import com.incurrency.framework.EnumOrderReason;
 import com.incurrency.framework.EnumOrderSide;
 import com.incurrency.framework.EnumOrderStage;
-import com.incurrency.framework.EnumOrderType;
+import com.incurrency.framework.Order.EnumOrderType;
 import com.incurrency.framework.ExecutionManager;
 import com.incurrency.framework.MainAlgorithm;
 import com.incurrency.framework.OrderBean;
@@ -61,7 +61,7 @@ public class OrderForm extends javax.swing.JFrame {
         this.lblSide.setText(side.toString());
         if (ibOrderID > 0) { //retrieve orders
             String key = "OQ:" + ibOrderID + ":" + Parameters.connection.get(connection).getAccountName() + ":" + strategy + ":" + symbol + ":" + symbol + ".*";
-            Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.db, Parameters.connection.get(connection), key);
+            Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.dbForTrades, Parameters.connection.get(connection), key);
             if (oqks != null && oqks.size() == 1) {
                 for (OrderQueueKey oqk : oqks) {
                     ob = Parameters.connection.get(connection).getOrderBeanCopy(oqk);
@@ -279,10 +279,6 @@ public class OrderForm extends javax.swing.JFrame {
         int strategyIndex = MainAlgorithm.getStrategies().indexOf(strategy);
         Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
         oms = s.getOms();
-        maxOrderDuration = s.getMaxOrderDuration();
-        dynamicOrderDuration = s.getDynamicOrderDuration();
-        expireTime = maxOrderDuration;
-        maxSlippage = s.getMaxSlippageExit();
         if (oms != null) {
 //                internalOrderId=s.getInternalOrderID();
             HashMap<String, Object> order = new HashMap<>();

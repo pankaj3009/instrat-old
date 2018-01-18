@@ -135,7 +135,7 @@ public class ProfitLossManager implements TradeListener {
                             //logger.log(Level.FINE, "oms set to strategy: {0}", new Object[]{MainAlgorithm.strategyInstances.get(strategyIndex).getStrategy()});
 
                             for (BeanConnection c : Parameters.connection) {
-                                if ("Trading".equals(c.getPurpose()) && accounts.contains(c.getAccountName())) {
+                                if ("Trading".compareToIgnoreCase(c.getPurpose())==0 && accounts.contains(c.getAccountName())) {
                                     for (int symbolid = 0; symbolid < Parameters.symbol.size(); symbolid++) {
                                         Index ind = new Index(strategy, symbolid);
                                         int position = c.getPositions().get(ind) == null ? 0 : c.getPositions().get(ind).getPosition();
@@ -143,12 +143,12 @@ public class ProfitLossManager implements TradeListener {
                                             logger.log(Level.INFO, "309,ProfitLossHit,{0}", new Object[]{c.getAccountName() + delimiter + strategy + delimiter + Parameters.symbol.get(symbolid).getBrokerSymbol() + delimiter + "SELL"});
                                             int internalorderid = s.getInternalOrderID();
 //                                            oms.tes.fireOrderEvent(internalorderid, 0, Parameters.symbol.get(symbolid), EnumOrderSide.SELL, EnumOrderReason.REGULAREXIT, EnumOrderType.LMT, Math.abs(position), Parameters.symbol.get(symbolid).getLastPrice(), 0, strategy, 3, EnumOrderStage.INIT, 2, 0, c.getAccountName(), true, "","PROFITLOSSHIT");
-                                            Algorithm.db.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
+                                            Algorithm.dbForTrades.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
                                         } else if (position < 0) {
                                             int internalorderid = s.getInternalOrderID();
                                             logger.log(Level.INFO, "309,ProfitLossHit,{0}", new Object[]{c.getAccountName() + delimiter + strategy + delimiter + Parameters.symbol.get(symbolid).getBrokerSymbol() + delimiter + "COVER"});
                                             //                                          oms.tes.fireOrderEvent(internalorderid, 0, Parameters.symbol.get(symbolid), EnumOrderSide.COVER, EnumOrderReason.REGULAREXIT, EnumOrderType.LMT, Math.abs(position), Parameters.symbol.get(symbolid).getLastPrice(), 0, strategy, 3, EnumOrderStage.INIT, 2, 0, c.getAccountName(), true, "","PROFITLOSSHIT");
-                                            Algorithm.db.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
+                                            Algorithm.dbForTrades.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
 
                                         }
                                     }

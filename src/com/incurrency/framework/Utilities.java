@@ -4,9 +4,9 @@
  */
 package com.incurrency.framework;
 
+import com.incurrency.framework.Order.EnumOrderType;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Ints;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.FileOutputStream;
@@ -43,8 +43,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.ScanResult;
 import com.google.common.base.Preconditions;
+import com.google.gson.reflect.TypeToken;
 import com.ib.client.TickType;
-import com.verhas.licensor.License;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -96,8 +96,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 public class Utilities {
 
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
-    public static String newline = System.getProperty("line.separator");       
-    public static License lic = null;
+    public static String newline = System.getProperty("line.separator");
     public static byte[] digest;
     public final static String delimiter = "_";
 
@@ -388,7 +387,7 @@ public class Utilities {
                 break;
 
         }
-        return price-1;
+        return price - 1;
     }
 
     public static double getImpliedVol(BeanSymbol s, double underlying, double price, Date evaluationDate) {
@@ -423,84 +422,6 @@ public class Utilities {
 
     }
 
-    /**
-     *
-     * @param s
-     * @param timeSeries - example {"open","close"}
-     * @param metric - example "india.nse.index.s4.daily"
-     * @param startTime format 20150101 00:00:00 or yyyyMMdd HH:mm:ss
-     * @param endTime format 20150101 00:00:00 or yyyyMMdd HH:mm:ss
-     * @param barSize
-     * @param appendAtEnd data retrieved from the request is appended to the end
-     * of specified output text file
-     * @return
-     */
-    /*
-    public static Object[] getSettlePrice(BeanSymbol s, Date d) {
-        Object[] obj = new Object[2];
-        try {
-            HttpClient client = new HttpClient("http://" + Algorithm.cassandraIP + ":8085");
-            String metric;
-            switch (s.getType()) {
-                case "STK":
-                    metric = "india.nse.equity.s4.daily.settle";
-                    break;
-                case "FUT":
-                    metric = "india.nse.future.s4.daily.settle";
-                    break;
-                case "OPT":
-                    metric = "india.nse.option.s4.daily.settle";
-                    break;
-                case "IND":
-                    metric = "india.nse.index.s4.daily.settle";
-                    break;
-                default:
-                    metric = null;
-                    break;
-            }
-            String strike= Utilities.formatDouble(Utilities.getDouble(s.getOption(), 0), new DecimalFormat("#.##"));
-
-            Date startDate = DateUtil.addDays(d, -10);
-            Date endDate = d;
-            QueryBuilder builder = QueryBuilder.getInstance();
-            String symbol=null;
-            if(s.getExchangeSymbol()!=null){
-//                symbol=s.getExchangeSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
-                  symbol=s.getExchangeSymbol();
-            }else{
-                symbol=s.getDisplayname().split("_",-1)[0];
-//                symbol=symbol.replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
-            }
-            symbol=symbol.toLowerCase();
-            builder.setStart(startDate)
-                    .setEnd(endDate)
-                    .addMetric(metric)
-                    .addTag("symbol", symbol);
-            if (s.getExpiry() != null && !s.getExpiry().equals("")) {
-                builder.getMetrics().get(0).addTag("expiry", s.getExpiry());
-            }
-            if (s.getRight() != null && !s.getRight().equals("")) {
-                builder.getMetrics().get(0).addTag("option", s.getRight());
-                builder.getMetrics().get(0).addTag("strike", strike);
-            }
-
-            builder.getMetrics().get(0).setLimit(1);
-            builder.getMetrics().get(0).setOrder(QueryMetric.Order.DESCENDING);
-            long time = new Date().getTime();
-            QueryResponse response = client.query(builder);
-
-            List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
-            for (DataPoint dataPoint : dataPoints) {
-                long lastTime = dataPoint.getTimestamp();
-                obj[0] = lastTime;
-                obj[1] = dataPoint.getValue();
-            }
-        } catch (Exception e) {
-            logger.log(Level.INFO, null, e);
-        }
-        return obj;
-    }
-     */
     public static ArrayList<Pair> getPrices(BeanSymbol s, String appendString, Date startDate, Date endDate) {
         ArrayList<Pair> pairs = new ArrayList<>();
         try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
@@ -512,9 +433,13 @@ public class Utilities {
                 String test1 = gson.toJson(data);
                 List<Object> myMap = gson.fromJson(test1, type);
                 for (Object o : myMap) {
-                    Pair p = gson.fromJson(o.toString(), new TypeToken<Pair>() {
-                    }.getType());
-                    pairs.add(p);
+                    try {
+                        Pair p = gson.fromJson(o.toString(), new TypeToken<Pair>() {
+                        }.getType());
+                        pairs.add(p);
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "Incorrect Json {0}", new Object[]{o.toString()});
+                    }
                 }
             }
         }
@@ -543,99 +468,6 @@ public class Utilities {
         return 0;
     }
 
-    /*
-     public static HashMap<Long,String> getPrices(String exchangeSymbol, String expiry,String right,String optionStrike,Date startDate, Date endDate, String metric) {
-        HashMap<Long,String> out = new HashMap<>();
-        try {
-            HttpClient client = new HttpClient("http://" + Algorithm.cassandraIP + ":8085");
-            String strike= Utilities.formatDouble(Utilities.getDouble(optionStrike, 0), new DecimalFormat("#.##"));
-            QueryBuilder builder = QueryBuilder.getInstance();
-            String symbol=null;
-            //symbol=exchangeSymbol.replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase();
-            symbol=exchangeSymbol.toLowerCase();
-            
-            builder.setStart(startDate)
-                    .setEnd(endDate)
-                    .addMetric(metric)
-                    .addTag("symbol", symbol);
-            if (expiry != null && !expiry.equals("")) {
-                builder.getMetrics().get(0).addTag("expiry", expiry);
-            }
-            if (right!= null && !right.equals("")) {
-                builder.getMetrics().get(0).addTag("option", right);
-                builder.getMetrics().get(0).addTag("strike", strike);
-            }
-            builder.getMetrics().get(0).setOrder(QueryMetric.Order.DESCENDING);
-            long time = new Date().getTime();
-            QueryResponse response = client.query(builder);
-
-            List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
-            for (DataPoint dataPoint : dataPoints) {
-                long lastTime = dataPoint.getTimestamp();
-                out.put(lastTime, dataPoint.getValue().toString());
-            }
-        } catch (Exception e) {
-            logger.log(Level.INFO, null, e);
-        }
-        return out;
-    }
-
-     */
- /*
-    public static Object[] getLastSettlePriceOption(List<BeanSymbol> symbols, int id, long startTime, long endTime, String metric) {
-        Object[] out = new Object[2];
-        HashMap<String, Object> param = new HashMap();
-        param.put("TYPE", Boolean.FALSE);
-        BeanSymbol s = symbols.get(id);
-        String strike = s.getOption();
-        //String symbol = s.getDisplayname().split("_", -1)[0].replaceAll("[^A-Za-z0-9]", "").trim().toLowerCase();
-        String symbol = s.getDisplayname().split("_", -1)[0].trim().toLowerCase();
-        String option = s.getRight();
-        String expiry = s.getExpiry();
-        HistoricalRequestJson request = new HistoricalRequestJson(metric,
-                new String[]{"strike", "symbol", "option", "expiry"},
-                new String[]{strike, symbol, option, expiry},
-                "1",
-                "days",
-                "last",
-                String.valueOf(startTime),
-                String.valueOf(endTime));
-        //http://stackoverflow.com/questions/7181534/http-post-using-json-in-java
-        String json_string = JsonWriter.objectToJson(request, param);
-        StringEntity requestEntity = new StringEntity(
-                json_string,
-                ContentType.APPLICATION_JSON);
-
-        HttpPost postMethod = new HttpPost("http://91.121.165.108:8085/api/v1/datapoints/query");
-        postMethod.setEntity(requestEntity);
-        CloseableHttpClient httpClient = HttpClients.createDefault();
-        try {
-            HttpResponse rawResponse = httpClient.execute(postMethod);
-            BufferedReader br = new BufferedReader(
-                    new InputStreamReader((rawResponse.getEntity().getContent())));
-
-            String output;
-            System.out.println("Output from Server .... \n");
-            while ((output = br.readLine()) != null) {
-                param.clear();
-                param.put("USE_MAPS", "false");
-                JsonObject obj = (JsonObject) JsonReader.jsonToJava(output, param);
-                JsonObject t = (JsonObject) ((Object[]) obj.get("queries"))[0];
-                JsonObject results = (JsonObject) ((Object[]) t.get("results"))[0];
-                Object[] values = (Object[]) results.get("values");
-                int length = values.length;
-                Object[] outarray = (Object[]) values[length - 1];
-                out = outarray; //0 is long time, 1 is value
-
-            }
-
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, null, e);
-        }
-
-        return out;
-    }
-     */
     public static boolean rolloverDay(int daysBeforeExpiry, Date startDate, String expiryDate) {
         boolean rollover = false;
         try {
@@ -1448,7 +1280,7 @@ public class Utilities {
         }
     }
 
-    public static double[] convertStringListToDouble(String[] input) {
+    public static double[] convertStringArrayToDouble(String[] input) {
         double[] out = new double[input.length];
         for (int i = 0; i < input.length; i++) {
             out[i] = getDouble(input[i], 0);
@@ -1456,7 +1288,7 @@ public class Utilities {
         return out;
     }
 
-    public static int[] convertStringListToInt(String[] input) {
+    public static int[] convertStringArrayToInt(String[] input) {
         int[] out = new int[input.length];
         for (int i = 0; i < input.length; i++) {
             out[i] = getInt(input[i], 0);
@@ -1713,18 +1545,13 @@ public class Utilities {
         return -1;
     }
 
-    public static int getCashReferenceID(List<BeanSymbol> symbols, int id, String referenceType) {
+    public static int getCashReferenceID(List<BeanSymbol> symbols, int id) {
         String symbol = symbols.get(id).getBrokerSymbol();
-        String type = referenceType;
-        if (type != null) {
-            return getIDFromBrokerSymbol(symbols, symbol, type, "", "", "");
+        int ref = getIDFromBrokerSymbol(symbols, symbol, "STK", "", "", "");
+        if (ref < 0) {
+            return getIDFromBrokerSymbol(symbols, symbol, "IND", "", "", "");
         } else {
-            int ref = getIDFromBrokerSymbol(symbols, symbol, "STK", "", "", "");
-            if (ref < 0) {
-                return getIDFromBrokerSymbol(symbols, symbol, "IND", "", "", "");
-            } else {
-                return ref;
-            }
+            return ref;
         }
 
     }
@@ -1793,7 +1620,7 @@ public class Utilities {
                 if (id == -1) {
                     id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "CALL");
                 }
-                if (id > 0) {
+                if (id >= 0) {
                     out.add(id);
                 }
                 break;
@@ -1860,7 +1687,7 @@ public class Utilities {
                 if (id == -1) {
                     id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "PUT");
                 }
-                if (id > 0) {
+                if (id >= 0) {
                     out.add(id);
                 }
                 break;
@@ -1927,7 +1754,7 @@ public class Utilities {
                 if (id == -1) {
                     id = Utilities.insertATMStrike(symbols, symbolid, strikeDistance, expiry, "PUT");
                 }
-                if (id > 0) {
+                if (id >= 0) {
                     out.add(id);
                 }
                 break;
@@ -2054,18 +1881,36 @@ public class Utilities {
         return -1;
     }
 
-    public static int getNetPosition(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id, String type) {
+    /**
+     * Returns the position for a symbol specified by an index to a list of
+     * symbols.
+     *
+     * @param symbols a list of BeanSymbols
+     * @param position a Map of positions for each symbol
+     * @param id index to the list of symbols for which we seek the net position
+     * @param summarizeAcrossStrikes if set to true, for option symbols, this
+     * will summarize position across all strikes for the underlying
+     * @return the value of the position for the symbol
+     */
+    public static int getNetPosition(List<BeanSymbol> symbols, ConcurrentHashMap<Integer, BeanPosition> position, int id, boolean summarizeAcrossStrikes) {
         //Returns net positions, netting buy and sell.
-        //For option, net position netting across all strikes for the specified CALL or PUT. For options, the net positions
-        //are for CALL or PUT.
+        //For options, the net positions are for CALL or PUT summarizing across all strikes.
+        //2017.12.26 - added a new parameter 
         int out = 0;
         try {
             ArrayList<Integer> tempSymbols = new ArrayList<>();
-
             BeanSymbol ref = symbols.get(id);
-            for (BeanSymbol s : symbols) {
-                if (s.getBrokerSymbol().equals(ref.getBrokerSymbol()) && s.getType().equals(type)) {
-                    if ((ref.getRight() == null && s.getRight() == null) || (ref.getRight().equals(s.getRight()))) {
+            if (summarizeAcrossStrikes) {
+                for (BeanSymbol s : symbols) {
+                    if (s.getExchangeSymbol().equals(ref.getExchangeSymbol()) && s.getType().equals(ref.getType())) {
+                        if ((ref.getRight() == null && s.getRight() == null) || (ref.getRight().equals(s.getRight()))) {
+                            tempSymbols.add(s.getSerialno());
+                        }
+                    }
+                }
+            } else {
+                for (BeanSymbol s : symbols) {
+                    if (s.getDisplayname().equals(ref.getDisplayname())) {
                         tempSymbols.add(s.getSerialno());
                     }
                 }
@@ -2421,165 +2266,6 @@ public class Utilities {
         doubleValue = doubleValue + increment;
         return String.format("%.1f", doubleValue);
 
-    }    
-
-    static String readFile(String path, Charset encoding) {
-        byte[] encoded;
-        try {
-            File f = new File(path);
-            if (f.exists()) {
-                encoded = Files.readAllBytes(Paths.get(path));
-
-                return new String(encoded, encoding);
-            } else {
-                JOptionPane.showMessageDialog(null, "The license file does not exist. inStrat will close.");
-                System.exit(0);
-                return null;
-            }
-
-        } catch (IOException ex) {
-            logger.log(Level.INFO, "101", ex);
-            return null;
-        }
-    }
-
-    public static boolean checkLicense() {
-        try {
-            if (!Algorithm.lc) {
-                return true;
-            }
-            digest = new byte[]{
-                (byte) 0x42,
-                (byte) 0x2B, (byte) 0xB1, (byte) 0xBE, (byte) 0xD9, (byte) 0x04, (byte) 0xE1, (byte) 0xD1, (byte) 0x96,
-                (byte) 0x2E, (byte) 0xF1, (byte) 0x14, (byte) 0x18, (byte) 0x5C, (byte) 0x8F, (byte) 0x19, (byte) 0xFF,
-                (byte) 0x6A, (byte) 0xFA, (byte) 0x98, (byte) 0x7D, (byte) 0x1E, (byte) 0xE9, (byte) 0xCF, (byte) 0x4C,
-                (byte) 0x49, (byte) 0xFF, (byte) 0x63, (byte) 0x72, (byte) 0xE8, (byte) 0x38, (byte) 0xCE,};
-            File f = new File("key");
-            Charset encoding = Charset.forName("ISO-8859-1");
-            String licenseFileName = readFile("key", encoding);
-            lic = new License();
-            lic.loadKeyRingFromResource("pubring.gpg", digest);
-            lic.setLicenseEncodedFromFile("key");
-
-            return checkValidity();
-        } catch (Exception ex) {
-            logger.log(Level.INFO, "101", ex);
-        }
-        return false;
-    }
-
-    public static boolean checkValidity() {
-        boolean check = true;
-        ArrayList<Validity> licenses = new ArrayList<>();
-        for (int i = 1; i < 100; i++) {
-            if (lic.getFeature(String.valueOf(i)) != null) {
-                String feature = lic.getFeature(String.valueOf(i));
-                String[] in = feature.split(",");
-                licenses.add(new Validity(in[0], in[1], in[2], in[3]));
-
-            } else {
-                break;
-            }
-        }
-        if (licenses.size() > 0) {
-            for (BeanConnection c : Parameters.connection) {//for each connection string, check if it conforms to license
-                String products = c.getStrategy();
-                String product[] = products.split(":");
-                for (String p : product) { //for each product specified in connection file
-                    //create validity
-                    Validity temp = new Validity(c.getAccountName().substring(0, 1).equals("D") ? "TRIAL" : "PAID", c.getAccountName().toUpperCase(), p.toUpperCase(), DateUtil.getFormattedDate("yyyy-MM-dd", new Date().getTime()));
-                    //check if the product is licensed
-                    boolean status = validate(temp, licenses);
-                    check = check & status;
-                }
-            }
-            return check;
-        } else {
-            check = check & false;
-        }
-        /*
-         String expiration = lic.getFeature("Expiry");
-         String licensedStrategies = lic.getFeature("Strategies");
-         Boolean realAccount = Boolean.parseBoolean(lic.getFeature("RealAccount"));
-         String realAccountNames = lic.getFeature("RealAccountNames");
-         HashMap<String,String>realAccountLicenses=new HashMap<>();
-         if(!(realAccountNames.equals("null") || realAccountNames.equals(""))){
-         String[] accounts=realAccountNames.split(",");
-         for(String account: accounts){
-         String[] acc=account.split("-");
-         realAccountLicenses.put(acc[0], acc[1]);
-         }
-         }
-
-         //check for product license
-         if(Pattern.compile(Pattern.quote("inStrat"), Pattern.CASE_INSENSITIVE).matcher(products).find()){
-         check=check && true;
-         }else{
-         check=check && false;
-         }
-        
-         //check for real account trading license
-         if (realAccount) {
-         for (BeanConnection c : Parameters.connection) {
-         //if real account, Trading
-         if (c.getAccountName().substring(0, 1).equals("U") && Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find()) {
-         //check if strategy and account combination exists
-         String allowedStrategies=realAccountLicenses.get(c.getAccountName())+":"+"NONE";
-         if(allowedStrategies==null){//if allowed strategies is null, which should not be the case. It should alteast be NONE
-         check=check && false; //no strategies allowed for the account
-         }else{
-         //if strategy is setup for real account
-         if(Pattern.compile(Pattern.quote(c.getStrategy()), Pattern.CASE_INSENSITIVE).matcher(allowedStrategies).find()){
-         check=check && true;
-         }else{
-         check=check && false;
-         }
-         }
-         check = check && true;
-         //paper account or real account with no trading permission
-         } else if (c.getAccountName().substring(0, 1).equals("D")||(c.getAccountName().substring(0, 1).equals("U")&& !Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find())){
-         check = check && true;
-         }else{
-         check=check & false;
-         }
-         }
-         } else {
-         for (BeanConnection c : Parameters.connection) {
-         if (c.getAccountName().substring(0, 1).equals("U") && Pattern.compile(Pattern.quote("Trading"), Pattern.CASE_INSENSITIVE).matcher(c.getPurpose()).find()) {
-         check = check && false;
-         }
-         }
-         }
-         //check for strategy license
-         for (BeanConnection c : Parameters.connection) {
-         String[] licensedStrategy = c.getStrategy().split(":");
-         for (int i = 0; i < licensedStrategy.length; i++) {
-         if (Pattern.compile(Pattern.quote(licensedStrategy[i]), Pattern.CASE_INSENSITIVE).matcher(licensedStrategies).find()||Pattern.compile(Pattern.quote(licensedStrategy[i]), Pattern.CASE_INSENSITIVE).matcher("none").find()) {
-         check = check && true;
-         } else {
-         check = check && false;
-         }
-         }
-         }
-         //check for expiration date
-         Date expirationDate = DateUtil.parseDate("yyyy-MM-dd", expiration);
-         if (new Date().after(expirationDate)) {
-         check = check && false;
-         } else {
-         check = check && true;
-         }
-         */
-        return check;
-    }
-
-    private static boolean validate(Validity v, ArrayList<Validity> licenses) {
-        for (Validity license : licenses) {
-            if ((license.type.equals(v.type) && license.product.equals(v.product) || Pattern.compile(Pattern.quote(v.product), Pattern.CASE_INSENSITIVE).matcher("none").find()) && (license.account.equals("ALL") || license.account.equals(v.account)) && DateUtil.parseDate("yyyy-MM-dd", license.expiry).after(DateUtil.parseDate("yyyy-MM-dd", v.expiry))) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public static Date getAlgoDate() {
@@ -2602,7 +2288,7 @@ public class Utilities {
         PreparedStatement preparedStatement;
         ResultSet rs;
         try {
-            connect = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/histdata", "root", "spark123");
+            connect = DriverManager.getConnection("jdbc:mysql://127.0.0.1:3306/histdata", "root", "password");
             //statement = connect.createStatement();
             String name = s;
             preparedStatement = connect.prepareStatement("select * from dharasymb where name=? order by DATE(date) DESC,date ASC LIMIT ?");
@@ -2871,7 +2557,6 @@ public class Utilities {
         }
     }
 
-
     public static boolean isValidEmailAddress(String email) {
         boolean result = true;
         try {
@@ -2911,75 +2596,6 @@ public class Utilities {
         return sb.toString();
     }
 
-    /*
-     public static String encrypt(String source, String password){
-     String encryptedString="";
-     try {
-     final String utf8 = "utf-8";
-     byte[] keyBytes;
-     keyBytes = Arrays.copyOf(password.getBytes(utf8), 24);
-     SecretKey key = new SecretKeySpec(keyBytes, "DESede");
-     // Your vector must be 8 bytes long
-     String vector = "@Spark13";
-     IvParameterSpec iv = new IvParameterSpec(vector.getBytes(utf8));
-     // Make an encrypter
-     Cipher encrypt = Cipher.getInstance("DESede/CBC/PKCS5Padding");
-     encrypt.init(Cipher.ENCRYPT_MODE, key, iv);
-     byte[] sourceInBytes=source.getBytes(utf8);
-     encryptedString=new String(encrypt.doFinal(sourceInBytes),utf8);
-     } catch (UnsupportedEncodingException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (NoSuchAlgorithmException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (NoSuchPaddingException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (InvalidKeyException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (InvalidAlgorithmParameterException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (IllegalBlockSizeException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (BadPaddingException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     }
-     return encryptedString;            
-        
-     }
-    
-     public static String decrypt(String source, String password){
-     String decryptedString="";
-     try {
-     final String utf8 = "utf-8";
-     byte[] keyBytes;
-     keyBytes = Arrays.copyOf(password.getBytes(utf8), 24);
-     SecretKey key = new SecretKeySpec(keyBytes, "DESede");
-     // Your vector must be 8 bytes long
-     String vector = "@Spark13";
-     IvParameterSpec iv = new IvParameterSpec(vector.getBytes(utf8));
-     // Make an encrypter
-     Cipher decrypt = Cipher.getInstance("DESede/CBC/PKCS5Padding");
-     decrypt.init(Cipher.DECRYPT_MODE, key, iv);
-     byte[] sourceInBytes=source.getBytes(utf8);
-     decryptedString = new String(decrypt.doFinal(sourceInBytes),utf8);
-     } catch (UnsupportedEncodingException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (NoSuchAlgorithmException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (NoSuchPaddingException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (InvalidKeyException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (InvalidAlgorithmParameterException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (IllegalBlockSizeException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     } catch (BadPaddingException ex) {
-     Logger.getLogger(TradingUtil.class.getName()).log(Level.SEVERE, null, ex);
-     }
-     return decryptedString;  
-        
-     }
-     */
     public static String getPublicIPAddress() {
         String ip = "";
         try {
@@ -2992,41 +2608,6 @@ public class Utilities {
         return ip;
     }
 
-    /*
-     public static Date getExpiryDate(String macID, String accounts, boolean realaccount) {
-
-     Date expiryDate = new Date();
-     expiryDate = DateUtil.addDays(expiryDate, -10);
-     try {
-     String testurl = String.format("http://www.incurrency.com:8888/license");
-     Document doc = Jsoup.connect(testurl).timeout(0).data("macid", macID, "accounts", accounts).post();
-     String input = URLDecoder.decode(doc.getElementsByTag("Body").get(0).text(), "UTF-8");
-     String[] expiries = input.split(",");
-     //String[] expiries=new String[namevalue.length];
-     //for(int i=0;i<namevalue.length;i++){
-     //    expiries=namevalue[i].split("=");
-     //}
-     if (macID.compareTo("") != 0 && !realaccount && expiries[0].compareTo("") != 0) {
-     //macID is not empty. Registration date = expiries[0]
-     expiryDate = new SimpleDateFormat("dd/MM/yyyy").parse(expiries[0]);;
-     } else {
-     //find minimum of expiries and set it to expiry date
-     List<Date> list = new ArrayList<>();
-     for (int i = 1; i < expiries.length; i++) {
-     Date temp = new SimpleDateFormat("dd/MM/yyyy").parse(expiries[i]);
-     list.add(temp);
-     }
-     Collections.sort(list);
-     expiryDate = list.get(0);
-     }
-
-     } catch (IOException | ParseException ex) {
-     logger.log(Level.SEVERE, null, ex);
-     }
-
-     return expiryDate;
-     }
-     */
     public static boolean isValidTime(String time) {
         //http://www.vogella.com/tutorials/JavaRegularExpressions/article.html
         //http://stackoverflow.com/questions/884848/regular-expression-to-validate-valid-time
@@ -3074,61 +2655,6 @@ public class Utilities {
         return out;
     }
 
-    /*
-     public static int getIDFromSymbol(String symbol, String type, String expiry, String right, String option) {
-     for (BeanSymbol symb : Parameters.symbol) {
-     String s = symb.getBrokerSymbol() == null ? "" : symb.getBrokerSymbol();
-     String t = symb.getType() == null ? "" : symb.getType();
-     String e = symb.getExpiry() == null ? "" : symb.getExpiry();
-     String r = symb.getRight() == null ? "" : symb.getRight();
-     String o = symb.getOption() == null ? "" : symb.getOption();
-            
-     String si=symbol== null ||symbol.equalsIgnoreCase("null")? "" : symbol;
-     String ti = type== null||type.equalsIgnoreCase("null") ? "" : type;
-     String ei = expiry == null ||expiry.equalsIgnoreCase("null")? "" : expiry;
-     String ri = right == null||right.equalsIgnoreCase("null") ? "" : right;
-     String oi = option== null||option.equalsIgnoreCase("null") ? "" : option;
-     if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei)==0 
-     && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
-     return symb.getSerialno() - 1;
-     }
-     }
-     return -1;
-     }
-     */
- /*
-     public static int getIDFromDisplayName(String symbol, String type, String expiry, String right, String option) {
-     for (BeanSymbol symb : Parameters.symbol) {
-     String s = symb.getDisplayname() == null ? "" : symb.getDisplayname();
-     String t = symb.getType() == null ? "" : symb.getType();
-     String e = symb.getExpiry() == null ? "" : symb.getExpiry();
-     String r = symb.getRight() == null ? "" : symb.getRight();
-     String o = symb.getOption() == null ? "" : symb.getOption();
-            
-     String si=symbol== null ? "" : symbol;
-     String ti = type== null ? "" : type;
-     String ei = expiry == null ? "" : expiry;
-     String ri = right == null ? "" : right;
-     String oi = option== null ? "" : option;
-     if (s.compareTo(si) == 0 && t.compareTo(ti) == 0 && e.compareTo(ei)==0
-     && r.compareTo(ri) == 0 && o.compareTo(oi) == 0) {
-     return symb.getSerialno() - 1;
-     }
-     }
-     return -1;
-     }
-     */
-
- /*
-     public static int getIDFromDisplayName(String displayName) {
-     for (BeanSymbol symb : Parameters.symbol) {
-     if (symb.getDisplayname().equals(displayName)) {
-     return symb.getSerialno() - 1;
-     }
-     }
-     return -1;
-     }
-     */
     public static int getIDFromComboLongName(String comboLongName) {
         for (BeanSymbol symb : Parameters.symbol) {
             if (symb.getBrokerSymbol().equals(comboLongName) && symb.getType().equals("COMBO")) {
@@ -3196,7 +2722,7 @@ public class Utilities {
         return tradesToday;
     }
 
-    public static double[] applyBrokerage(Database<String, String> db, ArrayList<BrokerageRate> brokerage, double pointValue, String fileName, String timeZone, double startingEquity, String accountName, String equityFileName, String strategyName) {
+    public static double[] applyBrokerage(Database<String, String> db, ArrayList<BrokerageRate> brokerage, double pointValue, String timeZone, double startingEquity, String accountName, String equityFileName, String strategyName) {
         double[] profitGrid = new double[14];
         ArrayList<Double> dailyEquity = new ArrayList();
         ArrayList<Date> tradeDate = new ArrayList();
@@ -3508,60 +3034,6 @@ public class Utilities {
         updateDrawDownMetrics(db, strategy, account);
     }
 
-    /*
-    private static double getSettlePrice(BeanSymbol s, Date d) {
-        double settlePrice = -1;
-        try {
-            HttpClient client = new HttpClient("http://" + Algorithm.cassandraIP + ":8085");
-            String metric;
-            switch (s.getType()) {
-                case "STK":
-                    metric = "india.nse.equity.s4.daily.settle";
-                    break;
-                case "FUT":
-                    metric = "india.nse.future.s4.daily.settle";
-                    break;
-                case "OPT":
-                    metric = "india.nse.option.s4.daily.settle";
-                    break;
-                default:
-                    metric = null;
-                    break;
-            }
-            Date startDate = d;
-            Date endDate = d;
-            String strike = Utilities.formatDouble(Utilities.getDouble(s.getOption(), 0), new DecimalFormat("#.##"));
-
-            QueryBuilder builder = QueryBuilder.getInstance();
-            builder.setStart(startDate)
-                    .setEnd(DateUtil.addSeconds(d, 1))
-                    .addMetric(metric)
-                    .addTag("symbol", s.getBrokerSymbol().replaceAll("[^A-Za-z0-9\\-]", "").toLowerCase());
-            if (!s.getExpiry().equals("")) {
-                builder.getMetrics().get(0).addTag("expiry", s.getExpiry());
-            }
-            if (!s.getRight().equals("")) {
-                builder.getMetrics().get(0).addTag("option", s.getRight());
-                builder.getMetrics().get(0).addTag("strike", strike);
-            }
-
-            builder.getMetrics().get(0).setLimit(1);
-            builder.getMetrics().get(0).setOrder(QueryMetric.Order.DESCENDING);
-            long time = new Date().getTime();
-            QueryResponse response = client.query(builder);
-
-            List<DataPoint> dataPoints = response.getQueries().get(0).getResults().get(0).getDataPoints();
-            for (DataPoint dataPoint : dataPoints) {
-                long lastTime = dataPoint.getTimestamp();
-                Object value = dataPoint.getValue();
-                settlePrice = Double.parseDouble(value.toString());
-            }
-        } catch (Exception e) {
-            logger.log(Level.INFO, null, e);
-        }
-        return settlePrice;
-    }
-     */
     private static String getLastPNLRecordDate(Database<String, String> db, String accountName, String strategyName, String referenceDate, boolean equals) {
         Set<String> dates = db.getKeys("pnl_" + strategyName + ":" + accountName);
         String yesterday = "";
@@ -3927,10 +3399,10 @@ public class Utilities {
         }
     }
 
-    public static BrokerageRate parseBrokerageString(String brokerage, String type) {
+    public static BrokerageRate parseBrokerageString(String brokerage) {
 
         BrokerageRate brokerageRate = new BrokerageRate();
-        brokerageRate.type = type;
+        //    brokerageRate.type = type;
         String[] input = brokerage.split(",");
         switch (input.length) {
             case 2:
@@ -4030,7 +3502,7 @@ public class Utilities {
     static ArrayList<Integer> getLinkedOrderIds(int orderid, BeanConnection c) {
         ArrayList<Integer> out = new ArrayList<>();
         String searchString = "OQ:" + orderid + ":" + c.getAccountName() + ":*";
-        Set<OrderQueueKey> oqks = getAllOrderKeys(Algorithm.db, c, searchString);
+        Set<OrderQueueKey> oqks = getAllOrderKeys(Algorithm.dbForTrades, c, searchString);
         if (oqks.size() > 1) {
             logger.log(Level.SEVERE, "501,getLinkedOrderIds: Duplicate OrderID for key,{0}", new Object[]{searchString});
             return out;
@@ -4041,7 +3513,7 @@ public class Utilities {
                 if (combo) {
                     int parentorderidint = oqki.getParentorderidint();
                     searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
-                    Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.db, c, searchString);
+                    Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.dbForTrades, c, searchString);
                     for (OrderQueueKey oqkinew : oqksnew) {
                         OrderBean ob = c.getOrderBeanCopy(oqkinew);
                         if (ob.getExternalOrderID() >= 0 && isLiveOrder(c, oqkinew)) {
@@ -4069,7 +3541,7 @@ public class Utilities {
     static ArrayList<OrderBean> getLinkedOrderBeans(int orderid, BeanConnection c) {
         ArrayList<OrderBean> out = new ArrayList<>();
         String searchString = "OQ:" + orderid + ":" + c.getAccountName() + ":*";
-        Set<OrderQueueKey> oqks = getAllOrderKeys(Algorithm.db, c, searchString);
+        Set<OrderQueueKey> oqks = getAllOrderKeys(Algorithm.dbForTrades, c, searchString);
         if (oqks.size() > 1) {
             logger.log(Level.SEVERE, "501,getLinkedOrderBeans: Duplicate OrderID for key,{0}", new Object[]{searchString});
             return out;
@@ -4080,7 +3552,7 @@ public class Utilities {
                 if (combo) {
                     int parentorderidint = oqki.getParentorderidint();
                     searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
-                    Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.db, c, searchString);
+                    Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.dbForTrades, c, searchString);
                     for (OrderQueueKey oqkinew : oqksnew) {
                         OrderBean ob = c.getOrderBeanCopy(oqkinew);
                         if (ob.getExternalOrderID() > 0 && isLiveOrder(c, oqkinew)) {
@@ -4097,14 +3569,14 @@ public class Utilities {
     static ArrayList<OrderBean> getLinkedOrderBeansGivenParentBean(OrderBean ob, BeanConnection c) {
         ArrayList<OrderBean> out = new ArrayList<>();
         String searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":" + ob.getParentInternalOrderID() + ":.*";
-        Set<OrderQueueKey> oqks = getAllOrderKeys(Algorithm.db, c, searchString);
+        Set<OrderQueueKey> oqks = getAllOrderKeys(Algorithm.dbForTrades, c, searchString);
         for (OrderQueueKey oqki : oqks) {
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, oqki.getParentDisplayName());
             boolean combo = isSyntheticSymbol(id);
             if (combo) {
                 int parentorderidint = oqki.getParentorderidint();
                 searchString = "OQ:.*" + ":" + c.getAccountName() + ":" + oqki.getStrategy() + ":" + oqki.getParentDisplayName() + ":" + oqki.getParentDisplayName() + ":" + parentorderidint + ":";
-                Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.db, c, searchString);
+                Set<OrderQueueKey> oqksnew = getAllOrderKeys(Algorithm.dbForTrades, c, searchString);
                 for (OrderQueueKey oqkinew : oqksnew) {
                     OrderBean obi = c.getOrderBeanCopy(oqkinew);
                     if (ob.getExternalOrderID() > 0 && isLiveOrder(c, oqkinew)) {
@@ -4140,7 +3612,7 @@ public class Utilities {
         String[] childDisplayNames = getChildDisplayNames(parentid);
         String parentDisplayName = Parameters.symbol.get(parentid).getDisplayname();
         for (String childDisplayName : childDisplayNames) {
-            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + parentDisplayName + ":" + childDisplayName+":"+".*";
+            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + parentDisplayName + ":" + childDisplayName + ":" + ".*";
             Set<String> oqks = c.getKeys(searchString);
             for (String oqki : oqks) {
                 OrderQueueKey oqk = new OrderQueueKey(oqki);
@@ -4211,21 +3683,23 @@ public class Utilities {
         }
         return false;
     }
+
     /**
      * An order is open if its either live or resting
+     *
      * @param c
      * @param oqk
      * @param strict
-     * @return 
+     * @return
      */
-        public static boolean isOpenOrder(BeanConnection c, OrderQueueKey oqk) {
+    public static boolean isOpenOrder(BeanConnection c, OrderQueueKey oqk) {
         OrderBean oqv = c.getOrderBeanCopy(oqk);
         if (oqv != null) {
-           if (oqv.getOrderStatus() == EnumOrderStatus.UNDEFINED||oqv.getOrderStatus()==EnumOrderStatus.ACKNOWLEDGED||oqv.getOrderStatus()==EnumOrderStatus.SUBMITTED||oqv.getOrderStatus()==EnumOrderStatus.PARTIALFILLED) {
-             return true;
+            if (oqv.getOrderStatus() == EnumOrderStatus.UNDEFINED || oqv.getOrderStatus() == EnumOrderStatus.ACKNOWLEDGED || oqv.getOrderStatus() == EnumOrderStatus.SUBMITTED || oqv.getOrderStatus() == EnumOrderStatus.PARTIALFILLED) {
+                return true;
 //            } else if(strict && oqv.getOrderStatus().equals(EnumOrderStatus.COMPLETEFILLED) && oqv.getOriginalOrderSize()>oqv.getCurrentOrderSize() && oqv.getLinkAction().contains(EnumLinkedAction.PROPOGATE)) {
 //                return true;
-            }else{
+            } else {
                 return false;
             }
         }
@@ -4342,16 +3816,16 @@ public class Utilities {
                 + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
         return key;
     }
-    
-    public static int getMaxInternalOrderID(String redisURL, int port, int dbid, BeanConnection c) {
+
+    public static int getMaxInternalOrderID(String redisip, int port, int dbid, BeanConnection c) {
         int maxorderid = 0;
         String accountName;
-                if(c==null){
-            accountName="Order";
-        }else{
-            accountName=c.getAccountName();
+        if (c == null) {
+            accountName = "Order";
+        } else {
+            accountName = c.getAccountName();
         }
-        Database db = new RedisConnect(redisURL.split(":")[0], port, dbid);
+        Database db = new RedisConnect(redisip, port, dbid);
         Set<String> s = db.getKeys("opentrades*" + accountName);
         for (String key : s) {
             String intkey = key.split("_")[1].split(":")[1];
@@ -4366,31 +3840,31 @@ public class Utilities {
         }
         return maxorderid;
     }
-    
-        public static int getMaxExternalOrderID(String redisURL, int port, int dbid, BeanConnection c) {
+
+    public static int getMaxExternalOrderID(String redisURL, int port, int dbid, BeanConnection c) {
         int maxorderid = 0;
         String accountName;
         Database db = new RedisConnect(redisURL.split(":")[0], port, dbid);
-        if(c==null){
-            accountName="Order";
-        }else{
-            accountName=c.getAccountName();
+        if (c == null) {
+            accountName = "Order";
+        } else {
+            accountName = c.getAccountName();
         }
-        Set<String> s ;
-        s=db.getKeys("opentrades*"+accountName);
-        for (String key : s) {          
-           maxorderid = Math.max(maxorderid, Trade.getExitOrderIDExternal(db, key));
-           maxorderid = Math.max(maxorderid, Trade.getEntryOrderIDExternal(db, key));
-        }
-        s = db.getKeys("closedtrades*"+accountName);
+        Set<String> s;
+        s = db.getKeys("opentrades*" + accountName);
         for (String key : s) {
-           maxorderid = Math.max(maxorderid, Trade.getExitOrderIDExternal(db, key));
-           maxorderid = Math.max(maxorderid, Trade.getEntryOrderIDExternal(db, key));
+            maxorderid = Math.max(maxorderid, Trade.getExitOrderIDExternal(db, key));
+            maxorderid = Math.max(maxorderid, Trade.getEntryOrderIDExternal(db, key));
         }
-        s=db.getKeys("OQ:*"+accountName);
+        s = db.getKeys("closedtrades*" + accountName);
         for (String key : s) {
-            int id=Utilities.getInt(key.split(":")[1],0);
-            maxorderid=Math.max(maxorderid,id);
+            maxorderid = Math.max(maxorderid, Trade.getExitOrderIDExternal(db, key));
+            maxorderid = Math.max(maxorderid, Trade.getEntryOrderIDExternal(db, key));
+        }
+        s = db.getKeys("OQ:*" + accountName);
+        for (String key : s) {
+            int id = Utilities.getInt(key.split(":")[1], 0);
+            maxorderid = Math.max(maxorderid, id);
         }
         return maxorderid;
     }

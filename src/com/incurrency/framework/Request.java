@@ -10,14 +10,14 @@ package com.incurrency.framework;
  */
 public class Request {
 
-    int requestID;
-    BeanSymbol symbol;
-    EnumRequestType requestType;
-    EnumBarSize barSize;
-    EnumSource source;
-    EnumRequestStatus requestStatus;
-    long requestTime;
-    String accountName;
+    public int requestID;
+    public BeanSymbol symbol;
+    public EnumRequestType requestType;
+    public EnumBarSize barSize;
+    public EnumSource source;
+    public EnumRequestStatus requestStatus;
+    public long requestTime;
+    public String accountName;
 
     public Request(EnumSource source, int requestID, BeanSymbol symbol, EnumRequestType requestType, EnumBarSize barSize, EnumRequestStatus requestStatus, long requestTime, String accountName) {
         this.requestID = requestID;

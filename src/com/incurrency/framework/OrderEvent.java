@@ -4,6 +4,7 @@
  */
 package com.incurrency.framework;
 
+import com.incurrency.framework.Order.EnumOrderType;
 import java.util.EventObject;
 import java.util.HashMap;
 

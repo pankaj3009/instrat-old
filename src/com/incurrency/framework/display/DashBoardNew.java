@@ -1129,12 +1129,6 @@ public class DashBoardNew extends javax.swing.JFrame {
             } else if (s) {
                 btnShortOnly.setSelected(true);
             }
-            Boolean dynamic = strat != null ? strat.getAggression() : true;
-            if (dynamic) {
-                btnDynamicOn.setSelected(true);
-            } else {
-                btnDynamicOff.setSelected(true);
-            }
             txtClawProfitTarget.setText(Double.toString(strat.getClawProfitTarget()));
             txtDayStopLoss.setText(Double.toString(strat.getDayStopLoss()));
             txtDayProfitTarget.setText(Double.toString(strat.getDayProfitTarget()));
@@ -1144,26 +1138,23 @@ public class DashBoardNew extends javax.swing.JFrame {
     private void btnDynamicOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDynamicOffActionPerformed
         int strategyIndex = comboStrategy.getSelectedIndex();
         Strategy strategy = MainAlgorithm.strategyInstances.get(strategyIndex);
-        strategy.setAggression(false);
         logger.log(Level.INFO, "Dynamic Orders switched off for {0}", new Object[]{comboStrategy.getSelectedItem().toString()});
     }//GEN-LAST:event_btnDynamicOffActionPerformed
 
     private void btnDynamicOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDynamicOnActionPerformed
         int strategyIndex = comboStrategy.getSelectedIndex();
         Strategy strategy = MainAlgorithm.strategyInstances.get(strategyIndex);
-        strategy.setAggression(true);
         logger.log(Level.INFO, "Dynamic Orders switched on for {0}", new Object[]{comboStrategy.getSelectedItem().toString()});
     }//GEN-LAST:event_btnDynamicOnActionPerformed
 
     private void cmdSquareAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdSquareAllActionPerformed
         int strategyIndex = comboStrategy.getSelectedIndex();
         Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
-        s.setAggression(false);
         s.setLongOnly(false);
         s.setShortOnly(false);
         this.btnPause.setSelected(true);
         for (BeanConnection c : Parameters.connection) {
-            if ("Trading".equals(c.getPurpose()) && s.getAccounts().contains(c.getAccountName())) {
+            if ("Trading".compareToIgnoreCase(c.getPurpose())==0 && s.getAccounts().contains(c.getAccountName())) {
                 for (int id = 0; id < Parameters.symbol.size(); id++) {
                     s.getOms().cancelOpenOrders(c, id, s.getStrategy());
                     s.getOms().squareAllPositions(c, id, s.getStrategy());
@@ -1181,7 +1172,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         s.setShortOnly(false);
         this.btnLongOnly.setSelected(true);
         for (BeanConnection c : Parameters.connection) {
-            if ("Trading".equals(c.getPurpose()) && s.getAccounts().contains(c.getAccountName())) {
+            if ("Trading".compareToIgnoreCase(c.getPurpose())==0 && s.getAccounts().contains(c.getAccountName())) {
                 for (int id = 0; id < Parameters.symbol.size(); id++) {
                     Index ind = new Index(s.getStrategy(), id);
                     if (c.getPositions().get(ind) != null) {
@@ -1202,7 +1193,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         s.setShortOnly(true);
         this.btnShortOnly.setSelected(true);
         for (BeanConnection c : Parameters.connection) {
-            if ("Trading".equals(c.getPurpose()) && s.getAccounts().contains(c.getAccountName())) {
+            if ("Trading".compareToIgnoreCase(c.getPurpose())==0 && s.getAccounts().contains(c.getAccountName())) {
                 for (int id = 0; id < Parameters.symbol.size(); id++) {
                     Index ind = new Index(s.getStrategy(), id);
                     if (c.getPositions().get(ind) != null) {
@@ -1254,7 +1245,7 @@ public class DashBoardNew extends javax.swing.JFrame {
 //                c.getOrdersToBeRetried().clear();
 //                c.getOrdersSymbols().clear();
         Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
-        Validator.reconcile("", s.getDb(), Algorithm.db, c.getAccountName(), c.getOwnerEmail(), s.getStrategy(), Boolean.TRUE);
+        Validator.reconcile("", s.getDb(), Algorithm.dbForTrades, c.getAccountName(), c.getOwnerEmail(), s.getStrategy(), Boolean.TRUE);
         s.updatePositions();
 //                c.getActiveOrders().clear();
 //                for(int i=0;i<Parameters.connection.size();i++){

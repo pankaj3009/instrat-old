@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
 /**
@@ -120,6 +121,12 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
         }
     }
 
+    /**
+     * Prepares a broker account by updating collections to hold
+     * mtm and total pnl for strategy and individual symbols in strategy.
+     * @param strategyName
+     * @param id 
+     */
     public void initializeConnection(String strategyName, int id) {
         if (id == -1) {
             this.pnlByStrategy.put(strategyName, 0D);
@@ -130,16 +137,17 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
             this.minpnlByStrategy.put(strategyName, 0D);
 
             for (int i = 0; i < Parameters.symbol.size(); i++) {
-                Index ind = new Index(strategyName, i);
-                //ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
-                pnlBySymbol.put(ind, 0D);
-                if (this.mtmBySymbol.get(ind) == null) {
-                    this.mtmBySymbol.put(ind, 0D);
+                String symbolStrategies = Parameters.symbol.get(i).getStrategy();
+                if (Pattern.compile(Pattern.quote(strategyName), Pattern.CASE_INSENSITIVE).matcher(symbolStrategies).find()) {
+                    Index ind = new Index(strategyName, i);
+                    pnlBySymbol.put(ind, 0D);
+                    if (this.mtmBySymbol.get(ind) == null) {
+                        this.mtmBySymbol.put(ind, 0D);
+                    }
                 }
             }
         } else {//adding a symbol
             Index ind = new Index(strategyName, id);
-//            ordersSymbols.put(ind, new ArrayList<SymbolOrderMap>());
             pnlBySymbol.put(ind, 0D);
             if (this.mtmBySymbol.get(ind) == null) {
                 this.mtmBySymbol.put(ind, 0D);
@@ -162,11 +170,11 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     }
 
     public ArrayList<OrderBean> getLiveOrders() {
-        return new ArrayList(Utilities.getLiveOrders(Algorithm.db, this, "OQ:.*:" + this.getAccountName() + ":.*"));
+        return new ArrayList(Utilities.getLiveOrders(Algorithm.dbForTrades, this, "OQ:.*:" + this.getAccountName() + ":.*"));
     }
 
     public ArrayList<OrderBean> getRestingOrders() {
-        return new ArrayList(Utilities.getRestingOrders(Algorithm.db, this, "OQ:-1:" + this.getAccountName() + ":.*"));
+        return new ArrayList(Utilities.getRestingOrders(Algorithm.dbForTrades, this, "OQ:-1:" + this.getAccountName() + ":.*"));
     }
 
     /**
@@ -385,7 +393,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      */
     public void setOrder(OrderQueueKey oqk, OrderBean order) {
         order.setUpdateTime();
-        Algorithm.db.insertOrder(oqk.getKey(this.getAccountName()), order);
+        Algorithm.dbForTrades.insertOrder(oqk.getKey(this.getAccountName()), order);
         if (orders.get(oqk) == null) {
             ArrayList<OrderBean> temp = new ArrayList<OrderBean>();
             temp.add(order);
@@ -409,10 +417,10 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     }
     
     public void loadOrdersFromRedis() {
-        Set<String> keys = Algorithm.db.getKeysOfList("", "OQ:.*");
+        Set<String> keys = Algorithm.dbForTrades.getKeysOfList("", "OQ:.*");
         for (String key : keys) {
             if (key.contains(this.accountName)) {
-                OrderBean ob = Algorithm.db.getLatestOrderBean(key);
+                OrderBean ob = Algorithm.dbForTrades.getLatestOrderBean(key);
                 ArrayList<OrderBean> obs = new ArrayList<>();
                 obs.add(ob);
                 orders.put(new OrderQueueKey(key), obs);

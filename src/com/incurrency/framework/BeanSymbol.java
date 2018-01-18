@@ -6,7 +6,6 @@ package com.incurrency.framework;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.incurrency.framework.fundamental.Fundamental;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -117,7 +116,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private double lowPrice;
     private double highPrice;
     private double tickSize;
-    private Boolean status;
+    private Boolean availability;
     private double prevLastPrice;
     private double atmStrike;
     private long firstTimeStamp;
@@ -158,7 +157,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private LimitedQueue<Integer> tradedVolumes;
     private LimitedQueue<Long> tradedDateTime;
     private ConcurrentHashMap<BeanSymbol, Integer> combo = new ConcurrentHashMap<>(); //holds brokerSymbol and corresponding size
-    private Fundamental fundamental = new Fundamental();
     private AtomicBoolean addedToSymbols = new AtomicBoolean();
     private EuropeanOption optionProcess = null;
     private SimpleQuote underlying = new SimpleQuote();
@@ -187,7 +185,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
         //populate combo object
         String[] symbols = comboString.split(":");
-        this.setStrategy(strategy);
+        this.setStrategy(strategy.toUpperCase());
         if (symbols.length == 1) {
             comboSetupFailed = true;
         }
@@ -582,7 +580,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         openPrice = 0;
         lowPrice = 0;
         highPrice = 0;
-        status = false;
+        availability = false;
         prevLastPrice = 0;
         atmStrike = 0;
         firstTimeStamp = 0;
@@ -2050,14 +2048,19 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @return the status
      */
     public synchronized Boolean isStatus() {
-        return status;
+        return availability;
     }
 
     /**
-     * @param status the status to set
+     * Sets the status of a symbol to denote if symbol is available for trading.
+     * @param available
      */
-    public synchronized void setStatus(Boolean status) {
-        this.status = status;
+    public synchronized void setAvailability(Boolean available) {
+        this.availability = available;
+    }
+    
+    public synchronized boolean getAvailability() {
+        return this.availability;
     }
 
     /**
@@ -2085,7 +2088,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
      * @param strategy the strategy to set
      */
     public void setStrategy(String strategy) {
-        this.strategy = strategy;
+        this.strategy = strategy.toUpperCase();
     }
 
     /**
@@ -2318,20 +2321,6 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     }
 
     /**
-     * @return the fundamental
-     */
-    public Fundamental getFundamental() {
-        return fundamental;
-    }
-
-    /**
-     * @param fundamental the fundamental to set
-     */
-    public void setFundamental(Fundamental fundamental) {
-        this.fundamental = fundamental;
-    }
-
-    /**
      * @return the tradedPrices
      */
     public LimitedQueue<Double> getTradedPrices() {
@@ -2488,7 +2477,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     }
 
     /**
-     * @param extraInsert the extraInsert to set
+     * setAddedToSymbols is set as true if the symbol has been added
+     * to parameters structure programatically.
+     * @param addedToSymbols the extraInsert to set
      */
     public void setAddedToSymbols(boolean addedToSymbols) {
         this.addedToSymbols.set(addedToSymbols);

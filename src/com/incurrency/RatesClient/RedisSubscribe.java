@@ -22,8 +22,8 @@ public class RedisSubscribe extends JedisPubSub {
 
     public RedisSubscribe(String topic) {
         this.topic = topic;
-        if (globalProperties.getProperty("threadlimit") != null) {
-            int limit = Integer.valueOf(globalProperties.getProperty("threadlimit").toString().trim());
+        int limit = Integer.valueOf(globalProperties.getProperty("threadlimit", "0").trim());
+        if (limit > 0) {
             taskPool = Executors.newFixedThreadPool(limit);
         } else {
             taskPool = Executors.newCachedThreadPool();

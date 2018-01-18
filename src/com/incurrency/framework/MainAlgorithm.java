@@ -4,10 +4,8 @@
  */
 package com.incurrency.framework;
 
-import com.ib.client.ExecutionFilter;
 import com.incurrency.RatesClient.RedisSubscribe;
 import static com.incurrency.framework.Algorithm.globalProperties;
-import com.verhas.licensor.License;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
@@ -17,7 +15,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -39,7 +36,6 @@ public class MainAlgorithm extends Algorithm {
 
     private static HashMap<String, String> input = new HashMap();
     public final static Logger logger = Logger.getLogger(MainAlgorithm.class.getName());
-    private static final Object lockInput = new Object();
     public static JFrame ui;
     private static Date startDate;
     private static Date closeDate = null;
@@ -66,13 +62,76 @@ public class MainAlgorithm extends Algorithm {
     private static final Object lockStrategies = new Object();
     public static int selectedStrategy = 0;
     public static boolean rtvolume = false;
+    private Date preopenDate;
+    Timer preopen;
+    private List<Double> maxPNL = new ArrayList();
+    private List<Double> minPNL = new ArrayList();
+    private String historicalData;
+    private String realTimeBars;
+    private boolean tradingAlgoInitialized = false;
+    private boolean duplicateAccounts = false;
+    private String version = "1.03B-20140826";
+    private final String delimiter = "_";
+    TimerTask closeAlgorithms = new TimerTask() {
+        @Override
+        public void run() {
+            logger.log(Level.INFO, "100, inStratShutdown,{0}", new Object[]{closeDate});
+            System.exit(0);
+        }
+    };
+    TimerTask keepConnectionAlive = new TimerTask() {
+        @Override
+        public void run() {
+            for (BeanConnection c : Parameters.connection) {
+                if (!c.getWrapper().isConnected()) {
+                    try {
+                        MainAlgorithm.connectToBroker(c);
+                    } catch (ClassNotFoundException ex) {
+                        Logger.getLogger(MainAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (NoSuchMethodException ex) {
+                        Logger.getLogger(MainAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InstantiationException ex) {
+                        Logger.getLogger(MainAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalAccessException ex) {
+                        Logger.getLogger(MainAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (IllegalArgumentException ex) {
+                        Logger.getLogger(MainAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+                    } catch (InvocationTargetException ex) {
+                        Logger.getLogger(MainAlgorithm.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+    };
 
-    public static void connectToTWS(BeanConnection c) {
+    /**
+     * Connects to a specified broker provided in BeanConnection. Generally
+     * called on a disconnect.
+     *
+     * @param c
+     */
+    public static void connectToBroker(BeanConnection c) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         c.getWrapper().disconnect();
-        c.setWrapper(new TWSConnection(c));
+        Class[] arg;
+                arg = new Class[1];
+                arg[0] = BeanConnection.class;
+                
+            Constructor constructor= Class.forName(Algorithm.connectionClass).getConstructor(arg);
+            Connection BrokerConnection=(Connection) constructor.newInstance(c);
+            c.setWrapper(BrokerConnection);
+        
+        //c.setWrapper(new TWSConnection(c));
         c.getWrapper().connect();
     }
 
+    /**
+     * Used to create an instance of MainAlgorithm. This function is called by
+     * providing startup parameters in a hashmap.
+     *
+     * @param args
+     * @return
+     * @throws Exception
+     */
     public static MainAlgorithm getInstance(HashMap<String, String> args) throws Exception {
         if (instance == null) {
             instance = new MainAlgorithm(args);
@@ -140,7 +199,11 @@ public class MainAlgorithm extends Algorithm {
     }
 
     public static MainAlgorithm getInstance() {
+        if(Algorithm.initialized){
         return instance;
+        }else{
+            return null;
+        }
     }
 
     /**
@@ -183,54 +246,23 @@ public class MainAlgorithm extends Algorithm {
             Algorithm.useForTrading = aUseForTrading;
         }
     }
-    private Date preopenDate;
-    Timer preopen;
-    private List<Double> maxPNL = new ArrayList();
-    private List<Double> minPNL = new ArrayList();
-    private String historicalData;
-    private String realTimeBars;
-    private boolean tradingAlgoInitialized = false;
-    private boolean duplicateAccounts = false;
-    private License lic = null;
-    private String version = "1.03B-20140826";
-    /*
-     * EOD Validation Fixed
-     * Deemed cancellations wes a string arraylist. Changed this to <Integer>
-     * Stubs were not creating correct side of child orders. Fixed by introducing a new method in TWSConnection - switchSide
-     * EOD reporting now includes open positions
-     */
-    private final String delimiter = "_";
-    TimerTask closeAlgorithms = new TimerTask() {
-        @Override
-        public void run() {
-            logger.log(Level.INFO, "100, inStratShutdown,{0}", new Object[]{closeDate});
-            System.exit(0);
-        }
-    };
-    TimerTask keepConnectionAlive = new TimerTask() {
-        @Override
-        public void run() {
-            for (BeanConnection c : Parameters.connection) {
-                if (!c.getWrapper().isConnected()) {
-                    MainAlgorithm.connectToTWS(c);
-                }
-            }
-        }
-    };
 
     protected MainAlgorithm(HashMap<String, String> args) throws Exception {
         super(args); //this initializes the connection and symbols
+        if(initialized){
         input = args;
         logStartupData();
         String today = DateUtil.getFormatedDate("yyyyMMdd", Utilities.getAlgoDate().getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         if (useForTrading) {
             if (!holidays.contains(today)) {
                 JQuantLib.setLogger(logger);
-                connectToTWS();
-                getContractInformation();
-                subscribeMarketData();
-                Timer keepAlive = new Timer("Timer: Maintain IB Connection");
-                keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
+                int connectionCount = connectToBroker();
+                if (connectionCount > 0) {
+                    getContractInformation();
+                    subscribeMarketData();
+                    Timer keepAlive = new Timer("Timer: Maintain IB Connection");
+                    keepAlive.schedule(keepConnectionAlive, new Date(), 60 * 1000);
+                }
             } else {
                 logger.log(Level.SEVERE, "Trading holiday");
                 System.exit(0);
@@ -241,9 +273,9 @@ public class MainAlgorithm extends Algorithm {
         } else if (Boolean.parseBoolean(globalProperties.getProperty("connectionfileneeded", "false").toString().trim())) {
             //used to get historical data
             if (!holidays.contains(today)) {
-                connectToTWS();
+                int connectionCount = connectToBroker();
                 boolean subscribe = Boolean.parseBoolean(globalProperties.getProperty("subscribetomarketdata", "false").toString().trim());
-                if (subscribe) {
+                if (subscribe && connectionCount > 0) {
                     getContractInformation();
                     subscribeMarketData();
                     Timer keepAlive = new Timer("Timer: Maintain IB Connection");
@@ -256,7 +288,8 @@ public class MainAlgorithm extends Algorithm {
             }
         }
         collectTicks = Boolean.parseBoolean(globalProperties.getProperty("collectticks", "false").toString().trim());
-    }
+        }
+        }
 
     private void logStartupData() {
         String concatInput = new String();
@@ -272,9 +305,15 @@ public class MainAlgorithm extends Algorithm {
         logger.log(Level.INFO, "100,inStratInputParameters,{0}", new Object[]{concatInput});
     }
 
-    private void connectToTWS() {
+    private int connectToBroker() throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+         Class[] arg;
+                arg = new Class[1];
+                arg[0] = BeanConnection.class;
+                
         for (BeanConnection c : Parameters.connection) {
-            c.setWrapper(new TWSConnection(c));
+            Constructor constructor= Class.forName(Algorithm.connectionClass).getConstructor(arg);
+            Connection BrokerConnection=(Connection) constructor.newInstance(c);
+            c.setWrapper(BrokerConnection);
         }
         int connectioncount = 1;
         ArrayList<BeanConnection> notConnected = new ArrayList();
@@ -321,15 +360,16 @@ public class MainAlgorithm extends Algorithm {
             c.getWrapper().cancelAccountUpdates();
             System.out.println("Account updates cancelled");
         }
-        for (BeanConnection c : Parameters.connection) {
-            int referenceExternalOrderID=Utilities.getMaxExternalOrderID(Algorithm.redisURL.split(":")[0], Utilities.getInt(Algorithm.redisURL.split(":")[1], 6379), Utilities.getInt(Algorithm.redisURL.split(":")[2], 0), c);
-                    referenceExternalOrderID=referenceExternalOrderID+1;
-                    int id=Math.max(referenceExternalOrderID, c.getIdmanager().getNextOrderIdWithoutIncrement());
-                    c.getIdmanager().initializeOrderId(id);
-                    logger.log(Level.INFO, "402, NextOrderIDUpdated,{0}:{1}:{2}:{3}:{4},OrderID={5}",
-                            new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1, id});
+        if (useForTrading) {
+            for (BeanConnection c : Parameters.connection) {
+                int referenceExternalOrderID = Utilities.getMaxExternalOrderID(redisip, redisport, redisdbtrade, c);
+                referenceExternalOrderID = referenceExternalOrderID + 1;
+                int id = Math.max(referenceExternalOrderID, c.getIdmanager().getNextOrderIdWithoutIncrement());
+                c.getIdmanager().initializeOrderId(id);
+                logger.log(Level.INFO, "402, NextOrderIDUpdated,{0}:{1}:{2}:{3}:{4},OrderID={5}",
+                        new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1, id});
+            }
         }
-        
 
         //Confirm no account duplicates exist before proceeding further
         for (int i = 0; i < Parameters.connection.size(); i++) {
@@ -344,30 +384,21 @@ public class MainAlgorithm extends Algorithm {
                 }
             }
         }
-
-        if (!Utilities.checkLicense()) {
-            if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
-                //Launch.setMessage("No License. If you are only executing on IB paper accounts, please register. If you have a real account setup for trading, please contact support@incurrency.com");
-            }
-            logger.log(Level.INFO, "100,License Check Failed");
-            while (true) {
-
-            }
-        }
+        return Parameters.connection.size();
     }
 
     private void getContractInformation() throws InterruptedException {
-        if (Utilities.checkLicense() && !duplicateAccounts) {
+        if (!duplicateAccounts) {
             //int threadCount = Math.max(1, Parameters.symbol.size() / 100 + 1); //max 100 symbols per thread
-            if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) {
+            if (Boolean.valueOf(globalProperties.getProperty("subscribetomarketdata","true"))==Boolean.FALSE && globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) {
                 for (BeanSymbol s : Parameters.symbol) {
                     try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
                         int e = jedis.getDB();
                         String contractid = jedis.get(s.getDisplayname());
                         s.setContractID(Utilities.getInt(contractid.split(":")[0], 0));
                         s.setTickSize(Utilities.getDouble(contractid.split(":")[1], 0.05));
-                    }catch(Exception e){
-                        logger.log(Level.SEVERE,"101,Error in setting contract information, Symbol:{0},StackTrace:{1}",new Object[]{s.getDisplayname(),e.getStackTrace()});
+                    } catch (Exception e) {
+                        logger.log(Level.SEVERE, "101,Error in setting contract information, Symbol:{0},StackTrace:{1}", new Object[]{s.getDisplayname(), e.getStackTrace()});
                     }
                 }
 
@@ -382,7 +413,6 @@ public class MainAlgorithm extends Algorithm {
                 }
             } else { //no datasource. Get info from IB TWS directly
                 BeanConnection tempC = Parameters.connection.get(0);
-
                 for (BeanSymbol s : Parameters.symbol) {
                     tempC.getWrapper().getContractDetails(s, "");
                     System.out.print("ContractDetails Requested:" + s.getBrokerSymbol() + "\n");
@@ -434,7 +464,7 @@ public class MainAlgorithm extends Algorithm {
 //                    rowcount = rowcount + 1;
 //                }
 //            }
-            for(BeanSymbol s:Parameters.symbol){
+            for (BeanSymbol s : Parameters.symbol) {
                 Boolean received = contractIdAvailable.get(rowcount);
                 if (!received && !(s.getType().equals("IND") || s.getType().equals("COMBO")) || (s.getType().equals("COMBO") && s.isComboSetupFailed())) {
                     logger.log(Level.FINE, "103,ContractDetailsNotReceived,{0}", new Object[]{s.getDisplayname()});
@@ -461,11 +491,10 @@ public class MainAlgorithm extends Algorithm {
             serialno = serialno + 1;
             s.setConnectionidUsedForMarketData(-1);
         }
-        if (globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use jeromq connector
+        if (Boolean.valueOf(globalProperties.getProperty("subscribetomarketdata","true"))==Boolean.FALSE && globalProperties.getProperty("datasource") != null && !"".equals(globalProperties.getProperty("datasource").toString().trim())) { //use jeromq connector
             new RedisSubscribe(globalProperties.getProperty("topic", "INR").toString().trim());
         } else {
-            if (Utilities.checkLicense() && !duplicateAccounts) {
-                if (globalProperties.getProperty("datasource") == null || "".equals(globalProperties.getProperty("datasource").toString().trim())) { //use IB for market data
+            if ( !duplicateAccounts) {
                     int count = Parameters.symbol.size();
                     int allocatedCapacity = 0;
                     for (BeanConnection c : Parameters.connection) {
@@ -499,7 +528,6 @@ public class MainAlgorithm extends Algorithm {
                             t.start();
                         }
                     }
-                }
             }
         }
 
@@ -667,20 +695,20 @@ public class MainAlgorithm extends Algorithm {
             closeProcessing.schedule(closeAlgorithms, closeDate);
         }
         if (MainAlgorithm.isUseForTrading() || MainAlgorithm.isUseForSimulation()) {
-            if (Utilities.checkLicense() && !Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
+            if (!Boolean.parseBoolean(Algorithm.globalProperties.getProperty("headless", "true"))) {
                 ui = new com.incurrency.framework.display.DashBoardNew(); //Display main UI
             }
         }
-        for(BeanConnection c:Parameters.connection){
+        for (BeanConnection c : Parameters.connection) {
             c.getWrapper().requestOpenOrders();
-             com.ib.client.ExecutionFilter filter = new com.ib.client.ExecutionFilter();
+            com.ib.client.ExecutionFilter filter = new com.ib.client.ExecutionFilter();
             filter.m_clientId = c.getClientID();
             if ("".compareTo(c.getLastExecutionRequestTime()) != 0) {
                 filter.m_time = c.getLastExecutionRequestTime();
             }
-            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone)));
+            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)));
             c.getWrapper().requestExecutionDetails(filter);
-          }
+        }
         instantiated = true;
     }
 
@@ -698,33 +726,32 @@ public class MainAlgorithm extends Algorithm {
      * @throws InstantiationException
      */
     public void registerStrategy(String strategy) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, InstantiationException {
+        logger.log(Level.INFO,"101,Loading Strategy:{0}",new Object[]{strategy});
         HashMap<String, ArrayList<String>> initValues = strategyInitValues(strategy);
-        boolean trading = Boolean.parseBoolean(globalProperties.getProperty("trading", "false").toString().trim());
-        boolean simulation = Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").toString().trim());
-        boolean backtest = Boolean.parseBoolean(globalProperties.getProperty("backtest", "false").toString().trim());
         for (Map.Entry<String, ArrayList<String>> entry : initValues.entrySet()) {
             String parameterFile = entry.getKey();
             ArrayList<String> tradingAccounts = entry.getValue();
             Class[] arg;
-            if (simulation == true || trading == true || backtest == true) {
+            if (useForSimulation == true || useForTrading == true || useForBacktest == true) {
                 arg = new Class[5];
                 arg[0] = MainAlgorithm.class;
                 arg[1] = Properties.class;
                 arg[2] = String.class;
                 arg[3] = ArrayList.class;
-                arg[4] = Integer.class;
+                arg[4] = Boolean.class;
             } else {
                 arg = new Class[1];
                 arg[0] = String.class;
             }
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
+           
             Properties p = Utilities.loadParameters(parameterFile);
-            if (useForTrading || simulation || backtest) {
+            if (useForTrading || useForSimulation || useForBacktest) {
                 //String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
                 String[] tempStrategyArray = parameterFile.split("\\.")[0].split("_");
                 String strategyName = tempStrategyArray[tempStrategyArray.length - 1];
                 getStrategies().add(strategyName);
-                strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts, null));
+                strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts,Boolean.TRUE));
             } /*
             else if (Boolean.parseBoolean(globalProperties.getProperty("backtest", "false"))) {
                 ArrayList<ArrayList<String>> parameterList = new ArrayList<>();
@@ -752,28 +779,35 @@ public class MainAlgorithm extends Algorithm {
      * @return
      */
     public HashMap<String, ArrayList<String>> strategyInitValues(String strategy) {
-
+        //file to be setup as
+        //U72311-DU12345-inradr2.properties,DU24321-inradr1.properties, inradr.properties
+      
         int l = strategy.split("\\.").length;
         strategy = strategy.split("\\.")[l - 1].toLowerCase(); //strategy is named as the second last part of the extended class name.
+        logger.log(Level.INFO,"101,Strategy Name:{0}",new Object[]{strategy});
         HashMap<String, ArrayList<String>> out = new HashMap<>();
         String argValues = input.get(strategy);
+        //argValues=U72311-DU12345-inradr2.properties,DU24321-inradr1.properties, inradr.properties
         ArrayList<String> allAccountNames = new ArrayList<>();
         ArrayList<String> allocAccountNames = new ArrayList<>();
         if (isUseForTrading()) {
             for (BeanConnection c : Parameters.connection) {
-                if (c.getPurpose().equals("Trading") && c.getStrategy().toLowerCase().contains(strategy.toLowerCase())) {
+                logger.log(Level.INFO,"101,Strategies allowed in account {0} are {1}",new Object[]{c.getAccountName(),c.getStrategy()});
+                if (c.getPurpose().compareToIgnoreCase("Trading")==0 && c.getStrategy().toLowerCase().contains(strategy.toLowerCase())) {
                     allAccountNames.add(c.getAccountName()); //get list of all accounts that will trade this strategy
                 }
             }
         } else {
             allAccountNames.add("Test");
         }
-        //file to be setup as
-        //U72311-DU12345-inradr2.properties,DU24321-inradr1.properties, inradr.properties
-        String[] instanceFile = argValues.split(",");
+         String[] instanceFile = argValues.split(",");
         //here instance file will have length=3
+        //instanceFile[0]=U72311-DU12345-inradr2.properties
+        //instanceFile[1]=DU24321-inradr1.properties 
+        //instanceFile[2]=inradr.properties
+        
         for (int i = 0; i < instanceFile.length; i++) {
-            String[] instanceParameters = instanceFile[i].split("_");
+            String[] instanceParameters = instanceFile[i].split("_|-");
             //here instance parameters will have length=3,2 and 1
             ArrayList<String> subAccountNames = new ArrayList<>();
             if (instanceParameters.length == 1) {

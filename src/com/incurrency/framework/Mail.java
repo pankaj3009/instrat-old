@@ -40,36 +40,40 @@ public class Mail implements Runnable {
 
     public void run() {
         for (String r : recepient) {
-            final String username = "reporting@incurrency.com";
-            final String password = "spark123";
+            final String username = Algorithm.senderEmail;
+            final String password = Algorithm.senderEmailPassword;
+            if (username != null && password != null) {
+                Properties props = new Properties();
+                props.put("mail.smtp.auth", "true");
+                props.put("mail.smtp.starttls.enable", "true");
+                props.put("mail.smtp.host", "smtp.gmail.com");
+                props.put("mail.smtp.port", "587");
+                try {
 
-            Properties props = new Properties();
-            props.put("mail.smtp.auth", "true");
-            props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.host", "smtp.gmail.com");
-            props.put("mail.smtp.port", "587");
-            try {
+                    Session session = Session.getInstance(props,
+                            new javax.mail.Authenticator() {
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(username, password);
+                        }
+                    });
 
-                Session session = Session.getInstance(props,
-                        new javax.mail.Authenticator() {
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
+                    Message message = new MimeMessage(session);
+                    message.setFrom(new InternetAddress("reporting@gmail.com"));
+                    message.setRecipients(Message.RecipientType.TO,
+                            InternetAddress.parse(r));
+                    if(Algorithm.recipientEmail!=null){
+                        message.addRecipient(Message.RecipientType.BCC, new InternetAddress(Algorithm.recipientEmail));                    
                     }
-                });
+                    message.setSubject(subject);
+                    message.setText(text);
 
-                Message message = new MimeMessage(session);
-                message.setFrom(new InternetAddress("reporting@gmail.com"));
-                message.setRecipients(Message.RecipientType.TO,
-                        InternetAddress.parse(r));
-                message.addRecipient(Message.RecipientType.BCC, new InternetAddress("gg06588@gmail.com"));
-                message.setSubject(subject);
-                message.setText(text);
+                    Transport.send(message);
 
-                Transport.send(message);
-
-            } catch (Exception e) {
-                logger.log(Level.SEVERE, "101", e);
+                } catch (Exception e) {
+                    logger.log(Level.SEVERE, "101", e);
+                }
             }
+
         }
     }
 }
