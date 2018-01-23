@@ -143,12 +143,12 @@ public class ProfitLossManager implements TradeListener {
                                             logger.log(Level.INFO, "309,ProfitLossHit,{0}", new Object[]{c.getAccountName() + delimiter + strategy + delimiter + Parameters.symbol.get(symbolid).getBrokerSymbol() + delimiter + "SELL"});
                                             int internalorderid = s.getInternalOrderID();
 //                                            oms.tes.fireOrderEvent(internalorderid, 0, Parameters.symbol.get(symbolid), EnumOrderSide.SELL, EnumOrderReason.REGULAREXIT, EnumOrderType.LMT, Math.abs(position), Parameters.symbol.get(symbolid).getLastPrice(), 0, strategy, 3, EnumOrderStage.INIT, 2, 0, c.getAccountName(), true, "","PROFITLOSSHIT");
-                                            Algorithm.dbForTrades.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
+                                            Algorithm.tradeDB.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
                                         } else if (position < 0) {
                                             int internalorderid = s.getInternalOrderID();
                                             logger.log(Level.INFO, "309,ProfitLossHit,{0}", new Object[]{c.getAccountName() + delimiter + strategy + delimiter + Parameters.symbol.get(symbolid).getBrokerSymbol() + delimiter + "COVER"});
                                             //                                          oms.tes.fireOrderEvent(internalorderid, 0, Parameters.symbol.get(symbolid), EnumOrderSide.COVER, EnumOrderReason.REGULAREXIT, EnumOrderType.LMT, Math.abs(position), Parameters.symbol.get(symbolid).getLastPrice(), 0, strategy, 3, EnumOrderStage.INIT, 2, 0, c.getAccountName(), true, "","PROFITLOSSHIT");
-                                            Algorithm.dbForTrades.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
+                                            Algorithm.tradeDB.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
 
                                         }
                                     }

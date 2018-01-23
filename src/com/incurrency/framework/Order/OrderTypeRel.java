@@ -178,7 +178,8 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
             boolean fatfinger = false;
             if (event.getSymbolID() == id || event.getSymbolID() == underlyingid) {
                 //check if there is a case for updating rel price. Only time criteron at present.
-                if (recentOrders.size() == orderspermin
+                    //internalOrderIDEntry = ob.getOrderKeyForSquareOff();
+                    if (recentOrders.size() == orderspermin
                         && (new Date().getTime() - (Long) recentOrders.get(0)) < 60000) {// Timestamp of the first of the "n" orders is *less* than 60 seconds prior. Stop!!
                     recalculate = false;
                     Utilities.writeToFile(Parameters.symbol.get(id).getDisplayname() + "_" + this.externalOrderID + ".csv",
@@ -190,7 +191,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 if (recalculate) {
                     BeanSymbol s = Parameters.symbol.get(id);
                     ob=c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
-                    internalOrderIDEntry = ob.getOrderIDForSquareOff();
                     limitPrice = ob.getLimitPrice();
                     double newLimitPrice = limitPrice;
                     plp = limitPrice;

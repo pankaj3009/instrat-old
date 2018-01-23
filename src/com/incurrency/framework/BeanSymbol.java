@@ -1265,7 +1265,7 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     public void saveToExternalFile(EnumBarSize barSize, String[] labels, long startTime, long endTime, String filename, String dateFormat, boolean append) {
         if (!append) {
             Utilities.deleteFile("logs", filename);
-            String header = Utilities.concatStringArray(labels);
+            String header = Utilities.concatStringArray(labels,",");
             header = "time," + header;
             Utilities.writeToFile("logs", filename, header);
         }

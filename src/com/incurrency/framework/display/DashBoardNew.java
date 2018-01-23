@@ -1245,7 +1245,7 @@ public class DashBoardNew extends javax.swing.JFrame {
 //                c.getOrdersToBeRetried().clear();
 //                c.getOrdersSymbols().clear();
         Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
-        Validator.reconcile("", s.getDb(), Algorithm.dbForTrades, c.getAccountName(), c.getOwnerEmail(), s.getStrategy(), Boolean.TRUE);
+        Validator.reconcile("", s.getDb(), Algorithm.tradeDB, c.getAccountName(), c.getOwnerEmail(), s.getStrategy(), Boolean.TRUE);
         s.updatePositions();
 //                c.getActiveOrders().clear();
 //                for(int i=0;i<Parameters.connection.size();i++){

@@ -61,7 +61,7 @@ public class OrderForm extends javax.swing.JFrame {
         this.lblSide.setText(side.toString());
         if (ibOrderID > 0) { //retrieve orders
             String key = "OQ:" + ibOrderID + ":" + Parameters.connection.get(connection).getAccountName() + ":" + strategy + ":" + symbol + ":" + symbol + ".*";
-            Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.dbForTrades, Parameters.connection.get(connection), key);
+            Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.tradeDB, Parameters.connection.get(connection), key);
             if (oqks != null && oqks.size() == 1) {
                 for (OrderQueueKey oqk : oqks) {
                     ob = Parameters.connection.get(connection).getOrderBeanCopy(oqk);
@@ -72,7 +72,7 @@ public class OrderForm extends javax.swing.JFrame {
             }
             if (ob != null) {
                 internalOrderId = ob.getInternalOrderID();
-                internalOrderIdEntry = ob.getOrderIDForSquareOff();
+               // internalOrderIdEntry = ob.getOrderKeyForSquareOff();
             }
         }
         if (id >= 0) {
@@ -288,7 +288,7 @@ public class OrderForm extends javax.swing.JFrame {
                 ob.setInternalOrderID(internalorderid);
                 ob.setParentInternalOrderID(internalorderid);
                 if (side.equals(EnumOrderSide.COVER) || side.equals(EnumOrderSide.SELL)) {
-                    ob.setOrderIDForSquareOff(oms.ParentInternalOrderIDForSquareOff(Parameters.connection.get(connection), ob));
+//                    ob.setOrderIDForSquareOff(oms.ParentInternalOrderIDForSquareOff(Parameters.connection.get(connection), ob));
                 }
                 ob.setChildDisplayName(Parameters.symbol.get(symbolid).getDisplayname());
                 ob.setParentDisplayName(Parameters.symbol.get(symbolid).getDisplayname());

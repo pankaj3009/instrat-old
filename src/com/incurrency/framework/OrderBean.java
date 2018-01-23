@@ -170,9 +170,9 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         return Utilities.getInt(parentInternalOrderID, -1);
     }
 
-    public int getOrderIDForSquareOff() {
-        String parentEntryInternalOrderID = this.get("OrderIDForSquareOff");
-        return Utilities.getInt(parentEntryInternalOrderID, -1);
+    public String getOrderKeyForSquareOff() {
+        String parentEntryInternalOrderID = this.get("OrderKeyForSquareOff");
+        return parentEntryInternalOrderID;
     }
 
     public int getInternalOrderID() {
@@ -407,8 +407,8 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     }
     
 
-    public void setOrderIDForSquareOff(int value) {
-        this.put("OrderIDForSquareOff", String.valueOf(value));
+    public void setOrderKeyForSquareOff(String value) {
+        this.put("OrderKeyForSquareOff", value);
     }
 
     public void setOrderLog(String value) {

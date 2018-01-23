@@ -170,11 +170,11 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     }
 
     public ArrayList<OrderBean> getLiveOrders() {
-        return new ArrayList(Utilities.getLiveOrders(Algorithm.dbForTrades, this, "OQ:.*:" + this.getAccountName() + ":.*"));
+        return new ArrayList(Utilities.getLiveOrders(Algorithm.tradeDB, this, "OQ:.*:" + this.getAccountName() + ":.*"));
     }
 
     public ArrayList<OrderBean> getRestingOrders() {
-        return new ArrayList(Utilities.getRestingOrders(Algorithm.dbForTrades, this, "OQ:-1:" + this.getAccountName() + ":.*"));
+        return new ArrayList(Utilities.getRestingOrders(Algorithm.tradeDB, this, "OQ:-1:" + this.getAccountName() + ":.*"));
     }
 
     /**
@@ -393,7 +393,7 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
      */
     public void setOrder(OrderQueueKey oqk, OrderBean order) {
         order.setUpdateTime();
-        Algorithm.dbForTrades.insertOrder(oqk.getKey(this.getAccountName()), order);
+        Algorithm.tradeDB.insertOrder(oqk.getKey(this.getAccountName()), order);
         if (orders.get(oqk) == null) {
             ArrayList<OrderBean> temp = new ArrayList<OrderBean>();
             temp.add(order);
@@ -417,10 +417,10 @@ public class BeanConnection implements Serializable, ReaderWriterInterface {
     }
     
     public void loadOrdersFromRedis() {
-        Set<String> keys = Algorithm.dbForTrades.getKeysOfList("", "OQ:.*");
+        Set<String> keys = Algorithm.tradeDB.getKeysOfList("", "OQ:.*");
         for (String key : keys) {
             if (key.contains(this.accountName)) {
-                OrderBean ob = Algorithm.dbForTrades.getLatestOrderBean(key);
+                OrderBean ob = Algorithm.tradeDB.getLatestOrderBean(key);
                 ArrayList<OrderBean> obs = new ArrayList<>();
                 obs.add(ob);
                 orders.put(new OrderQueueKey(key), obs);

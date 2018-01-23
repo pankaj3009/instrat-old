@@ -58,7 +58,7 @@ public class Algorithm {
     public static int redisdbtrade;
     public static int redisdbtick;
     public static int redisdbsymbol;
-    public static Database<String, String> dbForTrades;
+    public static RedisConnect tradeDB;
     //public static String cassandraIP;
     public static boolean generateSymbolFile = false;
     public static String defaultExchange;
@@ -76,6 +76,7 @@ public class Algorithm {
     public static String recipientEmail;
     public static int daysOfTickHistory;
     public static Boolean initialized = Boolean.FALSE; // initialized is set to true only if Algorithm passes all validations.
+    public static String pnlMode;
 
     public Algorithm(HashMap<String, String> args) {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
@@ -97,6 +98,7 @@ public class Algorithm {
         senderEmailPassword = globalProperties.getProperty("senderemailpassword").trim();
         recipientEmail = globalProperties.getProperty("recipientemail").isEmpty() ? null : globalProperties.getProperty("recipientemail").trim();
         daysOfTickHistory = Utilities.getInt(globalProperties.getProperty("daysoftickhistory"), 10);
+        pnlMode=globalProperties.getProperty("pnlmode","realized").trim();
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {
@@ -118,7 +120,7 @@ public class Algorithm {
             redisdbtrade = Utilities.getInt(globalProperties.getProperty("redisdbtrade"), -1);
             redisdbtick = Utilities.getInt(globalProperties.getProperty("redisdbtick"), -1);
             redisdbsymbol = Utilities.getInt(globalProperties.getProperty("redisdbsymbol"), -1);
-            dbForTrades = new RedisConnect(redisip, redisport, redisdbtrade);
+            tradeDB = new RedisConnect(redisip, redisport, redisdbtrade);
         }
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         //jedisPoolConfig.setMaxWaitMillis(60000);
@@ -175,7 +177,7 @@ public class Algorithm {
             File symbolFile = new File(symbolFileName);
             if (generateSymbolFile) {
                 String className = globalProperties.getProperty("symbolclass", "com.incurrency.framework.SymbolFileTrading").trim();
-                String redisurl = globalProperties.getProperty("redisurlforsymbols", "127.0.0.1:6379:2").trim();
+                String redisurl = redisip+":"+redisport+":"+redisdbsymbol;
                 Class[] param = new Class[2];
                 param[0] = String.class;
                 param[1] = String.class;

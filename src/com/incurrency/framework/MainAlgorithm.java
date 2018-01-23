@@ -362,7 +362,7 @@ public class MainAlgorithm extends Algorithm {
         }
         if (useForTrading) {
             for (BeanConnection c : Parameters.connection) {
-                int referenceExternalOrderID = Utilities.getMaxExternalOrderID(redisip, redisport, redisdbtrade, c);
+                int referenceExternalOrderID = Utilities.getMaxExternalOrderID(tradeDB, c.getAccountName());
                 referenceExternalOrderID = referenceExternalOrderID + 1;
                 int id = Math.max(referenceExternalOrderID, c.getIdmanager().getNextOrderIdWithoutIncrement());
                 c.getIdmanager().initializeOrderId(id);
