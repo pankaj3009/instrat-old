@@ -417,7 +417,8 @@ public class Trade {
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             try {
-                ArrayList<Pair> pairs = Utilities.getPrices(new BeanSymbol(internalOrderID.toString()), ":daily:settle", sdf.parse(date), sdf.parse(date));
+                String displayName=Trade.getParentSymbol(db, internalOrderID);
+                ArrayList<Pair> pairs = Utilities.getPrices(new BeanSymbol(displayName), ":daily:settle", sdf.parse(date), sdf.parse(date));
                 if (pairs.size() > 0) {
                     for (Pair p : pairs) {
                         if (p.getTime() == DateUtil.getFormattedDate(date, "yyyy-MM-dd", Algorithm.timeZone).getTime()) {
