@@ -857,7 +857,7 @@ public class Utilities {
                     if (record[0] != null && !record[0].isEmpty()) {
                         ProfitRecord profit = new ProfitRecord();
                         profit.symbol = record[0].trim().toUpperCase();
-                        profit.reason = EnumProfitReason.valueOf(record[1]);
+                        profit.reason = EnumProfitReason.valueOf(record[1].toUpperCase());
                         profit.position = Utilities.getInt(record[2], 0);
                         profit.openingPrice = Utilities.getDouble(record[3], 0);
                         profit.closingPrice = Utilities.getDouble(record[4], 0);
