@@ -521,6 +521,7 @@ public class Utilities {
         if (Algorithm.pnlMode.equalsIgnoreCase("mtm")) {
             //reason=EnumProfitReason.NEW
             for (String key : result) {
+                try{
                 String entryTime = db.getValue("", key, "entrytime");
                 String entryDate = entryTime.substring(0, Math.min(entryTime.length(), 10));
                 String exitTime = db.getValue("", key, "exittime");
@@ -585,6 +586,10 @@ public class Utilities {
                     profit.value = profit.position * profit.closingPrice;
                     profit.profit = -(profit.closingPrice - profit.openingPrice) * profit.position;
                     out.add(profit);
+                }
+                }catch (Exception e){
+                    logger.log(Level.SEVERE,"Incorret data in trade record {0}",new Object[]{key});
+                    logger.log(Level.SEVERE,null,e);
                 }
             }
         } else if (Algorithm.pnlMode.equalsIgnoreCase("realized")) {
@@ -713,10 +718,10 @@ public class Utilities {
         }
         int deletionIndex = 0;
         for (File f : files) {
-            deletionIndex++;
             if (f.getName().split("\\.")[0].compareTo(dateString) > 0) {
                 break;
             }
+            deletionIndex++;
         }
 
         ArrayList<Double> exposure = new ArrayList<>();
@@ -743,7 +748,12 @@ public class Utilities {
             totalBrokerage = totalBrokerage + d;
         }
         for (int i = 0; i < profit.size(); i++) {
-            returns.add(profit.get(i) / exposure.get(i));
+            if (exposure.get(i) == 0) {
+                returns.add(0D);
+            } else {
+                returns.add(profit.get(i) / exposure.get(i));
+
+            }
         }
         double sharpeRatio = Utilities.sharpeRatio(returns);
         HashMap<String, String> winMetrics = Utilities.winRatio(db, strategy, account, dateString);
