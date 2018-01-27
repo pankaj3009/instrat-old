@@ -94,6 +94,7 @@ import java.util.regex.Pattern;
 import javax.mail.internet.InternetAddress;
 import javax.swing.JOptionPane;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.jblas.DoubleMatrix;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.ScanParams;
@@ -130,6 +131,15 @@ public class Utilities {
         Algorithm.redisip = "127.0.0.1";
         Algorithm.redisport = 6379;
         Algorithm.redisdbtrade = 0;
+        ArrayList<Double> profit=new ArrayList<>();
+        profit.add(-1D);
+        profit.add(0.1D);
+        profit.add(2D);
+        profit.add(3D);
+        profit.add(-2.7D);
+        profit.add(0.2D);
+        profit.add(0.3D);
+       Utilities.hwm(profit,3);
         Path path = Paths.get("/home/psharma/Dropbox/code/strategies");
         applyBrokerage(redis, brokerage, 1, "Asia/Kolkata", "U724054", "value01", path);
 //        applyBrokerage(redis, brokerage, 50, "USDADROrders.csv", "", 100000, "DU67768", "Equity.csv");
@@ -738,14 +748,18 @@ public class Utilities {
             brokerage.add(fileData.get(fileData.size() - 1).brokerage);
         }
         
+        ArrayList<Double> cumProfit=new ArrayList<>();
+        ArrayList<Double> cumBrokerage=new ArrayList<>();
 
         double totalProfit = 0;
         for (double d : profit) {
             totalProfit = totalProfit + d;
+            cumProfit.add(totalProfit);
         }
         double totalBrokerage = 0;
         for (double d : brokerage) {
             totalBrokerage = totalBrokerage + d;
+            cumBrokerage.add(totalBrokerage);
         }
         for (int i = 0; i < profit.size(); i++) {
             if (exposure.get(i) == 0) {
@@ -757,8 +771,12 @@ public class Utilities {
         }
         double sharpeRatio = Utilities.sharpeRatio(returns);
         HashMap<String, String> winMetrics = Utilities.winRatio(db, strategy, account, dateString);
-        double drawdowndaysmax = Utilities.drawdownDays(profit)[0];
-        double drawdownmax = Utilities.maxDrawDownAbsolute(profit);
+        ArrayList<Integer> drawdownDays=Utilities.drawdownDaysNew(cumProfit);
+        int drawdowndaysmax=Collections.max(drawdownDays);
+        int currentDrawdownDays=drawdownDays.get(drawdownDays.size()-1);
+        List<Double>hwm=Utilities.hwm(cumProfit, cumProfit.size());
+        List<Double> drawdownAmount = Utilities.drawDownAbsoluteNew(cumProfit);
+        
         String key=strategy+":"+account+":"+dateString;
 
         double todaypnl = profit.get(profit.size() - 1) - brokerage.get(brokerage.size() - 1);
@@ -777,10 +795,29 @@ public class Utilities {
         fieldList.add("drawdowndaysmax");
         valueList.add(String.valueOf(Utilities.round(drawdowndaysmax, 0)));
         fieldList.add("drawdownmax");
-        valueList.add(String.valueOf(Utilities.round(drawdownmax, 2)));
-        
-        db.setHash("pnl", key, fieldList,valueList );
-        updateDrawDownMetrics(db, strategy, account, dateString);
+        valueList.add(String.valueOf(Utilities.round(Collections.max(drawdownAmount), 2)));
+        fieldList.add("hwmvalue");
+        valueList.add(String.valueOf(Utilities.round(hwm.get(hwm.size()-1), 0)));
+        fieldList.add("hwmcount");
+        valueList.add(String.valueOf(Utilities.round(hwm.size(), 0)));
+        fieldList.add("ddcount");
+        valueList.add(String.valueOf(Utilities.round(drawdownDays.size(), 0)));
+        fieldList.add("averagedddays");
+        valueList.add(String.valueOf(Utilities.round(Utilities.calculateMean(drawdownDays), 1)));
+        fieldList.add("sddddays");
+        valueList.add(String.valueOf(Utilities.round(calculateSD(drawdownDays), 1)));
+        fieldList.add("averageddvalue");
+        valueList.add(String.valueOf(Utilities.round(calculateMean(drawdownAmount), 0)));
+        fieldList.add("sdddvalue");
+        valueList.add(String.valueOf(Utilities.round(calculateSD(drawdownAmount), 1)));
+        fieldList.add("currentdddays");
+        valueList.add(String.valueOf(Utilities.round(drawdownDays.get(drawdownDays.size()-1), 0)));
+        fieldList.add("currentddvalue");
+        valueList.add(String.valueOf(Utilities.round(drawdownAmount.get(drawdownAmount.size()-1), 0)));
+        fieldList.add("maxdddays");
+        valueList.add(String.valueOf(Utilities.round(Collections.max(drawdownDays), 0)));
+        db.setHash("pnl", key, fieldList, valueList);
+        //updateDrawDownMetrics(db, strategy, account, dateString);
         return true;
     }
 
@@ -1099,6 +1136,42 @@ public class Utilities {
         return maxDrawDownAbsolute;
     }
 
+    public static ArrayList<Double> drawDownAbsoluteNew(ArrayList<Double>cumProfit){
+        ArrayList<Double> hwm=Utilities.hwm(cumProfit, cumProfit.size());
+        ArrayList<Double> out=new ArrayList<>();
+        for(int i=0;i<hwm.size();i++){
+            out.add(hwm.get(i)-cumProfit.get(i));
+        }
+        return out;
+    }
+    public static ArrayList<Integer> drawdownDaysNew(ArrayList<Double>cumProfit){
+        ArrayList<Boolean> inDrawdown=new ArrayList<>();
+        double priorHwm=0;
+        for(Double d:cumProfit){
+            if(d>=priorHwm){
+                inDrawdown.add(Boolean.FALSE);
+                priorHwm=d;
+            }else{
+                inDrawdown.add(Boolean.TRUE);
+            }
+        }
+        ArrayList<Integer> drawdownDays=new ArrayList<>();
+        if(inDrawdown.get(0)){
+            drawdownDays.add(1);
+        }else{
+            drawdownDays.add(0);
+        }
+        
+        for(int i=1;i<inDrawdown.size();i++){
+            if(inDrawdown.get(i)){
+                drawdownDays.add(drawdownDays.get(i-1)+1);
+            }else{
+                drawdownDays.add(0);
+            }
+        }
+        return drawdownDays;
+    }
+
     public static double[] drawdownDays(ArrayList<Double> profit) {
         ArrayList<Double> dailyEquity = new ArrayList<>();
         double cumProfit = 0;
@@ -1132,6 +1205,18 @@ public class Utilities {
         days[1] = avgDrawDownDays / drawdownDays.size();
         return days;
     }
+    
+    public static ArrayList<Double> hwm(ArrayList<Double> cumProfit, int size){
+        ArrayList<Double>out=new ArrayList<>();
+        for(int i=0;i<cumProfit.size();i++){
+            List<Double> subset=cumProfit.subList(0,i+1);
+            List<Double>tempArray=cumProfit.subList(Math.max(0,i+1-size),subset.size());
+            out.add((Double)Collections.max(tempArray));
+        }
+    return out;
+    }
+    
+    
 
     public static double sharpeRatio(ArrayList<Double> returns) {
         DescriptiveStatistics stats = new DescriptiveStatistics();
@@ -3952,6 +4037,14 @@ public class Utilities {
 
     static double[] DoubleArrayListToArray(List<Double> input) {
         double[] out = new double[input.size()];
+        for (int i = 0; i < input.size(); i++) {
+            out[i] = input.get(i);
+        }
+        return out;
+    }
+    
+        static int[] IntArrayListToArray(List<Integer> input) {
+        int[] out = new int[input.size()];
         for (int i = 0; i < input.size(); i++) {
             out[i] = input.get(i);
         }

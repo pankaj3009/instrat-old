@@ -605,9 +605,9 @@ public class MatrixMethods {
      */
     public static DoubleMatrix cum(DoubleMatrix m) {
         DoubleMatrix out = DoubleMatrix.zeros(1, m.columns);
-        for (int i = 0; i < m.length; i++) {
+        for (int i = 1; i <= m.length; i++) {
             int[] range = Utilities.range(0, 1, i);
-            out.put(i, m.get(range).sum());
+            out.put(i-1, m.get(range).sum());
         }
         return out;
     }
