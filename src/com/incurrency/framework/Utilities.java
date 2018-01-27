@@ -1138,14 +1138,33 @@ public class Utilities {
 
     public static ArrayList<Double> drawDownAbsoluteNew(ArrayList<Double>cumProfit){
         ArrayList<Double> hwm=Utilities.hwm(cumProfit, cumProfit.size());
+        ArrayList<Double> loss=new ArrayList<>();
         ArrayList<Double> out=new ArrayList<>();
         for(int i=0;i<hwm.size();i++){
-            out.add(hwm.get(i)-cumProfit.get(i));
+            loss.add(hwm.get(i)-cumProfit.get(i));
+        }
+        double lowmark=0;
+        if(loss.get(0)>0){
+            lowmark=loss.get(0);
+        }
+        for(int i=1;i<loss.size();i++){
+            if(loss.get(i)>lowmark){
+                lowmark=loss.get(i);
+            }else if (loss.get(i)==0){
+                if(loss.get(i-1)>0){
+                    out.add(lowmark);
+                }
+                lowmark=0;
+            }
+        }
+        if(lowmark>0){//add last open drawdown
+            out.add(lowmark);
         }
         return out;
     }
     public static ArrayList<Integer> drawdownDaysNew(ArrayList<Double>cumProfit){
         ArrayList<Boolean> inDrawdown=new ArrayList<>();
+        ArrayList<Integer>out=new ArrayList<>();
         double priorHwm=0;
         for(Double d:cumProfit){
             if(d>=priorHwm){
@@ -1166,10 +1185,17 @@ public class Utilities {
             if(inDrawdown.get(i)){
                 drawdownDays.add(drawdownDays.get(i-1)+1);
             }else{
+                if(drawdownDays.get(drawdownDays.size()-1)>0){// add to out if drawdown has just ended.
+                    out.add(drawdownDays.get(drawdownDays.size()-1));
+                }
                 drawdownDays.add(0);
+                
             }
         }
-        return drawdownDays;
+        if(drawdownDays.get(drawdownDays.size()-1)>0){
+            out.add(drawdownDays.get(drawdownDays.size()-1));
+        }
+        return out;
     }
 
     public static double[] drawdownDays(ArrayList<Double> profit) {
@@ -1211,7 +1237,7 @@ public class Utilities {
         for(int i=0;i<cumProfit.size();i++){
             List<Double> subset=cumProfit.subList(0,i+1);
             List<Double>tempArray=cumProfit.subList(Math.max(0,i+1-size),subset.size());
-            out.add((Double)Collections.max(tempArray));
+            out.add(Math.max(0,(Double)Collections.max(tempArray)));
         }
     return out;
     }
