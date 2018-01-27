@@ -134,7 +134,6 @@ public class Utilities {
         applyBrokerage(redis, brokerage, 1, "Asia/Kolkata", "U724054", "value01", path);
 //        applyBrokerage(redis, brokerage, 50, "USDADROrders.csv", "", 100000, "DU67768", "Equity.csv");
         //String out=DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss",new Date().getTime(),TimeZone.getTimeZone("GMT-4:00"));
-        //System.out.println(out);
     }
 
     public static int tradesToday(RedisConnect db, String strategyName, String timeZone, String accountName, String today) {
@@ -509,11 +508,11 @@ public class Utilities {
         if (dateString.compareTo(algoDate) > 0) {
             return false;
         }
-        if (!dateString.equals(algoDate) && Algorithm.pnlMode.equalsIgnoreCase("mtm")) {
-            logger.log(Level.INFO, "101, P&L Reports not generated as algorithm date: {0} does not match with P&L report date: {1}",
-                    new Object[]{dateString, algoDate});
-            return false;
-        }
+//        if (!dateString.equals(algoDate) && Algorithm.pnlMode.equalsIgnoreCase("mtm")) {
+//            logger.log(Level.INFO, "101, P&L Reports not generated as algorithm date: {0} does not match with P&L report date: {1}",
+//                    new Object[]{dateString, algoDate});
+//            return false;
+//        }
         ArrayList<ProfitRecord> out = new ArrayList<>();
         String keyPattern = "opentrades" + "_" + strategy.toLowerCase() + "*" + account;
         List<String> result = db.scanRedis(keyPattern);
@@ -532,17 +531,16 @@ public class Utilities {
                 if (dateString.equals(entryDate)) {
                     ProfitRecord profit = new ProfitRecord();
                     profit.symbol = db.getValue("", key, "parentsymbol");
+                    profit.key=key;
                     profit.reason = EnumProfitReason.NEW;
                     EnumOrderSide side = EnumOrderSide.valueOf(db.getValue("", key, "entryside"));
                     int pos = Utilities.getInt(db.getValue("", key, "entrysize"), 0);
                     profit.position = side == EnumOrderSide.BUY ? pos : -pos;
                     profit.openingPrice = Utilities.getDouble(db.getValue("", key, "entryprice"), 0);
-                    int id = Utilities.getIDFromDisplayName(Parameters.symbol, profit.symbol);
-                    if (id >= 0) {
-                        profit.closingPrice = Trade.getMtm(db, profit.symbol, dateString);
-                    } else {
-                        profit.closingPrice = profit.openingPrice;
-                        logger.log(Level.INFO, "101, Symbol {0} not found in inStrat during EOD P&L", new Object[]{profit.symbol});
+                    profit.closingPrice = Trade.getMtm(db, profit.symbol, dateString);
+                    if(profit.closingPrice==0){
+                        profit.closingPrice=Utilities.getPriorMTMFromRedis(db, profit.symbol, dateString);
+                        logger.log(Level.INFO,"501, Zero closing price for {0} for date {1} in EOD process",new Object[]{profit.symbol,dateString});
                     }
                     profit.brokerage = Utilities.getDouble(db.getValue("", key, "entrybrokerage"), 0);
                     profit.value = profit.position * profit.closingPrice;
@@ -554,18 +552,19 @@ public class Utilities {
                 if (dateString.compareTo(entryDate) > 0 && (exitDate.isEmpty() || dateString.compareTo(exitDate) < 0)) {
                     ProfitRecord profit = new ProfitRecord();
                     profit.symbol = db.getValue("", key, "parentsymbol");
+                    profit.key=key;
                     profit.reason = EnumProfitReason.OPEN;
                     EnumOrderSide side = EnumOrderSide.valueOf(db.getValue("", key, "entryside"));
                     int pos = Utilities.getInt(db.getValue("", key, "entrysize"), 0);
                     profit.position = side == EnumOrderSide.BUY ? pos : -pos;
                     profit.openingPrice = Utilities.getPriorMTMFromRedis(db, profit.symbol, dateString);
-                    int id = Utilities.getIDFromDisplayName(Parameters.symbol, profit.symbol);
-                    if (id >= 0) {
-                        profit.closingPrice = Trade.getMtm(db, profit.symbol, dateString);
-                    } else {
-                        profit.closingPrice = profit.openingPrice;
+                    profit.closingPrice = Trade.getMtm(db, profit.symbol, dateString);
+                    if(profit.closingPrice==0){
+                        profit.closingPrice=Utilities.getPriorMTMFromRedis(db, profit.symbol, dateString);
+                        logger.log(Level.INFO,"501, Zero closing price for {0} for date {1} in EOD process",new Object[]{profit.symbol,dateString});
                     }
-                    profit.brokerage = Utilities.getDouble(db.getValue("", key, "exitbrokerage"), 0);
+                    
+                    profit.brokerage = 0;
                     profit.value = profit.position * profit.closingPrice;
                     profit.profit = (profit.closingPrice - profit.openingPrice) * profit.position;
                     out.add(profit);
@@ -575,20 +574,16 @@ public class Utilities {
                 if (dateString.compareTo(exitDate) == 0) {
                     ProfitRecord profit = new ProfitRecord();
                     profit.symbol = db.getValue("", key, "parentsymbol");
+                    profit.key=key;
                     profit.reason = EnumProfitReason.CLOSE;
                     EnumOrderSide side = EnumOrderSide.valueOf(db.getValue("", key, "exitside"));
                     int pos = Utilities.getInt(db.getValue("", key, "exitsize"), 0);
                     profit.position = side == EnumOrderSide.COVER ? pos : -pos;
-                    profit.closingPrice = Utilities.getDouble(db.getValue("", key, "entryprice"), 0);
-                    int id = Utilities.getIDFromDisplayName(Parameters.symbol, profit.symbol);
-                    if (id >= 0) {
-                        profit.openingPrice = Trade.getMtm(db, profit.symbol, dateString);
-                    } else {
-                        profit.openingPrice = profit.closingPrice;
-                    }
-                    profit.brokerage = 0;
+                    profit.closingPrice = Utilities.getDouble(db.getValue("", key, "exitprice"), 0);
+                    profit.openingPrice = Utilities.getPriorMTMFromRedis(db, profit.symbol, dateString);
+                    profit.brokerage = Utilities.getDouble(db.getValue("", key, "exitbrokerage"), 0);
                     profit.value = profit.position * profit.closingPrice;
-                    profit.profit = (profit.closingPrice - profit.openingPrice) * profit.position;
+                    profit.profit = -(profit.closingPrice - profit.openingPrice) * profit.position;
                     out.add(profit);
                 }
             }
@@ -602,18 +597,13 @@ public class Utilities {
                 if (dateString.equals(entryDate)) {
                     ProfitRecord profit = new ProfitRecord();
                     profit.symbol = db.getValue("", key, "parentsymbol");
+                    profit.key=key;
                     profit.reason = EnumProfitReason.NEW;
                     EnumOrderSide side = EnumOrderSide.valueOf(db.getValue("", key, "entryside"));
                     int pos = Utilities.getInt(db.getValue("", key, "entrysize"), 0);
                     profit.position = side == EnumOrderSide.BUY ? pos : -pos;
                     profit.openingPrice = Utilities.getDouble(db.getValue("", key, "entryprice"), 0);
-                    int id = Utilities.getIDFromDisplayName(Parameters.symbol, profit.symbol);
-                    if (id >= 0) {
-                        profit.closingPrice = Parameters.symbol.get(id).getLastPrice();
-                    } else {
-                        profit.closingPrice = profit.openingPrice;
-                        logger.log(Level.INFO, "101, Symbol {} not found in inStrat during EOD P&L", new Object[]{profit.symbol});
-                    }
+                    profit.closingPrice = profit.openingPrice;
                     profit.brokerage = Utilities.getDouble(db.getValue("", key, "entrybrokerage"), 0);
                     profit.value = profit.position * profit.closingPrice;
                     profit.profit = (profit.closingPrice - profit.openingPrice) * profit.position;
@@ -624,6 +614,7 @@ public class Utilities {
                 if (dateString.compareTo(entryDate) > 0 && (exitDate.isEmpty() || dateString.compareTo(exitDate) < 0)) {
                     ProfitRecord profit = new ProfitRecord();
                     profit.symbol = db.getValue("", key, "parentsymbol");
+                    profit.key=key;
                     profit.reason = EnumProfitReason.OPEN;
                     EnumOrderSide side = EnumOrderSide.valueOf(db.getValue("", key, "entryside"));
                     int pos = Utilities.getInt(db.getValue("", key, "entrysize"), 0);
@@ -641,15 +632,16 @@ public class Utilities {
                 if (dateString.compareTo(exitDate) == 0) {
                     ProfitRecord profit = new ProfitRecord();
                     profit.symbol = db.getValue("", key, "parentsymbol");
+                    profit.key=key;
                     profit.reason = EnumProfitReason.CLOSE;
                     EnumOrderSide side = EnumOrderSide.valueOf(db.getValue("", key, "exitside"));
                     int pos = Utilities.getInt(db.getValue("", key, "exitsize"), 0);
                     profit.position = side == EnumOrderSide.COVER ? pos : -pos;
                     profit.closingPrice = Utilities.getDouble(db.getValue("", key, "exitprice"), 0);
                     profit.openingPrice = Utilities.getDouble(db.getValue("", key, "entryprice"), 0);
-                    profit.brokerage = Utilities.getDouble(db.getValue("", key, "entrybrokerage"), 0) + Utilities.getDouble(db.getValue("", key, "exitbrokerage"), 0);
+                    profit.brokerage = Utilities.getDouble(db.getValue("", key, "exitbrokerage"), 0) + Utilities.getDouble(db.getValue("", key, "exitbrokerage"), 0);
                     profit.value = 0;
-                    profit.profit = (profit.closingPrice - profit.openingPrice) * profit.position;
+                    profit.profit = -(profit.closingPrice - profit.openingPrice) * profit.position;
                     out.add(profit);
                 }
             }
@@ -705,8 +697,9 @@ public class Utilities {
         return Utilities.writePNLCSV(path, out);
     }
 
-    public static boolean updateRedisPNL(RedisConnect db, Path path, String strategy, String account, Date today) {
+    public synchronized static boolean updateRedisPNL(RedisConnect db, Path path, String strategy, String account, Date today) {
         //load all pnl data from files
+        System.gc();
         if (today.after(getAlgoDate())) {
             return false;
         }
@@ -739,6 +732,7 @@ public class Utilities {
             profit.add(fileData.get(fileData.size() - 2).profit);
             brokerage.add(fileData.get(fileData.size() - 1).brokerage);
         }
+        
 
         double totalProfit = 0;
         for (double d : profit) {
@@ -755,15 +749,27 @@ public class Utilities {
         HashMap<String, String> winMetrics = Utilities.winRatio(db, strategy, account, dateString);
         double drawdowndaysmax = Utilities.drawdownDays(profit)[0];
         double drawdownmax = Utilities.maxDrawDownAbsolute(profit);
+        String key=strategy+":"+account+":"+dateString;
 
-        db.setHash("pnl", strategy + ":" + dateString, "ytd", String.valueOf(Utilities.round(totalProfit - totalBrokerage, 0)));
-        db.setHash("pnl", strategy + ":" + dateString, "winratio", winMetrics.get("winratio"));
-        db.setHash("pnl", strategy + ":" + dateString, "tradecount", winMetrics.get("tradecount"));
         double todaypnl = profit.get(profit.size() - 1) - brokerage.get(brokerage.size() - 1);
-        db.setHash("pnl", strategy + ":" + dateString, "todaypnl", String.valueOf(String.valueOf(Utilities.round(todaypnl, 0))));
-        db.setHash("pnl", strategy + ":" + dateString, "sharpe", String.valueOf(Utilities.round(sharpeRatio, 2)));
-        db.setHash("pnl", strategy + ":" + dateString, "drawdowndaysmax", String.valueOf(Utilities.round(drawdowndaysmax, 0)));
-        db.setHash("pnl", strategy + ":" + dateString, "drawdownmax", String.valueOf(Utilities.round(drawdownmax, 2)));
+        List<String> fieldList=new ArrayList<>();
+        List<String> valueList=new ArrayList<>();
+        fieldList.add("ytd");
+        valueList.add(String.valueOf(Utilities.round(totalProfit - totalBrokerage, 0)));
+        fieldList.add("winratio");
+        valueList.add(winMetrics.get("winratio"));
+        fieldList.add("tradecount");
+        valueList.add(winMetrics.get("tradecount"));
+        fieldList.add("todaypnl");
+        valueList.add(String.valueOf(Utilities.round(todaypnl, 0)));
+        fieldList.add("sharpe");
+        valueList.add(String.valueOf(Utilities.round(sharpeRatio, 2)));
+        fieldList.add("drawdowndaysmax");
+        valueList.add(String.valueOf(Utilities.round(drawdowndaysmax, 0)));
+        fieldList.add("drawdownmax");
+        valueList.add(String.valueOf(Utilities.round(drawdownmax, 2)));
+        
+        db.setHash("pnl", key, fieldList,valueList );
         updateDrawDownMetrics(db, strategy, account, dateString);
         return true;
     }
@@ -827,7 +833,7 @@ public class Utilities {
             }
         }
         Date firstTradeDate = DateUtil.getFormattedDate(firstTrade, "yyyy-MM-dd", Algorithm.timeZone);
-        firstTradeDate = Utilities.previousGoodDay(firstTradeDate, -1, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
+        //firstTradeDate = Utilities.previousGoodDay(firstTradeDate, -1, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
         firstTrade = DateUtil.getFormatedDate("yyyy-MM-dd", firstTradeDate.getTime(), TimeZone.getTimeZone(Algorithm.timeZone));
         return firstTrade;
     }
@@ -857,19 +863,20 @@ public class Utilities {
                     if (record[0] != null && !record[0].isEmpty()) {
                         ProfitRecord profit = new ProfitRecord();
                         profit.symbol = record[0].trim().toUpperCase();
-                        profit.reason = EnumProfitReason.valueOf(record[1].toUpperCase());
-                        profit.position = Utilities.getInt(record[2], 0);
-                        profit.openingPrice = Utilities.getDouble(record[3], 0);
-                        profit.closingPrice = Utilities.getDouble(record[4], 0);
-                        profit.brokerage = Utilities.getDouble(record[5], 0);
-                        profit.value = Utilities.getDouble(record[6], 0);
-                        profit.profit = Utilities.getDouble(record[7], 0);
+                        profit.key=record[1].trim();
+                        profit.reason = EnumProfitReason.valueOf(record[2].toUpperCase());
+                        profit.position = Utilities.getInt(record[3], 0);
+                        profit.openingPrice = Utilities.getDouble(record[4], 0);
+                        profit.closingPrice = Utilities.getDouble(record[5], 0);
+                        profit.brokerage = Utilities.getDouble(record[6], 0);
+                        profit.value = Utilities.getDouble(record[7], 0);
+                        profit.profit = Utilities.getDouble(record[8], 0);
                         out.add(profit);
                     }
                 }
             }
         } catch (IOException ex) {
-            Logger.getLogger(Utilities.class.getName()).log(Level.SEVERE, null, ex);
+            logger.log(Level.SEVERE, null, ex);
         }
         return out;
     }
@@ -877,10 +884,10 @@ public class Utilities {
     public static boolean writePNLCSV(Path path, ArrayList<ProfitRecord> pr) {
         try {
             File outputFile = path.toFile();
-            String header = "symbol,reason,position,openingprice,closingprice,brokerage,value,profit";
+            String header = "symbol,key,reason,position,openingprice,closingprice,brokerage,value,profit";
             Utilities.writeToFile(outputFile, header);
             for (ProfitRecord profit : pr) {
-                String content = profit.symbol + "," + profit.reason.toString() + ","
+                String content = profit.symbol + "," +profit.key+","+ profit.reason.toString() + ","
                         + profit.position + "," + profit.openingPrice + "," + profit.closingPrice + ","
                         + profit.brokerage + "," + profit.value + "," + profit.profit;
                 Utilities.writeToFile(outputFile, content);
@@ -923,7 +930,7 @@ public class Utilities {
         double mtm = 0;
         //get prior business day
         Date date = DateUtil.getFormattedDate(dateString, "yyyy-MM-dd", Algorithm.timeZone);
-        Date priorDate = Utilities.previousGoodDay(date, 0, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
+        Date priorDate = Utilities.previousGoodDay(date, -1, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
         String priorDateString = new SimpleDateFormat("yyyy-MM-dd").format(priorDate);
         return Trade.getMtm(db, symbol, priorDateString);
     }
@@ -993,32 +1000,47 @@ public class Utilities {
                 currenthwm = 0;
             }
             priordayytdpnl = ytdpnl;
-            //write data to pnl files
-            double dddaysmean = calculateMean(ddcountseries);
-            double dddayssd = calculateSD(ddcountseries);
-            double ddvaluemean = calculateMean(ddvalueseries);
-            double ddvaluesd = calculateSD(ddvalueseries);
-
-            db.setHash("pnl", key1, "hwmvalue", String.valueOf(Utilities.round(hwmvalue, 0)));
-            db.setHash("pnl", key1, "hwmcount", String.valueOf(Utilities.round(hwmcount, 0)));
-            db.setHash("pnl", key1, "hwmuniquestarts", String.valueOf(Utilities.round(numberofuniquehwm, 0)));
-            db.setHash("pnl", key1, "ddcount", String.valueOf(Utilities.round(ddcount, 0)));
-            db.setHash("pnl", key1, "dduniquestarts", String.valueOf(Utilities.round(numberofuniquedd, 0)));
-            //db.setHash("pnl", key1, "averagedddays",String.valueOf(Utilities.round(ddcount/numberofuniquedd, 1)));
-            db.setHash("pnl", key1, "averagedddays", String.valueOf(Utilities.round(dddaysmean, 1)));
-            db.setHash("pnl", key1, "sddddays", String.valueOf(Utilities.round(dddayssd, 1)));
-            db.setHash("pnl", key1, "averageddvalue", String.valueOf(Utilities.round(ddvaluemean, 0)));
-            db.setHash("pnl", key1, "sdddvalue", String.valueOf(Utilities.round(ddvaluesd, 1)));
-            db.setHash("pnl", key1, "currentdddays", String.valueOf(Utilities.round(currentdd, 0)));
-            //currentlwm=currentlwm<Double.MAX_VALUE?currentlwm:0;
-            db.setHash("pnl", key1, "currentddvalue", String.valueOf(Utilities.round(ddstartpnl - (currentlwm < Double.MAX_VALUE ? currentlwm : 0), 0)));
-            if (ddvalueseries.size() > 0) {
-                db.setHash("pnl", key1, "maxddvalue", String.valueOf(Utilities.round(Collections.max(ddvalueseries), 0)));
-            }
-            if (ddcountseries.size() > 0) {
-                db.setHash("pnl", key1, "maxdddays", String.valueOf(Utilities.round(Collections.max(ddcountseries), 0)));
-            }
         }
+        //write data to pnl files
+        double dddaysmean = calculateMean(ddcountseries);
+        double dddayssd = calculateSD(ddcountseries);
+        double ddvaluemean = calculateMean(ddvalueseries);
+        double ddvaluesd = calculateSD(ddvalueseries);
+        String key1 = strategyName + ":" + accountName + ":" + today;
+        List<String> fieldList = new ArrayList<>();
+        List<String> valueList = new ArrayList<>();
+
+        fieldList.add("hwmvalue");
+        valueList.add(String.valueOf(Utilities.round(hwmvalue, 0)));
+        fieldList.add("hwmcount");
+        valueList.add(String.valueOf(Utilities.round(hwmcount, 0)));
+        fieldList.add("hwmuniquestarts");
+        valueList.add(String.valueOf(Utilities.round(numberofuniquehwm, 0)));
+        fieldList.add("ddcount");
+        valueList.add(String.valueOf(Utilities.round(ddcount, 0)));
+        fieldList.add("dduniquestarts");
+        valueList.add(String.valueOf(Utilities.round(numberofuniquedd, 0)));
+        fieldList.add("averagedddays");
+        valueList.add(String.valueOf(Utilities.round(dddaysmean, 1)));
+        fieldList.add("sddddays");
+        valueList.add(String.valueOf(Utilities.round(dddayssd, 1)));
+        fieldList.add("averageddvalue");
+        valueList.add(String.valueOf(Utilities.round(ddvaluemean, 0)));
+        fieldList.add("sdddvalue");
+        valueList.add(String.valueOf(Utilities.round(ddvaluesd, 1)));
+        fieldList.add("currentdddays");
+        valueList.add(String.valueOf(Utilities.round(currentdd, 0)));
+        fieldList.add("currentddvalue");
+        valueList.add(String.valueOf(Utilities.round(ddstartpnl - (currentlwm < Double.MAX_VALUE ? currentlwm : 0), 0)));
+        if (ddvalueseries.size() > 0) {
+            fieldList.add("maxddvalue");
+            valueList.add(String.valueOf(Utilities.round(Collections.max(ddvalueseries), 0)));
+        }
+        if (ddcountseries.size() > 0) {
+            fieldList.add("maxdddays");
+            valueList.add(String.valueOf(Utilities.round(Collections.max(ddcountseries), 0)));
+        }
+        db.setHash("pnl", key1, fieldList, valueList);
     }
 
     private static <T> double calculateMean(List<T> data) {
@@ -1081,7 +1103,6 @@ public class Utilities {
         int rowcounter = -1;
         for (Double equity : dailyEquity) {
             rowcounter = rowcounter + 1;
-            //System.out.println("Equity:" + equity + ",MaxEquity:" + maxEquity);
             if (equity < Math.max(maxEquity, equity)) {
                 numDrawDownDays = numDrawDownDays + 1;
             } else {
@@ -1094,7 +1115,6 @@ public class Utilities {
         int maxDrawDownDays = 0;
         double avgDrawDownDays = 0;
         for (Integer i : drawdownDays) {
-            //System.out.println("drawdown days:" + i);
             maxDrawDownDays = maxDrawDownDays < i ? i : maxDrawDownDays;
             avgDrawDownDays = avgDrawDownDays + i;
         }
@@ -1161,17 +1181,18 @@ public class Utilities {
             String entryDate = Trade.getEntryTime(db, key);
             entryDate = entryDate.equals("") ? "" : entryDate.substring(0, 10);
             if (entryDate.compareTo(today) <= 0) {//update win loss ratio
+                String displayName=Trade.getParentSymbol(db, key);
                 EnumOrderSide side = Trade.getEntrySide(db, key);
                 switch (side) {
                     case BUY:
-                        if (Trade.getMtm(db, key, today) > Trade.getEntryPrice(db, key)) {
+                        if (Trade.getMtm(db, displayName, today) > Trade.getEntryPrice(db, key)) {
                             longwins = longwins + 1;
                         } else {
                             longlosses = longlosses + 1;
                         }
                         break;
                     case SHORT:
-                        if (Trade.getMtm(db, key, today) < Trade.getEntryPrice(db, key)) {
+                        if (Trade.getMtm(db, displayName, today) < Trade.getEntryPrice(db, key)) {
                             shortwins = shortwins + 1;
                         } else {
                             shortlosses = shortlosses + 1;
@@ -1182,15 +1203,16 @@ public class Utilities {
                 }
                 tradeCount = tradeCount + 1;
             }
-            double winratio = tradeCount > 0 ? (longwins + shortwins) / tradeCount : 0;
-            double longwinratio = longwins + longlosses > 0 ? longwins / (longwins + longlosses) : 0;
-            double shortwinratio = shortwins + shortlosses > 0 ? shortwins / (shortwins + shortlosses) : 0;
-            out.put("winratio", String.valueOf(Utilities.round(winratio, 2)));
-            out.put("tradecount", String.valueOf(tradeCount));
-            out.put("longwinratio", String.valueOf(Utilities.round(longwinratio, 2)));
-            out.put("shortwinratio", String.valueOf(Utilities.round(shortwinratio, 2)));
 
         }
+        double winratio = tradeCount > 0 ? (double)(longwins + shortwins) / tradeCount : 0;
+        double longwinratio = longwins + longlosses > 0 ? (double)longwins / (longwins + longlosses) : 0;
+        double shortwinratio = shortwins + shortlosses > 0 ? (double)shortwins / (shortwins + shortlosses) : 0;
+        out.put("winratio", String.valueOf(Utilities.round(winratio, 2)));
+        out.put("tradecount", String.valueOf(tradeCount));
+        out.put("longwinratio", String.valueOf(Utilities.round(longwinratio, 2)));
+        out.put("shortwinratio", String.valueOf(Utilities.round(shortwinratio, 2)));
+
         return out;
 
     }
@@ -2257,7 +2279,6 @@ public class Utilities {
                     iStartTime.set(Calendar.MINUTE, openMinute);
                     iStartTime.set(Calendar.SECOND, 0);
                     iStartTime.set(Calendar.MILLISECOND, 0);
-                    // System.out.println(iStartTime.getTimeInMillis()+","+iEndTime.getTimeInMillis());
                     while (iStartTime.before(iEndTime) || iStartTime.equals(iEndTime)) {
                         out.add(iStartTime.getTimeInMillis());
                         iStartTime.setTimeInMillis(Utilities.beginningOfWeek(iStartTime.getTimeInMillis(), openHour, openMinute, zone, 1));
@@ -3513,8 +3534,6 @@ public class Utilities {
             Double close = 0D;
             Double high = Double.MIN_VALUE;
             Double low = Double.MAX_VALUE;
-            System.out.println("Creating Daily Bar for Symbol:" + name);
-
             while (rs.next()) {
 
                 priorDate = priorDate == null ? rs.getDate("date") : priorDate;
@@ -3552,7 +3571,7 @@ public class Utilities {
 
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
-            //System.out.println(e.getMessage());
+            
         }
         return output;
     }
@@ -3783,9 +3802,7 @@ public class Utilities {
         InetAddress ip;
         StringBuilder sb = new StringBuilder();
         try {
-            System.out.println("Trying to get the local host address");
             ip = InetAddress.getLocalHost();
-            System.out.println("Current IP address : " + ip.getHostAddress());
             NetworkInterface network = NetworkInterface.getByInetAddress(ip);
             try {
                 byte[] mac = network.getHardwareAddress();
@@ -3793,14 +3810,11 @@ public class Utilities {
                     for (int i = 0; i < mac.length; i++) {
                         sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
                     }
-                    //System.out.println(sb.toString());
+                    
                 }
             } catch (Exception e) {
-                System.out.println("Error getting mac id");
+                logger.log(Level.SEVERE,null,e);
             }
-
-            System.out.print("Current MAC address : ");
-
         } catch (UnknownHostException | SocketException e) {
             logger.log(Level.INFO, "101", e);
         }
@@ -3876,6 +3890,9 @@ public class Utilities {
     }
 
     public static String padRight(String s, int n) {
+        if(s==null){
+            return String.format("%1$-" + (n - 1) + "s", "NULL");
+        }
         if (s.substring(0, 1).equals("-")) {
             return String.format("%1$-" + (n - 1) + "s", s);
 

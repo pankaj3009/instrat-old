@@ -426,8 +426,12 @@ public class Trade {
                         }
                     }
                 }
+                if(out1!=0 && out1 !=-1){// update mtm only if non-zero
                 Trade.setMtm(db, internalOrderID, date, out1);
+                    
+                }
             } catch (Exception e) {
+                logger.log(Level.SEVERE, "{0}:{1}", new Object[]{internalOrderID.toString(), date});
                 logger.log(Level.SEVERE, null, e);
             }
             return out1;

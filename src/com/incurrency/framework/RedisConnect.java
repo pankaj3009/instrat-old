@@ -42,7 +42,12 @@ public class RedisConnect {
         this.ip = uri;
         this.port = port;
         this.database=database;
-        pool = new JedisPool(new JedisPoolConfig(), uri, port,10000, null, database);
+        JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
+        jedisPoolConfig.setMaxWaitMillis(1000); //write timeout
+        jedisPoolConfig.setBlockWhenExhausted(false);
+        jedisPoolConfig.setMaxIdle(5);
+        jedisPoolConfig.setMaxTotal(10);
+        pool = new JedisPool(jedisPoolConfig, uri, port,10000, null, database);
     }
 
     public List<String> scanRedis(String key) {
@@ -86,12 +91,28 @@ public class RedisConnect {
     }
 
     public Long setHash(String StoreName, String key, String field, String value) {
+        long out=0L;
         try (Jedis jedis = pool.getResource()) {
             if (key.contains("_")) {
-                return jedis.hset(key, field.toString(), value.toString());
+                out= jedis.hset(key, field.toString(), value.toString());
             } else {
-                return jedis.hset(StoreName + "_" + key, field.toString(), value.toString());
+                out= jedis.hset(StoreName + "_" + key, field.toString(), value.toString());
 
+            }
+        }
+        return out;
+    }
+    
+    public void setHash(String StoreName, String key, List<String> fieldList, List<String> valueList) {
+        try (Jedis jedis = pool.getResource()) {
+            for (int i = 0; i < fieldList.size(); i++) {
+                String field = fieldList.get(i);
+                String value = valueList.get(i);
+                if (key.contains("_")) {
+                    jedis.hset(key, field.toString(), value.toString());
+                } else {
+                    jedis.hset(StoreName + "_" + key, field.toString(), value.toString());
+                }
             }
         }
     }

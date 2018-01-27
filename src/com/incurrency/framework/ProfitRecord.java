@@ -11,6 +11,7 @@ package com.incurrency.framework;
  */
 public class ProfitRecord {
     String symbol;
+    String key;
     EnumProfitReason reason=EnumProfitReason.UNDEFINED;
     int position;
     double openingPrice;

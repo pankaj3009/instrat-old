@@ -46,9 +46,11 @@ public class Validator {
 
     public synchronized static String pnlSummary(RedisConnect db, String account, Strategy s) {
         String out = "";
+        try{
         TreeMap<String, String> pnlSummary = new TreeMap<>();
         for (String key : db.getKeys("pnl")) {
             if (key.contains(account) && key.contains("_" + s.getStrategy())) {
+                logger.log(Level.INFO,key);
                 out = padRight(db.getValue("pnl", key, "todaypnl"), 25)
                         + padRight(db.getValue("pnl", key, "ytd"), 25);
                 pnlSummary.put(key, out);
@@ -57,6 +59,9 @@ public class Validator {
         out = padRight("Date", 45) + padRight("Today PNL", 25) + padRight("YTD PNL", 25) + "\n";
         for (Entry<String, String> e : pnlSummary.entrySet()) {
             out = out + padRight(e.getKey(), 45) + e.getValue() + "\n";
+        }
+        }catch (Exception e){
+            logger.log(Level.SEVERE,null,e);
         }
         return out;
     }
@@ -166,14 +171,10 @@ public class Validator {
     public synchronized static String openPositions(String account, Strategy s) {
         String out = "";
         try {
-            ArrayList<String> tradeList = new ArrayList<>();
-            for (String key : s.getDb().getKeys("opentrades_" + s.getStrategy())) {
-                tradeList.add(key);
-            }
             TreeMap<String,String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account, s.getStrategy());
             TreeMap<String,String> comboTrades = returnComboParent(s.getOms().getDb(), account, s.getStrategy());
             boolean headerWritten = false;
-            for (String key : singleLegTrades.keySet()) {
+            for (String key : singleLegTrades.values()) {
                 if (!headerWritten) {
                     out = out + "List of OpenPositions" + newline;
                     out = out + padRight("ID", 10) + padRight("Time", 25) + padRight("Symbol", 40) + padRight("Side", 10) + padRight("Price", 10) + padRight("Brok", 10) + padRight("MTM", 10) + padRight("Position", 10) + newline;
@@ -203,7 +204,7 @@ public class Validator {
                     out = out + padRight(String.valueOf(id), 10) + padRight(entryTime, 25) + padRight(childdisplayname, 40) + padRight(String.valueOf(entrySide), 10) + padRight(String.valueOf(Utilities.round(entryPrice, 2)), 10) + padRight(String.valueOf(Utilities.round(entryBrokerage, 2)), 10) + padRight(String.valueOf(Utilities.round(mtmToday, 0)), 10) + padRight(String.valueOf(entrySize - exitSize), 10) + newline;
                 }
             }
-            for (String key : comboTrades.keySet()) {
+            for (String key : comboTrades.values()) {
                 if (!headerWritten) {
                     out = out + "List of OpenPositions" + newline;
                     int entrySize = Trade.getEntrySize(s.getOms().getDb(), key);
@@ -582,7 +583,7 @@ public class Validator {
             String key = iter.next();
             String childdisplayname = Trade.getEntrySymbol(db, key);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if ( childid >= 0 || isComboParent(db, key)) {
+            if ( childid >= 0 && isComboParent(db, key)) {
                 out.put(Trade.getEntryTime(db, key), key);
             }
         }

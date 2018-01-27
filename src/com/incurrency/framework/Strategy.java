@@ -1010,7 +1010,6 @@ public class Strategy implements NotificationListener {
                 for (BeanConnection c : Parameters.connection) {
                     if (s.accounts.contains(c.getAccountName())) {
                         Path path = Paths.get(System.getProperty("user.dir"));
-                        path.toFile().mkdirs();
                         profitGrid = Utilities.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTimeZone(), c.getAccountName(), s.getStrategy(), path);
                         Utilities.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
                         Utilities.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
@@ -1030,7 +1029,7 @@ public class Strategy implements NotificationListener {
                                 = "Strategy Name:" + s.strategy + Strategy.newline
                                 + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
                                 + "YTD P&L: " + df.format(profitGrid[4]) + Strategy.newline
-                                + "Max Drawdown (%): " + df.format(profitGrid[5]) + Strategy.newline
+                                + "Max Drawdown (Absolute): " + df.format(profitGrid[5]) + Strategy.newline
                                 + "Max Drawdown (days): " + df.format(profitGrid[6]) + Strategy.newline
                                 + "Sharpe Ratio: " + df.format(profitGrid[8]) + Strategy.newline
                                 + "# days in history: " + df.format(profitGrid[9]) + Strategy.newline
