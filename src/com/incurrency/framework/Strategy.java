@@ -353,7 +353,7 @@ public class Strategy implements NotificationListener {
         combosAdded = aCombosAdded;
     }
 
-    public int ParentInternalOrderIDForSquareOff(int id, String accountName, String strategy,EnumOrderSide side) {
+    public int EntryInternalOrderIDForSquareOff(int id, String accountName, String strategy,EnumOrderSide side) {
         HashSet<Integer> out = new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
 
