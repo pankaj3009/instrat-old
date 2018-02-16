@@ -137,7 +137,7 @@ public class Strategy implements NotificationListener {
             }
             this.m = m;
             this.accounts = accounts;
-            String[] tempStrategyArray = parameterFileName.split("\\.")[0].split("-|_");
+            String[] tempStrategyArray = parameterFileName.split("\\.")[0].split("_");
             //String[] tempStrategyArray = parameterFile.split("\\.")[0].split("_");
             this.strategy = tempStrategyArray[tempStrategyArray.length - 1].toLowerCase();
             s_redisip = prop.getProperty("redisip").trim();
@@ -379,7 +379,7 @@ public class Strategy implements NotificationListener {
         if (order.getOrderSide().equals(EnumOrderSide.BUY) || order.getOrderSide().equals(EnumOrderSide.COVER)) {
             return Parameters.symbol.get(id).getBidPrice();
 
-        } else if (order.getOrderSide().equals(EnumOrderSide.SELL) || order.getOrderSide().equals(EnumOrderSide.COVER)) {
+        } else if (order.getOrderSide().equals(EnumOrderSide.SELL) || order.getOrderSide().equals(EnumOrderSide.SHORT)) {
             return Parameters.symbol.get(id).getAskPrice();
         }
         return 0;
