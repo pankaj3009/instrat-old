@@ -644,6 +644,20 @@ public class Trade {
         }
     }
 
+    public static double getSL(RedisConnect db, Object key){
+        synchronized (syncTrade) {
+            Object o = db.getValue("opentrades", key.toString(), "sl");
+             return Utilities.getDouble(o, -1);        
+        }
+    }
+    
+        public static double getTP(RedisConnect db, Object key){
+        synchronized (syncTrade) {
+            Object o = db.getValue("opentrades", key.toString(), "tp");
+             return Utilities.getDouble(o, -1);        
+        }
+    }
+    
     public static ArrayList<Stop> getStop(RedisConnect db, Object internalOrderID) {
         synchronized (syncTrade) {
             Object o = db.getValue("opentrades", internalOrderID.toString(), "stop");
@@ -702,7 +716,7 @@ public class Trade {
         db.setHash(tradeStatus, key, "accountname", input[24]);
     }
 
-    public Trade(RedisConnect db, int id, int parentid, EnumOrderReason reason, EnumOrderSide side, double price, int size, int entryorderidint, int entryorderidext, int parententryorderidint, String timeZone, String accountName, String strategy, String tradeStatus, String log) {
+    public Trade(RedisConnect db, int id, int parentid, EnumOrderReason reason, EnumOrderSide side, double price, int size, int entryorderidint, int entryorderidext, int parententryorderidint, String timeZone, String accountName, String strategy, String tradeStatus, String log, double sl,double tp) {
         String key = strategy + ":" + entryorderidint + ":" + accountName;
         db.setHash(tradeStatus, key, "entrysymbol", Parameters.symbol.get(id).getDisplayname());
         db.setHash(tradeStatus, key, "parentsymbol", Parameters.symbol.get(parentid).getDisplayname());
@@ -728,6 +742,8 @@ public class Trade {
         db.setHash(tradeStatus, key, "entryorderidext", String.valueOf(entryorderidext));
         db.setHash(tradeStatus, key, "parententryorderidint", String.valueOf(parententryorderidint));
         db.setHash(tradeStatus, key, "accountname", accountName);
+        db.setHash(tradeStatus, key, "sl",String.valueOf(sl));
+        db.setHash(tradeStatus, key, "tp",String.valueOf(tp));
         Trade.updateEntryTradeLog(db, key, tradeStatus, log);
     }
     

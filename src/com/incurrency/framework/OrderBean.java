@@ -562,6 +562,24 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         String value = this.get("Value");
         return Utilities.getDouble(value, 0);
     }
+    
+    public double getsl(){
+        String sl = this.get("sl");
+        return Utilities.getDouble(sl, 0);
+    }
+
+    public double gettp(){
+        String sl = this.get("tp");
+        return Utilities.getDouble(sl, 0);
+    }
+    
+    public void setsl(double value){
+        this.put("sl", String.valueOf(value));
+    }
+    
+    public void settp(double value){
+        this.put("tp", String.valueOf(value));
+    } 
 
     public void setDisplaySize(int value) {
         this.put("DisplaySize", String.valueOf(value));

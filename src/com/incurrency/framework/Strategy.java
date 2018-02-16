@@ -353,17 +353,16 @@ public class Strategy implements NotificationListener {
         combosAdded = aCombosAdded;
     }
 
-    public int ParentInternalOrderIDForSquareOff(int id, String accountName, EnumOrderSide side) {
+    public int ParentInternalOrderIDForSquareOff(int id, String accountName, String strategy,EnumOrderSide side) {
         HashSet<Integer> out = new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
 
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-        for (String key : getDb().getKeys("opentrades")) {
-            if (key.contains("_" + getStrategy())) {
-                if (Trade.getAccountName(strategyDB, key).equals(accountName) && Trade.getParentSymbol(strategyDB, key).equals(symbol) && Trade.getEntrySide(strategyDB, key).equals(entrySide) && Trade.getEntrySize(strategyDB, key) > Trade.getExitSize(strategyDB, key) && Trade.getParentSymbol(strategyDB, key).equals(Trade.getEntrySymbol(strategyDB, key))) {
+        for (String key : getDb().getKeys("opentrades_" + strategy + "*" + accountName)) {
+                if (Trade.getParentSymbol(strategyDB, key).equals(symbol) && Trade.getEntrySide(strategyDB, key).equals(entrySide) && Trade.getEntrySize(strategyDB, key) > Trade.getExitSize(strategyDB, key) && Trade.getParentSymbol(strategyDB, key).equals(Trade.getEntrySymbol(strategyDB, key))) {
                     out.add(Trade.getEntryOrderIDInternal(strategyDB, key));
                 }
-            }
+            
         }
         for (int o : out) {
             return o;
@@ -425,7 +424,7 @@ public class Strategy implements NotificationListener {
                 String log = order.getOrderLog() != null ? order.getOrderLog().toString() : "";
                 double lastprice = Parameters.symbol.get(id).getLastPrice();
                 lastprice = lastprice == 0 ? order.getLimitPrice() : lastprice;
-                new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getOriginalOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+                new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getOriginalOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log,order.getsl(),order.gettp());
                 logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(order);
