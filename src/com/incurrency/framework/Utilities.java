@@ -1574,7 +1574,7 @@ public class Utilities {
     }
 
     public static boolean underlyingTradePriceExists(BeanSymbol s, int waitSeconds) {
-        int underlyingID = s.getUnderlyingID();
+        int underlyingID = s.getUnderlyingFutureID();
         if (underlyingID == -1) {
             return false;
         } else {

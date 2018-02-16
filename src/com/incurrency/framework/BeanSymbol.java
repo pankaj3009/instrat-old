@@ -163,7 +163,8 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     private double mtmPrice;
     private int bdte = -1;
     private long cdte = -1;
-    private AtomicInteger underlyingID = new AtomicInteger(-1);
+    private AtomicInteger underlyingFutureID = new AtomicInteger(-2);
+    private AtomicInteger underlyingCashID=new AtomicInteger(-2);
 
     public BeanSymbol() {
         tradedPrices = new LimitedQueue(10);
@@ -346,11 +347,11 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
         }
         // PlainVanillaPayoff payoff =new PlainVanillaPayoff(Option.Type.Call,Utilities.getDouble(strike, 0) );
         setOptionProcess(new EuropeanOption(payoff, exercise));
-        if (underlyingID.get() >= 0) {
-            getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());
+        if (underlyingFutureID.get() >= 0) {
+            getUnderlying().setValue(Parameters.symbol.get(underlyingFutureID.get()).getLastPrice());
         } else {
-            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno, this.getExpiry()));
-            getUnderlying().setValue(Parameters.symbol.get(underlyingID.get()).getLastPrice());
+            underlyingFutureID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno, this.getExpiry()));
+            getUnderlying().setValue(Parameters.symbol.get(underlyingFutureID.get()).getLastPrice());
             Thread.yield();
         }
         Handle<Quote> S = new Handle<Quote>(getUnderlying());
@@ -2575,23 +2576,30 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
     /**
      * @return the underlyingID
      */
-    public int getUnderlyingID() {
-
-        if (underlyingID.get() >= 0) {
-            return underlyingID.get();
+    public int getUnderlyingFutureID() {
+        if (underlyingFutureID.get() >= -1) {
+            return underlyingFutureID.get();
         } else {
-            underlyingID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno, this.getExpiry()));
-            return underlyingID.get();
+            underlyingFutureID.set(Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.serialno, this.getExpiry()));
+            return underlyingFutureID.get();
         }
-
     }
-
+    
+    public int getUnderlyingCashID(){
+        if (underlyingCashID.get() >= 0) {
+            return underlyingCashID.get();
+        } else {
+            underlyingCashID.set(Utilities.getCashReferenceID(Parameters.symbol, this.serialno));
+            return underlyingFutureID.get();
+        }        
+    }
+    
     /**
      * @param underlyingID the underlyingID to set
      */
     public void setUnderlyingID(int underlyingID) {
 
-        this.underlyingID.set(underlyingID);
+        this.underlyingFutureID.set(underlyingID);
 
     }
 
