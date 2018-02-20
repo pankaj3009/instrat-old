@@ -564,21 +564,21 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     }
     
     public double getsl(){
-        String sl = this.get("sl");
+        String sl = this.get("StopLoss");
         return Utilities.getDouble(sl, 0);
     }
 
     public double gettp(){
-        String sl = this.get("tp");
+        String sl = this.get("TakeProfit");
         return Utilities.getDouble(sl, 0);
     }
     
     public void setsl(double value){
-        this.put("sl", String.valueOf(value));
+        this.put("StopLoss", String.valueOf(value));
     }
     
     public void settp(double value){
-        this.put("tp", String.valueOf(value));
+        this.put("TakeProfit", String.valueOf(value));
     } 
 
     public void setDisplaySize(int value) {
