@@ -772,13 +772,15 @@ public class Utilities {
         double sharpeRatio = Utilities.sharpeRatio(returns);
         HashMap<String, String> winMetrics = Utilities.winRatio(db, strategy, account, dateString);
         ArrayList<Integer> drawdownDays=Utilities.drawdownDaysNew(cumProfit);
-        int drawdowndaysmax=Collections.max(drawdownDays);
-        int currentDrawdownDays=drawdownDays.get(drawdownDays.size()-1);
+        int drawdowndaysmax=0;
+        int currentDrawdownDays=0;
+        if(drawdownDays.size()>0){
+        drawdowndaysmax=Collections.max(drawdownDays);
+        currentDrawdownDays=drawdownDays.get(drawdownDays.size()-1);
+        }
         List<Double>hwm=Utilities.hwm(cumProfit, cumProfit.size());
         List<Double> drawdownAmount = Utilities.drawDownAbsoluteNew(cumProfit);
-        
         String key=strategy+":"+account+":"+dateString;
-
         double todaypnl = profit.get(profit.size() - 1) - brokerage.get(brokerage.size() - 1);
         List<String> fieldList=new ArrayList<>();
         List<String> valueList=new ArrayList<>();
@@ -811,11 +813,11 @@ public class Utilities {
         fieldList.add("sdddvalue");
         valueList.add(String.valueOf(Utilities.round(calculateSD(drawdownAmount), 1)));
         fieldList.add("currentdddays");
-        valueList.add(String.valueOf(Utilities.round(drawdownDays.get(drawdownDays.size()-1), 0)));
+        valueList.add(String.valueOf(drawdownDays.isEmpty()?0:Utilities.round(drawdownDays.get(drawdownDays.size()-1), 0)));
         fieldList.add("currentddvalue");
-        valueList.add(String.valueOf(Utilities.round(drawdownAmount.get(drawdownAmount.size()-1), 0)));
+        valueList.add(String.valueOf(drawdownAmount.isEmpty()?0:Utilities.round(drawdownAmount.get(drawdownAmount.size()-1), 0)));
         fieldList.add("maxdddays");
-        valueList.add(String.valueOf(Utilities.round(Collections.max(drawdownDays), 0)));
+        valueList.add(String.valueOf(drawdownDays.isEmpty()?0:Utilities.round(Collections.max(drawdownDays), 0)));
         db.setHash("pnl", key, fieldList, valueList);
         //updateDrawDownMetrics(db, strategy, account, dateString);
         return true;
