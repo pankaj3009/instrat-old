@@ -797,7 +797,7 @@ public class Utilities {
         fieldList.add("drawdowndaysmax");
         valueList.add(String.valueOf(Utilities.round(drawdowndaysmax, 0)));
         fieldList.add("drawdownmax");
-        valueList.add(String.valueOf(Utilities.round(Collections.max(drawdownAmount), 2)));
+        valueList.add(String.valueOf(Utilities.round(drawdownAmount.isEmpty()?0:Collections.max(drawdownAmount), 2)));
         fieldList.add("hwmvalue");
         valueList.add(String.valueOf(Utilities.round(hwm.get(hwm.size()-1), 0)));
         fieldList.add("hwmcount");
