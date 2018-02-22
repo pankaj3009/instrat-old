@@ -508,7 +508,7 @@ public class Strategy implements NotificationListener {
                 } else {
                     Gson gson = new GsonBuilder().create();
                     String string = gson.toJson(order);
-                    logger.log(Level.INFO, "201,SquareOff Order Not Found,{0}", string);
+                    logger.log(Level.INFO, "201,Could not identify the trade to be squared off,{0}", string);
                 }
                 return order.getInternalOrderID();
             } else {
