@@ -221,7 +221,7 @@ public class Utilities {
             for (String key : result) {
                 String parentDisplayName = Trade.getParentSymbol(db, key);
                 int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentDisplayName);
-                if (id >= 0 && Parameters.symbol.get(id).getLastPrice() != 0 && Parameters.symbol.get(id).getLastPrice() != -1) {
+                if (id >= 0 && (Parameters.symbol.get(id).getLastPrice() !=0||Parameters.symbol.get(id).getLastPrice() != -1) && Parameters.symbol.get(id).getLastPrice() != -1) {
                     Trade.setMtm(db, parentDisplayName, today, Parameters.symbol.get(id).getLastPrice());
                 }
                 if (Trade.getEntryBrokerage(db, key) == 0) {
