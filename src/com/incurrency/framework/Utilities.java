@@ -251,6 +251,8 @@ public class Utilities {
                     Trade.setExitPrice(db, key, "opentrades", exitprice);
                     Trade.setExitSize(db, key, "opentrades", Trade.getEntrySize(db, key));
                     Trade.setExitTime(db, key, "opentrades", todaylongtime);
+                    EnumOrderSide exitSide=Trade.getEntrySide(db, key)==EnumOrderSide.BUY?EnumOrderSide.SELL:EnumOrderSide.COVER;
+                    Trade.setExitSide(db, key, "opentrades", exitSide);
                     Trade.closeTrade(db, key);
                 }
             }
