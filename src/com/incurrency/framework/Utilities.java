@@ -3594,7 +3594,7 @@ public class Utilities {
                 if (residualTradeSize > 0) {
                     int size = Utilities.getInt(pair.getValue().split(",")[1],0);
                     String key=pair.getValue().split(",")[0];
-                    shortlistedKeys.put(key, residualTradeSize-size<0?residualTradeSize:size);
+                    shortlistedKeys.put(key, (residualTradeSize-size)<0?residualTradeSize:size);
                     residualTradeSize = residualTradeSize - size;
                     
                 }
@@ -4437,7 +4437,7 @@ public class Utilities {
             maxorderid = Math.max(maxorderid, Trade.getExitOrderIDExternal(db, key));
             maxorderid = Math.max(maxorderid, Trade.getEntryOrderIDExternal(db, key));
         }
-        result = db.scanRedis("OQ:*" + accountName);
+        result = db.scanRedis("OQ:*" + accountName+"*");
         for (String key : result) {
             int id = Utilities.getInt(key.split(":")[1], 0);
             maxorderid = Math.max(maxorderid, id);
