@@ -1658,7 +1658,7 @@ public class Utilities {
                 break;
 
         }
-        return price - 1;
+        return price;
     }
 
     public static double getImpliedVol(BeanSymbol s, double underlying, double price, Date evaluationDate) {
