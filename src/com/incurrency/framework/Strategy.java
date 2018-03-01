@@ -1190,7 +1190,7 @@ public class Strategy implements NotificationListener {
         setMaxOpenPositions(p.getProperty("MaximumOpenPositions") == null ? 1 : Integer.parseInt(p.getProperty("MaximumOpenPositions")));
         setFutBrokerageFile(p.getProperty("BrokerageFile") == null ? "" : p.getProperty("BrokerageFile"));
         setStartingCapital(p.getProperty("StartingCapital") == null ? 0D : Double.parseDouble(p.getProperty("StartingCapital")));
-        setIamail(p.getProperty("iamail", Algorithm.senderEmail));
+        setIamail(p.getProperty("iaemail", Algorithm.senderEmail));
         String ordTypeString = p.getProperty("OrderType", "LMT");
         int i = 0;
 
