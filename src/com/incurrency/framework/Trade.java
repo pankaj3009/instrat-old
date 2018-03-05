@@ -742,8 +742,8 @@ public class Trade {
         db.setHash(tradeStatus, key, "entryorderidext", String.valueOf(entryorderidext));
         db.setHash(tradeStatus, key, "parententryorderidint", String.valueOf(parententryorderidint));
         db.setHash(tradeStatus, key, "accountname", accountName);
-        db.setHash(tradeStatus, key, "sl",String.valueOf(sl));
-        db.setHash(tradeStatus, key, "tp",String.valueOf(tp));
+        db.setHash(tradeStatus, key, "StopLoss",String.valueOf(sl));
+        db.setHash(tradeStatus, key, "TakeProfit",String.valueOf(tp));
         Trade.updateEntryTradeLog(db, key, tradeStatus, log);
     }
     
