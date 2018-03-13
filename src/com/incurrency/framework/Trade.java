@@ -646,14 +646,14 @@ public class Trade {
 
     public static double getSL(RedisConnect db, Object key){
         synchronized (syncTrade) {
-            Object o = db.getValue("opentrades", key.toString(), "sl");
+            Object o = db.getValue("opentrades", key.toString(), "StopLoss");
              return Utilities.getDouble(o, -1);        
         }
     }
     
         public static double getTP(RedisConnect db, Object key){
         synchronized (syncTrade) {
-            Object o = db.getValue("opentrades", key.toString(), "tp");
+            Object o = db.getValue("opentrades", key.toString(), "TakeProfit");
              return Utilities.getDouble(o, -1);        
         }
     }
