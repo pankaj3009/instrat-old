@@ -50,7 +50,7 @@ public class Validator {
         TreeMap<String, String> pnlSummary = new TreeMap<>();
         for (String key : db.scanRedis("pnl"+"*")) {
             if (key.contains(account) && key.contains("_" + s.getStrategy())) {
-                logger.log(Level.INFO,key);
+                //logger.log(Level.INFO,key);
                 out = padRight(db.getValue("pnl", key, "todaypnl"), 25)
                         + padRight(db.getValue("pnl", key, "ytd"), 25);
                 pnlSummary.put(key, out);
