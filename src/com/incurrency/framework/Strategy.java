@@ -396,7 +396,7 @@ public class Strategy implements NotificationListener {
             double orderPrice = priceAvailable(order);
             double value = orderValue(order);
             if ((priceCheck && orderPrice > 0) && (value < maxOrderValue)) {
-                if (order.getOrderSide() == EnumOrderSide.BUY) {
+                if (order.getOrderSide() == EnumOrderSide.BUY && getLongOnly()) {
                     BeanPosition pd = getPosition().get(id);
                     double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
                     int symbolPosition = pd.getPosition() + order.getOriginalOrderSize();
@@ -406,7 +406,7 @@ public class Strategy implements NotificationListener {
                     pd.setPrice(positionPrice);
                     pd.setStrategy(strategy);
                     getPosition().put(id, pd);
-                } else {
+                } else if(order.getOrderSide() == EnumOrderSide.SHORT && getShortOnly()) {
                     BeanPosition pd = getPosition().get(id);
                     double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
                     int symbolPosition = pd.getPosition() - order.getCurrentOrderSize();
@@ -442,7 +442,7 @@ public class Strategy implements NotificationListener {
     }
 
     public synchronized int exit(OrderBean order) {
-        if (tradingWindow.get()) {
+        if (tradingWindow.get() && (getLongOnly()||getShortOnly())) {
             double orderPrice = priceAvailable(order);
             double value = orderValue(order);
             if ((priceCheck && orderPrice > 0) && (value < maxOrderValue)) {
