@@ -48,7 +48,7 @@ public class Validator {
         String out = "";
         try{
         TreeMap<String, String> pnlSummary = new TreeMap<>();
-        for (String key : db.getKeys("pnl")) {
+        for (String key : db.scanRedis("pnl"+"*")) {
             if (key.contains(account) && key.contains("_" + s.getStrategy())) {
                 logger.log(Level.INFO,key);
                 out = padRight(db.getValue("pnl", key, "todaypnl"), 25)
@@ -480,7 +480,7 @@ public class Validator {
     private static Set<String> returnSingleLegTrades(RedisConnect db) {
         //Remove orders that are not in symbolist
         Set<String> keys = db.getKeys("closedtrades");
-        keys.addAll(db.getKeys("opentrades"));
+        keys.addAll(db.scanRedis("opentrades"+"*"));
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
@@ -553,7 +553,7 @@ public class Validator {
     private static Set<String> returnComboParent(RedisConnect db) {
         //Remove orders that are not in symbolist
         Set<String> keys = db.getKeys("closedtrades");
-        keys.addAll(db.getKeys("opentrades"));
+        keys.addAll(db.scanRedis("opentrades"+"*"));
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();

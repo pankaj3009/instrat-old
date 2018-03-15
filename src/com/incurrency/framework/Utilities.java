@@ -352,7 +352,7 @@ public class Utilities {
                 int parentEntryOrderIDInt = Trade.getParentExitOrderIDInternal(db, key);
                 for (Map.Entry<BeanSymbol, Integer> comboComponent : Parameters.symbol.get(parentid).getCombo().entrySet()) {
                     int childid = comboComponent.getKey().getSerialno();
-                    for (String subkey : db.getKeys("opentrades")) {
+                    for (String subkey : db.scanRedis("opentrades"+"*")) {
                         int sparentEntryOrderIDInt = Trade.getParentEntryOrderIDInternal(db, key);
                         if (sparentEntryOrderIDInt == parentEntryOrderIDInt && !Trade.getEntrySymbol(db, subkey).equals(Trade.getParentSymbol(db, subkey))) {
                             ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(db, subkey, brokerage, tradesToday);
@@ -1767,7 +1767,7 @@ public class Utilities {
         for (BeanSymbol s : symbols) {
             position.put(s.getSerialno(), new BeanPosition(s.getSerialno(), strategy));
         }
-        for (String key : db.getKeys("opentrades_" + strategy)) {
+        for (String key : db.scanRedis("opentrades_" + strategy+"*")) {
             if (key.contains("_" + strategy)) {
                 String childdisplayname = Trade.getEntrySymbol(db, key);
                 String parentdisplayname = Trade.getParentSymbol(db, key);

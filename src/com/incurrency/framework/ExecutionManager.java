@@ -85,7 +85,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             double entryCost = 0;
             double exitCost = 0;
             //calculate entry costs
-            for (String key : getDb().getKeys("closedtrades")) {
+            for (String key : getDb().scanRedis("closedtrades"+"*")) {
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
                 double entryPrice = Trade.getEntryPrice(db, key);
@@ -117,7 +117,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 break;
                             case DISTRIBUTE:
                                 if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (entrySide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER))) {
-                                    int tradesToday = getDb().getKeys("opentrades").size() * 2;
+                                    int tradesToday = getDb().scanRedis("opentrades"+"*").size() * 2;
                                     if (tradesToday > 0) {
                                         entryCost = entryCost + b.primaryRate / tradesToday + (b.primaryRate / tradesToday) * b.secondaryRate;
                                     }
@@ -146,7 +146,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 }
                                 break;
                             case DISTRIBUTE:
-                                int tradesToday = getDb().getKeys("opentrades").size() * 2;
+                                int tradesToday = getDb().scanRedis("opentrades"+"*").size() * 2;
                                 if (!exitTime.equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (exitSide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && exitTime.contains(entryTime.substring(0, 10))))) {
                                     exitCost = exitCost + b.primaryRate / tradesToday + (b.primaryRate / tradesToday) * b.secondaryRate;
                                 }
@@ -220,7 +220,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
         //first update combo positions
         ArrayList<Integer> comboOrderids = new ArrayList<>();
-        for (String key : db.getKeys("opentrades_" + this.orderReference)) {
+        for (String key : db.scanRedis("opentrades_" + this.orderReference+"*")) {
             if (key.contains("_" + s.getStrategy())) {
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
@@ -231,7 +231,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
         //then update single legs
-        for (String key : db.getKeys("opentrades_" + this.orderReference)) {
+        for (String key : db.scanRedis("opentrades_" + this.orderReference+"*")) {
             if (key.contains("_" + s.getStrategy())) {
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);

@@ -174,7 +174,7 @@ public class Strategy implements NotificationListener {
                 validation = validation && stratVal;
             }
             //Add symbols if exist in position, but not in Parameters.symbol
-            for (String key : strategyDB.getKeys("opentrades_" + strategy)) {
+            for (String key : strategyDB.scanRedis("opentrades_" + strategy+"*")) {
                 String parentsymbolname = Trade.getParentSymbol(strategyDB, key);
                 int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                 if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
@@ -237,7 +237,7 @@ public class Strategy implements NotificationListener {
 
             if (validation) {
                 //Initialize open notional orders and positions
-                for (String key : strategyDB.getKeys("opentrades_" + strategy)) {
+                for (String key : strategyDB.scanRedis("opentrades_" + strategy+"*")) {
                     String parentsymbolname = Trade.getParentSymbol(strategyDB, key);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     int tempPosition = 0;
@@ -358,7 +358,7 @@ public class Strategy implements NotificationListener {
         String symbol = Parameters.symbol.get(id).getDisplayname();
 
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
-        for (String key : getDb().getKeys("opentrades_" + strategy + "*" + accountName)) {
+        for (String key : getDb().scanRedis("opentrades_" + strategy + "*" + accountName)) {
                 if (Trade.getParentSymbol(strategyDB, key).equals(symbol) && Trade.getEntrySide(strategyDB, key).equals(entrySide) && Trade.getEntrySize(strategyDB, key) > Trade.getExitSize(strategyDB, key) && Trade.getParentSymbol(strategyDB, key).equals(Trade.getEntrySymbol(strategyDB, key))) {
                     out.add(Trade.getEntryOrderIDInternal(strategyDB, key));
                 }
@@ -1065,8 +1065,7 @@ public class Strategy implements NotificationListener {
                 if (s.accounts.contains(c.getAccountName())) {
                     Validator.reconcile(prefix, getDb(), s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
                 }
-                //Validator.reconcile(prefix, s.getTradeFile(), s.getOrderFile(), account,c.getAccountName());
-            }
+                           }
             if (Algorithm.useForSimulation) {
                 System.exit(0);
             }
@@ -1083,7 +1082,7 @@ public class Strategy implements NotificationListener {
             p.setBrokerage(0);
             p.setPrice(0);
         }
-        for (String key : getDb().getKeys("opentrades_" + strategy)) {
+        for (String key : getDb().scanRedis("opentrades_" + strategy+"*")) {
             String parentsymbolname = Trade.getParentSymbol(getDb(), key);
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
             int tempPosition = 0;
