@@ -391,7 +391,9 @@ public class Strategy implements NotificationListener {
     }
 
     public int entry(OrderBean order) {
-        if (tradingWindow.get()) {
+        if (tradingWindow.get() && 
+                ((order.getOrderSide() == EnumOrderSide.BUY && getLongOnly())||(order.getOrderSide() == EnumOrderSide.SHORT && getShortOnly()))
+                ) {
             int id = order.getParentSymbolID();
             double orderPrice = priceAvailable(order);
             double value = orderValue(order);
