@@ -762,7 +762,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         if (tempOpenPosition < tempMaxPosition && !s.getPlmanager().isDayProfitTargetHit() && !s.getPlmanager().isDayStopLossHit()) {//enter loop is sl/tp is not hit
             int referenceid = Utilities.getCashReferenceID(Parameters.symbol, id);
             double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getOrderSide(), getTickSize(), event.getOrderType());
-            event.setLimitPrice(limitprice);
+            if(event.getOrderType().equals(EnumOrderType.CUSTOMREL)){
+                event.setLimitPrice(limitprice);
+            }
 //            if (event.getOrderType().equals(EnumOrderType.LMT)) {
 //                if (event.getOrderSide() == EnumOrderSide.BUY) {
 //                    event.setLimitPrice(event.getLimitPrice() - 10);
@@ -828,7 +830,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     void processExitOrder(int id, BeanConnection c, OrderBean event) {
         int referenceid = Utilities.getCashReferenceID(Parameters.symbol, id);
         double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getOrderSide(), getTickSize(), event.getOrderType());
-        event.put("LimitPrice", String.valueOf(limitprice));
+        if (event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
+            event.setLimitPrice(limitprice);
+        }
         HashMap<Integer, Order> orders = new HashMap<>();
         String orderKey=event.getOrderKeyForSquareOff();
         String tradeKey=Utilities.getTradeKeyFromOrderKey(orderKey, c.getAccountName());
