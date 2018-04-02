@@ -1040,10 +1040,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             }
                         }
                     }
-                }else{
+                }else if(oqks.size() > 1){
                     logger.log(Level.SEVERE,"501,OrderStatusReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + orderid + ":" + c.getAccountName() + ":.*"});
                 }
-
             }
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
@@ -1562,7 +1561,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     public void cancelOpenOrders(BeanConnection c, int id, String strategy) {
         String[] childDisplayNames = Utilities.getChildDisplayNames(id);
         for (String childDisplayName : childDisplayNames) {
-            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + Parameters.symbol.get(id).getDisplayname() + ":" + childDisplayName;
+            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + Parameters.symbol.get(id).getDisplayname() + ":" + childDisplayName+".*";
             cancelOpenOrders(c, searchString);
         }
     }
