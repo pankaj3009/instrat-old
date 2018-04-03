@@ -391,6 +391,9 @@ public class Strategy implements NotificationListener {
     }
 
     public int entry(OrderBean order) {
+        Gson gson = new Gson(); 
+        String json = gson.toJson(order);
+        logger.log(Level.INFO, "201,EntryOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
         if (tradingWindow.get() && 
                 ((order.getOrderSide() == EnumOrderSide.BUY && getLongOnly())||(order.getOrderSide() == EnumOrderSide.SHORT && getShortOnly()))
                 ) {
@@ -411,7 +414,7 @@ public class Strategy implements NotificationListener {
                 } else if(order.getOrderSide() == EnumOrderSide.SHORT && getShortOnly()) {
                     BeanPosition pd = getPosition().get(id);
                     double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-                    int symbolPosition = pd.getPosition() - order.getCurrentOrderSize();
+                    int symbolPosition = pd.getPosition() - order.getOriginalOrderSize();
                     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
                     pd.setPosition(symbolPosition);
                     pd.setPositionInitDate(Utilities.getAlgoDate());
@@ -444,6 +447,9 @@ public class Strategy implements NotificationListener {
     }
 
     public synchronized int exit(OrderBean order) {
+        Gson gson = new Gson(); 
+        String json = gson.toJson(order);
+        logger.log(Level.INFO, "201,ExitOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
         if (tradingWindow.get() && (getLongOnly()||getShortOnly())) {
             double orderPrice = priceAvailable(order);
             double value = orderValue(order);
@@ -508,9 +514,7 @@ public class Strategy implements NotificationListener {
                         }
                     }
                 } else {
-                    Gson gson = new GsonBuilder().create();
-                    String string = gson.toJson(order);
-                    logger.log(Level.INFO, "201,Could not identify the trade to be squared off,{0}", string);
+                    logger.log(Level.INFO, "201,Could not identify the trade to be squared off,{0}", gson);
                 }
                 return order.getInternalOrderID();
             } else {
