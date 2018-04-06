@@ -51,7 +51,7 @@ public class Strategy implements NotificationListener {
     private int connectionidForMarketData = 0;
     private double dayProfitTarget = 0;
     private double dayStopLoss = 0;
-    private RedisConnect strategyDB;
+    public RedisConnect strategyDB;
     private Date endDate;
     private String futBrokerageFile;
     private String iamail;
