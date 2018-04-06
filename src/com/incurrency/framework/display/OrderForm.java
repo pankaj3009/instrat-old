@@ -311,15 +311,16 @@ public class OrderForm extends javax.swing.JFrame {
                 ob.setStickyPeriod(Utilities.getInt(s.getOrderAttributes().get("stickyperiod"), 0));
                 ob.setFatFingerWindow(Utilities.getInt(s.getOrderAttributes().get("fatfingerwindow"), 120));
                 ob.setScale(Boolean.FALSE);
+                ob.setOrderLog(ob.getOrderLog()+";"+"MANUAL UI ENTRY");
+                s.exit(ob);
             } else {
                 ob.setOrderType(EnumOrderType.valueOf(comboType.getSelectedItem().toString()));
                 ob.setTriggerPrice(Double.valueOf(this.txtTriggerPrice.getText()));
                 ob.setLimitPrice(Double.valueOf(this.txtLimitPrice.getText()));
                 ob.setOrderStage(EnumOrderStage.AMEND);
+                ob.setOrderLog(ob.getOrderLog()+";"+"MANUAL UI ENTRY");
+                s.getOms().tes.fireOrderEvent(ob);
             }
-            ob.setOrderLog(ob.getOrderLog()+";"+"MANUAL UI ENTRY");
-            s.getOms().tes.fireOrderEvent(ob);
-//                if (oms.zilchOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy())) {
             dispose();
 //                    } else {
 //                        oms.cancelOpenOrders(Parameters.connection.get(connection), symbolid, s.getStrategy());
