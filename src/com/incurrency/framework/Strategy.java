@@ -38,7 +38,7 @@ import javax.swing.JOptionPane;
  * @author pankaj
  */
 public class Strategy implements NotificationListener {
-    
+
     public static String newline = System.getProperty("line.separator");
     private static HashMap<String, String> combosAdded = new HashMap<>();
     private static final Logger logger = Logger.getLogger(Strategy.class.getName());
@@ -86,7 +86,7 @@ public class Strategy implements NotificationListener {
     private final Object lockPL = new Object();
     private final Object lockPLManager = new Object();
     private final Object syncDB = new Object();
-    
+
     TimerTask runCloseTradingWindow = new TimerTask() {
         @Override
         public void run() {
@@ -111,7 +111,7 @@ public class Strategy implements NotificationListener {
             }
         }
     };
-    
+
     TimerTask runOpenTradingWindow = new TimerTask() {
         @Override
         public void run() {
@@ -120,14 +120,14 @@ public class Strategy implements NotificationListener {
                     new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
         }
     };
-    
+
     TimerTask runPrintOrders = new TimerTask() {
         @Override
         public void run() {
             printOrders("", Strategy.this);
         }
     };
-    
+
     public Strategy(MainAlgorithm m, Properties prop, String parameterFileName, ArrayList<String> accounts) {
         try {
             if (accounts.isEmpty()) {
@@ -162,7 +162,7 @@ public class Strategy implements NotificationListener {
                     logger.log(Level.SEVERE, "For Strategy {0},Redis needs to be set as the store for trade records. Strategy {0} will load but no trades will be executed", new Object[]{getStrategy()});
                     return;
                 }
-                
+
                 stratVal = Validator.reconcile("", strategyDB, Algorithm.tradeDB, account, ownerEmail, this.getStrategy(), Boolean.TRUE);
                 if (!stratVal) {
                     stratVal = Validator.reconcile("", strategyDB, Algorithm.tradeDB, account, ownerEmail, this.getStrategy(), Boolean.FALSE);
@@ -208,8 +208,12 @@ public class Strategy implements NotificationListener {
                                         //we assume option pricing uses futures. Will not work for a non-indian option  
                                         underlyingid = Utilities.getFutureIDFromExchangeSymbol(Parameters.symbol, underlyingid, expiry);
                                         //           }
-                                        Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
-                                        
+                                        if (underlyingid == -1) {
+                                            Parameters.symbol.get(id).setMinsize(1);
+                                        } else {
+                                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                                        }
+
                                     }
                                 }
                                 break;
@@ -225,7 +229,7 @@ public class Strategy implements NotificationListener {
                                 }
                                 break;
                         }
-                        
+
                         Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(s, false);
                     }
                 } else {
@@ -238,7 +242,7 @@ public class Strategy implements NotificationListener {
                     position.put(s.getSerialno(), new BeanPosition(s.getSerialno(), getStrategy()));
                 }
             }
-            
+
             if (validation) {
                 //Initialize open notional orders and positions
                 for (String key : strategyDB.scanRedis("opentrades_" + strategy + "*")) {
@@ -320,7 +324,7 @@ public class Strategy implements NotificationListener {
                                 new Object[]{this.getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), -1, -1, position.get(id).getPosition(), position.get(id).getPrice()});
                     }
                 }
-                
+
                 if (MainAlgorithm.isUseForTrading()) {
                     Thread t = new Thread(oms = new ExecutionManager(this, this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts));
                     t.setName(strategy + ":" + "OMS");
@@ -337,7 +341,7 @@ public class Strategy implements NotificationListener {
                     closeTradingWindow.schedule(runCloseTradingWindow, this.endDate);
                 }
             }
-            
+
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
@@ -356,46 +360,46 @@ public class Strategy implements NotificationListener {
     public static synchronized void setCombosAdded(HashMap<String, String> aCombosAdded) {
         combosAdded = aCombosAdded;
     }
-    
+
     public int EntryInternalOrderIDForSquareOff(int id, String accountName, String strategy, EnumOrderSide side) {
         HashSet<Integer> out = new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
-        
+
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
         for (String key : getDb().scanRedis("opentrades_" + strategy + "*" + accountName)) {
             if (Trade.getParentSymbol(strategyDB, key).equals(symbol) && Trade.getEntrySide(strategyDB, key).equals(entrySide) && Trade.getEntrySize(strategyDB, key) > Trade.getExitSize(strategyDB, key) && Trade.getParentSymbol(strategyDB, key).equals(Trade.getEntrySymbol(strategyDB, key))) {
                 out.add(Trade.getEntryOrderIDInternal(strategyDB, key));
             }
-            
+
         }
         for (int o : out) {
             return o;
         }
         return -1;
-        
+
     }
-    
+
     public void displayStrategyValues() {
     }
-    
+
     private double priceAvailable(OrderBean order) {
         int id = order.getParentSymbolID();
         if (order.getOrderSide().equals(EnumOrderSide.BUY) || order.getOrderSide().equals(EnumOrderSide.COVER)) {
             return Parameters.symbol.get(id).getBidPrice();
-            
+
         } else if (order.getOrderSide().equals(EnumOrderSide.SELL) || order.getOrderSide().equals(EnumOrderSide.SHORT)) {
             return Parameters.symbol.get(id).getAskPrice();
         }
         return 0;
     }
-    
+
     private double orderValue(OrderBean order) {
         double orderValue = order.getOriginalOrderSize() * priceAvailable(order) * pointValue;
         return orderValue;
     }
-    
+
     public int entry(OrderBean order) {
-        Gson gson = new Gson();        
+        Gson gson = new Gson();
         String json = gson.toJson(order);
         logger.log(Level.INFO, "201,EntryOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
         if (tradingWindow.get()
@@ -441,16 +445,16 @@ public class Strategy implements NotificationListener {
                 return internalorderid;
             } else {
                 logger.log(Level.INFO, "Order checks failed. PriceCheck:{0}, OrderValue:{1}", new Object[]{orderPrice, value});
-                
+
             }
         } else {
             logger.log(Level.INFO, "101,Entry order rejected as trading window is closed");
         }
         return -1;
     }
-    
+
     public synchronized int exit(OrderBean order) {
-        Gson gson = new Gson();        
+        Gson gson = new Gson();
         String json = gson.toJson(order);
         logger.log(Level.INFO, "201,ExitOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
         if (tradingWindow.get() && (getLongOnly() || getShortOnly())) {
@@ -490,7 +494,7 @@ public class Strategy implements NotificationListener {
                         TreeMap<String, Integer> splitTradesDuringExit = Utilities.splitTradesDuringExit(strategyDB, "Order", order);
                         for (Map.Entry<String, Integer> pair : splitTradesDuringExit.entrySet()) {
                             String key = pair.getKey();
-                            logger.log(Level.INFO,"201,ExitOrder, Processing key: {0}",new Object[]{key});
+                            logger.log(Level.INFO, "201,ExitOrder, Processing key: {0}", new Object[]{key});
                             int size = pair.getValue();
                             order.setOriginalOrderSize(size);
                             int internalorderid = getInternalOrderID();
@@ -955,7 +959,7 @@ public class Strategy implements NotificationListener {
             }
         }
     }
-    
+
     public void insertSymbol(List<BeanSymbol> symbols, String displayName, boolean optionPricingUsingFutures) {
         BeanSymbol s = new BeanSymbol(displayName);
         s.setExchange(Algorithm.defaultExchange);
@@ -967,11 +971,11 @@ public class Strategy implements NotificationListener {
         Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
         initSymbol(s.getSerialno(), optionPricingUsingFutures);
     }
-    
+
     @Override
     public void notificationReceived(NotificationEvent event) {
     }
-    
+
     public synchronized void printOrders(String prefix, Strategy s) {
         double[] profitGrid = new double[5];
         DecimalFormat df = new DecimalFormat("#.##");
@@ -1008,7 +1012,7 @@ public class Strategy implements NotificationListener {
                 Utilities.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
                 Utilities.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
                 Utilities.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
-                
+
             }
             if (s_redisip == null) {
                 logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
@@ -1033,7 +1037,7 @@ public class Strategy implements NotificationListener {
                         Utilities.writeToFile(file.getName(), "# days in history: " + df.format(profitGrid[9]));
                         Utilities.writeToFile(file.getName(), "Average Drawdown Cycle: " + df.format(profitGrid[10]));
                         Utilities.writeToFile(file.getName(), "# days in current drawdown: " + df.format(profitGrid[11]));
-                        
+
                         String message
                                 = "Strategy Name:" + s.strategy + Strategy.newline
                                 + "Net P&L today: " + df.format(profitGrid[2]) + Strategy.newline
@@ -1046,9 +1050,9 @@ public class Strategy implements NotificationListener {
                                 + "# days in current drawdown: " + df.format(profitGrid[11]) + Strategy.newline
                                 + "Average Drawdown Value:  " + df.format(profitGrid[12]) + Strategy.newline
                                 + "Current Drawdown Value: " + df.format(profitGrid[13]);
-                        
+
                         String openPositions = Validator.openPositions(c.getAccountName(), s);
-                        
+
                         if (openPositions.equals("")) {
                             message = message + newline + "No open trade positions";
                         } else {
@@ -1056,7 +1060,7 @@ public class Strategy implements NotificationListener {
                         }
                         message = message + "\n" + "\n";
                         message = message + "PNL Summary" + "\n";
-                        
+
                         message = message + Validator.pnlSummary(s.getOms().getDb(), c.getAccountName(), s);
                         Thread t = new Thread(new Mail(c.getOwnerEmail(), message, "EOD Reporting - " + s.getStrategy()));
                         t.start();
@@ -1079,12 +1083,12 @@ public class Strategy implements NotificationListener {
             if (Algorithm.useForSimulation) {
                 System.exit(0);
             }
-            
+
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
     }
-    
+
     public void updatePositions() {
         //Initialize open notional orders and positions
         for (BeanPosition p : position.values()) {
@@ -1159,7 +1163,7 @@ public class Strategy implements NotificationListener {
             }
         }
     }
-    
+
     private void loadParameters(Properties p) {
         setTimeZone(p.getProperty("TradeTimeZone") == null ? "Asia/Kolkata" : p.getProperty("TradeTimeZone"));
         Date currDate = Utilities.getAlgoDate();
@@ -1202,7 +1206,7 @@ public class Strategy implements NotificationListener {
         setIamail(p.getProperty("iaemail", Algorithm.senderEmail));
         String ordTypeString = p.getProperty("OrderType", "LMT");
         int i = 0;
-        
+
         for (String s : ordTypeString.split(":")) {
             if (i == 0) {
                 setOrdType(EnumOrderType.valueOf(ordTypeString.split(":")[i]));
@@ -1229,7 +1233,7 @@ public class Strategy implements NotificationListener {
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "LongAllowed" + delimiter + getLongOnly()});
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ShortAllowed" + delimiter + getShortOnly()});
         logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderAtributes" + delimiter + getOrderAttributes().toString()});
-        
+
         if (getFutBrokerageFile().compareTo("") != 0) {
             Properties pBrokerage = Utilities.loadParameters(getFutBrokerageFile());
             String brokerage1 = pBrokerage.getProperty("Brokerage");
@@ -1237,7 +1241,7 @@ public class Strategy implements NotificationListener {
             String addOn2 = pBrokerage.getProperty("AddOn2");
             String addOn3 = pBrokerage.getProperty("AddOn3");
             String addOn4 = pBrokerage.getProperty("AddOn4");
-            
+
             if (brokerage1 != null) {
                 getBrokerageRate().add(Utilities.parseBrokerageString(brokerage1));
             }
@@ -1253,8 +1257,8 @@ public class Strategy implements NotificationListener {
             if (addOn4 != null) {
                 getBrokerageRate().add(Utilities.parseBrokerageString(addOn4));
             }
-            
+
         }
     }
-    
+
 }
