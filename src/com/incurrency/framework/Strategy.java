@@ -490,6 +490,7 @@ public class Strategy implements NotificationListener {
                         TreeMap<String, Integer> splitTradesDuringExit = Utilities.splitTradesDuringExit(strategyDB, "Order", order);
                         for (Map.Entry<String, Integer> pair : splitTradesDuringExit.entrySet()) {
                             String key = pair.getKey();
+                            logger.log(Level.INFO,"201,ExitOrder, Processing key: {0}",new Object[]{key});
                             int size = pair.getValue();
                             order.setOriginalOrderSize(size);
                             int internalorderid = getInternalOrderID();

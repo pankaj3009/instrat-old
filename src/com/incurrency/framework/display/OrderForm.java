@@ -301,7 +301,7 @@ public class OrderForm extends javax.swing.JFrame {
                 ob.setOrderStage(EnumOrderStage.INIT);
                 ob.setOrderReason(EnumOrderReason.UNDEFINED);
                 //order attributes
-                ob.setDisplaySize(Utilities.getInt(s.getOrderAttributes().get("displaysize"), 0));
+                ob.setDisplaySize(Math.abs(quantity));
                 ob.setValue(Utilities.getInt(s.getOrderAttributes().get("value"), 0));
                 ob.setMaxPermissibleImpactCost(Utilities.getDouble(s.getOrderAttributes().get("thresholdimpactcost"), 0));
                 ob.setSubOrderDelay(Utilities.getInt(s.getOrderAttributes().get("suborderdelay"), 1));
