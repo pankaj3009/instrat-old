@@ -58,7 +58,7 @@ public class Strategy implements NotificationListener {
     private transient AtomicBoolean longOnly = new AtomicBoolean(Boolean.TRUE);
     private transient AtomicBoolean shortOnly = new AtomicBoolean(Boolean.TRUE);
     private int maxOpenPositions = 1;
-    private EnumOrderType ordType;
+    private EnumOrderType ordType=EnumOrderType.UNDEFINED;
     private HashMap<String, Object> orderAttributes = new HashMap<>();
     private ProfitLossManager plmanager;
     private double pointValue = 1;
@@ -1214,6 +1214,9 @@ public class Strategy implements NotificationListener {
                 getOrderAttributes().put(s.split("=")[0], s.split("=")[1]);
             }
             i++;
+        }
+        if(this.getOrdType().equals(EnumOrderType.UNDEFINED)){
+            setOrdType(EnumOrderType.CUSTOMREL);
         }
         longOnly = p.getProperty("Long") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Long")));
         shortOnly = p.getProperty("Short") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Short")));
