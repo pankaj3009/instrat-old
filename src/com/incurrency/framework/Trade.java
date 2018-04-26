@@ -264,7 +264,7 @@ public class Trade {
      * @param exitSide the exitSide to set
      */
     public static void setExitSide(RedisConnect db, Object internalOrderID, String tradeStatus, EnumOrderSide exitSide) {
-        db.setHash(tradeStatus, internalOrderID.toString(), "exitSide", exitSide.toString());
+        db.setHash(tradeStatus, internalOrderID.toString(), "exitside", exitSide.toString());
     }
 
     /*

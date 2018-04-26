@@ -600,7 +600,7 @@ public class Utilities {
                     out.add(profit);
                 }
                 }catch (Exception e){
-                    logger.log(Level.SEVERE,"Incorret data in trade record {0}",new Object[]{key});
+                    logger.log(Level.SEVERE,"Incorrect data in trade record {0}",new Object[]{key});
                     logger.log(Level.SEVERE,null,e);
                 }
             }
