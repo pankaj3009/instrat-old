@@ -7,7 +7,6 @@ package com.incurrency.framework;
 
 import com.incurrency.framework.Order.EnumOrderType;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -404,7 +403,7 @@ public class Strategy implements NotificationListener {
         logger.log(Level.INFO, "201,EntryOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
         if (tradingWindow.get()
                 && ((order.getOrderSide() == EnumOrderSide.BUY && getLongOnly()) || (order.getOrderSide() == EnumOrderSide.SHORT && getShortOnly()))) {
-            int id = order.getParentSymbolID();
+            Integer id = order.getParentSymbolID();
             double orderPrice = priceAvailable(order);
             double value = orderValue(order);
             if ((priceCheck && orderPrice > 0) && (value < maxOrderValue)) {
