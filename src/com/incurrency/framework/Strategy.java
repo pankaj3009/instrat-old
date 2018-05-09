@@ -937,7 +937,6 @@ public class Strategy implements NotificationListener {
                     Parameters.symbol.get(id).setStrategy(localStrategy.toUpperCase());
                 }
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
-                logger.log(Level.INFO,"Initialized Position for {0} as 0",new Object[]{Parameters.symbol.get(id).getExchangeSymbol()});
                 if (Parameters.symbol.get(id).getBidPrice() == 0) {
                     Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
                     try {
@@ -969,6 +968,43 @@ public class Strategy implements NotificationListener {
         Parameters.symbol.add(s);
         Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
         initSymbol(s.getSerialno(), optionPricingUsingFutures);
+    }
+    
+    public void createPosition(int id) {
+        if (!this.getStrategySymbols().contains(id)) {
+            this.getStrategySymbols().add(id);
+            String localStrategy = Parameters.symbol.get(id).getStrategy();
+            if (!Pattern.compile(Pattern.quote(localStrategy), Pattern.CASE_INSENSITIVE).matcher(strategy).find()) {
+                //if (!localStrategy.contains(strategy)) {
+                switch (localStrategy) {
+                    case "":
+                        localStrategy = strategy.toUpperCase();
+                        break;
+                    default:
+                        localStrategy = localStrategy + ":" + strategy.toUpperCase();
+                        break;
+                }
+                Parameters.symbol.get(id).setStrategy(localStrategy.toUpperCase());
+            }
+            this.getPosition().put(id, new BeanPosition(id, getStrategy()));
+            if (Parameters.symbol.get(id).getBidPrice() == 0) {
+                Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+                Thread.yield();
+            }
+            for (BeanConnection c : Parameters.connection) {
+                c.initializeConnection(this.getStrategy(), id);
+            }
+            if (plmanager != null) {
+                plmanager.init(id);
+            } else {
+                logger.log(Level.SEVERE, "Symbol {0} not initialized. Probably the strategy has irreconciled positions", new Object[]{Parameters.symbol.get(id).getDisplayname()});
+            }
+        }
     }
 
     @Override
