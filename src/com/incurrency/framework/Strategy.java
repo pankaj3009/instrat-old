@@ -921,7 +921,7 @@ public class Strategy implements NotificationListener {
                     }
                     break;
             }
-            if (!this.getStrategySymbols().contains(Integer.valueOf(id))) {
+            if (!this.getStrategySymbols().contains(id)) {
                 this.getStrategySymbols().add(id);
                 String localStrategy = Parameters.symbol.get(id).getStrategy();
                 if (!Pattern.compile(Pattern.quote(localStrategy), Pattern.CASE_INSENSITIVE).matcher(strategy).find()) {
@@ -937,7 +937,7 @@ public class Strategy implements NotificationListener {
                     Parameters.symbol.get(id).setStrategy(localStrategy.toUpperCase());
                 }
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
-                Index ind = new Index(this.getStrategy(), id);
+                logger.log(Level.INFO,"Initialized Position for {0} as 0",new Object[]{Parameters.symbol.get(id).getExchangeSymbol()});
                 if (Parameters.symbol.get(id).getBidPrice() == 0) {
                     Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
                     try {
