@@ -416,12 +416,15 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     order.m_orderType = "LMT";
                     order.m_lmtPrice = limit;
                 } else {
-                    if(Parameters.symbol.get(e.getChildSymbolID()).getLastPrice()>0){
-                        order.m_lmtPrice=Parameters.symbol.get(e.getChildSymbolID()).getLastPrice();
-                        order.m_orderType = "LMT";                        
-                    }else{
-                        order.m_lmtPrice=-1; //ensure order is rejected as we dont have a trade price....
-                        order.m_orderType = "LMT";     
+                    if ((ordSide.equals(EnumOrderSide.BUY) | ordSide.equals(EnumOrderSide.COVER)) & Parameters.symbol.get(e.getChildSymbolID()).getBidPrice() > 0) {
+                        order.m_lmtPrice = Parameters.symbol.get(e.getChildSymbolID()).getBidPrice();
+                        order.m_orderType = "LMT";
+                    } else if ((ordSide.equals(EnumOrderSide.SHORT) | ordSide.equals(EnumOrderSide.SELL)) & Parameters.symbol.get(e.getChildSymbolID()).getAskPrice() > 0) {
+                        order.m_lmtPrice = Parameters.symbol.get(e.getChildSymbolID()).getAskPrice();
+                        order.m_orderType = "LMT";
+                    } else {
+                        order.m_lmtPrice = -1; //ensure order is rejected as we dont have a trade price....
+                        order.m_orderType = "LMT";
                     }
                 }
                 break;
