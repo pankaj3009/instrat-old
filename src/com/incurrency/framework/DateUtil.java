@@ -27,6 +27,27 @@ public class DateUtil {
     public final static long DAY_MILLIS = HOUR_MILLIS * 24;
     public final static long YEAR_MILLIS = DAY_MILLIS * 365;
 
+    public static Date roundTime(int min) {
+        //https://stackoverflow.com/questions/24108642/round-down-time-to-last-5-minutes
+        Date whateverDateYouWant = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeZone(TimeZone.getTimeZone(Algorithm.timeZone));
+        calendar.setTime(whateverDateYouWant);
+        int unroundedMinutes = calendar.get(Calendar.MINUTE);
+        int mod = unroundedMinutes % min;
+        calendar.add(Calendar.MINUTE, unroundedMinutes == 0 ? -min : -mod);
+        return calendar.getTime();
+    }
+    
+    public static boolean barChange(int id, int min) {
+        long reference = roundTime(min).getTime();
+        int size = Parameters.symbol.get(id).getTradedDateTime().size();
+        if (size>1 & Parameters.symbol.get(id).getTradedDateTime().get(size - 1) < reference) {
+            return true;
+        }
+        return false;
+    }
+    
     public static long getCurrentTime() {
         return System.currentTimeMillis();
     }
