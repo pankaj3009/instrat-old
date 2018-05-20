@@ -359,8 +359,17 @@ public class Strategy implements NotificationListener {
     public static synchronized void setCombosAdded(HashMap<String, String> aCombosAdded) {
         combosAdded = aCombosAdded;
     }
-
+    
     public int EntryInternalOrderIDForSquareOff(int id, String accountName, String strategy, EnumOrderSide side) {
+      HashSet<Integer> out= this.EntryInternalOrderIDsForSquareOff(id, accountName, strategy, side);
+       for (int o : out) {
+            return o;
+        }
+        return -1;
+
+    }
+
+    public HashSet<Integer> EntryInternalOrderIDsForSquareOff(int id, String accountName, String strategy, EnumOrderSide side) {
         HashSet<Integer> out = new HashSet<>();
         String symbol = Parameters.symbol.get(id).getDisplayname();
 
@@ -371,10 +380,7 @@ public class Strategy implements NotificationListener {
             }
 
         }
-        for (int o : out) {
-            return o;
-        }
-        return -1;
+        return out;
 
     }
 
@@ -959,15 +965,17 @@ public class Strategy implements NotificationListener {
     }
 
     public void insertSymbol(List<BeanSymbol> symbols, String displayName, boolean optionPricingUsingFutures) {
-        BeanSymbol s = new BeanSymbol(displayName);
-        s.setExchange(Algorithm.defaultExchange);
-        s.setPrimaryexchange(Algorithm.defaultPrimaryExchange);
-        s.setCurrency(Algorithm.defaultCurrency);
-        int id = Parameters.symbol.size();
-        s.setSerialno(id);
-        Parameters.symbol.add(s);
-        Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
-        initSymbol(s.getSerialno(), optionPricingUsingFutures);
+        if (Utilities.getIDFromDisplayName(Parameters.symbol, displayName) == -1) {
+            BeanSymbol s = new BeanSymbol(displayName);
+            s.setExchange(Algorithm.defaultExchange);
+            s.setPrimaryexchange(Algorithm.defaultPrimaryExchange);
+            s.setCurrency(Algorithm.defaultCurrency);
+            int id = Parameters.symbol.size();
+            s.setSerialno(id);
+            Parameters.symbol.add(s);
+            Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
+            initSymbol(s.getSerialno(), optionPricingUsingFutures);
+        }
     }
     
     public void createPosition(int id) {
