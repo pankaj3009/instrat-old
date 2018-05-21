@@ -45,8 +45,11 @@ public class DateUtil {
         if (id >= 0 & min > 0) {
             long reference = roundTime(min).getTime();
             int size = Parameters.symbol.get(id).getTradedDateTime().size();
-            if (size > 1 & Parameters.symbol.get(id).getTradedDateTime().get(size - 1) < reference) {
-                logger.log(Level.INFO, Parameters.symbol.get(id).getTradedDateTime().get(size - 1).toString());
+//            if(size>=2){
+//            System.out.println(DateUtil.getFormatedDate("HH:mm:ss.SSS",Parameters.symbol.get(id).getTradedDateTime().get(size-2),TimeZone.getTimeZone(Algorithm.timeZone)));
+//            }
+            if (size >= 2 && Parameters.symbol.get(id).getTradedDateTime().get(size-2) < reference) {
+                //logger.log(Level.INFO, Parameters.symbol.get(id).getTradedDateTime().get(size - 2).toString());
                 return true;
 
             }
