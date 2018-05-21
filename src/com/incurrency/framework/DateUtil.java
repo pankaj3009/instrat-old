@@ -36,14 +36,20 @@ public class DateUtil {
         int unroundedMinutes = calendar.get(Calendar.MINUTE);
         int mod = unroundedMinutes % min;
         calendar.add(Calendar.MINUTE, unroundedMinutes == 0 ? -min : -mod);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
     
     public static boolean barChange(int id, int min) {
-        long reference = roundTime(min).getTime();
-        int size = Parameters.symbol.get(id).getTradedDateTime().size();
-        if (size>1 & Parameters.symbol.get(id).getTradedDateTime().get(size - 1) < reference) {
-            return true;
+        if (id >= 0 & min > 0) {
+            long reference = roundTime(min).getTime();
+            int size = Parameters.symbol.get(id).getTradedDateTime().size();
+            if (size > 1 & Parameters.symbol.get(id).getTradedDateTime().get(size - 1) < reference) {
+                logger.log(Level.INFO, Parameters.symbol.get(id).getTradedDateTime().get(size - 1).toString());
+                return true;
+
+            }
         }
         return false;
     }
