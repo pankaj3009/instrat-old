@@ -588,7 +588,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                         logger.log(Level.INFO, "301,Case 101.New entry received without prior exit.Squareoff and delay new entry order,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                 new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
-                                        squareAllPositions(c, id, event.getOrderReference());
+                                        //Wait for an actual exit. Dont square off in anticipation..
+                                        //squareAllPositions(c, id, event.getOrderReference());
                                         eventWait(c, event, "101");
                                     }//                                                                               
 
