@@ -141,11 +141,11 @@ public class ProfitLossManager implements TradeListener {
                                         int position = c.getPositions().get(ind) == null ? 0 : c.getPositions().get(ind).getPosition();
                                         if (position > 0) {
                                             logger.log(Level.INFO, "309,ProfitLossHit,{0}", new Object[]{c.getAccountName() + delimiter + strategy + delimiter + Parameters.symbol.get(symbolid).getBrokerSymbol() + delimiter + "SELL"});
-                                            int internalorderid = s.getInternalOrderID();
+                                            int internalorderid = Utilities.getInternalOrderID();
 //                                            oms.tes.fireOrderEvent(internalorderid, 0, Parameters.symbol.get(symbolid), EnumOrderSide.SELL, EnumOrderReason.REGULAREXIT, EnumOrderType.LMT, Math.abs(position), Parameters.symbol.get(symbolid).getLastPrice(), 0, strategy, 3, EnumOrderStage.INIT, 2, 0, c.getAccountName(), true, "","PROFITLOSSHIT");
                                             Algorithm.tradeDB.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");
                                         } else if (position < 0) {
-                                            int internalorderid = s.getInternalOrderID();
+                                            int internalorderid = Utilities.getInternalOrderID();
                                             logger.log(Level.INFO, "309,ProfitLossHit,{0}", new Object[]{c.getAccountName() + delimiter + strategy + delimiter + Parameters.symbol.get(symbolid).getBrokerSymbol() + delimiter + "COVER"});
                                             //                                          oms.tes.fireOrderEvent(internalorderid, 0, Parameters.symbol.get(symbolid), EnumOrderSide.COVER, EnumOrderReason.REGULAREXIT, EnumOrderType.LMT, Math.abs(position), Parameters.symbol.get(symbolid).getLastPrice(), 0, strategy, 3, EnumOrderStage.INIT, 2, 0, c.getAccountName(), true, "","PROFITLOSSHIT");
                                             Algorithm.tradeDB.lpush("trades:" + strategy.toLowerCase(), "JSON ORDERBEAN");

@@ -536,14 +536,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     break;
                                 case "001": //position=0, no openorder=0, entry order as entry=1
                                     logger.log(Level.INFO, "301,Case 001.Entry,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
-                                            new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
+                                            new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID()),
                                                 event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                     processEntryOrder(id, c, event);
                                     break;
                                 case "100": //position=1, no open order=0, exit order 
                                     if ((signedPositions > 0 && event.getOrderSide() == EnumOrderSide.SELL) || (signedPositions < 0 && event.getOrderSide() == EnumOrderSide.COVER)) {
                                         logger.log(Level.INFO, "301,Case 100.Exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
-                                                new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
+                                                new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID()),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         processExitOrder(id, c, event);
                                     }
@@ -585,8 +585,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                                         event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         }
                                     } else {
-                                        logger.log(Level.INFO, "301,Case 101.New entry received without prior exit.Squareoff and delay new entry order,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
-                                                new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
+                                        logger.log(Level.INFO, "301,Case 101.New entry received without prior exit.Delay new entry order,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                                new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.valueOf(event.getExternalOrderID()),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         //Wait for an actual exit. Dont square off in anticipation..
                                         //squareAllPositions(c, id, event.getOrderReference());
@@ -1009,7 +1009,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 }
                                 //if (orderStatus.get(orderid) == null || orderStatus.get(orderid) != fillStatus) {
                                 logger.log(Level.INFO, "302,OrderStatus,{0}:{1}:{2}:{3}:{4},OrderStatus={5}",
-                                        new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(parentid).getDisplayname(), ob.getInternalOrderID(), String.valueOf(orderid), fillStatus});
+                                        new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(parentid).getDisplayname(), Integer.toString(ob.getInternalOrderID()), String.valueOf(orderid), fillStatus});
                                 orderStatus.put(orderid, fillStatus);
                                 //}
                                 switch (fillStatus) {
@@ -1491,7 +1491,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int position = c.getPositions().get(ind) == null ? 0 : c.getPositions().get(ind).getPosition();
         OrderBean oqv = new OrderBean();
         if (position > 0) {
-            int internalorderid = getS().getInternalOrderID();
+            int internalorderid = Utilities.getInternalOrderID();
             oqv.setInternalOrderID(internalorderid);
             oqv.setParentInternalOrderID(internalorderid);
             oqv.setOrderSide(EnumOrderSide.SELL);
@@ -1508,7 +1508,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             oqv.setOrderLog(oqv.getOrderLog() + ";" + "Square All Positions");
         } else if (position < 0) {
             position = Math.abs(position);
-            int internalorderid = getS().getInternalOrderID();
+            int internalorderid = Utilities.getInternalOrderID();
             oqv.setInternalOrderID(internalorderid);
             oqv.setParentInternalOrderID(internalorderid);
             oqv.setOrderSide(EnumOrderSide.COVER);

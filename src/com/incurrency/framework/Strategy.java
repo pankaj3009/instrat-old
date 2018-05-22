@@ -434,7 +434,7 @@ public class Strategy implements NotificationListener {
                     pd.setStrategy(strategy);
                     getPosition().put(id, pd);
                 }
-                int internalorderid = getInternalOrderID();
+                int internalorderid = Utilities.getInternalOrderID();
                 order.setInternalOrderID(internalorderid);
                 order.setParentInternalOrderID(internalorderid);
                 order.setOrderReference(getStrategy());
@@ -502,7 +502,7 @@ public class Strategy implements NotificationListener {
                             logger.log(Level.INFO, "201,ExitOrder, Processing key: {0}", new Object[]{key});
                             int size = pair.getValue();
                             order.setOriginalOrderSize(size);
-                            int internalorderid = getInternalOrderID();
+                            int internalorderid = Utilities.getInternalOrderID();
                             order.setInternalOrderID(internalorderid);
                             order.setParentInternalOrderID(internalorderid);
                             int entrySize = Trade.getEntrySize(getDb(), key);
@@ -660,12 +660,6 @@ public class Strategy implements NotificationListener {
         this.iamail = iamail;
     }
 
-    /**
-     * @return the internalOrderID
-     */
-    public synchronized int getInternalOrderID() {
-        return Algorithm.orderidint.addAndGet(1);
-    }
 
     /**
      * @return the longOnly
