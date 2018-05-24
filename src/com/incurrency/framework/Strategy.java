@@ -527,7 +527,7 @@ public class Strategy implements NotificationListener {
                         }
                     }
                 } else {
-                    logger.log(Level.INFO, "201,Could not identify the trade to be squared off,{0}", gson);
+                    logger.log(Level.INFO, "201,Could not identify the trade to be squared off,{0}", json);
                 }
                 return order.getInternalOrderID();
             } else {
