@@ -232,7 +232,7 @@ public class Strategy implements NotificationListener {
                         Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(s, false);
                     }
                 } else {
-                    logger.log(Level.SEVERE, "101, Incorrect Parent Symbol in redis. ParentSymbol:{0}", new Object[]{parentsymbolname});
+                    logger.log(Level.SEVERE, "101, Incorrect Parent Symbol in redis. ParentSymbol:{0}, Key={1}", new Object[]{parentsymbolname,key});
                 }
             }
             for (BeanSymbol s : Parameters.symbol) {
