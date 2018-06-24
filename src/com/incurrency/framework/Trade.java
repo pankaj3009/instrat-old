@@ -716,7 +716,7 @@ public class Trade {
         db.setHash(tradeStatus, key, "accountname", input[24]);
     }
 
-    public Trade(RedisConnect db, int id, int parentid, EnumOrderReason reason, EnumOrderSide side, double price, int size, int entryorderidint, int entryorderidext, int parententryorderidint, String timeZone, String accountName, String strategy, String tradeStatus, String log, double sl,double tp) {
+    public Trade(RedisConnect db, int id, int parentid, EnumOrderReason reason, EnumOrderSide side, double price, int size, int entryorderidint, int entryorderidext, int parententryorderidint, String timeZone, String accountName, String strategy, String tradeStatus, String log, double sl,double tp,String tif) {
         String key = strategy + ":" + entryorderidint + ":" + accountName;
         db.setHash(tradeStatus, key, "entrysymbol", Parameters.symbol.get(id).getDisplayname());
         db.setHash(tradeStatus, key, "parentsymbol", Parameters.symbol.get(parentid).getDisplayname());
@@ -744,6 +744,7 @@ public class Trade {
         db.setHash(tradeStatus, key, "accountname", accountName);
         db.setHash(tradeStatus, key, "StopLoss",String.valueOf(sl));
         db.setHash(tradeStatus, key, "TakeProfit",String.valueOf(tp));
+        db.setHash(tradeStatus, key, "TIF",tif);
         Trade.updateEntryTradeLog(db, key, tradeStatus, log);
     }
     

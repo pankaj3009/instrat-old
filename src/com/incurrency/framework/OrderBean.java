@@ -174,6 +174,15 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         String parentEntryInternalOrderID = this.get("OrderKeyForSquareOff");
         return parentEntryInternalOrderID;
     }
+    
+    public String getTIF(){
+        String tif = this.get("TIF");
+        if(com.google.common.base.Strings.isNullOrEmpty(tif)){
+            return "DAY";
+        }else {
+            return tif;
+        }
+    }
 
     public int getInternalOrderID() {
         String childInternalOrderID = this.get("InternalOrderID");
@@ -377,6 +386,11 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public void setOrderReference(String value) {
         this.put("OrderReference", value);
     }
+    
+    public void setTIF(String value) {
+        this.put("TIF", value);
+    }
+
 
     public void setInternalOrderID(int value) {
         this.put("InternalOrderID", String.valueOf(value));

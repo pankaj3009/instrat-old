@@ -388,7 +388,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
         EnumOrderType orderType = e.getOrderType();
         double limit = e.getLimitPrice();
         double trigger = e.getTriggerPrice();
-        String ordValidity = null;
+        String ordValidity = e.getTIF();
         String orderRef = e.getOrderReference();
         String effectiveFrom = e.getEffectiveFrom();
         order.m_orderId = e.getExternalOrderID();
@@ -1759,9 +1759,9 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     }
                     break;
                 case 1100://Connectivity between IB and TWS has been lost.
-                    //this.eClientSocket.eDisconnect();
+                    //this.eCliefdintSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO, "100,ConnectivityLost,,Account={0}", new Object[]{getC().getAccountName()});
+                    //logger.log(Level.INFO, "100,ConnectivityLost,,Account={0}", new Object[]{getC().getAccountName()});
                         Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + "has lost connectivity with IB Servers. Please check program integrity. ", "Algorithm SEVERE ALERT"));
                         t.start();
                     break;
@@ -1786,7 +1786,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 case 504: //disconnected
                     //this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO, "100,Disconnected,,Account={0}", new Object[]{getC().getAccountName()});
+                    //logger.log(Level.INFO, "100,Disconnected,,Account={0}", new Object[]{getC().getAccountName()});
                     if (!this.severeEmailSent.get()) {
                         t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
                         t.start();

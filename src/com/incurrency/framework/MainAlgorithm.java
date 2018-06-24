@@ -21,6 +21,7 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -48,6 +49,7 @@ public class MainAlgorithm extends Algorithm {
     public static ArrayList<String[]> comboList = new ArrayList<>();
     public static TradingEventSupport tes = new TradingEventSupport();
     public static boolean instantiated = false;
+    public static AtomicBoolean strategiesLoaded=new AtomicBoolean(false);
     private static MainAlgorithm instance = null;
     public static String simulationStartDate;
     public static String simulationEndDate;
@@ -698,16 +700,7 @@ public class MainAlgorithm extends Algorithm {
                 ui = new com.incurrency.framework.display.DashBoardNew(); //Display main UI
             }
         }
-        for (BeanConnection c : Parameters.connection) {
-            c.getWrapper().requestOpenOrders();
-            com.ib.client.ExecutionFilter filter = new com.ib.client.ExecutionFilter();
-            filter.m_clientId = c.getClientID();
-            if ("".compareTo(c.getLastExecutionRequestTime()) != 0) {
-                filter.m_time = c.getLastExecutionRequestTime();
-            }
-            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)));
-            c.getWrapper().requestExecutionDetails(filter);
-        }
+
         instantiated = true;
     }
 

@@ -30,6 +30,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.ScanResult;
+import static com.google.common.base.Strings.*;
 
 /**
  *
@@ -87,9 +88,9 @@ public class Algorithm {
         broker = globalProperties.getProperty("broker", "ib");
         connectionClass = globalProperties.getProperty("connectionclass", "com.incurrency.framework.TWSConnection");
         lc = Boolean.valueOf(globalProperties.getProperty("lc", "true"));
-        defaultExchange = globalProperties.getProperty("defaultexchange", "NSE").trim();
-        defaultPrimaryExchange = globalProperties.getProperty("defaultprimaryexchange", "NSE").trim();
-        defaultCurrency = globalProperties.getProperty("defaultcurrency", "INR").trim();
+        defaultExchange = isNullOrEmpty(globalProperties.getProperty("defaultexchange"))?"NSE":globalProperties.getProperty("defaultexchange");
+        defaultPrimaryExchange = isNullOrEmpty(globalProperties.getProperty("defaultprimaryexchange").trim())?"NSE":globalProperties.getProperty("defaultprimaryexchange");
+        defaultCurrency = isNullOrEmpty(globalProperties.getProperty("defaultcurrency").trim())?"INR":globalProperties.getProperty("defaultcurrency");
         generateSymbolFile = Boolean.valueOf(globalProperties.getProperty("generatesymbolfile", "false").trim());
         useForTrading = Boolean.valueOf(globalProperties.getProperty("trading", "false").trim());
         useForBacktest = Boolean.valueOf(globalProperties.getProperty("backtest", "false").trim());
@@ -129,7 +130,7 @@ public class Algorithm {
         try (Jedis jedis = marketdatapool.getResource()) {
 
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Cound not connect to Redis server. Exiting...");
+            logger.log(Level.SEVERE, "100,Cound not connect to Redis server");
             return;
         }
         useForSimulation = Boolean.parseBoolean(globalProperties.getProperty("simulation", "false").trim());

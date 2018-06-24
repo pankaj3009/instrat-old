@@ -441,7 +441,7 @@ public class Strategy implements NotificationListener {
                 String log = order.getOrderLog() != null ? order.getOrderLog().toString() : "";
                 double lastprice = Parameters.symbol.get(id).getLastPrice();
                 lastprice = lastprice == 0 ? order.getLimitPrice() : lastprice;
-                new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getOriginalOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log, order.getsl(), order.gettp());
+                new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getOriginalOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log, order.getsl(), order.gettp(),order.getTIF());
                 logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(order);
