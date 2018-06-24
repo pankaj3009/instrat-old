@@ -161,7 +161,7 @@ public class Validator {
             }
             return reconStatus;
         } else {
-            System.out.println("Trade and Order Files Reconile for account " + account + ";" + strategy + "  !");
+            //System.out.println("Trade and Order Files Reconile for account " + account + ";" + strategy + "  !");
             return reconStatus;
         }
 

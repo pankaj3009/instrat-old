@@ -114,16 +114,13 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     String orderid = startingOrderID.poll(5, TimeUnit.SECONDS);
                     int id=Utilities.getInt(orderid, this.requestIDManager.getNextOrderId());
                     getC().getIdmanager().initializeOrderId(id);
-                    logger.log(Level.INFO, "402, NextOrderIDReceived,{0}:{1}:{2}:{3}:{4},OrderID={5}",
-                            new Object[]{"Unknown", getC().getAccountName(), "Unknown", -1, -1, orderid});
+                    logger.log(Level.INFO, "101, NextOrderIDReceived,,OrderID={1}",
+                            new Object[]{getC().getAccountName(),orderid});
                     eClientSocket.reqIds(1);
-                    logger.log(Level.INFO, "403,Connected,{0}:{1}:{2}:{3}:{4}", new Object[]{"Unknown", c.getAccountName(), c.getStrategy(), -1, -1});
                     eClientSocket.setServerLogLevel(2); 
                     return true;
                 } else {
-                    logger.log(Level.SEVERE, "402, Could Not Connect,{0}:{1}:{2}:{3}:{4}",
-                            new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1});
-                    return false;
+                   return false;
                 }
             }
 
@@ -1375,7 +1372,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 r.requestStatus = EnumRequestStatus.SERVICED;
             }
             int id = serialno;
-            logger.log(Level.INFO, "402,ContractDetailsReceived,{0}:{1}:{2}:{3}:{4},ContractID={5}:MinTick:{6}",
+            logger.log(Level.FINE, "101,ContractDetailsReceived,{0}:{1}:{2}:{3}:{4},ContractID={5}:MinTick:{6}",
                     new Object[]{"Unknown", c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), -1, -1, String.valueOf(contractDetails.m_summary.m_conId), contractDetails.m_minTick});
             Parameters.symbol.get(id).setTickSize(contractDetails.m_minTick);
             Parameters.symbol.get(id).setContractID(contractDetails.m_summary.m_conId);
@@ -1717,11 +1714,12 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     @Override
     public void error(int id, int errorCode, String errorMsg) {
         try {
+           logger.log(Level.INFO, "101,IB Message,,Account={0},ID={1},Code={2},Message={3}", new Object[]{getC().getAccountName(),id , String.valueOf(errorCode), errorMsg});
             switch (errorCode) {
                 case 300:
                     Request rd = requestDetails.get(id);
                     if (rd != null) {
-                        logger.log(Level.INFO, "402,RequestID is not available for processing with IB Servers,{0}:{1}:{2}:{3}:{4},RequestTYpe={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
+                        logger.log(Level.INFO, "100,RequestID not found,{0}:{1}:{2}:{3}:{4},RequestTYpe={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
                                 new Object[]{"Unknown", rd.accountName, rd.symbol.getDisplayname(), -1, -1,
                                     rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
                     }
@@ -1730,7 +1728,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 case 321:
                     rd = requestDetails.get(id);
                     if (rd != null) {
-                        logger.log(Level.INFO, "402,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestType={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
+                        logger.log(Level.INFO, "100,Could Not Retrieve Data,{0}:{1}:{2}:{3}:{4},RequestType={5}:RequestTime={6}:RequestID={7}:ErrorCode={8},ErrorMsg={9}",
                                 new Object[]{"Unknown", rd.accountName, rd.symbol.getDisplayname(), -1, -1,
                                     rd.requestType, DateUtil.getFormatedDate("HH:mm:ss", rd.requestTime, TimeZone.getTimeZone(MainAlgorithm.timeZone)), rd.requestID, errorCode, errorMsg});
                     }
@@ -1739,16 +1737,13 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     //MainAlgorithm.connectToTWS(c);
                     if (eClientSocket.isConnected()) {
                         setHistoricalDataFarmConnected(true);
-                        logger.log(Level.INFO, "402,Reconnected with Account,{0}:{1}:{2}:{3}:{4},ErrorCode={5},ErrorMsg={6}",
-                                new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1, errorCode, errorMsg});
+                        logger.log(Level.INFO, "100,Reconnected with Account,{0}:{1}:{2}:{3}:{4}",
+                                new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1});
                     }
                     break;
                 case 430://We are sorry, but fundamentals data for the security specified is not available.failed to fetch
-
                     String symbol = requestDetails.get(id) != null ? requestDetails.get(id).symbol.getDisplayname() : "";
-                    logger.log(Level.INFO, "103,FundamentalDataNotReceived,{0}", new Object[]{symbol + delimiter + requestDetails.get(id).requestType});
-                    BeanSymbol s = requestDetails.get(id).symbol;
-                    //s.getFundamental().putSummary(s.getBrokerSymbol() + "," + errorMsg);
+                    logger.log(Level.INFO, "100,FundamentalDataNotReceived,{0}:{1}:{2}:{3}:{4},RequestType={5}", new Object[]{"Unknown",c.getAccountName(),symbol,-1,-1, requestDetails.get(id).requestType});
                     break;
                 case 200: //No security definition has been found for the request
                     symbol = requestDetails.get(id) != null ? requestDetails.get(id).symbol.getBrokerSymbol() : "";
@@ -1758,7 +1753,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         //TWSConnection.skipsymbol = true;
                     }
                     if (symbol.compareTo("") != 0) {
-                        logger.log(Level.INFO, "103,ContractDetailsNotReceived,{0}", new Object[]{symbol});
+                        logger.log(Level.INFO, "100,ContractDetailsNotReceived,,symbol={0}", new Object[]{symbol});
                         requestDetails.get(id).requestStatus = EnumRequestStatus.CANCELLED;                       
 
                     }
@@ -1766,23 +1761,24 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 case 1100://Connectivity between IB and TWS has been lost.
                     //this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO, "103,ConnectivityLost,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
+                    logger.log(Level.INFO, "100,ConnectivityLost,,Account={0}", new Object[]{getC().getAccountName()});
+                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + "has lost connectivity with IB Servers. Please check program integrity. ", "Algorithm SEVERE ALERT"));
+                        t.start();
                     break;
                 case 2105://A historical data farm is disconnected
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO, "103,HistoricalDataFarmDisconnected,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
+//                    logger.log(Level.INFO, "100,HistoricalDataFarmDisconnected,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
                     break;
                 case 1101://Connectivity between IB and TWS has been restoreddata lost.*
                 case 2106://A historical data farm is connected.
                     setHistoricalDataFarmConnected(true);
-                    logger.log(Level.INFO, "103,HistoricalDataFarmConnected,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
+  //                  logger.log(Level.INFO, "103,HistoricalDataFarmConnected,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
                     break;
                 case 502: //could not connect . Check port
                     this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO, "103,CouldNotConnect,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
                     if (!this.severeEmailSent.get()) {
-                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + "could not connect. Check that TWSSend is accessible and API connections are enabled in TWSSend. ", "Algorithm SEVERE ALERT"));
+                        t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + "could not connect. Check that TWSSend is accessible and API connections are enabled in TWSSend. ", "Algorithm SEVERE ALERT"));
                         t.start();
                         this.severeEmailSent.set(Boolean.TRUE);
                     }
@@ -1790,9 +1786,9 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 case 504: //disconnected
                     //this.eClientSocket.eDisconnect();
                     setHistoricalDataFarmConnected(false);
-                    logger.log(Level.INFO, "103,Disconnected,{0}", new Object[]{getC().getAccountName() + delimiter + errorCode + delimiter + errorMsg});
+                    logger.log(Level.INFO, "100,Disconnected,,Account={0}", new Object[]{getC().getAccountName()});
                     if (!this.severeEmailSent.get()) {
-                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
+                        t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " disconnected. Trading Stopped on this account", "Algorithm SEVERE ALERT"));
                         t.start();
                         this.severeEmailSent.set(Boolean.TRUE);
                     }
@@ -1800,13 +1796,12 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 case 326://client id is in use
                     this.eClientSocket.eDisconnect();
                     if (!this.severeEmailSent.get()) {
-                        Thread t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " could not connect. Client ID was already in use", "Algorithm SEVERE ALERT"));
+                        t = new Thread(new Mail(getC().getOwnerEmail(), "Connection: " + getC().getIp() + ", Port: " + getC().getPort() + ", ClientID: " + getC().getClientID() + " could not connect. Client ID was already in use", "Algorithm SEVERE ALERT"));
                         t.start();
                         this.severeEmailSent.set(Boolean.TRUE);
                     }
                     break;
                 default:
-                    logger.log(Level.INFO, "103,IB Message,{0}", new Object[]{getC().getAccountName() + delimiter + id + delimiter + errorCode + delimiter + errorMsg});
                     tes.fireErrors(id, errorCode, "API.msg2: " + errorMsg, getC());
                     break;
 

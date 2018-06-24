@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EClientSocket {
 
@@ -225,12 +227,14 @@ public class EClientSocket {
     private boolean m_extraAuth;
 
     public EClientSocket(AnyWrapper anyWrapper) {
+        
         m_anyWrapper = anyWrapper;
         m_clientId = -1;
         m_extraAuth = false;
         m_connected = false;
         m_serverVersion = 0;
     }
+    private static final Logger logger = Logger.getLogger(EClientSocket.class.getName());
 
     public int serverVersion() {
         return m_serverVersion;
@@ -320,10 +324,10 @@ public class EClientSocket {
 
         // check server version
         m_serverVersion = m_reader.readInt();
-        System.out.println("Server Version:" + m_serverVersion);
+        //System.out.println("Server Version:" + m_serverVersion);
         if (m_serverVersion >= 20) {
             m_TwsTime = m_reader.readStr();
-            System.out.println("TWS Time at connection:" + m_TwsTime);
+            logger.log(Level.INFO,"100,TWS Information,,Server Version={0},Time={1}",new Object[]{m_serverVersion,m_TwsTime});
         }
         if (m_serverVersion < SERVER_VERSION) {
             eDisconnect();

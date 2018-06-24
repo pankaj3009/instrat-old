@@ -70,12 +70,12 @@ public class MainAlgorithm extends Algorithm {
     private String realTimeBars;
     private boolean tradingAlgoInitialized = false;
     private boolean duplicateAccounts = false;
-    private String version = "1.03B-20140826";
+    private String version = "1.10B-20180622";
     private final String delimiter = "_";
     TimerTask closeAlgorithms = new TimerTask() {
         @Override
         public void run() {
-            logger.log(Level.INFO, "100, inStratShutdown,{0}", new Object[]{closeDate});
+            logger.log(Level.INFO, "100, inStratShutdown,,ShutdownTime={0}", new Object[]{closeDate.toString()});
             System.exit(0);
         }
     };
@@ -181,7 +181,7 @@ public class MainAlgorithm extends Algorithm {
         } else if (closeDate.compareTo(date) < 0) {
             closeDate = date;
         }
-        logger.log(Level.INFO, "100,inStratShutdown,{0}", new Object[]{closeDate.toString()});
+        logger.log(Level.INFO, "100,inStratShutdown,, ShutdownTime={0}", new Object[]{closeDate.toString()});
     }
 
     /**
@@ -301,8 +301,8 @@ public class MainAlgorithm extends Algorithm {
                 concatInput = concatInput + " " + temp;
             }
         }
-        logger.log(Level.INFO, "100,inStratVersion,{0}", new Object[]{version});
-        logger.log(Level.INFO, "100,inStratInputParameters,{0}", new Object[]{concatInput});
+        logger.log(Level.INFO, "100,Startup,,inStratVersion={0}", new Object[]{version});
+        logger.log(Level.INFO, "100,Startup,,inStratInputParameters={0}", new Object[]{concatInput});
     }
 
     private int connectToBroker() throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -319,16 +319,18 @@ public class MainAlgorithm extends Algorithm {
         ArrayList<BeanConnection> notConnected = new ArrayList();
         //TradingUtil.logProperties();
         for (BeanConnection c : Parameters.connection) {
-            logger.log(Level.INFO, "100,ConnectionParameters, IP_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getIp()});
-            logger.log(Level.INFO, "100,ConnectionParameters, Port_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getPort()});
-            logger.log(Level.INFO, "100,ConnectionParameters, ClientID_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getClientID()});
-            logger.log(Level.INFO, "100,ConnectionParameters, Strategy_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getStrategy()});
-            logger.log(Level.INFO, "100,ConnectionParameters, Purpose_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getPurpose()});
-            logger.log(Level.INFO, "100,ConnectionParameters, # RealTime Market Data_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getTickersLimit()});
-            logger.log(Level.INFO, "100,ConnectionParameters, Pause in seconds between historical data_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getHistMessageLimit()});
-            logger.log(Level.INFO, "100,ConnectionParameters, Messages per second_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getRtMessageLimit()});
-            logger.log(Level.INFO, "100,ConnectionParameters, Orders Per 2 minutes for triggering system halt_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getOrdersHaltTrading()});
-            logger.log(Level.INFO, "100,ConnectionParameters, Owner Email_{0} ", new Object[]{connectioncount + delimiter + Parameters.connection.get(connectioncount - 1).getOwnerEmail()});
+            logger.log(Level.INFO, "100,ConnectionParameters,, IP={0},Port={1},ClientID={2},Strategy={3},Purpose={4},RealTimeMarketData={5},HistoricalDataPause={6},MessagesPerSecond={7},OrderLimitEvery2min={8},OwnerEmail={9} ", 
+                    new Object[]{Parameters.connection.get(connectioncount - 1).getIp(),
+                        String.valueOf(Parameters.connection.get(connectioncount - 1).getPort()),
+                        Parameters.connection.get(connectioncount - 1).getClientID(),
+                        Parameters.connection.get(connectioncount - 1).getStrategy(),
+                        Parameters.connection.get(connectioncount - 1).getPurpose(),
+                        Parameters.connection.get(connectioncount - 1).getTickersLimit(),
+                        Parameters.connection.get(connectioncount - 1).getHistMessageLimit(),
+                        Parameters.connection.get(connectioncount - 1).getRtMessageLimit(),
+                        Parameters.connection.get(connectioncount - 1).getOrdersHaltTrading(),
+                        Parameters.connection.get(connectioncount - 1).getOwnerEmail()
+                    });
             c.getWrapper().connect();
             connectioncount = connectioncount + 1;
             //wait for connection
@@ -356,9 +358,7 @@ public class MainAlgorithm extends Algorithm {
         }
 
         for (BeanConnection c : Parameters.connection) {
-            System.out.print("Going to cancel account updated");
             c.getWrapper().cancelAccountUpdates();
-            System.out.println("Account updates cancelled");
         }
         if (useForTrading) {
             for (BeanConnection c : Parameters.connection) {
@@ -366,8 +366,8 @@ public class MainAlgorithm extends Algorithm {
                 referenceExternalOrderID = referenceExternalOrderID + 1;
                 int id = Math.max(referenceExternalOrderID, c.getIdmanager().getNextOrderIdWithoutIncrement());
                 c.getIdmanager().initializeOrderId(id);
-                logger.log(Level.INFO, "402, NextOrderIDUpdated,{0}:{1}:{2}:{3}:{4},OrderID={5}",
-                        new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, -1, id});
+                logger.log(Level.INFO, "100, NextOrderIDUpdated,,Account={0},OrderID={1}",
+                        new Object[]{c.getAccountName(),id});
             }
         }
 
@@ -415,7 +415,6 @@ public class MainAlgorithm extends Algorithm {
                 BeanConnection tempC = Parameters.connection.get(0);
                 for (BeanSymbol s : Parameters.symbol) {
                     tempC.getWrapper().getContractDetails(s, "");
-                    System.out.print("ContractDetails Requested:" + s.getBrokerSymbol() + "\n");
                 }
                 /*
                 while (TWSConnection.mTotalSymbols > 0) {
@@ -616,7 +615,7 @@ public class MainAlgorithm extends Algorithm {
         Enumeration em = p.keys();
         while (em.hasMoreElements()) {
             String str = em.nextElement().toString();
-            logger.log(Level.INFO, "100,StrategyParameters,{0}", new Object[]{str + delimiter + p.getProperty(str)});
+            logger.log(Level.INFO, "100,StrategyParameters,,StrategyFamily={0},Parmeters={1}", new Object[]{str,p.getProperty(str)});
             switch (str) {
                 case "TimeZone":
                     timeZone = (p.getProperty(str) == null ? "Asia/Kolkata" : p.getProperty(str));
@@ -726,7 +725,6 @@ public class MainAlgorithm extends Algorithm {
      * @throws InstantiationException
      */
     public void registerStrategy(String strategy) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException, InstantiationException {
-        logger.log(Level.INFO,"101,Loading Strategy:{0}",new Object[]{strategy});
         HashMap<String, ArrayList<String>> initValues = strategyInitValues(strategy);
         for (Map.Entry<String, ArrayList<String>> entry : initValues.entrySet()) {
             String parameterFile = entry.getKey();
@@ -744,13 +742,14 @@ public class MainAlgorithm extends Algorithm {
                 arg[0] = String.class;
             }
             Constructor constructor = Class.forName(strategy).getConstructor(arg);
-           
             Properties p = Utilities.loadParameters(parameterFile);
             if (useForTrading || useForSimulation || useForBacktest) {
                 //String[] tempStrategyArray = parameterFile.split("\\.")[0].split("-|_");
                 String[] tempStrategyArray = parameterFile.split("\\.")[0].split("_");
                 String strategyName = tempStrategyArray[tempStrategyArray.length - 1];
                 getStrategies().add(strategyName);
+                int len=strategy.split("\\.").length;
+                logger.log(Level.INFO,"100,Loading strategy,,StrategyFamily={0},Strategy={1}",new Object[]{strategy.split("\\.")[len-1],strategyName});
                 strategyInstances.add((Strategy) constructor.newInstance(this, p, parameterFile, tradingAccounts,Boolean.TRUE));
             } /*
             else if (Boolean.parseBoolean(globalProperties.getProperty("backtest", "false"))) {
@@ -781,10 +780,8 @@ public class MainAlgorithm extends Algorithm {
     public HashMap<String, ArrayList<String>> strategyInitValues(String strategy) {
         //file to be setup as
         //U72311-DU12345-inradr2.properties,DU24321-inradr1.properties, inradr.properties
-      
         int l = strategy.split("\\.").length;
         strategy = strategy.split("\\.")[l - 1].toLowerCase(); //strategy is named as the second last part of the extended class name.
-        logger.log(Level.INFO,"101,Strategy Name:{0}",new Object[]{strategy});
         HashMap<String, ArrayList<String>> out = new HashMap<>();
         String argValues = input.get(strategy);
         //argValues=U72311-DU12345-inradr2.properties,DU24321-inradr1.properties, inradr.properties
@@ -792,7 +789,6 @@ public class MainAlgorithm extends Algorithm {
         ArrayList<String> allocAccountNames = new ArrayList<>();
         if (isUseForTrading()) {
             for (BeanConnection c : Parameters.connection) {
-                logger.log(Level.INFO,"101,Strategies allowed in account {0} are {1}",new Object[]{c.getAccountName(),c.getStrategy()});
                 if (c.getPurpose().compareToIgnoreCase("Trading")==0 && c.getStrategy().toLowerCase().contains(strategy.toLowerCase())) {
                     allAccountNames.add(c.getAccountName()); //get list of all accounts that will trade this strategy
                 }

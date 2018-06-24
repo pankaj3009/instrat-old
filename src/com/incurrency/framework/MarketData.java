@@ -73,8 +73,8 @@ public class MarketData implements Runnable {
     // Start the thread
     @Override
     public void run() {
-        logger.log(Level.INFO, "500,MarketDataThreadStarted,{0}:{1}:{2}:{3}:{4}",
-                new Object[]{"Unknown", mIB.getAccountName(), "Unknown", -1, -1});
+        logger.log(Level.FINE, "400,MarketDataThreadStarted,,Account={0}",
+                new Object[]{mIB.getAccountName()});
         int rowCount = mCount;
         /*
         if (rowCount <= mIB.getTickersLimit() && "N".compareTo(symb.get(0).getPreopen()) == 0) //if preopen for the first symbol="Y", then all symbols are assumed to be snapshot

@@ -92,8 +92,8 @@ public class Strategy implements NotificationListener {
             tradingWindow.set(Boolean.FALSE);
             //cancel all open orders and delete entry records from orders and trades
 
-            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
-                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
+            logger.log(Level.INFO, "300,TradingWindowSet,,Strategy={0},TradingWindowValue={1}",
+                    new Object[]{strategy,tradingWindow.get()});
             for (BeanPosition p : getPosition().values()) {
                 if (p.getPosition() != 0) {
                     int id = p.getSymbolid();
@@ -115,8 +115,8 @@ public class Strategy implements NotificationListener {
         @Override
         public void run() {
             tradingWindow.set(Boolean.TRUE);
-            logger.log(Level.INFO, "200,TradingWindowSet,{0}:{1}:{2}:{3}:{4},TradingWindowValue={5}",
-                    new Object[]{strategy, "Order", "Unknown", -1, -1, tradingWindow.get()});
+            logger.log(Level.INFO, "300,TradingWindowSet,,Strategy={0},TradingWindowValue={1}",
+                    new Object[]{strategy, tradingWindow.get()});
         }
     };
 
@@ -313,8 +313,8 @@ public class Strategy implements NotificationListener {
                 }
                 int maxorderid = Utilities.getMaxInternalOrderID(strategyDB, "Order");
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
-                logger.log(Level.INFO, "200, OpeningInternalOrderID,{0}:{1}:{2}:{3}:{4}",
-                        new Object[]{getStrategy(), "Order", "Unknown", Algorithm.orderidint.get(), -1});
+                logger.log(Level.INFO, "300, OpeningInternalOrderID,,Strategy={0},OpeningInteralOrderID={1}",
+                        new Object[]{getStrategy(),Algorithm.orderidint.get()+1});
 
                 //print positions on initialization
                 for (int id : getStrategySymbols()) {
@@ -1258,21 +1258,21 @@ public class Strategy implements NotificationListener {
         longOnly = p.getProperty("Long") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Long")));
         shortOnly = p.getProperty("Short") == null ? new AtomicBoolean(Boolean.TRUE) : new AtomicBoolean(Boolean.parseBoolean(p.getProperty("Short")));
         connectionidForMarketData = Utilities.getInt(p.getProperty("ConnectionIDForMarketData", "0"), 0);
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "Accounts" + delimiter + Utilities.listToString(accounts)});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartDate" + delimiter + getStartDate()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "EndDate" + delimiter + getEndDate()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TickSize" + delimiter + getTickSize()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ClawProfit" + delimiter + getClawProfitTarget()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayProfit" + delimiter + getDayProfitTarget()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "DayStopLoss" + delimiter + getDayStopLoss()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "PointValue" + delimiter + getPointValue()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "MaxOpenPositions" + delimiter + getMaxOpenPositions()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "BrokerageFile" + delimiter + getFutBrokerageFile()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "TimeZone" + delimiter + getTimeZone()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "StartingCapital" + delimiter + getStartingCapital()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "LongAllowed" + delimiter + getLongOnly()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "ShortAllowed" + delimiter + getShortOnly()});
-        logger.log(Level.INFO, "200,StrategyParameters,{0}", new Object[]{getStrategy() + delimiter + "OrderAtributes" + delimiter + getOrderAttributes().toString()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},Accounts={1}", new Object[]{getStrategy(),Utilities.listToString(accounts)});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},TimeZone={1}", new Object[]{getStrategy(),getTimeZone()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},StartTime={1}", new Object[]{getStrategy(),getStartDate()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},EndTime={1}", new Object[]{getStrategy(),getEndDate()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},TickSize={1}", new Object[]{getStrategy(),getTickSize()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},PointValue={1}", new Object[]{getStrategy(),getPointValue()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},ClawProfit={1}", new Object[]{getStrategy(),getClawProfitTarget()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},DayProfit={1}", new Object[]{getStrategy(),getDayProfitTarget()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},DayStopLoss={1}", new Object[]{getStrategy(),getDayStopLoss()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},MaxOpenPosition={1}", new Object[]{getStrategy(),getMaxOpenPositions()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},BrokerageFile={1}", new Object[]{getStrategy(), getFutBrokerageFile()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},StartingCapital={1}", new Object[]{getStrategy(),getStartingCapital()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},LongAllowed={1}", new Object[]{getStrategy(), getLongOnly()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},ShortAllowed={1}", new Object[]{getStrategy(),getShortOnly()});
+        logger.log(Level.INFO, "300,StrategyParameters,,Strategy={0},OrderAttributes={1}", new Object[]{getStrategy(),getOrderAttributes().toString()});
 
         if (getFutBrokerageFile().compareTo("") != 0) {
             Properties pBrokerage = Utilities.loadParameters(getFutBrokerageFile());
