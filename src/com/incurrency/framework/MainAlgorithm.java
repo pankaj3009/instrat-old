@@ -369,7 +369,7 @@ public class MainAlgorithm extends Algorithm {
                 int id = Math.max(referenceExternalOrderID, c.getIdmanager().getNextOrderIdWithoutIncrement());
                 c.getIdmanager().initializeOrderId(id);
                 logger.log(Level.INFO, "100, NextOrderIDUpdated,,Account={0},OrderID={1}",
-                        new Object[]{c.getAccountName(),id});
+                        new Object[]{c.getAccountName(),String.valueOf(id)});
             }
         }
 
@@ -812,7 +812,7 @@ public class MainAlgorithm extends Algorithm {
                     if (allAccountNames.contains(account)) {
                         subAccountNames.add(instanceParameters[j].toUpperCase());
                         allocAccountNames.add(instanceParameters[j].toUpperCase());
-                        logger.log(Level.INFO, "100,StrategyAdded,{0}", new Object[]{strategy + delimiter + instanceParameters[j].toUpperCase()});
+                        logger.log(Level.INFO, "100,StrategyAdded,{}", new Object[]{strategy + delimiter + instanceParameters[j].toUpperCase()});
                     }
                 }
             }

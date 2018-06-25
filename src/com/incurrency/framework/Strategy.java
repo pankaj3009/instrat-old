@@ -313,8 +313,8 @@ public class Strategy implements NotificationListener {
                 }
                 int maxorderid = Utilities.getMaxInternalOrderID(strategyDB, "Order");
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
-                logger.log(Level.INFO, "300, OpeningInternalOrderID,,Strategy={0},OpeningInteralOrderID={1}",
-                        new Object[]{getStrategy(),Algorithm.orderidint.get()+1});
+                logger.log(Level.INFO, "300, OpeningInternalOrderID,,Strategy={0},OpeningInternalOrderID={1}",
+                        new Object[]{getStrategy(),String.valueOf(Algorithm.orderidint.get()+1)});
 
                 //print positions on initialization
                 for (int id : getStrategySymbols()) {
