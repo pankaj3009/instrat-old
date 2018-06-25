@@ -146,6 +146,20 @@ public class Utilities {
         //String out=DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss",new Date().getTime(),TimeZone.getTimeZone("GMT-4:00"));
     }
 
+    public static int getPositionFromRedis(RedisConnect db,String account,String strategy,String displayName){
+        int out=0;
+        List<String> keys= db.scanRedis("opentrades_"+strategy+"*"+account);
+        for (String key:keys){
+            Map<String,String> trade=db.getTradeBean(key);
+            if(trade.get("entrysymbol").equals(displayName)){
+                int size1=trade.get("entryside").equals("BUY")?Utilities.getInt(trade.get("entrysize"),0):-Utilities.getInt(trade.get("entrysize"),0);
+                int size2=trade.get("entryside").equals("BUY")?-Utilities.getInt(trade.get("exitsize"),0):Utilities.getInt(trade.get("exitsize"),0);
+                out=out+size1-size2;
+            }
+        }
+        return out;
+    }
+    
     public static int tradesToday(RedisConnect db, String strategyName, String timeZone, String accountName, String today) {
         int tradesToday = 0; //Holds the number of trades done today
         List<String> result = db.scanRedis("opentrades_" + strategyName + "*" + accountName);

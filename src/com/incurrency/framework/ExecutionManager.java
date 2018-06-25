@@ -79,17 +79,17 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private final String delimiter = "_";
     private double estimatedBrokerage = 0;
     private ConcurrentHashMap<Integer, EnumOrderStatus> orderStatus = new ConcurrentHashMap<>();
-    private HashSet<OrderStatusEvent> openingEvents=new HashSet<>();
+    private HashSet<OrderStatusEvent> openingEvents = new HashSet<>();
     private java.util.Timer openingPosition;
-    private boolean openingRecon=false;
-    
+    private boolean openingRecon = false;
+
     TimerTask runBrokerage = new TimerTask() {
         @Override
         public void run() {
             double entryCost = 0;
             double exitCost = 0;
             //calculate entry costs
-            for (String key : getDb().scanRedis("closedtrades"+"*")) {
+            for (String key : getDb().scanRedis("closedtrades" + "*")) {
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
                 double entryPrice = Trade.getEntryPrice(db, key);
@@ -121,7 +121,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 break;
                             case DISTRIBUTE:
                                 if (!(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (entrySide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER))) {
-                                    int tradesToday = getDb().scanRedis("opentrades"+"*").size() * 2;
+                                    int tradesToday = getDb().scanRedis("opentrades" + "*").size() * 2;
                                     if (tradesToday > 0) {
                                         entryCost = entryCost + b.primaryRate / tradesToday + (b.primaryRate / tradesToday) * b.secondaryRate;
                                     }
@@ -150,7 +150,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 }
                                 break;
                             case DISTRIBUTE:
-                                int tradesToday = getDb().scanRedis("opentrades"+"*").size() * 2;
+                                int tradesToday = getDb().scanRedis("opentrades" + "*").size() * 2;
                                 if (!exitTime.equals("") && !(b.secondaryRule == EnumSecondaryApplication.EXCLUDEBUY && (exitSide == EnumOrderSide.BUY || exitSide == EnumOrderSide.COVER) || (b.secondaryRule == EnumSecondaryApplication.EXCLUDEINTRADAYREVERSAL && exitTime.contains(entryTime.substring(0, 10))))) {
                                     exitCost = exitCost + b.primaryRate / tradesToday + (b.primaryRate / tradesToday) * b.secondaryRate;
                                 }
@@ -190,17 +190,15 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             getOpenOrders();
         }
     };
-    TimerTask reconcileOpeningPositions=new TimerTask(){
+    TimerTask reconcileOpeningPositions = new TimerTask() {
         @Override
         public void run() {
-            if(MainAlgorithm.strategiesLoaded.get()){
-               orderStatusReceived(null);
-            ExecutionManager.this.openingPosition.cancel();
+            if (MainAlgorithm.strategiesLoaded.get()) {
+                orderStatusReceived(null);
+                ExecutionManager.this.openingPosition.cancel();
             }
-        }       
+        }
     };
-    
-    
 
     public ExecutionManager(Strategy s, double tickSize, Date endDate, String orderReference, double pointValue, Integer maxOpenPositions, String timeZone, ArrayList<String> accounts) {
         this.s = s;
@@ -211,7 +209,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         this.timeZone = timeZone;
         this.accounts = accounts;
         //load db
-        if (Algorithm.redisip==null) {
+        if (Algorithm.redisip == null) {
             logger.log(Level.SEVERE, "Redis needs to be set as the store for trade records");
         } else {
             db = Algorithm.tradeDB;
@@ -236,7 +234,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
         //first update combo positions
         ArrayList<Integer> comboOrderids = new ArrayList<>();
-        for (String key : db.scanRedis("opentrades_" + this.orderReference+"*")) {
+        for (String key : db.scanRedis("opentrades_" + this.orderReference + "*")) {
             if (key.contains("_" + s.getStrategy())) {
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
@@ -247,7 +245,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
         //then update single legs
-        for (String key : db.scanRedis("opentrades_" + this.orderReference+"*")) {
+        for (String key : db.scanRedis("opentrades_" + this.orderReference + "*")) {
             if (key.contains("_" + s.getStrategy())) {
                 String parentdisplayname = Trade.getParentSymbol(db, key);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
@@ -280,10 +278,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             List<String> openOrders = this.getS().getDb().scanRedis(key);
             this.getOpenPositionCount().set(connectionid, openOrders.size());
             logger.log(Level.INFO, "200, InitialOpenPositionCount,{0}:{1}:{2}:{3}:{4},OpenPositionCount={5}",
-                                        new Object[]{getOrderReference(), c.getAccountName(), "NULL", -1, -1, String.valueOf(openPositionCount.get(i))});
+                    new Object[]{getOrderReference(), c.getAccountName(), "NULL", -1, -1, String.valueOf(openPositionCount.get(i))});
 
         }
-        
 
         //update connection with mtm data
         for (BeanConnection c : Parameters.connection) {
@@ -361,7 +358,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             if (entrySize > 0) {
                                 tempOpenPosition = this.openPositionCount.get(i);
                                 this.openPositionCount.add(i, tempOpenPosition + 1);
-                                }
+                            }
                             break;
                         case SHORT:
                             tempPositionPrice = tempPosition - entrySize != 0 ? (tempPosition * tempPositionPrice - entrySize * entryPrice) / (-entrySize + tempPosition) : 0D;
@@ -534,7 +531,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             return;
                         }
                         boolean specificAccountSpecified = event.getSpecifiedBrokerAccount() != null && !event.getSpecifiedBrokerAccount().isEmpty();
-                        if ("Trading".compareToIgnoreCase(c.getPurpose())==0 && (!specificAccountSpecified && accounts.contains(c.getAccountName()) || (specificAccountSpecified && event.getSpecifiedBrokerAccount().equals(c.getAccountName())))) {
+                        if ("Trading".compareToIgnoreCase(c.getPurpose()) == 0 && (!specificAccountSpecified && accounts.contains(c.getAccountName()) || (specificAccountSpecified && event.getSpecifiedBrokerAccount().equals(c.getAccountName())))) {
                             //check if system is square
                             //logger.log(Level.INFO, "303, OrderDetails,{0}", new Object[]{c.getAccountName()+delimiter+ orderReference+delimiter+ event.getInternalorder()+delimiter+event.getInternalorderentry()+delimiter+event.get Parameters.symbol.get(id).getDisplayname()+delimiter+event.getSide()+delimiter+event.getOrderSize()+delimiter+event.getLimitPrice()+delimiter+event.getTriggerPrice()});
                             Index ind = new Index(event.get("OrderReference"), id);
@@ -578,7 +575,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     logger.log(Level.INFO, "200,Case 010.Cancel Open Orders and Delay Entry,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                             new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                 event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
-                                    if(event.getOrderSide()==EnumOrderSide.BUY||event.getOrderSide()==EnumOrderSide.COVER){
+                                    if (event.getOrderSide() == EnumOrderSide.BUY || event.getOrderSide() == EnumOrderSide.COVER) {
                                         this.closeAllOpenOrders(c, id, event.getOrderReference());
                                     }
                                     eventWait(c, event, "010");
@@ -683,7 +680,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     int id = event.getParentSymbolID();
                     //logger.log(Level.FINE, "{0},{1},Execution Manager,OrderReceived Amend. Symbol:{2}, OrderSide:{3}", new Object[]{"ALL", orderReference, Parameters.symbol.get(id).getSymbol(), event.getSide()});
                     for (BeanConnection c : Parameters.connection) {
-                        if ("Trading".compareToIgnoreCase(c.getPurpose())==0 && accounts.contains(c.getAccountName())) {
+                        if ("Trading".compareToIgnoreCase(c.getPurpose()) == 0 && accounts.contains(c.getAccountName())) {
                             processOrderAmend(id, c, event);
                         }
 
@@ -693,7 +690,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     //Do cancel processing for combo orders. To be added.
                     //logger.log(Level.INFO, "All Accounts,{0},Execution Manager,Cancel any open orders, Symbol:{1}, OrderSide:{2}", new Object[]{orderReference, Parameters.symbol.get(id).getSymbol(), event.getSide()});
                     for (BeanConnection c : Parameters.connection) {
-                        if ("Trading".compareToIgnoreCase(c.getPurpose())==0 && accounts.contains(c.getAccountName())) {
+                        if ("Trading".compareToIgnoreCase(c.getPurpose()) == 0 && accounts.contains(c.getAccountName())) {
                             //check if system is square && order id is to initiate
                             //logger.log(Level.INFO, "{0},{1},Execution Manager,Cancel any open orders, Symbol:{2}, OrderSide:{3}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getSymbol(), event.getSide()});
                             processOrderCancel(c, event);
@@ -789,7 +786,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         if (tempOpenPosition < tempMaxPosition && !s.getPlmanager().isDayProfitTargetHit() && !s.getPlmanager().isDayStopLossHit()) {//enter loop is sl/tp is not hit
             int referenceid = Utilities.getCashReferenceID(Parameters.symbol, id);
             double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getOrderSide(), getTickSize(), event.getOrderType());
-            if(event.getOrderType().equals(EnumOrderType.CUSTOMREL)){
+            if (event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
                 event.setLimitPrice(limitprice);
             }
 //            if (event.getOrderType().equals(EnumOrderType.LMT)) {
@@ -861,14 +858,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             event.setLimitPrice(limitprice);
         }
         HashMap<Integer, Order> orders = new HashMap<>();
-        String orderKey=event.getOrderKeyForSquareOff();
-        String tradeKey=Utilities.getTradeKeyFromOrderKey(orderKey, c.getAccountName());
-        int residualTradeSize=Trade.getEntrySize(db, tradeKey)-Trade.getExitSize(db, tradeKey);
-        if(residualTradeSize<=0){
-            logger.log(Level.INFO,"Residual Trade size was {0} for TradeKey:{1}",new Object[]{residualTradeSize,tradeKey});
+        String orderKey = event.getOrderKeyForSquareOff();
+        String tradeKey = Utilities.getTradeKeyFromOrderKey(orderKey, c.getAccountName());
+        int residualTradeSize = Trade.getEntrySize(db, tradeKey) - Trade.getExitSize(db, tradeKey);
+        if (residualTradeSize <= 0) {
+            logger.log(Level.INFO, "Residual Trade size was {0} for TradeKey:{1}", new Object[]{residualTradeSize, tradeKey});
             return;
         }
-        if(event.getOriginalOrderSize()>residualTradeSize){
+        if (event.getOriginalOrderSize() > residualTradeSize) {
             event.setOriginalOrderSize(residualTradeSize);
         }
         orders = c.getWrapper().createOrder(event);
@@ -977,69 +974,72 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (!MainAlgorithm.strategiesLoaded.get()) {
                 openingEvents.add(event);
             } else {
-                if (openingEvents.size() > 0 ||!openingRecon) {
+                if (openingEvents.size() > 0 || !openingRecon) {
                     //get all open orders as per instrat
+                    if(event!=null){
+                        System.out.println(event.toString());                        
+                    }
                     for (BeanConnection c : Parameters.connection) {
                         int index = Parameters.connection.indexOf(c);
                         ArrayList<OrderBean> orders = Parameters.connection.get(index).getLiveOrders();
                         //each open order should have a correponding openingEvent.
                         // if not, and order has zero fill size, cancel the order
                         // if order has non-zero fill size, send email
-                        for (OrderBean order:orders){
-                            boolean reconciled=false;
-                            int externalorderid=order.getExternalOrderID();
-                            for (OrderStatusEvent e : openingEvents){
-                                if(e.getOrderID()==externalorderid){
-                                    reconciled=true;
+                        for (OrderBean order : orders) {
+                            boolean reconciled = false;
+                            int externalorderid = order.getExternalOrderID();
+                            for (OrderStatusEvent e : openingEvents) {
+                                if (e.getOrderID() == externalorderid) {
+                                    reconciled = true;
                                     orderStatusUpdater(e);
                                 }
                             }
-                            if(!reconciled & order.getTotalFillSize()==0){
+                            if (!reconciled & order.getTotalFillSize() == 0) {
                                 //cancel order in instrat.
-                                OrderStatusEvent e=new OrderStatusEvent(new Object(), c, order.getExternalOrderID(), "Cancelled", 0, order.getOriginalOrderSize(), 0D, 0, order.getParentSymbolID(), 0D, -1, "");
-                                logger.log(Level.INFO,"200,OpeningReconcilationAlert,{0}:{1}:{2}:{3}:{4},NewStatus={5}",
-                                        new Object[]{getOrderReference(), c.getAccountName(), order.getParentDisplayName(), Integer.toString(order.getInternalOrderID()), String.valueOf(order.getExternalOrderID()),"Cancelled"});
-                                orderStatusUpdater(e);   
-                            }else if(!reconciled & order.getTotalFillSize()>0){
+                                OrderStatusEvent e = new OrderStatusEvent(new Object(), c, order.getExternalOrderID(), "Cancelled", 0, order.getOriginalOrderSize(), 0D, 0, order.getParentSymbolID(), 0D, -1, "");
+                                logger.log(Level.INFO, "200,OpeningReconcilationAlert,{0}:{1}:{2}:{3}:{4},NewStatus={5}",
+                                        new Object[]{getOrderReference(), c.getAccountName(), order.getParentDisplayName(), Integer.toString(order.getInternalOrderID()), String.valueOf(order.getExternalOrderID()), "Cancelled"});
+                                orderStatusUpdater(e);
+                            } else if (!reconciled & order.getTotalFillSize() > 0) {
                                 //send alert email to account owner
                                 Gson gson = new Gson();
                                 String json = gson.toJson(order);
-                                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Opening Live Order Recon failed with IB. Please Check orders manually. Account: " + c.getAccountName()+ "Order details with instrat: "+ json, "Algorithm Opening Order Recon Error"));
+                                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Opening Live Order Recon failed with IB. Please Check orders manually. Account: " + c.getAccountName() + "Order details with instrat: " + json, "Algorithm Opening Order Recon Error"));
                                 t.start();
                             }
-                        }                        
+                        }
                         //Reverse recon. Iterate through  orderEvents
-                        for (OrderStatusEvent e : openingEvents){
-                            boolean reconciled=false;
-                            int externalorderid=e.getOrderID();
-                            for(OrderBean order:orders){
-                                if(order.getExternalOrderID()==externalorderid){
-                                    reconciled=true;
+                        for (OrderStatusEvent e : openingEvents) {
+                            boolean reconciled = false;
+                            int externalorderid = e.getOrderID();
+                            for (OrderBean order : orders) {
+                                if (order.getExternalOrderID() == externalorderid) {
+                                    reconciled = true;
                                     break;
                                 }
                             }
-                            if(!reconciled){
-                               Gson gson = new Gson();
+                            if (!reconciled) {
+                                Gson gson = new Gson();
                                 String json = gson.toJson(e);
-                                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Opening Live Order Recon failed with IB. Please Check orders manually. Account: " + c.getAccountName()+ "Order details with IB: "+ json+ "are not available with inStrat", "Algorithm Opening Order Recon Error"));
+                                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Opening Live Order Recon failed with IB. Please Check orders manually. Account: " + c.getAccountName() + "Order details with IB: " + json + "are not available with inStrat", "Algorithm Opening Order Recon Error"));
                                 t.start();
                             }
                         }
                     }
                     openingEvents.clear();
-                    if(event!=null){
-                        orderStatusUpdater(event);
-                    }
-                } 
-                openingRecon=true;
+                    openingRecon = true;
+                }
+                if (event != null) {
+                    orderStatusUpdater(event);
+                }
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
     }
-            
-    private void orderStatusUpdater(OrderStatusEvent event){
-        try{
+
+    private void orderStatusUpdater(OrderStatusEvent event) {
+        try {
             int orderid = event.getOrderID();
             //update HashMap orders
             BeanConnection c = event.getC();
@@ -1118,7 +1118,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     case CANCELLEDNOFILL:
                                     case CANCELLEDPARTIALFILL:
                                         if (ob.getOrderStatus() != EnumOrderStatus.CANCELLEDNOFILL || ob.getOrderStatus() != EnumOrderStatus.CANCELLEDPARTIALFILL) {
-                                            updateCancelledOrders(event.getC(),ob);
+                                            updateCancelledOrders(event.getC(), ob);
                                         }
                                         break;
                                     case ACKNOWLEDGED:
@@ -1133,16 +1133,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             }
                         }
                     }
-                }else if(oqks.size() > 1){
-                    logger.log(Level.SEVERE,"501,OrderStatusReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + orderid + ":" + c.getAccountName() + ":.*"});
+                } else if (oqks.size() > 1) {
+                    logger.log(Level.SEVERE, "501,OrderStatusReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + orderid + ":" + c.getAccountName() + ":.*"});
                 }
             }
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
-        }        
+        }
     }
-
-    
 
     @Override
     public void TWSErrorReceived(TWSErrorEvent event) {
@@ -1161,8 +1159,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             this.updateCancelledOrders(event.getConnection(), ob);
                         }
                     }
-                }else{
-                     logger.log(Level.SEVERE,"200,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
+                } else {
+                    logger.log(Level.SEVERE, "200,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             }
 
@@ -1179,8 +1177,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 new Object[]{getOrderReference(), event.getConnection().getAccountName(), Parameters.symbol.get(id).getDisplayname(),
                                     ob.getInternalOrderID(), ob.getExternalOrderID(), event.getErrorCode(), event.getErrorMessage()});
                     }
-                }else{
-                     logger.log(Level.SEVERE,"200,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
+                } else {
+                    logger.log(Level.SEVERE, "200,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
                 //this.getActiveOrders().remove(id); //commented this as activeorders is a part of OMS and impacts all accounts. Insufficient margin is related to a specific account
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:The order price is outside of the allowable price limits")) {
@@ -1196,8 +1194,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
                         this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
                     }
-                }else{
-                    logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
+                } else {
+                    logger.log(Level.SEVERE, "501,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:")) {
                 Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
@@ -1209,8 +1207,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
                         this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
                     }
-                }else{
-                     logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
+                } else {
+                    logger.log(Level.SEVERE, "501,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             } else if (event.getErrorMessage().contains("Cannot cancel the filled order") || event.getErrorMessage().contains("modify the filled order")) {
                 Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, event.getConnection(), "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*");
@@ -1230,8 +1228,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             event.getConnection().setOrder(new OrderQueueKey(key), ob);
                         }
                     }
-                }else{
-                     logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
+                } else {
+                    logger.log(Level.SEVERE, "501,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             }
         } catch (Exception e) {
@@ -1348,8 +1346,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 fireLinkedAction(c, ob, nextAction, delay);
                             }
                         }
-                    }else{
-                         logger.log(Level.SEVERE,"FireLinkedActions:Duplicate OrderID for key ,{0}",new Object[]{key});
+                    } else {
+                        logger.log(Level.SEVERE, "FireLinkedActions:Duplicate OrderID for key ,{0}", new Object[]{key});
                     }
                 }
             }
@@ -1543,11 +1541,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             filter.m_clientId = c.getClientID();
             if ("".compareTo(c.getLastExecutionRequestTime()) != 0) {
                 filter.m_time = c.getLastExecutionRequestTime();
-            }else{
-                String time=DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime()-7*24*60*60*1000,TimeZone.getTimeZone(Algorithm.timeZone));
+            } else {
+                String time = DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime() - 7 * 24 * 60 * 60 * 1000, TimeZone.getTimeZone(Algorithm.timeZone));
                 filter.m_time = time;
             }
-           c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime(),TimeZone.getTimeZone(Algorithm.timeZone)));
+            c.setLastExecutionRequestTime(DateUtil.getFormatedDate("yyyyMMdd HH:mm:ss", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)));
             c.getWrapper().requestOpenOrders();
             c.getWrapper().requestExecutionDetails(filter);
         }
@@ -1658,7 +1656,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     public void cancelOpenOrders(BeanConnection c, int id, String strategy) {
         String[] childDisplayNames = Utilities.getChildDisplayNames(id);
         for (String childDisplayName : childDisplayNames) {
-            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + Parameters.symbol.get(id).getDisplayname() + ":" + childDisplayName+".*";
+            String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + Parameters.symbol.get(id).getDisplayname() + ":" + childDisplayName + ".*";
             cancelOpenOrders(c, searchString);
         }
     }
@@ -1679,7 +1677,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 if (oqvl.getExternalOrderID() > 0) { //if there is an external order id refering to the broker
                     //check an earlier cancellation request is not pending and if all ok then cancel     }
                     if (!oqvl.isCancelRequested()) { //if there is no prior cancelation requested
-                        logger.log(Level.INFO, "200,CancelOpenOrders,{0}:{1}:{2}:{3}:{4}", new Object[]{getOrderReference(),c.getAccountName(),oqvl.getParentDisplayName(),oqvl.getInternalOrderID(),oqvl.getExternalOrderID()});
+                        logger.log(Level.INFO, "200,CancelOpenOrders,{0}:{1}:{2}:{3}:{4}", new Object[]{getOrderReference(), c.getAccountName(), oqvl.getParentDisplayName(), oqvl.getInternalOrderID(), oqvl.getExternalOrderID()});
                         processOrderCancel(c, oqvl);
                     }
                 }
@@ -1874,22 +1872,22 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         } else {
             ob.setOrderStatus(EnumOrderStatus.CANCELLEDNOFILL);
         }
-        String key="opentrades_"+this.getOrderReference()+":"+ob.getInternalOrderID()+":"+"Order";
-        switch(ob.getOrderStatus()){
+        String key = "opentrades_" + this.getOrderReference() + ":" + ob.getInternalOrderID() + ":" + "Order";
+        switch (ob.getOrderStatus()) {
             case CANCELLEDNOFILL:
-                if(ob.getOrderSide()==EnumOrderSide.BUY||ob.getOrderSide()==EnumOrderSide.SHORT){
-                   this.getS().getDb().delKey("", key);
-                }else{
-                    key="closedtrades_"+this.getOrderReference()+":"+ob.getInternalOrderID()+":"+"Order";
+                if (ob.getOrderSide() == EnumOrderSide.BUY || ob.getOrderSide() == EnumOrderSide.SHORT) {
+                    this.getS().getDb().delKey("", key);
+                } else {
+                    key = "closedtrades_" + this.getOrderReference() + ":" + ob.getInternalOrderID() + ":" + "Order";
                     Trade.copyEntryTrade(this.getS().getDb(), key);
                 }
                 break;
             case CANCELLEDPARTIALFILL:
-                if(ob.getOrderSide()==EnumOrderSide.BUY||ob.getOrderSide()==EnumOrderSide.SHORT){
-                   // DO NOTHING
-                }else{
+                if (ob.getOrderSide() == EnumOrderSide.BUY || ob.getOrderSide() == EnumOrderSide.SHORT) {
+                    // DO NOTHING
+                } else {
                     Trade.openClosedTrade(this.getS().getDb(), key, ob.getTotalFillSize(), ob.getTotalFillPrice());
-                }                
+                }
                 break;
             default:
                 break;
@@ -1897,11 +1895,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
         //ordersToBeRetried - not needed. Orders to be retried is cleansed only if there are linked orders
         //Reduce position count if needed
-            int connectionid = Parameters.connection.indexOf(c);
-            key= "opentrades_"+this.orderReference+":*";
-        List<String> openOrders=this.getS().getDb().scanRedis(key);
+        int connectionid = Parameters.connection.indexOf(c);
+        key = "opentrades_" + this.orderReference + ":*";
+        List<String> openOrders = this.getS().getDb().scanRedis(key);
         this.getOpenPositionCount().set(connectionid, openOrders.size());
-      
+
         key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                 + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                 + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
@@ -2098,11 +2096,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             if (p.getChildPosition().isEmpty()) {//single leg order
                 if (entry) {
                     String key = getS().getStrategy() + ":" + String.valueOf(ob.getInternalOrderID()) + ":" + account;
-                    new Trade(db, childid, parentid, ob.getOrderReason(), ob.getOrderSide(), avgFillPrice, filled, ob.getInternalOrderID(), orderid, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog(),ob.getsl(),ob.gettp(),ob.getTIF());
+                    new Trade(db, childid, parentid, ob.getOrderReason(), ob.getOrderSide(), avgFillPrice, filled, ob.getInternalOrderID(), orderid, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog(), ob.getsl(), ob.gettp(), ob.getTIF());
                     logger.log(Level.INFO, "200,TradeUpdate,{0}:{1}:{2}:{3}:{4},Side={5},Size={6},AvgFillPrice={7},Filled={8}", new Object[]{this.getOrderReference(), c.getAccountName(), Trade.getParentSymbol(db, key), Trade.getEntryOrderIDInternal(db, key), Trade.getEntryOrderIDExternal(db, key), Trade.getEntrySide(db, key), Trade.getEntrySize(db, key), avgFillPrice, filled});
                 } else {
-                    String key = Utilities.getTradeKeyFromOrderKey(ob.getOrderKeyForSquareOff(),c.getAccountName());
-                    if (Trade.getEntrySize(db, key)-Trade.getExitSize(db, key) > 0 && filled > 0) {
+                    String key = Utilities.getTradeKeyFromOrderKey(ob.getOrderKeyForSquareOff(), c.getAccountName());
+                    if (Trade.getEntrySize(db, key) - Trade.getExitSize(db, key) > 0 && filled > 0) {
                         int entrySize = Trade.getEntrySize(db, key);
                         int exitSize = Trade.getExitSize(db, key);
                         double exitPrice = Trade.getExitPrice(db, key);
@@ -2110,9 +2108,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         int newexitSize = adjTradeSize + exitSize;
                         filled = filled - adjTradeSize;
                         double newexitPrice = (exitPrice * exitSize + adjTradeSize * avgFillPrice) / (newexitSize);
-                        int internalOrderIDExit=ob.getInternalOrderID();
+                        int internalOrderIDExit = ob.getInternalOrderID();
                         //Trade.updateExit(db, parentid, ob.getOrderReason(), ob.getOrderSide(), ob.getCurrentFillPrice(), ob.getCurrentFillSize(), internalOrderID, orderid, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog());
-                        Trade.updateExit(db, parentid, ob.getOrderReason(), ob.getOrderSide(), newexitPrice, ob.getCurrentFillSize(), Trade.getParentEntryOrderIDInternal(db, key),internalOrderIDExit, orderid, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog());
+                        Trade.updateExit(db, parentid, ob.getOrderReason(), ob.getOrderSide(), newexitPrice, ob.getCurrentFillSize(), Trade.getParentEntryOrderIDInternal(db, key), internalOrderIDExit, orderid, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog());
                         if (newexitSize == entrySize) {
                             Trade.closeTrade(db, key);
                             exitCompleted = true;
@@ -2132,11 +2130,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 if (entry) {
                     //create/update child order
                     key = getS().getStrategy() + ":" + ob.getInternalOrderID() + ":" + account;
-                    new Trade(db, ob.getChildSymbolID(), ob.getParentSymbolID(), ob.getOrderReason(), ob.getOrderSide(), ob.getCurrentFillPrice(), ob.getCurrentFillSize(), ob.getInternalOrderID(), 0, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog(),0,0,ob.getTIF());
+                    new Trade(db, ob.getChildSymbolID(), ob.getParentSymbolID(), ob.getOrderReason(), ob.getOrderSide(), ob.getCurrentFillPrice(), ob.getCurrentFillSize(), ob.getInternalOrderID(), 0, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog(), 0, 0, ob.getTIF());
                     logger.log(Level.INFO, "311,ChildTradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getExternalOrderID() + delimiter + ob.getInternalOrderID()});
                     //create/update parent order
                     key = getS().getStrategy() + ":" + obp.getInternalOrderID() + ":" + account;
-                    new Trade(db, obp.getChildSymbolID(), obp.getParentSymbolID(), obp.getOrderReason(), obp.getOrderSide(), (double) in.get(1), Math.abs((int) in.get(0)), obp.getInternalOrderID(), 0, obp.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", obp.getOrderLog(),ob.getsl(),ob.gettp(),ob.getTIF());
+                    new Trade(db, obp.getChildSymbolID(), obp.getParentSymbolID(), obp.getOrderReason(), obp.getOrderSide(), (double) in.get(1), Math.abs((int) in.get(0)), obp.getInternalOrderID(), 0, obp.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", obp.getOrderLog(), ob.getsl(), ob.gettp(), ob.getTIF());
                     logger.log(Level.INFO, "311,ParentTradeParentUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + obp.getExternalOrderID() + delimiter + obp.getInternalOrderID()});
                 } else {
                     key = ob.getOrderKeyForSquareOff();
@@ -2147,11 +2145,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         exitPrice = (exitPrice * exitSize + Math.abs((int) in.get(0)) * (double) in.get(1)) / (exitSize);
                         exitSize = exitSize + Math.abs((int) in.get(0));
                         exitPrice = (exitPrice * exitSize + Math.abs((int) in.get(0)) * (double) in.get(1)) / (exitSize);
-                        int internalOrderIDExit=ob.getInternalOrderID();
-                        Trade.updateExit(db, ob.getChildSymbolID(), ob.getOrderReason(), ob.getOrderSide(), ob.getCurrentFillPrice(), ob.getCurrentFillSize(),Trade.getParentEntryOrderIDInternal(db, key), internalOrderIDExit, 0, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog());
+                        int internalOrderIDExit = ob.getInternalOrderID();
+                        Trade.updateExit(db, ob.getChildSymbolID(), ob.getOrderReason(), ob.getOrderSide(), ob.getCurrentFillPrice(), ob.getCurrentFillSize(), Trade.getParentEntryOrderIDInternal(db, key), internalOrderIDExit, 0, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog());
                         //update parent trade
-                        internalOrderIDExit=ob.getInternalOrderID();
-                        Trade.updateExit(db, obp.getChildSymbolID(), obp.getOrderReason(), obp.getOrderSide(), obp.getCurrentFillPrice(), obp.getCurrentFillSize(), Trade.getEntryOrderIDInternal(db, key),internalOrderIDExit, 0, obp.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", obp.getOrderLog());
+                        internalOrderIDExit = ob.getInternalOrderID();
+                        Trade.updateExit(db, obp.getChildSymbolID(), obp.getOrderReason(), obp.getOrderSide(), obp.getCurrentFillPrice(), obp.getCurrentFillSize(), Trade.getEntryOrderIDInternal(db, key), internalOrderIDExit, 0, obp.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", obp.getOrderLog());
 
                         if (c.getPositions().get(ind).getPosition() == 0) {
                             key = getS().getStrategy() + ":" + ob.getInternalOrderID() + ":" + account;
@@ -2176,7 +2174,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             return false;
         }
     }
-
 
     private ArrayList lowerBoundParentPosition(BeanPosition p) {
         ArrayList out = new ArrayList();
@@ -2338,7 +2335,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             return out;
         }
     }
-
 
     private void updateAcknowledgement(BeanConnection c, OrderBean ob) {
         ob = new OrderBean(ob);

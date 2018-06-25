@@ -416,7 +416,7 @@ public class Strategy implements NotificationListener {
                 if (order.getOrderSide() == EnumOrderSide.BUY && getLongOnly()) {
                     BeanPosition pd = getPosition().get(id);
                     double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-                    int symbolPosition = pd.getPosition() + order.getOriginalOrderSize();
+                    int symbolPosition = Utilities.getPositionFromRedis(this.getDb(), "Order", this.getStrategy(), order.getParentDisplayName()) + order.getOriginalOrderSize();
                     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
                     pd.setPosition(symbolPosition);
                     pd.setPositionInitDate(Utilities.getAlgoDate());
@@ -426,7 +426,7 @@ public class Strategy implements NotificationListener {
                 } else if (order.getOrderSide() == EnumOrderSide.SHORT && getShortOnly()) {
                     BeanPosition pd = getPosition().get(id);
                     double expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-                    int symbolPosition = pd.getPosition() - order.getOriginalOrderSize();
+                    int symbolPosition = Utilities.getPositionFromRedis(this.getDb(), "Order", this.getStrategy(), order.getParentDisplayName()) - order.getOriginalOrderSize();
                     double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * order.getCurrentOrderSize() + pd.getPrice() * pd.getPosition()) / (symbolPosition));
                     pd.setPosition(symbolPosition);
                     pd.setPositionInitDate(Utilities.getAlgoDate());
@@ -476,7 +476,7 @@ public class Strategy implements NotificationListener {
                     if (order.getOrderSide() == EnumOrderSide.COVER) {
                         BeanPosition pd = getPosition().get(id);
                         expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-                        int symbolPosition = pd.getPosition() + tradeSize;
+                        int symbolPosition = Utilities.getPositionFromRedis(this.getDb(), "Order", this.getStrategy(), order.getParentDisplayName()) + tradeSize;
                         double positionPrice = symbolPosition == 0 ? 0D : Math.abs((expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
                         pd.setPosition(symbolPosition);
                         pd.setPositionInitDate(Utilities.getAlgoDate());
@@ -486,7 +486,7 @@ public class Strategy implements NotificationListener {
                     } else {
                         BeanPosition pd = getPosition().get(id);
                         expectedFillPrice = order.getLimitPrice() != 0 ? order.getLimitPrice() : Parameters.symbol.get(id).getLastPrice();
-                        int symbolPosition = pd.getPosition() - tradeSize;
+                        int symbolPosition = Utilities.getPositionFromRedis(this.getDb(), "Order", this.getStrategy(), order.getParentDisplayName()) - tradeSize;
                         double positionPrice = symbolPosition == 0 ? 0D : Math.abs((-expectedFillPrice * tradeSize + pd.getPrice() * pd.getPosition()) / (symbolPosition));
                         pd.setPosition(symbolPosition);
                         pd.setPositionInitDate(Utilities.getAlgoDate());
