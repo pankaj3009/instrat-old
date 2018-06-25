@@ -409,9 +409,6 @@ public class DashBoardNew extends javax.swing.JFrame {
         btngroupTradingState = new javax.swing.ButtonGroup();
         btngroupDynamicState = new javax.swing.ButtonGroup();
         cmdReload = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        btnDynamicOff = new javax.swing.JRadioButton();
-        btnDynamicOn = new javax.swing.JRadioButton();
         btnLongShort = new javax.swing.JRadioButton();
         btnLongOnly = new javax.swing.JRadioButton();
         btnShortOnly = new javax.swing.JRadioButton();
@@ -431,7 +428,6 @@ public class DashBoardNew extends javax.swing.JFrame {
         txtDayStopLoss = new javax.swing.JTextField();
         cndReload = new javax.swing.JButton();
         cmdResetOrders = new javax.swing.JButton();
-        cmdReconnect = new javax.swing.JButton();
         chkDisplayCombo = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -458,48 +454,6 @@ public class DashBoardNew extends javax.swing.JFrame {
         cmdReload.setPreferredSize(new java.awt.Dimension(500, 300));
         cmdReload.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText("Dynamic Orders");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        cmdReload.add(jLabel2, gridBagConstraints);
-
-        btngroupDynamicState.add(btnDynamicOff);
-        btnDynamicOff.setText("Off");
-        btnDynamicOff.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDynamicOffActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        cmdReload.add(btnDynamicOff, gridBagConstraints);
-
-        btngroupDynamicState.add(btnDynamicOn);
-        btnDynamicOn.setText("On");
-        btnDynamicOn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDynamicOnActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        cmdReload.add(btnDynamicOn, gridBagConstraints);
-
         btngroupTradingState.add(btnLongShort);
         btnLongShort.setText("Both Long and Short Trades");
         btnLongShort.addActionListener(new java.awt.event.ActionListener() {
@@ -509,7 +463,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_END;
         gridBagConstraints.weightx = 1.0;
@@ -526,7 +480,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -543,7 +497,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -560,7 +514,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -680,7 +634,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         jLabel3.setText("Order Side");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         cmdReload.add(jLabel3, gridBagConstraints);
 
@@ -746,7 +700,8 @@ public class DashBoardNew extends javax.swing.JFrame {
         cmdReload.add(cndReload, gridBagConstraints);
 
         cmdResetOrders.setText("Reset Orders Queue");
-        cmdResetOrders.setVisible(true);
+        cmdResetOrders.setEnabled(false);
+        cmdResetOrders.setVisible(false);
         cmdResetOrders.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cmdResetOrdersActionPerformed(evt);
@@ -761,26 +716,9 @@ public class DashBoardNew extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         cmdReload.add(cmdResetOrders, gridBagConstraints);
 
-        cmdReconnect.setText("Reconnect");
-        cmdReconnect.setEnabled(false);
-        cmdReconnect.setVisible(false);
-        cmdReconnect.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmdReconnectActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.ipadx = 1;
-        gridBagConstraints.ipady = 1;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
-        cmdReload.add(cmdReconnect, gridBagConstraints);
-
+        chkDisplayCombo.setVisible(false);
         chkDisplayCombo.setText("Combo Display");
+        chkDisplayCombo.setEnabled(false);
         chkDisplayCombo.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 chkDisplayComboActionPerformed(evt);
@@ -892,7 +830,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         getContentPane().add(jPanel3, gridBagConstraints);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Missed Orders"));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Resting Orders"));
         jPanel4.setMinimumSize(new java.awt.Dimension(500, 162));
         jPanel4.setPreferredSize(new java.awt.Dimension(500, 150));
         jPanel4.setLayout(new java.awt.GridBagLayout());
@@ -930,6 +868,7 @@ public class DashBoardNew extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         getContentPane().add(jPanel4, gridBagConstraints);
+        jPanel4.getAccessibleContext().setAccessibleName("Resting Orders");
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Positions"));
         jPanel5.setMinimumSize(new java.awt.Dimension(500, 162));
@@ -1135,18 +1074,6 @@ public class DashBoardNew extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_comboStrategyActionPerformed
 
-    private void btnDynamicOffActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDynamicOffActionPerformed
-        int strategyIndex = comboStrategy.getSelectedIndex();
-        Strategy strategy = MainAlgorithm.strategyInstances.get(strategyIndex);
-        logger.log(Level.INFO, "Dynamic Orders switched off for {0}", new Object[]{comboStrategy.getSelectedItem().toString()});
-    }//GEN-LAST:event_btnDynamicOffActionPerformed
-
-    private void btnDynamicOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDynamicOnActionPerformed
-        int strategyIndex = comboStrategy.getSelectedIndex();
-        Strategy strategy = MainAlgorithm.strategyInstances.get(strategyIndex);
-        logger.log(Level.INFO, "Dynamic Orders switched on for {0}", new Object[]{comboStrategy.getSelectedItem().toString()});
-    }//GEN-LAST:event_btnDynamicOnActionPerformed
-
     private void cmdSquareAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdSquareAllActionPerformed
         int strategyIndex = comboStrategy.getSelectedIndex();
         Strategy s = MainAlgorithm.strategyInstances.get(strategyIndex);
@@ -1254,15 +1181,6 @@ public class DashBoardNew extends javax.swing.JFrame {
 //                }
     }//GEN-LAST:event_cmdResetOrdersActionPerformed
 
-    private void cmdReconnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdReconnectActionPerformed
-        int connectionIndex = comboDisplay.getSelectedIndex();
-        if (!Parameters.connection.get(connectionIndex).getWrapper().isConnected()) {
-            BeanConnection c = Parameters.connection.get(connectionIndex);
-            //c.setWrapper(new TWSConnection(c));
-            c.getWrapper().connect();
-        }
-    }//GEN-LAST:event_cmdReconnectActionPerformed
-
     private void chkDisplayComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkDisplayComboActionPerformed
         JCheckBox checkBox = (JCheckBox) evt.getSource();
         boolean selected = checkBox.getModel().isSelected();
@@ -1331,8 +1249,6 @@ public class DashBoardNew extends javax.swing.JFrame {
     private JPopupMenu popMissed;
     private List<com.incurrency.framework.BeanConnection> beanConnection;
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JRadioButton btnDynamicOff;
-    private javax.swing.JRadioButton btnDynamicOn;
     private javax.swing.JRadioButton btnLongOnly;
     private javax.swing.JRadioButton btnLongShort;
     private javax.swing.JRadioButton btnPause;
@@ -1340,7 +1256,6 @@ public class DashBoardNew extends javax.swing.JFrame {
     private javax.swing.ButtonGroup btngroupDynamicState;
     private javax.swing.ButtonGroup btngroupTradingState;
     private javax.swing.JCheckBox chkDisplayCombo;
-    private javax.swing.JButton cmdReconnect;
     private javax.swing.JPanel cmdReload;
     private javax.swing.JButton cmdResetOrders;
     private javax.swing.JButton cmdSquareAll;
@@ -1351,7 +1266,6 @@ public class DashBoardNew extends javax.swing.JFrame {
     private static javax.swing.JComboBox comboDisplay;
     private static javax.swing.JComboBox comboStrategy;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
