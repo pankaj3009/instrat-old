@@ -89,8 +89,8 @@ public class Algorithm {
         connectionClass = globalProperties.getProperty("connectionclass", "com.incurrency.framework.TWSConnection");
         lc = Boolean.valueOf(globalProperties.getProperty("lc", "true"));
         defaultExchange = isNullOrEmpty(globalProperties.getProperty("defaultexchange"))?"NSE":globalProperties.getProperty("defaultexchange");
-        defaultPrimaryExchange = isNullOrEmpty(globalProperties.getProperty("defaultprimaryexchange").trim())?"NSE":globalProperties.getProperty("defaultprimaryexchange");
-        defaultCurrency = isNullOrEmpty(globalProperties.getProperty("defaultcurrency").trim())?"INR":globalProperties.getProperty("defaultcurrency");
+        defaultPrimaryExchange = isNullOrEmpty(globalProperties.getProperty("defaultprimaryexchange"))?"NSE":globalProperties.getProperty("defaultprimaryexchange");
+        defaultCurrency = isNullOrEmpty(globalProperties.getProperty("defaultcurrency"))?"INR":globalProperties.getProperty("defaultcurrency");
         generateSymbolFile = Boolean.valueOf(globalProperties.getProperty("generatesymbolfile", "false").trim());
         useForTrading = Boolean.valueOf(globalProperties.getProperty("trading", "false").trim());
         useForBacktest = Boolean.valueOf(globalProperties.getProperty("backtest", "false").trim());
