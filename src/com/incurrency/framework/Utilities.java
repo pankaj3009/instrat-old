@@ -274,7 +274,7 @@ public class Utilities {
 
             //Split trades that have parital fills
             //close trades that have expired.
-            closeTrades(db, accountName, strategyName);
+            closeExpiredTrades(db, accountName, strategyName);
 
             path = Paths.get(path.toString(), "pnl", accountName, strategyName.toLowerCase());
             path.toFile().mkdirs();
@@ -474,7 +474,7 @@ public class Utilities {
 
     }
 
-    public static void closeTrades(RedisConnect db, String accountName, String strategyName) {
+    public static void closeExpiredTrades(RedisConnect db, String accountName, String strategyName) {
         List<String> result = db.scanRedis("opentrades_" + strategyName + "*" + accountName);
         for (String key : result) {
             int exitSize = Trade.getExitSize(db, key);

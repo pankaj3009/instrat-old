@@ -28,7 +28,6 @@ public class TableModelOpenOrders extends AbstractTableModel {
     int delay = 1000; //milliseconds
     MainAlgorithm m;
     int display;
-    private HashMap<Integer, OrderBean> openOrders = new HashMap<>();
     private boolean comboDisplay;
     ArrayList<OrderBean> orders;
     ActionListener taskPerformer = new ActionListener() {

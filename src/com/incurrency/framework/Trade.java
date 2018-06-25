@@ -59,6 +59,18 @@ public class Trade {
         }
     }
     
+    public static String openClosedTrade(RedisConnect db,String key,int exitsize,double exitprice){
+        String newKey=key.replaceAll("closedtrades", "opentrades");
+        Map<String,String> newTrade=db.getTradeBean(key);
+        newTrade.put("exitsize", String.valueOf(exitsize));
+        newTrade.put("exitprice",String.valueOf(exitprice));
+        newTrade.remove("exitbrokerage");
+        newTrade.remove("exitorderidint");
+        db.delKey("", key);
+        db.insertTrade(newKey, newTrade);
+        return newKey;    
+    }
+    
     public static String copyEntryTrade(RedisConnect db,String key){
         String [] keyComponents=key.split(":");
         String account=keyComponents[keyComponents.length-1];
@@ -81,8 +93,8 @@ public class Trade {
         oldTrade.put("account", account);
         oldTrade.put("internalorderidint", String.valueOf(newOrderID));
         db.insertTrade(newKey, oldTrade);
-        return newKey;        
-    }
+        return newKey;                    
+        }
 
     public static void deleteOpenTrade(RedisConnect db, String key) {
         db.delKey("opentrades", key);
