@@ -166,7 +166,7 @@ public class Strategy implements NotificationListener {
                 if (!stratVal) {
                     stratVal = Validator.reconcile("", strategyDB, Algorithm.tradeDB, account, ownerEmail, this.getStrategy(), Boolean.FALSE);
                     if (!stratVal) {
-                        logger.log(Level.INFO, "200,IntegerityCheckFailed,{0}:{1}:{2}:{3}:{4}",
+                        logger.log(Level.INFO, "300,IntegerityCheckFailed,{0}:{1}:{2}:{3}:{4}",
                                 new Object[]{strategy, "Order", "Unknown", -1, -1});
                     }
                 }
@@ -319,7 +319,7 @@ public class Strategy implements NotificationListener {
                 //print positions on initialization
                 for (int id : getStrategySymbols()) {
                     if (position.get(id).getPosition() != 0) {
-                        logger.log(Level.INFO, "200,InitialOrderPosition,{0}:{1}:{2}:{3}:{4},OpeningPosition={5},OpeningPositionPrice={6}",
+                        logger.log(Level.INFO, "300,InitialOrderPosition,{0}:{1}:{2}:{3}:{4},OpeningPosition={5},OpeningPositionPrice={6}",
                                 new Object[]{this.getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), -1, -1, position.get(id).getPosition(), position.get(id).getPrice()});
                     }
                 }
@@ -406,7 +406,7 @@ public class Strategy implements NotificationListener {
     public int entry(OrderBean order) {
         Gson gson = new Gson();
         String json = gson.toJson(order);
-        logger.log(Level.INFO, "201,EntryOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
+        logger.log(Level.INFO, "300,EntryOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
         if (tradingWindow.get()
                 && ((order.getOrderSide() == EnumOrderSide.BUY && getLongOnly()) || (order.getOrderSide() == EnumOrderSide.SHORT && getShortOnly()))) {
             Integer id = order.getParentSymbolID();
@@ -442,7 +442,7 @@ public class Strategy implements NotificationListener {
                 double lastprice = Parameters.symbol.get(id).getLastPrice();
                 lastprice = lastprice == 0 ? order.getLimitPrice() : lastprice;
                 new Trade(getDb(), id, id, EnumOrderReason.REGULARENTRY, order.getOrderSide(), lastprice, order.getOriginalOrderSize(), internalorderid, 0, internalorderid, getTimeZone(), "Order", this.getStrategy(), "opentrades", log, order.getsl(), order.gettp(),order.getTIF());
-                logger.log(Level.INFO, "201,EntryOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
+                logger.log(Level.INFO, "300,EntryOrder Details,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}", new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), String.valueOf(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
                 if (MainAlgorithm.isUseForTrading()) {
                     oms.tes.fireOrderEvent(order);
                     //oms.tes.fireOrderEvent(internalorderid, internalorderid, Parameters.symbol.get(id), side, reason, orderType, size, limitPrice, triggerPrice, getStrategy(), getMaxOrderDuration(), EnumOrderStage.INIT, dynamicOrderDuration, maxSlippageExit, transmit, validity, scalein, orderGroup, effectiveTime, null);
@@ -461,7 +461,7 @@ public class Strategy implements NotificationListener {
     public synchronized int exit(OrderBean order) {
         Gson gson = new Gson();
         String json = gson.toJson(order);
-        logger.log(Level.INFO, "201,ExitOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
+        logger.log(Level.INFO, "300,ExitOrder Details,{0}:{1}:{2}:{3}:{4},Order={5}", new Object[]{getStrategy(), "Order", order.getParentDisplayName(), -1, -1, json});
         if (tradingWindow.get() && (getLongOnly() || getShortOnly())) {
             double orderPrice = priceAvailable(order);
             double value = orderValue(order);
@@ -499,7 +499,7 @@ public class Strategy implements NotificationListener {
                         TreeMap<String, Integer> splitTradesDuringExit = Utilities.splitTradesDuringExit(strategyDB, "Order", order);
                         for (Map.Entry<String, Integer> pair : splitTradesDuringExit.entrySet()) {
                             String key = pair.getKey();
-                            logger.log(Level.INFO, "201,ExitOrder, Processing key: {0}", new Object[]{key});
+                            logger.log(Level.INFO, "300,ExitOrder Details,,Processing key={0}", new Object[]{key});
                             int size = pair.getValue();
                             order.setOriginalOrderSize(size);
                             int internalorderid = Utilities.getInternalOrderID();
@@ -522,12 +522,12 @@ public class Strategy implements NotificationListener {
                                 oms.tes.fireOrderEvent(order);
                                 Thread.yield();
                             }
-                            logger.log(Level.INFO, "201,ExitOrder,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}",
+                            logger.log(Level.INFO, "300,ExitOrder Details,{0}:{1}:{2}:{3}:{4},NewPosition={5},NewPositionPrice={6}",
                                     new Object[]{getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), Integer.toString(internalorderid), -1, position.get(id).getPosition(), position.get(id).getPrice()});
                         }
                     }
                 } else {
-                    logger.log(Level.INFO, "201,Could not identify the trade to be squared off,{0}", json);
+                    logger.log(Level.INFO, "300,Could not identify the trade to be squared off,,Order={0}", json);
                 }
                 return order.getInternalOrderID();
             } else {
@@ -672,7 +672,7 @@ public class Strategy implements NotificationListener {
      * @param longOnly the longOnly to set
      */
     public synchronized void setLongOnly(Boolean l) {
-        logger.log(Level.INFO, "200,LongOnlySet,{0}:{1}:{2}:{3}:{4},LongOnlyValue={5}",
+        logger.log(Level.INFO, "300,LongOnlySet,{0}:{1}:{2}:{3}:{4},LongOnlyValue={5}",
                 new Object[]{strategy, "Order", "Unknown", -1, -1, l});
         this.longOnly = new AtomicBoolean(l);
     }
@@ -798,7 +798,7 @@ public class Strategy implements NotificationListener {
      * @param shortOnly the shortOnly to set
      */
     public synchronized void setShortOnly(Boolean s) {
-        logger.log(Level.INFO, "200,ShortOnlySet,{0}:{1}:{2}:{3}:{4},ShortOnlyValue={5}",
+        logger.log(Level.INFO, "300,ShortOnlySet,{0}:{1}:{2}:{3}:{4},ShortOnlyValue={5}",
                 new Object[]{strategy, "Order", "Unknown", -1, -1, s});
         this.shortOnly = new AtomicBoolean(s);
     }

@@ -549,33 +549,33 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             Set<OrderBean> openSell = getOpenOrdersForSide(c, id, EnumOrderSide.SELL);
                             Set<OrderBean> openShort = getOpenOrdersForSide(c, id, EnumOrderSide.SHORT);
                             Set<OrderBean> openCover = getOpenOrdersForSide(c, id, EnumOrderSide.COVER);
-                            logger.log(Level.INFO, "301,OrderReceived.ExecutionFlow,{0}:{1}:{2}:{3}:{4},Case={5}:OpenBuy={6}:OpenSell={7}:OpenShort={8}:OpenCover={9},:OrderSize={10}",
+                            logger.log(Level.INFO, "200,OrderReceived.ExecutionFlow,{0}:{1}:{2}:{3}:{4},Case={5}:OpenBuy={6}:OpenSell={7}:OpenShort={8}:OpenCover={9},:OrderSize={10}",
                                     new Object[]{getOrderReference(), c.getAccountName(), event.get("ParentDisplayName"), event.get("ParentInternalOrderID"), -1, rule, openBuy.size(), openSell.size(), openShort.size(), openCover.size(), Integer.toString(event.getCurrentOrderSize())});
                             switch (rule) {
                                 case "STUB":
                                     //processStubOrder(id, c, event);
                                     break;
                                 case "000"://position=0, no openorder=0, exit order as entry=0
-                                    logger.log(Level.INFO, "301,Case 000.Do nothing,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                    logger.log(Level.INFO, "200,Case 000.Do nothing,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                             new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                 event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                     break;
                                 case "001": //position=0, no openorder=0, entry order as entry=1
-                                    logger.log(Level.INFO, "301,Case 001.Entry,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                    logger.log(Level.INFO, "200,Case 001.Entry,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                             new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID()),
                                                 event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                     processEntryOrder(id, c, event);
                                     break;
                                 case "100": //position=1, no open order=0, exit order 
                                     if ((signedPositions > 0 && event.getOrderSide() == EnumOrderSide.SELL) || (signedPositions < 0 && event.getOrderSide() == EnumOrderSide.COVER)) {
-                                        logger.log(Level.INFO, "301,Case 100.Exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                        logger.log(Level.INFO, "200,Case 100.Exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                 new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID()),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         processExitOrder(id, c, event);
                                     }
                                     break;
                                 case "010": //position=0, open order, exit order
-                                    logger.log(Level.INFO, "301,Case 010.Cancel Open Orders and Delay Entry,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                    logger.log(Level.INFO, "200,Case 010.Cancel Open Orders and Delay Entry,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                             new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                 event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                     if(event.getOrderSide()==EnumOrderSide.BUY||event.getOrderSide()==EnumOrderSide.COVER){
@@ -585,12 +585,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     break;
                                 case "011": //no position, open order exists, entry order
                                     if (event.isScale()) {
-                                        logger.log(Level.INFO, "301,Case 011.Delay Scale in as open order exists,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                        logger.log(Level.INFO, "200,Case 011.Delay Scale in as open order exists,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                 new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         eventWait(c, event, "011");
                                     } else {
-                                        logger.log(Level.INFO, "301,Case 011.Do nothing.Scale in not allowed,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                        logger.log(Level.INFO, "200,Case 011.Do nothing.Scale in not allowed,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                 new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
 
@@ -601,17 +601,17 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                         if (event.isScale() || (event.getOriginalOrderSize() > event.getTotalFillSize() && event.getTotalFillSize() > 0)) {
                                             //either scale in or
                                             //suborder
-                                            logger.log(Level.INFO, "301,Case 101.Scale in or suborder allowed,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                            logger.log(Level.INFO, "200,Case 101.Scale in or suborder allowed,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                     new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                         event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                             processEntryOrder(id, c, event);
                                         } else {
-                                            logger.log(Level.INFO, "301,Case 101.Do nothing,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                            logger.log(Level.INFO, "200,Case 101.Do nothing,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                     new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                         event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         }
                                     } else {
-                                        logger.log(Level.INFO, "301,Case 101.New entry received without prior exit.Delay new entry order,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                        logger.log(Level.INFO, "200,Case 101.New entry received without prior exit.Delay new entry order,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                 new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.valueOf(event.getExternalOrderID()),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         //Wait for an actual exit. Dont square off in anticipation..
@@ -623,18 +623,18 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 case "111"://position, open order, entry order received.
                                     if (event.isScale() && ((c.getPositions().get(ind).getPosition() > 0 && event.getOrderSide().equals(EnumOrderSide.BUY) && openBuy.size() > 0 && openShort.size() == 0 && openSell.size() == 0 && openCover.size() == 0)
                                             || (c.getPositions().get(ind).getPosition() < 0 && event.getOrderSide().equals(EnumOrderSide.SHORT) && openBuy.size() == 0 && openShort.size() > 0 && openSell.size() == 0 && openCover.size() == 0))) {
-                                        logger.log(Level.INFO, "301,Case 111.Scale in allowed,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                        logger.log(Level.INFO, "200,Case 111.Scale in allowed,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                 new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         processEntryOrder(id, c, event);
                                     } else if ((openSell.size() > 0 && event.getOrderSide() == EnumOrderSide.SHORT) || (openCover.size() > 0 && event.getOrderSide() == EnumOrderSide.BUY)) {
                                         // do nothing. waiting for some time and try again.
-                                        logger.log(Level.INFO, "301,Case 111.Wait for exit to complete.Delay entry order,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                        logger.log(Level.INFO, "200,Case 111.Wait for exit to complete.Delay entry order,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                 new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         eventWait(c, event, "111");
                                     } else {
-                                        logger.log(Level.INFO, "301,Case 111.Something wrong.Cancel open orders and delay entry,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                        logger.log(Level.INFO, "200,Case 111.Something wrong.Cancel open orders and delay entry,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                 new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                     event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                         this.closeAllOpenOrders(c, id, event.getOrderReference());
@@ -644,13 +644,13 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 case "110"://position, open order, exit order received.
                                     if (event.isScale()) {
                                         if (openBuy.size() > 0 || openShort.size() > 0) {
-                                            logger.log(Level.INFO, "301,Case 110.Cancel entry open orders and delay exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                            logger.log(Level.INFO, "200,Case 110.Cancel entry open orders and delay exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                     new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                         event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                             this.closeAllOpenOrders(c, id, event.getOrderReference());
                                             eventWait(c, event, "110");
                                         } else {
-                                            logger.log(Level.INFO, "301,Case 110.Exit already in progress.Delay current exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                            logger.log(Level.INFO, "200,Case 110.Exit already in progress.Delay current exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                     new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                         event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                             eventWait(c, event, "110");
@@ -658,12 +658,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     } else if (!event.isScale()) {
 //                                        logger.log(Level.INFO, "{0},{1},Execution Manager,Case:110. Scale in not allowed. Cleanse orders, Symbol:{2}, Size={3}, Side:{4}, Limit:{5}, Trigger:{6}, Expiration Time:{7}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getSymbol(), event.getOrderSize(), event.getSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getExpireTime()});
                                         if ((signedPositions > 0 && openSell.size() > 0) || (signedPositions < 0 && openCover.size() > 0)) {
-                                            logger.log(Level.INFO, "301,Case 110.Exit already in progress.Delay current exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                            logger.log(Level.INFO, "200,Case 110.Exit already in progress.Delay current exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                     new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                         event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                             eventWait(c, event, "110");
                                         } else {
-                                            logger.log(Level.INFO, "301,Case 110.Cancel entry open orders.Delay current exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
+                                            logger.log(Level.INFO, "200,Case 110.Cancel entry open orders.Delay current exit,{0}:{1},{2},{3},{4},OriginalSize={5},CurrentSize={6},Side={7},LimitPrice={8},TriggerPrice={9},EffectiveFrom={10},EffectiveTill={11}",
                                                     new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), event.getInternalOrderID(), event.getExternalOrderID(),
                                                         event.getOriginalOrderSize(), event.getCurrentOrderSize(), event.getOrderSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getEffectiveFrom(), event.getEffectiveTill()});
                                             this.closeAllOpenOrders(c, id, event.getOrderReference());
@@ -1100,7 +1100,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
                                 }
                                 //if (orderStatus.get(orderid) == null || orderStatus.get(orderid) != fillStatus) {
-                                logger.log(Level.INFO, "302,OrderStatus,{0}:{1}:{2}:{3}:{4},OrderStatus={5}",
+                                logger.log(Level.INFO, "200,OrderStatus,{0}:{1}:{2}:{3}:{4},OrderStatus={5}",
                                         new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(parentid).getDisplayname(), Integer.toString(ob.getInternalOrderID()), String.valueOf(orderid), fillStatus});
                                 orderStatus.put(orderid, fillStatus);
                                 //}
@@ -1155,14 +1155,14 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         int id = ob.getParentSymbolID();
                         String ref = ob.getOrderReference();
                         if (getOrderReference().equals(ref)) {
-                            logger.log(Level.INFO, "303,TWSError.DeemedOrderCancelledEvent,{0}:{1}:{2}:{3}:{4},ErrorCode:{5}:ErrorMsg={6}",
+                            logger.log(Level.INFO, "200,TWSError.DeemedOrderCancelledEvent,{0}:{1}:{2}:{3}:{4},ErrorCode:{5}:ErrorMsg={6}",
                                     new Object[]{getOrderReference(), event.getConnection().getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID()), event.getErrorCode(), event.getErrorMessage()});
                             //this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
                             this.updateCancelledOrders(event.getConnection(), ob);
                         }
                     }
                 }else{
-                     logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
+                     logger.log(Level.SEVERE,"200,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
             }
 
@@ -1175,12 +1175,12 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         OrderBean ob = event.getConnection().getOrderBeanCopy(oqk);
                         int id = ob.getParentSymbolID();
                         int orderid = event.getId();
-                        logger.log(Level.INFO, "303,TWSError.InsufficientMargin,{0}:{1}:{2}:{3}:{4},ErrorCode:{5}:ErrorMsg={6}",
+                        logger.log(Level.INFO, "200,TWSError.InsufficientMargin,{0}:{1}:{2}:{3}:{4},ErrorCode:{5}:ErrorMsg={6}",
                                 new Object[]{getOrderReference(), event.getConnection().getAccountName(), Parameters.symbol.get(id).getDisplayname(),
                                     ob.getInternalOrderID(), ob.getExternalOrderID(), event.getErrorCode(), event.getErrorMessage()});
                     }
                 }else{
-                     logger.log(Level.SEVERE,"501,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
+                     logger.log(Level.SEVERE,"200,TWSErrorReceived: Duplicate OrderID for key ,{0}",new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
                 }
                 //this.getActiveOrders().remove(id); //commented this as activeorders is a part of OMS and impacts all accounts. Insufficient margin is related to a specific account
             } else if (event.getErrorCode() == 202 && event.getErrorMessage().contains("Order Canceled - reason:The order price is outside of the allowable price limits")) {
@@ -1220,7 +1220,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         int id = ob.getParentSymbolID();
                         String ref = ob.getOrderReference();
                         if (getOrderReference().equals(ref)) {
-                            logger.log(Level.INFO, "303,FilledOrderModificationRequested,{0}:{1}:{2}:{3}:{4},ErrorCode:{5}:ErrorMsg={6}",
+                            logger.log(Level.INFO, "200,FilledOrderModificationRequested,{0}:{1}:{2}:{3}:{4},ErrorCode:{5}:ErrorMsg={6}",
                                     new Object[]{getOrderReference(), event.getConnection().getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID()), event.getErrorCode(), event.getErrorMessage()});
                             //this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
                             ob.setOrderStatus(EnumOrderStatus.COMPLETEFILLED);
@@ -1629,7 +1629,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     + oqv.getParentDisplayName() + ":" + oqv.getChildDisplayName() + ":"
                     + oqv.getParentInternalOrderID() + ":" + oqv.getInternalOrderID();
             c.setOrder(new OrderQueueKey(keyi), oqv);
-            logger.log(Level.INFO, "301,SquareOff,{0}:{1}:{2}:{3}:{4},Size={5}",
+            logger.log(Level.INFO, "200,SquareOff,{0}:{1}:{2}:{3}:{4},Size={5}",
                     new Object[]{this.getOrderReference(), c.getAccountName(), oqv.getParentDisplayName(), oqv.getInternalOrderID(), oqv.getExternalOrderID(), oqv.getOriginalOrderSize()});
             tes.fireOrderEvent(oqv);
         }
@@ -1679,7 +1679,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 if (oqvl.getExternalOrderID() > 0) { //if there is an external order id refering to the broker
                     //check an earlier cancellation request is not pending and if all ok then cancel     }
                     if (!oqvl.isCancelRequested()) { //if there is no prior cancelation requested
-                        logger.log(Level.INFO, "309,CancelOpenOrders,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + oqvl.getExternalOrderID()});
+                        logger.log(Level.INFO, "200,CancelOpenOrders,{0}:{1}:{2}:{3}:{4}", new Object[]{getOrderReference(),c.getAccountName(),oqvl.getParentDisplayName(),oqvl.getInternalOrderID(),oqvl.getExternalOrderID()});
                         processOrderCancel(c, oqvl);
                     }
                 }
@@ -1742,7 +1742,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 double realizedPL = (origposition + fill) == 0 && origposition != 0 ? -(origposition * p.getPrice() + fill * lastFillPrice) * pointValue + p.getProfit() : p.getProfit();
                 double positionPrice = (origposition + fill) == 0 ? 0 : (p.getPosition() * p.getPrice() + fill * lastFillPrice) / (origposition + fill);
                 //logger.log(Level.FINE, "308,inStratCompleteFill,{0}",new Object[]{c.getAccountName()+delimiter+ orderReference+delimiter+ Parameters.symbol.get(parentid).getDisplayname()+delimiter+ origposition +delimiter+ fill+delimiter+ positionPrice+delimiter+ realizedPL});
-                logger.log(Level.FINE, "308,inStratCompleteFill,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(parentid).getDisplayname() + delimiter + p.getPosition() + delimiter + p.getPrice() + delimiter + fill + delimiter + lastFillPrice});
+                logger.log(Level.FINE, "200,inStratCompleteFill,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(parentid).getDisplayname() + delimiter + p.getPosition() + delimiter + p.getPrice() + delimiter + fill + delimiter + lastFillPrice});
                 p.setPointValue(pointValue);
                 p.setPrice(positionPrice);
                 p.setProfit(realizedPL);
@@ -1813,8 +1813,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
 
             if (combo) {
-                logger.log(Level.INFO, "308,inStratCompleteFillParent,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(parentid).getDisplayname() + delimiter + p.getPosition() + delimiter + p.getPrice()});
-                logger.log(Level.INFO, "308,inStratCompleteFillChild,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(childid).getDisplayname() + delimiter + p.getChildPosition().get(cpid).getPosition() + delimiter + p.getChildPosition().get(cpid).getPrice() + delimiter + fill + delimiter + lastFillPrice});
+                logger.log(Level.INFO, "200,inStratCompleteFillParent,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(parentid).getDisplayname() + delimiter + p.getPosition() + delimiter + p.getPrice()});
+                logger.log(Level.INFO, "200,inStratCompleteFillChild,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(childid).getDisplayname() + delimiter + p.getChildPosition().get(cpid).getPosition() + delimiter + p.getChildPosition().get(cpid).getPrice() + delimiter + fill + delimiter + lastFillPrice});
             }
 
             //send email
@@ -1991,7 +1991,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 //logger.log(Level.FINE, "{0},{1},Execution Manager,Updated positions on partial fill,Symbol:{2}, Incremental Fill Reported:{3},Total Fill={4},Position within Program={5}, Side={6}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(childid).getSymbol(), fill, filled, ob.getChildFillSize(), ob.getParentOrderSide()});
                 double realizedPL = (origposition + fill) == 0 && origposition != 0 ? -(origposition * p.getPrice() + fill * lastFillPrice) * pointValue + p.getProfit() : p.getProfit();
                 double positionPrice = (origposition + fill) == 0 ? 0 : (p.getPosition() * p.getPrice() + fill * lastFillPrice) / (origposition + fill);
-                logger.log(Level.FINE, "308,inStratPartialFill,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(parentid).getDisplayname() + delimiter + p.getPosition() + delimiter + p.getPrice() + delimiter + fill + delimiter + lastFillPrice});
+                logger.log(Level.FINE, "200,inStratPartialFill,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(parentid).getDisplayname() + delimiter + p.getPosition() + delimiter + p.getPrice() + delimiter + fill + delimiter + lastFillPrice});
                 p.setPrice(positionPrice);
                 p.setProfit(realizedPL);
                 p.setPosition(origposition + fill);
@@ -2064,8 +2064,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
 
             if (combo) {
-                logger.log(Level.INFO, "308,inStratPartialFillParent,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(parentid).getDisplayname() + delimiter + p.getPosition() + delimiter + p.getPrice()});
-                logger.log(Level.INFO, "308,inStratPartialFillChild,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(childid).getDisplayname() + delimiter + p.getChildPosition().get(cpid).getPosition() + delimiter + p.getChildPosition().get(cpid).getPrice() + delimiter + fill + delimiter + lastFillPrice});
+                logger.log(Level.INFO, "200,inStratPartialFillParent,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(parentid).getDisplayname() + delimiter + p.getPosition() + delimiter + p.getPrice()});
+                logger.log(Level.INFO, "200,inStratPartialFillChild,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(childid).getDisplayname() + delimiter + p.getChildPosition().get(cpid).getPosition() + delimiter + p.getChildPosition().get(cpid).getPrice() + delimiter + fill + delimiter + lastFillPrice});
             }
             //send email
             if (!combo) {
@@ -2099,7 +2099,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 if (entry) {
                     String key = getS().getStrategy() + ":" + String.valueOf(ob.getInternalOrderID()) + ":" + account;
                     new Trade(db, childid, parentid, ob.getOrderReason(), ob.getOrderSide(), avgFillPrice, filled, ob.getInternalOrderID(), orderid, ob.getParentInternalOrderID(), timeZone, c.getAccountName(), getS().getStrategy(), "opentrades", ob.getOrderLog(),ob.getsl(),ob.gettp(),ob.getTIF());
-                    logger.log(Level.INFO, "307,TradeUpdate,{0}:{1}:{2}:{3}:{4},Side={5},Size={6},AvgFillPrice={7},Filled={8}", new Object[]{this.getOrderReference(), c.getAccountName(), Trade.getParentSymbol(db, key), Trade.getEntryOrderIDInternal(db, key), Trade.getEntryOrderIDExternal(db, key), Trade.getEntrySide(db, key), Trade.getEntrySize(db, key), avgFillPrice, filled});
+                    logger.log(Level.INFO, "200,TradeUpdate,{0}:{1}:{2}:{3}:{4},Side={5},Size={6},AvgFillPrice={7},Filled={8}", new Object[]{this.getOrderReference(), c.getAccountName(), Trade.getParentSymbol(db, key), Trade.getEntryOrderIDInternal(db, key), Trade.getEntryOrderIDExternal(db, key), Trade.getEntrySide(db, key), Trade.getEntrySize(db, key), avgFillPrice, filled});
                 } else {
                     String key = Utilities.getTradeKeyFromOrderKey(ob.getOrderKeyForSquareOff(),c.getAccountName());
                     if (Trade.getEntrySize(db, key)-Trade.getExitSize(db, key) > 0 && filled > 0) {
@@ -2117,9 +2117,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             Trade.closeTrade(db, key);
                             exitCompleted = true;
                         }
-                        logger.log(Level.INFO, "307,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getExternalOrderID() + delimiter + ob.getInternalOrderID() + delimiter + key + delimiter + adjTradeSize});
+                        logger.log(Level.INFO, "200,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getExternalOrderID() + delimiter + ob.getInternalOrderID() + delimiter + key + delimiter + adjTradeSize});
                     } else {
-                        logger.log(Level.INFO, "207,NoTradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getEntrySize(db, key) + delimiter + ob.getInternalOrderID() + delimiter + ob.getParentInternalOrderID() + delimiter + orderid + delimiter + key});
+                        logger.log(Level.INFO, "200,NoTradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getEntrySize(db, key) + delimiter + ob.getInternalOrderID() + delimiter + ob.getParentInternalOrderID() + delimiter + orderid + delimiter + key});
                     }
                 }
 

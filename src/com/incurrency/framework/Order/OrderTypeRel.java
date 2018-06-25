@@ -104,7 +104,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     @Override
     public void run() {
         try {
-            logger.log(Level.INFO, "501,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}",
+            logger.log(Level.INFO, "400,OrderTypeRel Manager Created,{0}:{1}:{2}:{3}:{4},Initial Limit Price={5}",
                     new Object[]{oms.getOrderReference(), c.getAccountName(), ob.getChildDisplayName(), ob.getInternalOrderID(), ob.getExternalOrderID(), ob.getLimitPrice()});
             RedisSubscribe.tes.addBidAskListener(this);
             RedisSubscribe.tes.addOrderStatusListener(this);
@@ -118,7 +118,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 while (sync.poll(200, TimeUnit.MILLISECONDS) == null) {
                     Thread.yield();
                 }
-                logger.log(Level.INFO, "501,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
+                logger.log(Level.INFO, "400,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{oms.getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), String.valueOf(externalOrderID)});
                 if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.getOrderReference() + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
                     oms.getDb().delKey("opentrades", oms.getOrderReference() + ":" + String.valueOf(internalOrderIDEntry) + ":" + c.getAccountName());
@@ -321,7 +321,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 ob.setSpecifiedBrokerAccount(c.getAccountName());
                                 String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
                                 ob.setOrderLog(log);
-                                logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
+                                logger.log(Level.FINEST, "400, OrderTypeRel,{0}", new Object[]{log});
                                 //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                 oms.orderReceived(ob);
                             }
@@ -450,7 +450,7 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                                 ob.setSpecifiedBrokerAccount(c.getAccountName());
                                 String log = "Side:" + side + ",Calculated Price:" + calculatedPrice + ",PriorLimitPrice:" + plp + ",BidPrice:" + bidPrice + ",AskPrice:" + askPrice + ",New Limit Price:" + newLimitPrice + ",Current Order Status:" + ob.getOrderStatus() + ",fatfinger:" + fatfinger;
                                 ob.setOrderLog(log);
-                                logger.log(Level.FINEST, "500, OrderTypeRel,{0}", new Object[]{log});
+                                logger.log(Level.FINEST, "400, OrderTypeRel,{0}", new Object[]{log});
                                 //oms.getDb().setHash("opentrades", oms.orderReference + ":" + ob.getInternalOrderIDEntry() + ":" + c.getAccountName(), loggingFormat.format(new Date()), log);
                                 oms.orderReceived(ob);
                             }

@@ -7,10 +7,8 @@ package com.incurrency.framework;
 import com.incurrency.framework.Order.EnumOrderType;
 import com.ib.client.*;
 import static com.incurrency.framework.Algorithm.globalProperties;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -182,7 +180,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
             Contract con;
             con = createContract(s);
             this.eClientSocket.reqMktData(mRequestId, con, null, true, null);
-            logger.log(Level.FINER, "403,OneTimeSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+            logger.log(Level.FINER, "102,OneTimeSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
         }
     }
 
@@ -198,7 +196,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 s.setReqID(mRequestId);
                 //make snapshot/ streaming data request
                 requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB, mRequestId, s, EnumRequestType.STREAMING, EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(), c.getAccountName()));
-                logger.log(Level.FINER, "401,MarketDataRequestSentStreaming,{0}:{1}:{2}:{3}:{4},RequestID={5}",
+                logger.log(Level.FINER, "102,MarketDataRequestSentStreaming,{0}:{1}:{2}:{3}:{4},RequestID={5}",
                         new Object[]{"Unknown", c.getAccountName(), s.getDisplayname(), -1, -1, mRequestId});
 
                 //c.getmReqID().put(mRequestId, s.getSerialno());
@@ -211,7 +209,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 requestDetailsWithSymbolKey.putIfAbsent(s.getSerialno(), new Request(EnumSource.IB, mRequestId, s, EnumRequestType.SNAPSHOT, EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(), c.getAccountName()));
                 this.eClientSocket.reqMktData(mRequestId, contract, null, isSnap, null);
                 s.setConnectionidUsedForMarketData(Parameters.connection.indexOf(getC()));
-                logger.log(Level.FINER, "403,MarketDataRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+                logger.log(Level.FINER, "102,MarketDataRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
             } else {
                 System.out.println("101,ErrorOnHandle,{0}" + s.getDisplayname());
             }
@@ -225,7 +223,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         if (requestDetailsWithSymbolKey.get(origReqID) != null) {
                             requestDetails.get(origReqID).requestStatus = EnumRequestStatus.CANCELLED;
                             getC().getWrapper().cancelMarketData(s);
-                            logger.log(Level.FINEST, "403,SnapshotCancelled, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
+                            logger.log(Level.FINEST, "102,SnapshotCancelled, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + origReqID});
                         }
                         requestDetailsWithSymbolKey.remove(s.getSerialno());
 
@@ -239,13 +237,13 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     // Store the request ID for each symbol for later use while updating the symbol table
                     s.setReqID(mRequestId);
                     requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB, mRequestId, s, EnumRequestType.SNAPSHOT, EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(), c.getAccountName()));
-                    logger.log(Level.FINER, "401,MarketDataRequestSentSnapShot,{0}:{1}:{2}:{3}:{4},RequestID={5}",
+                    logger.log(Level.FINER, "102,MarketDataRequestSentSnapShot,{0}:{1}:{2}:{3}:{4},RequestID={5}",
                             new Object[]{"Unknown", c.getAccountName(), s.getDisplayname(), -1, -1, mRequestId});
 
                     requestDetailsWithSymbolKey.putIfAbsent(s.getSerialno(), new Request(EnumSource.IB, mRequestId, s, EnumRequestType.SNAPSHOT, EnumBarSize.UNDEFINED, EnumRequestStatus.PENDING, new Date().getTime(), c.getAccountName()));
                     eClientSocket.reqMktData(mRequestId, contract, null, isSnap, null);
                     s.setConnectionidUsedForMarketData(-1);
-                    logger.log(Level.FINER, "403,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+                    logger.log(Level.FINER, "102,ContinuousSnapshotSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
                 }
             } else {
                 System.out.println("### Error getting handle while requesting snapshot data for contract " + contract.m_conId + " Name: " + s.getBrokerSymbol());
@@ -271,7 +269,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 requestDetails.putIfAbsent(mRequestId, new Request(EnumSource.IB, mRequestId, s, EnumRequestType.REALTIMEBAR, EnumBarSize.FIVESECOND, EnumRequestStatus.PENDING, new Date().getTime(), c.getAccountName()));
                 logger.log(Level.FINER, "MarketDataRequestSent_Realtime,{0}", new Object[]{mRequestId + delimiter + s.getDisplayname()});
                 eClientSocket.reqRealTimeBars(mRequestId, con, 5, "TRADES", true, null); //only returns regular trading hours
-                logger.log(Level.FINER, "403,RealTimeBarsRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
+                logger.log(Level.FINER, "102,RealTimeBarsRequestSent, {0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId});
 
             } else {
                 System.out.println("### Error getting handle while requesting market data for contract " + con.m_symbol + " Name: " + s.getBrokerSymbol());
@@ -732,7 +730,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 order.m_lmtPrice = event.getLimitPrice();
                 order.m_displaySize=0;                
             }
-            logger.log(Level.INFO, "401,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
+            logger.log(Level.INFO, "102,OrderPlacedWithBroker,{0}:{1}:{2}:{3}:{4},OrderSide={5}:Size={6}:OrderType:{7}:LimitPrice:{8}:AuxPrice:{9}",
                     new Object[]{order.m_orderRef, c.getAccountName(), Parameters.symbol.get(event.getParentSymbolID()).getDisplayname(), Integer.toString(event.getInternalOrderID()),
                         String.valueOf(order.m_orderId), event.getOrderSide(), String.valueOf(order.m_totalQuantity), order.m_orderType, String.valueOf(order.m_lmtPrice),
                         String.valueOf(order.m_auxPrice)});
@@ -794,7 +792,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 
             if (ob.getExternalOrderID() > 0) {
                 this.eClientSocket.cancelOrder(ob.getExternalOrderID());
-                logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
+                logger.log(Level.INFO, "102,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
             }
             String searchString = "OQ:.*" + c.getAccountName() + ":" + ob.getOrderReference() + ":" + ob.getParentDisplayName() + ":" + ob.getInternalOrderID() + ":";
@@ -807,7 +805,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                             + obvi.getParentDisplayName() + ":" + obvi.getChildDisplayName() + ":"
                             + obvi.getParentInternalOrderID() + ":" + obvi.getInternalOrderID();
                     c.setOrder(new OrderQueueKey(key), obvi);
-                    logger.log(Level.INFO, "401,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
+                    logger.log(Level.INFO, "102,CancellationPlacedWithBroker,{0}:{1}:{2}:{3}:{4}",
                             new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID())});
 
                 }
@@ -895,7 +893,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 }
                 //System.out.println(s.getDisplayname()+":"+mRequestId+":"+barSize);
                 eClientSocket.reqHistoricalData(mRequestId, con, endDate, duration, barSize, "TRADES", 1, 2, null);
-                logger.log(Level.INFO, "403,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize + delimiter + endDate});
+                logger.log(Level.INFO, "102,HistoricalDataRequestSent,{0}", new Object[]{getC().getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize + delimiter + endDate});
                 //System.out.println("HistoricalDataRequestSent"+c.getAccountName() + delimiter + s.getDisplayname() + delimiter + mRequestId + delimiter + duration + delimiter + barSize+delimiter+endDate);
 
             } else {
@@ -1284,7 +1282,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     @Override
     public void orderStatus(int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
         try {
-            logger.log(Level.INFO, "402,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
+            logger.log(Level.INFO, "101,orderStatus,{0}:{1}:{2}:{3}:{4},Status={5}:Filled={6}:Remaining={7}",
                     new Object[]{"Unknown", c.getAccountName(), "Unknown", -1, String.valueOf(orderId), status, filled, remaining});
             //logger.log(Level.INFO, "{0},TWSReceive,orderStatus, OrderID:{1},Status:{2}.Filled:{3},Remaining:{4},AvgFillPrice:{5},LastFillPrice:{6}", new Object[]{c.getAccountName(), orderId, status, filled, remaining, avgFillPrice, lastFillPrice});
             tes.fireOrderStatus(getC(), orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
@@ -1400,7 +1398,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     @Override
     public void execDetails(int reqId, Contract contract, Execution execution) {
         try {
-            logger.log(Level.INFO, "402,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
+            logger.log(Level.INFO, "101,execDetails,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6}",
                     new Object[]{"Unknown", c.getAccountName(), "Unknown", "-1", String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice)});
             Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(Algorithm.tradeDB, c, "OQ:" + execution.m_orderId + ":" + c.getAccountName() + ":.*");
             if (oqks.size() == 1) {
@@ -1414,7 +1412,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         tes.fireOrderStatus(getC(), execution.m_orderId, "Submitted", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
                     }
                     }else{
-            logger.log(Level.INFO, "402,Did not find orderbean,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6},Orderkey={7}",
+            logger.log(Level.INFO, "101,Did not find orderbean,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6},Orderkey={7}",
                     new Object[]{"Unknown", c.getAccountName(), "Unknown", "-1", String.valueOf(execution.m_orderId), String.valueOf(execution.m_cumQty), String.valueOf(execution.m_avgPrice),oqki.getKey(c.getAccountName())});
                     }
                 }
