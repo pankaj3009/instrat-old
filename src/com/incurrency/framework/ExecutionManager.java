@@ -265,7 +265,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     if (p.getValue().getPosition() == 0) {
                         iter.remove();
                     } else {
-                        logger.log(Level.INFO, "500, InitialTradePosition,{0}:{1}:{2}:{3}:{4},Position={5}:PositionPrice:{6}",
+                        logger.log(Level.INFO, "200, InitialTradePosition,{0}:{1}:{2}:{3}:{4},Position={5}:PositionPrice:{6}",
                                 new Object[]{orderReference, c.getAccountName(), Parameters.symbol.get(p.getKey().getSymbolID()).getDisplayname(), -1, -1, String.valueOf(p.getValue().getPosition()), String.valueOf(p.getValue().getPrice())});
                     }
                 }
@@ -375,7 +375,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             if (entrySize > 0) {
                                 tempOpenPosition = this.openPositionCount.get(i);
                                 this.openPositionCount.add(i, tempOpenPosition + 1);
-//                                logger.log(Level.INFO, "500, InitialOpenPositionCount,{0}:{1}:{2}:{3}:{4},OpenPositionCount={5}",
+//                                logger.log(Level.INFO, "200, InitialOpenPositionCount,{0}:{1}:{2}:{3}:{4},OpenPositionCount={5}",
 //                                        new Object[]{getOrderReference(), c.getAccountName(), Trade.getEntrySymbol(db, key), -1, -1, String.valueOf(openPositionCount.get(i))});
                             }
                             break;
@@ -799,7 +799,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             HashMap<Integer, Order> orders = c.getWrapper().createOrder(event);
             if (orders.size() > 0) {//trading is not halted 
                 this.getOpenPositionCount().set(connectionid, tempOpenPosition + 1);
-                logger.log(Level.FINE, "500,EntryOrder,{0}:{1}{2}:{3}:{4},OpenPosition={5}",
+                logger.log(Level.FINE, "200,EntryOrder,{0}:{1}{2}:{3}:{4},OpenPosition={5}",
                         new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getParentInternalOrderID()), -1, this.getOpenPositionCount().get(connectionid)});
                 event = c.getWrapper().placeOrder(c, orders, this, event);
                 int orderid = event.getExternalOrderID();
@@ -815,7 +815,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 
             }
         } else {
-            logger.log(Level.INFO, "500,EntryOrderNotSent, {0}:{1}:{2}:{3}:{4},OpenPosition={5}:DayStopHit={6}:DayProfitTargetHit:{7}",
+            logger.log(Level.INFO, "200,EntryOrderNotSent, {0}:{1}:{2}:{3}:{4},OpenPosition={5}:DayStopHit={6}:DayProfitTargetHit:{7}",
                     new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getParentInternalOrderID()), -1, String.valueOf(tempOpenPosition), getS().getPlmanager().isDayProfitTargetHit(), getS().getPlmanager().isDayStopLossHit()});
         }
     }
@@ -869,7 +869,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             event.setOriginalOrderSize(residualTradeSize);
         }
         orders = c.getWrapper().createOrder(event);
-        logger.log(Level.FINE, "500,ExitOrder,{0}:{1}:{2}:{3}:{4},OrderSize={5}",
+        logger.log(Level.FINE, "200,ExitOrder,{0}:{1}:{2}:{3}:{4},OrderSize={5}",
                 new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalOrderID()), -1, String.valueOf(event.getOriginalOrderSize())});
         event = c.getWrapper().placeOrder(c, orders, this, event);
         int orderid = event.getExternalOrderID();
@@ -946,7 +946,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         //ord.m_totalQuantity = size;
                         amendedOrders.put(id, ord);
                         if (amendedOrders.size() > 0) {
-                            logger.log(Level.INFO, "500,AmendmentOrder,{0}:{1}:{2}:{3}:{4},NewLimitPrice={5}",
+                            logger.log(Level.INFO, "200,AmendmentOrder,{0}:{1}:{2}:{3}:{4},NewLimitPrice={5}",
                                     new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getParentInternalOrderID()), String.valueOf(ord.m_orderId), String.valueOf(ord.m_lmtPrice)});
                             event.setOrderTime();
                             c.getWrapper().placeOrder(c, amendedOrders, this, event);
@@ -962,7 +962,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     void processOrderCancel(BeanConnection c, OrderBean event) {
 
         if (!event.isCancelRequested()) {
-            logger.log(Level.INFO, "500,CancellationOrder,{0}:{1}:{2}:{3}:{4}",
+            logger.log(Level.INFO, "200,CancellationOrder,{0}:{1}:{2}:{3}:{4}",
                     new Object[]{getOrderReference(), c.getAccountName(), event.getParentDisplayName(), String.valueOf(event.getParentInternalOrderID()), String.valueOf(event.getExternalOrderID())});
             c.getWrapper().cancelOrder(c, event);
         }
@@ -1307,8 +1307,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private synchronized void fireLinkedActions(BeanConnection c, OrderBean ob) {
         ob = c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
         int orderid = ob.getExternalOrderID();
-        logger.log(Level.INFO, "500,LinkedActionOrderID,{0}:{1}:{2}:{3}:{4},OrderUpdateTime={5}",
-                new Object[]{this.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), ob.getInternalOrderID(), ob.getExternalOrderID(), ob.getUpdateTime()});
+        logger.log(Level.INFO, "200,LinkedActionOrderID,{0}:{1}:{2}:{3}:{4},OrderUpdateTime={5}",
+                new Object[]{this.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID()), ob.getUpdateTime()});
         //this function only supports linked actions for cancellation. What about linked action for fills?
         if (orderid >= 0) {
             EnumLinkedAction nextAction = EnumLinkedAction.UNDEFINED;
