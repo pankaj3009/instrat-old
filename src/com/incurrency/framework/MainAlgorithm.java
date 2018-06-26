@@ -308,20 +308,25 @@ public class MainAlgorithm extends Algorithm {
     }
 
     private int connectToBroker() throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-         Class[] arg;
-                arg = new Class[1];
-                arg[0] = BeanConnection.class;
-                
+        Class[] arg;
+        arg = new Class[1];
+        arg[0] = BeanConnection.class;
+
+        //setup order listener for reconciling positions
+        Thread t = new Thread(new OrderStatusThread());
+        t.setName("Order Status Listener");
+        t.start();
+
         for (BeanConnection c : Parameters.connection) {
-            Constructor constructor= Class.forName(Algorithm.connectionClass).getConstructor(arg);
-            Connection BrokerConnection=(Connection) constructor.newInstance(c);
+            Constructor constructor = Class.forName(Algorithm.connectionClass).getConstructor(arg);
+            Connection BrokerConnection = (Connection) constructor.newInstance(c);
             c.setWrapper(BrokerConnection);
         }
         int connectioncount = 1;
         ArrayList<BeanConnection> notConnected = new ArrayList();
         //TradingUtil.logProperties();
         for (BeanConnection c : Parameters.connection) {
-            logger.log(Level.INFO, "100,ConnectionParameters,, IP={0},Port={1},ClientID={2},Strategy={3},Purpose={4},RealTimeMarketData={5},HistoricalDataPause={6},MessagesPerSecond={7},OrderLimitEvery2min={8},OwnerEmail={9} ", 
+            logger.log(Level.INFO, "100,ConnectionParameters,, IP={0},Port={1},ClientID={2},Strategy={3},Purpose={4},RealTimeMarketData={5},HistoricalDataPause={6},MessagesPerSecond={7},OrderLimitEvery2min={8},OwnerEmail={9} ",
                     new Object[]{Parameters.connection.get(connectioncount - 1).getIp(),
                         String.valueOf(Parameters.connection.get(connectioncount - 1).getPort()),
                         Parameters.connection.get(connectioncount - 1).getClientID(),
@@ -369,7 +374,7 @@ public class MainAlgorithm extends Algorithm {
                 int id = Math.max(referenceExternalOrderID, c.getIdmanager().getNextOrderIdWithoutIncrement());
                 c.getIdmanager().initializeOrderId(id);
                 logger.log(Level.INFO, "100, NextOrderIDUpdated,,Account={0},OrderID={1}",
-                        new Object[]{c.getAccountName(),String.valueOf(id)});
+                        new Object[]{c.getAccountName(), String.valueOf(id)});
             }
         }
 

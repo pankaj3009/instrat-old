@@ -31,6 +31,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.ScanResult;
 import static com.google.common.base.Strings.*;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  *
@@ -78,6 +79,7 @@ public class Algorithm {
     public static int daysOfTickHistory;
     public static Boolean initialized = Boolean.FALSE; // initialized is set to true only if Algorithm passes all validations.
     public static String pnlMode;
+    public static ArrayBlockingQueue<OrderStatusEvent> orderEvents;
 
     public Algorithm(HashMap<String, String> args) {
         globalProperties = Utilities.loadParameters(args.get("propertyfile"));
@@ -100,6 +102,8 @@ public class Algorithm {
         recipientEmail = globalProperties.getProperty("recipientemail").isEmpty() ? null : globalProperties.getProperty("recipientemail").trim();
         daysOfTickHistory = Utilities.getInt(globalProperties.getProperty("daysoftickhistory"), 10);
         pnlMode=globalProperties.getProperty("pnlmode","realized").trim();
+        int orderQueueSize=Utilities.getInt(globalProperties.getProperty("orderqueuesize"),100);
+        orderEvents=new ArrayBlockingQueue(orderQueueSize);
         if (holidayFile != null && !holidayFile.equals("")) {
             File inputFile = new File(holidayFile);
             if (inputFile.exists() && !inputFile.isDirectory()) {

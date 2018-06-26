@@ -78,6 +78,13 @@ public class TradingEventSupport {
     }
 
 //**************EVENT HANDLERS
+    
+    public void fireOrderStatus(OrderStatusEvent e) {
+        Iterator itrListeners = orderStatusListeners.iterator();
+        while (itrListeners.hasNext()) {
+            ((OrderStatusListener) itrListeners.next()).orderStatusReceived(e);
+        }
+    }
     public void fireOrderStatus(BeanConnection c, int orderId, String status, int filled, int remaining, double avgFillPrice, int permId, int parentId, double lastFillPrice, int clientId, String whyHeld) {
 
         OrderStatusEvent ordStatus = new OrderStatusEvent(new Object(), c, orderId, status, filled, remaining, avgFillPrice, permId, parentId, lastFillPrice, clientId, whyHeld);
