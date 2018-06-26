@@ -91,6 +91,10 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 
     public synchronized boolean connect() {
         try {
+            //setup order listener for reconciling positions
+            Thread t_tes = new Thread(new OrderStatusThread(tes));
+            t_tes.setName("Order Status Listener");
+            t_tes.start();            
             String twsHost = getC().getIp();
             int twsPort = getC().getPort();
             int clientID = getC().getClientID();
@@ -1409,9 +1413,11 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                     if(ob!=null){
                     int remaining = ob.getCurrentOrderSize() - execution.m_cumQty;
                     if (remaining == 0) {
-                        tes.fireOrderStatus(getC(), execution.m_orderId, "Filled", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                        OrderStatusEvent e=new OrderStatusEvent(new Object(),getC(), execution.m_orderId, "Filled", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                        MainAlgorithm.orderEvents.add(e);
                     } else {
-                        tes.fireOrderStatus(getC(), execution.m_orderId, "Submitted", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                        OrderStatusEvent e=new OrderStatusEvent(new Object(),getC(), execution.m_orderId, "Submitted", execution.m_cumQty, remaining, execution.m_avgPrice, execution.m_permId, reqId, 0, execution.m_clientId, "execDetails");
+                        MainAlgorithm.orderEvents.add(e);                        
                     }
                     }else{
             logger.log(Level.INFO, "101,Did not find orderbean,{0}:{1}:{2}:{3}:{4},CumExecution={5}:AveragePrice={6},Orderkey={7}",

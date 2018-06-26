@@ -312,11 +312,6 @@ public class MainAlgorithm extends Algorithm {
         arg = new Class[1];
         arg[0] = BeanConnection.class;
 
-        //setup order listener for reconciling positions
-        Thread t = new Thread(new OrderStatusThread());
-        t.setName("Order Status Listener");
-        t.start();
-
         for (BeanConnection c : Parameters.connection) {
             Constructor constructor = Class.forName(Algorithm.connectionClass).getConstructor(arg);
             Connection BrokerConnection = (Connection) constructor.newInstance(c);

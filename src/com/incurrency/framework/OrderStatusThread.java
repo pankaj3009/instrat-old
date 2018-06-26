@@ -15,8 +15,12 @@ import java.util.logging.Logger;
 public class OrderStatusThread implements Runnable {
 
     private static final Logger logger = Logger.getLogger(OrderStatusThread.class.getName());
-    private TradingEventSupport tes = new TradingEventSupport();
+    private TradingEventSupport tes;
 
+    public OrderStatusThread(TradingEventSupport tes){
+        this.tes=tes;
+    }
+    
     @Override
     public void run() {
         try {

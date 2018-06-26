@@ -80,7 +80,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private double estimatedBrokerage = 0;
     private ConcurrentHashMap<Integer, EnumOrderStatus> orderStatus = new ConcurrentHashMap<>();
     private HashSet<OrderStatusEvent> openingEvents = new HashSet<>();
-    private java.util.Timer openingPosition;
+    //private java.util.Timer openingPosition;
     private boolean openingRecon = false;
 
     TimerTask runBrokerage = new TimerTask() {
@@ -195,7 +195,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         public void run() {
             if (MainAlgorithm.strategiesLoaded.get()) {
                 orderStatusReceived(null);
-                ExecutionManager.this.openingPosition.cancel();
+//                ExecutionManager.this.openingPosition.cancel();
             }
         }
     };
@@ -305,8 +305,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         //brokerage.schedule(runBrokerage, new Date(), 120000);
         java.util.Timer orderProcessing = new java.util.Timer("Timer: Periodic Order and Execution Cleanup");
         orderProcessing.schedule(runGetOrderStatus, new Date(), 60000);
-        openingPosition = new java.util.Timer("Timer: OpeningPositions");
-        openingPosition.schedule(reconcileOpeningPositions, new Date(), 10000);
+//        openingPosition = new java.util.Timer("Timer: OpeningPositions");
+//        openingPosition.schedule(reconcileOpeningPositions, new Date(), 10000);
     }
 
     private void updateInitPositions(String key, ArrayList<Integer> combos) {
@@ -969,76 +969,76 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     }
 
     @Override
-    public synchronized void orderStatusReceived(OrderStatusEvent event) {
-        try {
-            if (!MainAlgorithm.strategiesLoaded.get()) {
-                openingEvents.add(event);
-            } else {
-                if (openingEvents.size() > 0 || !openingRecon) {
-                    //get all open orders as per instrat
-                    if(event!=null){
-                        System.out.println(event.toString());                        
-                    }
-                    for (BeanConnection c : Parameters.connection) {
-                        int index = Parameters.connection.indexOf(c);
-                        ArrayList<OrderBean> orders = Parameters.connection.get(index).getLiveOrders();
-                        //each open order should have a correponding openingEvent.
-                        // if not, and order has zero fill size, cancel the order
-                        // if order has non-zero fill size, send email
-                        for (OrderBean order : orders) {
-                            boolean reconciled = false;
-                            int externalorderid = order.getExternalOrderID();
-                            for (OrderStatusEvent e : openingEvents) {
-                                if (e.getOrderID() == externalorderid) {
-                                    reconciled = true;
-                                    orderStatusUpdater(e);
-                                }
-                            }
-                            if (!reconciled & order.getTotalFillSize() == 0) {
-                                //cancel order in instrat.
-                                OrderStatusEvent e = new OrderStatusEvent(new Object(), c, order.getExternalOrderID(), "Cancelled", 0, order.getOriginalOrderSize(), 0D, 0, order.getParentSymbolID(), 0D, -1, "");
-                                logger.log(Level.INFO, "200,OpeningReconcilationAlert,{0}:{1}:{2}:{3}:{4},NewStatus={5}",
-                                        new Object[]{getOrderReference(), c.getAccountName(), order.getParentDisplayName(), Integer.toString(order.getInternalOrderID()), String.valueOf(order.getExternalOrderID()), "Cancelled"});
-                                orderStatusUpdater(e);
-                            } else if (!reconciled & order.getTotalFillSize() > 0) {
-                                //send alert email to account owner
-                                Gson gson = new Gson();
-                                String json = gson.toJson(order);
-                                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Opening Live Order Recon failed with IB. Please Check orders manually. Account: " + c.getAccountName() + "Order details with instrat: " + json, "Algorithm Opening Order Recon Error"));
-                                t.start();
-                            }
-                        }
-                        //Reverse recon. Iterate through  orderEvents
-                        for (OrderStatusEvent e : openingEvents) {
-                            boolean reconciled = false;
-                            int externalorderid = e.getOrderID();
-                            for (OrderBean order : orders) {
-                                if (order.getExternalOrderID() == externalorderid) {
-                                    reconciled = true;
-                                    break;
-                                }
-                            }
-                            if (!reconciled) {
-                                Gson gson = new Gson();
-                                String json = gson.toJson(e);
-                                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Opening Live Order Recon failed with IB. Please Check orders manually. Account: " + c.getAccountName() + "Order details with IB: " + json + "are not available with inStrat", "Algorithm Opening Order Recon Error"));
-                                t.start();
-                            }
-                        }
-                    }
-                    openingEvents.clear();
-                    openingRecon = true;
-                }
-                if (event != null) {
-                    orderStatusUpdater(event);
-                }
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, null, e);
-        }
-    }
+//    public synchronized void orderStatusReceived(OrderStatusEvent event) {
+//        try {
+//            if (!MainAlgorithm.strategiesLoaded.get()) {
+//                openingEvents.add(event);
+//            } else {
+//                if (openingEvents.size() > 0 || !openingRecon) {
+//                    //get all open orders as per instrat
+//                    if(event!=null){
+//                        System.out.println(event.toString());                        
+//                    }
+//                    for (BeanConnection c : Parameters.connection) {
+//                        int index = Parameters.connection.indexOf(c);
+//                        ArrayList<OrderBean> orders = Parameters.connection.get(index).getLiveOrders();
+//                        //each open order should have a correponding openingEvent.
+//                        // if not, and order has zero fill size, cancel the order
+//                        // if order has non-zero fill size, send email
+//                        for (OrderBean order : orders) {
+//                            boolean reconciled = false;
+//                            int externalorderid = order.getExternalOrderID();
+//                            for (OrderStatusEvent e : openingEvents) {
+//                                if (e.getOrderID() == externalorderid ) {
+//                                    reconciled = true;
+//                                    orderStatusUpdater(e);
+//                                }
+//                            }
+//                            if (!reconciled & order.getTotalFillSize() == 0) {
+//                                //cancel order in instrat.
+//                                OrderStatusEvent e = new OrderStatusEvent(new Object(), c, order.getExternalOrderID(), "Cancelled", 0, order.getOriginalOrderSize(), 0D, 0, order.getParentSymbolID(), 0D, -1, "");
+//                                logger.log(Level.INFO, "200,OpeningReconcilationAlert,{0}:{1}:{2}:{3}:{4},NewStatus={5}",
+//                                        new Object[]{getOrderReference(), c.getAccountName(), order.getParentDisplayName(), Integer.toString(order.getInternalOrderID()), String.valueOf(order.getExternalOrderID()), "Cancelled"});
+//                                orderStatusUpdater(e);
+//                            } else if (!reconciled & order.getTotalFillSize() > 0) {
+//                                //send alert email to account owner
+//                                Gson gson = new Gson();
+//                                String json = gson.toJson(order);
+//                                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Opening Live Order Recon failed with IB. Please Check orders manually. Account: " + c.getAccountName() + "Order details with instrat: " + json, "Algorithm Opening Order Recon Error"));
+//                                t.start();
+//                            }
+//                        }
+//                        //Reverse recon. Iterate through  orderEvents
+//                        for (OrderStatusEvent e : openingEvents) {
+//                            boolean reconciled = false;
+//                            int externalorderid = e.getOrderID();
+//                            for (OrderBean order : orders) {
+//                                if (order.getExternalOrderID() == externalorderid) {
+//                                    reconciled = true;
+//                                    break;
+//                                }
+//                            }
+//                            if (!reconciled) {
+//                                Gson gson = new Gson();
+//                                String json = gson.toJson(e);
+//                                Thread t = new Thread(new Mail(c.getOwnerEmail(), "Opening Live Order Recon failed with IB. Please Check orders manually. Account: " + c.getAccountName() + "Order details with IB: " + json + "are not available with inStrat", "Algorithm Opening Order Recon Error"));
+//                                t.start();
+//                            }
+//                        }
+//                    }
+//                    openingEvents.clear();
+//                    openingRecon = true;
+//                }
+//                if (event != null) {
+//                    orderStatusUpdater(event);
+//                }
+//            }
+//        } catch (Exception e) {
+//            logger.log(Level.SEVERE, null, e);
+//        }
+//    }
 
-    private void orderStatusUpdater(OrderStatusEvent event) {
+    public synchronized void orderStatusReceived(OrderStatusEvent event) {
         try {
             int orderid = event.getOrderID();
             //update HashMap orders
@@ -1192,7 +1192,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         Thread t = new Thread(new Mail(event.getConnection().getOwnerEmail(), "Order placed by inStrat for symbol " + Parameters.symbol.get(id).getBrokerSymbol() + " over strategy " + getS().getStrategy() + " was outside permissible range. Please check inStrat status", "Algorithm SEVERE ALERT"));
                         t.start();
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
-                        this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
+                        OrderStatusEvent e=new OrderStatusEvent(new Object(),event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
+                        MainAlgorithm.orderEvents.add(e);                            
                     }
                 } else {
                     logger.log(Level.SEVERE, "501,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
@@ -1205,7 +1206,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         int id = ob.getParentSymbolID();
                         int orderid = event.getId();
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
-                        this.tes.fireOrderStatus(event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
+                        OrderStatusEvent e=new OrderStatusEvent(new Object(),event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
+                        MainAlgorithm.orderEvents.add(e);                           
                     }
                 } else {
                     logger.log(Level.SEVERE, "501,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
