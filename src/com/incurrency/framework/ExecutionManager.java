@@ -1050,6 +1050,11 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         OrderBean ob = c.getOrderBeanCopy(oqk);
                         if (ob != null && ob.getOrderReference().compareToIgnoreCase(getOrderReference()) == 0) {
                             int parentid = ob.getParentSymbolID();
+                            if(parentid==-1){
+                                //symbol not in parameters.symbol. add to symbol file
+                                this.getS().insertSymbol(Parameters.symbol, ob.getParentDisplayName(), Boolean.FALSE);
+                                parentid=ob.getParentSymbolID();
+                            }
                             if (parentid >= 0) {
                                 EnumOrderStatus fillStatus = EnumOrderStatus.SUBMITTED;
                                 if (!Utilities.isSyntheticSymbol(parentid)) {//single leg
