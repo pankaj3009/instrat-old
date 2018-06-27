@@ -454,8 +454,8 @@ public class Trade {
     /**
      * @param mtmToday the mtmToday to set
      */
-    public static void setMtm(RedisConnect db, Object internalOrderID, String date, double mtmToday) {
-        db.setHash("mtm", "mtm_" + internalOrderID.toString(), date, String.valueOf(mtmToday));
+    public static void setMtm(RedisConnect db, Object displayName, String date, double mtmToday) {
+        db.setHash("mtm", "mtm_" + displayName.toString(), date, String.valueOf(mtmToday));
     }
 
     /**
