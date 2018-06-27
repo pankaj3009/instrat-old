@@ -1893,7 +1893,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 if (ob.getOrderSide() == EnumOrderSide.BUY || ob.getOrderSide() == EnumOrderSide.SHORT) {
                     // DO NOTHING
                 } else {
-                    Trade.openClosedTrade(this.getS().getDb(), key, ob.getTotalFillSize(), ob.getTotalFillPrice());
+                    key = "opentrades_" + this.getOrderReference() + ":" + ob.getInternalOrderID() + ":" + c.getAccountName();
+                    int totalfillsize=Trade.getExitSize(db, key);
+                    double totalfillprice=Trade.getExitPrice(db, key);
+                    Trade.openClosedTrade(this.getS().getDb(), key, totalfillsize, totalfillprice);
                 }
                 break;
             default:
