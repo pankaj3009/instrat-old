@@ -42,11 +42,6 @@ import org.jquantlib.time.calendars.India;
 import com.google.common.base.Preconditions;
 import com.google.gson.reflect.TypeToken;
 import com.ib.client.TickType;
-import static com.incurrency.framework.Algorithm.marketdatapool;
-import static com.incurrency.framework.Algorithm.redisdbtick;
-import static com.incurrency.framework.Algorithm.redisdbtrade;
-import static com.incurrency.framework.Algorithm.redisip;
-import static com.incurrency.framework.Algorithm.redisport;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -59,7 +54,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -79,10 +73,8 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -90,14 +82,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.mail.internet.InternetAddress;
-import javax.swing.JOptionPane;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.jblas.DoubleMatrix;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 
 /**
@@ -235,7 +222,7 @@ public class Utilities {
             for (String key : result) {
                 String parentDisplayName = Trade.getParentSymbol(db, key);
                 int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentDisplayName);
-                if (id >= 0 && (Parameters.symbol.get(id).getLastPrice() !=0||Parameters.symbol.get(id).getLastPrice() != -1) && Parameters.symbol.get(id).getLastPrice() != -1) {
+                if (id >= 0 && Parameters.symbol.get(id).getLastPrice() != 0 && Parameters.symbol.get(id).getLastPrice() != -1) {
                     Trade.setMtm(db, parentDisplayName, today, Parameters.symbol.get(id).getLastPrice());
                 }
                 if (Trade.getEntryBrokerage(db, key) == 0) {
@@ -285,11 +272,6 @@ public class Utilities {
                     Trade.setEntryBrokerage(db, key, "closedtrades", Utilities.round(tempBrokerage.get(0), 0));
                 }
             }
-
-            //Split trades that have parital fills
-            //close trades that have expired.
-            closeExpiredTrades(db, accountName, strategyName);
-
             path = Paths.get(path.toString(), "pnl", accountName, strategyName.toLowerCase());
             path.toFile().mkdirs();
             boolean success = true;
@@ -303,8 +285,10 @@ public class Utilities {
             //update redis pnl
             success = true;
             while (success) {
-                String redisPNLRecord = getLastRedisPNLRecord(db, accountName, strategyName);
-                Date yesterdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(redisPNLRecord);
+//                String redisPNLRecord = getLastRedisPNLRecord(db, accountName, strategyName);
+//                Date yesterdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(redisPNLRecord);
+                String yesterday = getYesterdayFolderPNLRecord(db, path);
+                Date yesterdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(yesterday);
                 Date startingDate = Utilities.nextGoodDay(yesterdayDate, 24 * 60, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
                 success = Utilities.updateRedisPNL(db, path, strategyName, accountName, startingDate);
             }
@@ -488,31 +472,31 @@ public class Utilities {
 
     }
 
-    public static void closeExpiredTrades(RedisConnect db, String accountName, String strategyName) {
-        List<String> result = db.scanRedis("opentrades_" + strategyName + "*" + accountName);
-        for (String key : result) {
-            int exitSize = Trade.getExitSize(db, key);
-            if (exitSize > 0) {
-                int entrySize = Trade.getEntrySize(db, key);
-                if (entrySize > exitSize) {
-                    //Adjust entry size of old trade
-                    //Create new trade with residual size
-                    //Close old trade
-                    int residualSize = entrySize - exitSize;
-                    String newKey = Trade.copyEntryTrade(db, key);
-                    db.setHash(key, "entrysize", String.valueOf(exitSize));                    
-                    Trade.closeTrade(db, key);
-                    db.setHash(newKey, "entrysize", String.valueOf(residualSize));
-                } else if (entrySize == exitSize) {
-                    //close trade
-                    Trade.closeTrade(db, key);
-                } else if (entrySize < exitSize) {
-                    logger.log(Level.INFO, "Incorrect Trade Size in trade with key {0}.EntrySize:{1}, ExitSize:{2}",
-                            new Object[]{key, entrySize, exitSize});
-                }
-            }
-        }
-    }
+//    public static void closeExpiredTrades(RedisConnect db, String accountName, String strategyName) {
+//        List<String> result = db.scanRedis("opentrades_" + strategyName + "*" + accountName);
+//        for (String key : result) {
+//            int exitSize = Trade.getExitSize(db, key);
+//            if (exitSize > 0) {
+//                int entrySize = Trade.getEntrySize(db, key);
+//                if (entrySize > exitSize) {
+//                    //Adjust entry size of old trade
+//                    //Create new trade with residual size
+//                    //Close old trade
+//                    int residualSize = entrySize - exitSize;
+//                    String newKey = Trade.copyEntryTrade(db, key);
+//                    db.setHash(key, "entrysize", String.valueOf(exitSize));                    
+//                    Trade.closeTrade(db, key);
+//                    db.setHash(newKey, "entrysize", String.valueOf(residualSize));
+//                } else if (entrySize == exitSize) {
+//                    //close trade
+//                    Trade.closeTrade(db, key);
+//                } else if (entrySize < exitSize) {
+//                    logger.log(Level.INFO, "Incorrect Trade Size in trade with key {0}.EntrySize:{1}, ExitSize:{2}",
+//                            new Object[]{key, entrySize, exitSize});
+//                }
+//            }
+//        }
+//    }
 
     /**
      * mtm creation logic mtm price is taken to be s.getlastPrice() if algodate
