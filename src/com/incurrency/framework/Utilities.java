@@ -978,10 +978,16 @@ public class Utilities {
     public static double getPriorMTMFromRedis(RedisConnect db, String symbol, String dateString) {
         double mtm = 0;
         //get prior business day
-        Date date = DateUtil.getFormattedDate(dateString, "yyyy-MM-dd", Algorithm.timeZone);
-        Date priorDate = Utilities.previousGoodDay(date, -1, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
-        String priorDateString = new SimpleDateFormat("yyyy-MM-dd").format(priorDate);
-        return Trade.getMtm(db, symbol, priorDateString);
+        //Date date = DateUtil.getFormattedDate(dateString, "yyyy-MM-dd", Algorithm.timeZone);
+        //Date priorDate = Utilities.previousGoodDay(date, -1, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
+        //String priorDateString = new SimpleDateFormat("yyyy-MM-dd").format(priorDate);
+        ConcurrentHashMap<String,String> mtms=db.getValues("", "mtm_" + symbol.toString());
+        if (mtms.size() > 0) {
+            TreeMap<String, String> sorted = new TreeMap<>(mtms);
+            sorted.tailMap(dateString).clear();
+            mtm = Utilities.getDouble(sorted.lastEntry().getValue(), 0);            
+        }
+        return mtm;
     }
 
     private static void updateDrawDownMetrics(RedisConnect db, String strategyName, String accountName, String today) {
