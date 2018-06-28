@@ -565,10 +565,10 @@ public class Trade {
     public static String getParentSymbol(RedisConnect db, Object internalOrderID) {
         Object out1 = db.getValue("opentrades", internalOrderID.toString(), "parentsymbol");
         if (out1 != null) {
-            return out1.toString();
+            return String.valueOf(out1);
         } else {
             Object out2 = db.getValue("closedtrades", internalOrderID.toString(), "parentsymbol");
-            return out2 == null ? "" : out2.toString();
+            return out2 == null ? "" : String.valueOf(out2);
         }
     }
 

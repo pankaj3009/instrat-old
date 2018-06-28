@@ -2125,7 +2125,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             Trade.closeTrade(db, key);
                             exitCompleted = true;
                         }
-                        logger.log(Level.INFO, "200,TradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getParentSymbol(db, key) + delimiter + Trade.getEntrySide(db, key) + delimiter + avgFillPrice + delimiter + filled + delimiter + Trade.getEntryOrderIDInternal(db, key) + delimiter + Trade.getEntryOrderIDExternal(db, key) + delimiter + ob.getExternalOrderID() + delimiter + ob.getInternalOrderID() + delimiter + key + delimiter + adjTradeSize});
+                        logger.log(Level.INFO, "200,TradeUpdate,{0}:{1}:{2}:{3}:{4},Key={5}", new Object[]{getOrderReference(),c.getAccountName(),Trade.getParentSymbol(db, key),Trade.getExitOrderIDInternal(db, key),Trade.getExitOrderIDExternal(db, key), key });
                     } else {
                         logger.log(Level.INFO, "200,NoTradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getEntrySize(db, key) + delimiter + ob.getInternalOrderID() + delimiter + ob.getParentInternalOrderID() + delimiter + orderid + delimiter + key});
                     }

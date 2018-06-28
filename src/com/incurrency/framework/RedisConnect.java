@@ -141,14 +141,14 @@ public class RedisConnect {
             if (key.contains("_")) {
                 Object out = jedis.hget(key, field.toString());
                 if (out != null) {
-                    return (String) jedis.hget(key, field.toString());
+                    return String.valueOf(jedis.hget(key, field.toString()));
                 } else {
                     return null;
                 }
             } else {
                 Object out = jedis.hget(storeName + "_" + key, field.toString());
                 if (out != null) {
-                    return (String) jedis.hget(storeName + "_" + key, field.toString());
+                    return String.valueOf(jedis.hget(storeName + "_" + key, field.toString()));
                 } else {
                     return null;
                 }
