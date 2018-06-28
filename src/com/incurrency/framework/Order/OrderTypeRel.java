@@ -53,7 +53,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
     ExecutionManager oms;
     boolean orderCompleted = false;
     int externalOrderID = -1;
-    int internalOrderIDEntry = -1;
     //private final Object syncObject = new Object();
 //    private Drop sync;
     private LimitedQueue recentOrders;
@@ -120,9 +119,6 @@ public class OrderTypeRel implements Runnable, BidAskListener, OrderStatusListen
                 }
                 logger.log(Level.INFO, "400,OrderTypeRel Manager Closed,{0}:{1}:{2}:{3}:{4}",
                         new Object[]{oms.getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), ob.getInternalOrderID(), String.valueOf(externalOrderID)});
-                if (Trade.getAccountName(oms.getDb(), "opentrades_" + oms.getOrderReference() + ":" + internalOrderIDEntry + ":" + c.getAccountName()).equals("")) {
-                    oms.getDb().delKey("opentrades", oms.getOrderReference() + ":" + String.valueOf(internalOrderIDEntry) + ":" + c.getAccountName());
-                }
                 RedisSubscribe.tes.removeBidAskListener(this);
                 RedisSubscribe.tes.removeOrderStatusListener(this);
                 for (BeanConnection c1 : Parameters.connection) {
