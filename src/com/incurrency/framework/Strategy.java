@@ -937,7 +937,7 @@ public class Strategy implements NotificationListener {
                     Parameters.symbol.get(id).setStrategy(localStrategy.toUpperCase());
                 }
                 this.getPosition().put(id, new BeanPosition(id, getStrategy()));
-                if (Parameters.symbol.get(id).getBidPrice() == 0) {
+                if (Parameters.symbol.get(id).getBidPrice() == 0||Parameters.symbol.get(id).getAskPrice()== 0) {
                     Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
                     try {
                         Thread.sleep(2000);
