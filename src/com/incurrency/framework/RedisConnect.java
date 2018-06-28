@@ -71,12 +71,16 @@ public class RedisConnect {
     }
 
     public Long delKey(String storeName, String key) {
+        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+        StackTraceElement e = stacktrace[2];//maybe this number needs to be corrected
+        String methodName = e.getMethodName();
+        logger.log(Level.INFO,"500,KeyDeleted,Key={0},CallingMethod={1}",new Object[]{key,methodName});
         try (Jedis jedis = pool.getResource()) {
             if (key.contains("_")) {
                 return jedis.del(key.toString());
             } else {
                 return jedis.del(storeName + "_" + key);
-            }
+            }            
         }
     }
 
