@@ -1325,7 +1325,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 ArrayList<Integer> oid = ob.getLinkInternalOrderID();
                 if (oid != null && oid.size() >= 1) {
                     String orderstatus = os.get(0);
-                    String key = "OQ:.*:" + oid.get(0) + ":" + oid.get(0) + ".*"; //get first orderkey
+                    String key = "OQ:"+ob.getExternalOrderID()+".*:" + oid.get(0) + ":" + oid.get(0) + ".*"; //get first orderkey
                     Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, c, key);
                     if (oqks.size() == 1) {
                         for (OrderQueueKey oqki : oqks) {

@@ -591,7 +591,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                         displaySize = (int) Math.round(Utilities.roundTo(displaySize, rand));
                         displaySize = Math.max(Parameters.symbol.get(parentid).getMinsize(), displaySize);
                     }
-                    logger.log(Level.FINE, "500,DisplaySizeSet,{0}", new Object[]{displaySize});
+                    logger.log(Level.FINE, "200,DisplaySizeSet,{0}", new Object[]{displaySize});
                     order.m_displaySize = displaySize;
                     //event.put("DisplaySize",String.valueOf(order.m_displaySize));
                     boolean singlelegorder = !Utilities.isSyntheticSymbol(event.getParentSymbolID());
@@ -610,7 +610,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 //                        order.m_totalQuantity = Math.min(order.m_displaySize, (event.getOriginalOrderSize() - event.getTotalFillSize()));
 //                        event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
 //                        int connectionid = Parameters.connection.indexOf(this.getC());
-                            logger.log(Level.INFO, "500,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize()-event.getTotalFillSize()-order.m_totalQuantity)});
+                            logger.log(Level.INFO, "200,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize()-event.getTotalFillSize()-order.m_totalQuantity)});
                             if (event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
                                 double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingFutureID(), event.getOrderSide(), oms.getTickSize(), event.getOrderType());
                                 if (limitprice > 0) {
