@@ -1658,6 +1658,20 @@ public class Utilities {
                             price = Parameters.symbol.get(id).getLastPrice();
                         }
                         break;
+                    default:
+                        if (side.equals(EnumOrderSide.BUY) || side.equals(EnumOrderSide.COVER)) {
+                            price = Parameters.symbol.get(id).getBidPrice();
+                            if (price == 0 || price == -1) {
+                                price = 0.05;
+                            }
+                        } else {
+                            price = Parameters.symbol.get(id).getAskPrice();
+                            if (price == 0 || price == -1) {
+                                price = Double.MAX_VALUE;
+                            }
+
+                        }
+                        break;
                 }
                 break;
 
