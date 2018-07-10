@@ -1885,7 +1885,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 if (ob.getOrderSide() == EnumOrderSide.BUY || ob.getOrderSide() == EnumOrderSide.SHORT) {
                     this.getS().getDb().delKey("", key);
                 } else {
-                    key = "closedtrades_" + this.getOrderReference() + ":" + ob.getInternalOrderID() + ":" + "Order";
+                    key = "closedtrades_" + this.getOrderReference() + ":" + ob.getInternalOrderIDEntry() + ":" + "Order";
                     Trade.copyEntryTrade(this.getS().getDb(), key);
                 }
                 break;

@@ -436,6 +436,7 @@ public class Strategy implements NotificationListener {
                 }
                 int internalorderid = Utilities.getInternalOrderID();
                 order.setInternalOrderID(internalorderid);
+                order.setInternalOrderIDEntry(internalorderid);
                 order.setParentInternalOrderID(internalorderid);
                 order.setOrderReference(getStrategy());
                 String log = order.getOrderLog() != null ? order.getOrderLog().toString() : "";
@@ -505,6 +506,8 @@ public class Strategy implements NotificationListener {
                             int internalorderid = Utilities.getInternalOrderID();
                             order.setInternalOrderID(internalorderid);
                             order.setParentInternalOrderID(internalorderid);
+                            int entryorderidinternal=Trade.getEntryOrderIDInternal(strategyDB, key);
+                            order.setInternalOrderIDEntry(entryorderidinternal);
                             int entrySize = Trade.getEntrySize(getDb(), key);
                             int exitSize = Trade.getExitSize(getDb(), key);
                             double exitPrice = Trade.getExitPrice(getDb(), key);
@@ -514,7 +517,7 @@ public class Strategy implements NotificationListener {
                             double newexitPrice = (exitPrice * exitSize + adjTradeSize * expectedFillPrice) / (newexitSize);
                             order.setOrderKeyForSquareOff(key);
                             String log = order.getOrderLog() != null ? order.getOrderLog().toString() : "";
-                            Trade.updateExit(getDb(), id, order.getOrderReason(), order.getOrderSide(), newexitPrice, newexitSize, Trade.getEntryOrderIDInternal(strategyDB, key), order.getInternalOrderID(), 0, order.getParentInternalOrderID(), getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
+                            Trade.updateExit(getDb(), id, order.getOrderReason(), order.getOrderSide(), newexitPrice, newexitSize, entryorderidinternal, order.getInternalOrderID(), 0, order.getParentInternalOrderID(), getTimeZone(), "Order", this.getStrategy(), "opentrades", log);
                             if (newexitSize == entrySize) {
                                 Trade.closeTrade(getDb(), key);
                             }

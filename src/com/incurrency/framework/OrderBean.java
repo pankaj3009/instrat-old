@@ -188,6 +188,11 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         String childInternalOrderID = this.get("InternalOrderID");
         return Utilities.getInt(childInternalOrderID, -1);
     }
+    
+    public int getInternalOrderIDEntry() {
+        String childInternalOrderID = this.get("InternalOrderIDEntry");
+        return Utilities.getInt(childInternalOrderID, -1);
+    }
 
     public int getExternalOrderID() {
         String externalOrderID = this.get("ExternalOrderID");
@@ -394,6 +399,10 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
 
     public void setInternalOrderID(int value) {
         this.put("InternalOrderID", String.valueOf(value));
+    }
+    
+    public void setInternalOrderIDEntry(int value) {
+        this.put("InternalOrderIDEntry", String.valueOf(value));
     }
 
     public void setOrderSide(EnumOrderSide value) {
