@@ -384,7 +384,6 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
     @Override
     public Order createBrokerOrder(OrderBean e) {
         Order order = new Order();
-        int size = e.getOriginalOrderSize();
         EnumOrderSide ordSide = e.getOrderSide();
         EnumOrderReason reason = e.getOrderReason();
         EnumOrderType orderType = e.getOrderType();

@@ -27,6 +27,11 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
 
     }
 
+    /**
+     * Returns the key for retrieving orderqueue record
+     * @param account
+     * @return 
+     */
     public OrderQueueKey generateKey(String account){
         int iboid=this.getExternalOrderID();
         String strategy=this.getOrderReference();
