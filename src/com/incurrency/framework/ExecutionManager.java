@@ -1030,7 +1030,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             if (parentid >= 0) {
                                 EnumOrderStatus fillStatus = EnumOrderStatus.SUBMITTED;
                                 if (!Utilities.isSyntheticSymbol(parentid)) {//single leg
-                                    if (event.getRemaining() == 0 & !(("Cancelled".equals(event.getStatus()) || "Inactive".equals(event.getStatus())) )) {
+                                    if (event.getRemaining() == 0) {
                                         fillStatus = EnumOrderStatus.COMPLETEFILLED;
                                     } else if (event.getRemaining() > 0 && event.getAvgFillPrice() > 0 && !"Cancelled".equals(event.getStatus())) {
                                         fillStatus = EnumOrderStatus.PARTIALFILLED;
