@@ -1860,7 +1860,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     this.getS().getDb().delKey("", key);
                 } else {
                     key = "closedtrades_" + this.getOrderReference() + ":" + ob.getInternalOrderIDEntry() + ":" + "Order";
-                    Trade.copyEntryTrade(this.getS().getDb(), key);
+                    Trade.openClosedTrade(this.getS().getDb(), key);
                 }
                 break;
             case CANCELLEDPARTIALFILL:
@@ -1870,7 +1870,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     key = "opentrades_" + this.getOrderReference() + ":" + ob.getInternalOrderID() + ":" + c.getAccountName();
                     int totalfillsize=Trade.getExitSize(db, key);
                     double totalfillprice=Trade.getExitPrice(db, key);
-                    Trade.openClosedTrade(this.getS().getDb(), key, totalfillsize, totalfillprice);
+                    Trade.openPartiallyFilledClosedTrade(this.getS().getDb(), key, totalfillsize, totalfillprice);
                 }
                 break;
             default:

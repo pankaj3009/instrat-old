@@ -59,25 +59,27 @@ public class Trade {
         }
     }
     
-    public static String openClosedTrade(RedisConnect db,String key,int exitsize,double exitprice){
+    public static String openPartiallyFilledClosedTrade(RedisConnect db,String key,int exitsize,double exitprice){
         String newKey=key.replaceAll("closedtrades", "opentrades");
         Map<String,String> newTrade=db.getTradeBean(key);
         newTrade.put("exitsize", String.valueOf(exitsize));
         newTrade.put("exitprice",String.valueOf(exitprice));
         newTrade.remove("exitbrokerage");
         newTrade.remove("exitorderidint");
+        newTrade.remove("parentexitorderidint");
         db.delKey("", key);
         db.insertTrade(newKey, newTrade);
         return newKey;    
     }
     
-    public static String copyEntryTrade(RedisConnect db,String key){
+    public static String openClosedTrade(RedisConnect db,String key){
         String [] keyComponents=key.split(":");
-        String account=keyComponents[keyComponents.length-1];
-        int internalOrderID=Utilities.getMaxInternalOrderID(db ,account);
-        int newOrderID=internalOrderID+1;
-        keyComponents[keyComponents.length-2]=String.valueOf(newOrderID);
+        //String account=keyComponents[keyComponents.length-1];
+        //int internalOrderID=Utilities.getMaxInternalOrderID(db ,account);
+        //int newOrderID=internalOrderID+1;
+        //keyComponents[keyComponents.length-2]=String.valueOf(newOrderID);
         String newKey=Utilities.concatStringArray(keyComponents,":");
+        newKey=newKey.replaceAll("closedtrades", "opentrades");
         Map<String,String> oldTrade=db.getTradeBean(key);
         oldTrade.remove("exitsize");
         oldTrade.remove("exitprice");
@@ -89,10 +91,12 @@ public class Trade {
         oldTrade.remove("exitside");
         oldTrade.remove("exitsymbol");
         oldTrade.remove("exittime");
-        oldTrade.remove("parententryorderidint");
-        oldTrade.put("account", account);
-        oldTrade.put("internalorderidint", String.valueOf(newOrderID));
+        oldTrade.remove("parentexitorderidint");
+        //oldTrade.put("accountname", account);
+        //oldTrade.put("parententryorderidint", String.valueOf(newOrderID));
+        //oldTrade.put("entryorderidint", String.valueOf(newOrderID));
         db.insertTrade(newKey, oldTrade);
+        db.delKey("", key);
         return newKey;                    
         }
 
