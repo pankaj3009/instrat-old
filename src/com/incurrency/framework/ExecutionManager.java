@@ -28,10 +28,8 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.swing.Timer;
 import org.jquantlib.time.BusinessDayConvention;
 import org.jquantlib.time.JDate;
@@ -59,29 +57,25 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private final static Logger logger = Logger.getLogger(DataBars.class.getName());
     static boolean logHeaderWritten = false;
     final ExecutionManager parentorder = this;
-    private double tickSize;
-    private String orderReference;
+    private final double tickSize;
+    private final String orderReference;
     Date endDate;
     public TradingEventSupport tes = new TradingEventSupport();
     private RedisConnect db; //trades holds internal order id <init>, Trade object
-    private double pointValue;
+    private final double pointValue;
     private ArrayList<Integer> openPositionCount = new ArrayList<>();
-    private ArrayList<Integer> maxOpenPositions = new ArrayList<>();
+    private final ArrayList<Integer> maxOpenPositions = new ArrayList<>();
     private String timeZone = "";
     private ArrayList<String> accounts = new ArrayList<>();
-    private ArrayList<ArrayList<Integer>> cancelledOrdersAcknowledgedByIB = new ArrayList<>();
     private ArrayList<ArrayList<LinkedAction>> cancellationRequestsForTracking = new ArrayList<>();
     private List<ArrayList<LinkedAction>> fillRequestsForTracking = Collections.synchronizedList(new ArrayList<ArrayList<LinkedAction>>());
     private Strategy s;
     private ArrayList notificationListeners = new ArrayList();
     //copies of global variables
-    private ArrayList<Integer> deemedCancellation = new ArrayList<>();
+    private final ArrayList<Integer> deemedCancellation = new ArrayList<>();
     private final String delimiter = "_";
     private double estimatedBrokerage = 0;
     private ConcurrentHashMap<Integer, EnumOrderStatus> orderStatus = new ConcurrentHashMap<>();
-    private HashSet<OrderStatusEvent> openingEvents = new HashSet<>();
-    //private java.util.Timer openingPosition;
-    private boolean openingRecon = false;
 
     TimerTask runBrokerage = new TimerTask() {
         @Override
@@ -221,7 +215,6 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             this.maxOpenPositions.add(maxOpenPositions);
             this.openPositionCount.add(0);
             //this.getOpenOrders();
-            cancelledOrdersAcknowledgedByIB.add(new ArrayList<Integer>());
             cancellationRequestsForTracking.add(new ArrayList<LinkedAction>());//cancelled orders represent orders that do not need to be executed anymore
             fillRequestsForTracking.add(new ArrayList<LinkedAction>());
         }
@@ -323,9 +316,9 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int entryorderidint = Trade.getEntryOrderIDInternal(db, key);
         int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayName);
         int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayName);
-        double entryPrice = Trade.getEntryPrice(db, key);;
+        double entryPrice = Trade.getEntryPrice(db, key);
         int entrySize = Trade.getEntrySize(db, key);
-        double exitPrice = Trade.getExitPrice(db, key);;
+        double exitPrice = Trade.getExitPrice(db, key);
         int exitSize = Trade.getExitSize(db, key);
         double mtmPrice;
         // double mtmPrice = Trade.getMtm(db, parentdisplayName,todayString);
@@ -502,34 +495,39 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 //we first handle initial orders given by EnumOrderStage=INIT
                 if (EnumOrderStage.valueOf(event.get("OrderStage")) == EnumOrderStage.INIT) {
                     int id = event.getParentSymbolID();
-                    for (BeanConnection c : Parameters.connection) {
-                        if (event.getEffectiveFromDate() != null && event.getEffectiveFromDate().after(new Date())) {
-                            //add timer to call
-                            String key = c.getAccountName() + ":" + this.getOrderReference() + ":" + event.getParentDisplayName() + ":" + event.getChildDisplayName() + ":" + event.getParentInternalOrderID() + ":" + event.getInternalOrderID();
-                            TimerTask TimedEventTask = new TimerTask() {
-                                @Override
-                                public void run() {
-                                    for (BeanConnection c : Parameters.connection) {
-                                        Set<OrderQueueKey> oqks = Utilities.getRestingOrderKeys(db, c, "OQ:-1:" + c.getAccountName() + ":.*");
-                                        for (OrderQueueKey oqki : oqks) {
-                                            OrderBean ob = c.getOrderBeanCopy(oqki);
-                                            Date effectiveFrom = ob.getEffectiveFromDate();
-                                            if (effectiveFrom == null) {
-                                                logger.log(Level.SEVERE, "101,Null effective date,Key={0}", new Object[]{Utilities.constructOrderKey(c, ob)});
-                                            }
-                                            if (effectiveFrom != null && ob.getEffectiveFromDate().before(new Date())) {
-                                                Algorithm.tradeDB.delKey("", oqki.getKey(c.getAccountName()));
-                                                c.removeOrderKey(oqki);
-                                                tes.fireOrderEvent(ob);
+                    if (event.getEffectiveFromDate() != null && event.getEffectiveFromDate().after(new Date())) {
+                        //add timer to call
+                        TimerTask TimedEventTask = new TimerTask() {
+                            boolean ordersent = false;
+                            @Override
+                            public void run() {
+                                for (BeanConnection c : Parameters.connection) {
+                                    Set<OrderQueueKey> oqks = Utilities.getRestingOrderKeys(db, c, "OQ:-1:" + c.getAccountName() + ":.*");
+                                    for (OrderQueueKey oqki : oqks) {
+                                        OrderBean ob = c.getOrderBeanCopy(oqki);
+                                        Date effectiveFrom = ob.getEffectiveFromDate();
+                                        if (effectiveFrom == null) {
+                                            logger.log(Level.SEVERE, "101,Null effective date,Key={0}", new Object[]{Utilities.constructOrderKey(c, ob)});
+                                        }
+                                        if (effectiveFrom != null && ob.getEffectiveFromDate().before(new Date())) {
+                                            Algorithm.tradeDB.delKey("", oqki.getKey(c.getAccountName()));
+                                            c.removeOrderKey(oqki);
+                                            tes.fireOrderEvent(ob);
+                                            if (ob.getInternalOrderID() == event.getInternalOrderID()) {
+                                                ordersent = true;
                                             }
                                         }
                                     }
                                 }
-                            };
-                            new java.util.Timer("Timer: " + key + ":" + new Date().getTime()).schedule(TimedEventTask, event.getEffectiveFromDate());
-                            //trigger.schedule(TimedEventTask, event.getEffectiveFromDate());
-                            return;
-                        }
+                                if (!ordersent) {
+                                    tes.fireOrderEvent(event);
+                                }
+                            }
+                        };
+                        new java.util.Timer("Timer: " + event.getParentInternalOrderID() + ":" + new Date().getTime()).schedule(TimedEventTask, event.getEffectiveFromDate());
+                        return;
+                    }
+                    for (BeanConnection c : Parameters.connection) {
                         boolean specificAccountSpecified = event.getSpecifiedBrokerAccount() != null && !event.getSpecifiedBrokerAccount().isEmpty();
                         if ("Trading".compareToIgnoreCase(c.getPurpose()) == 0 && (!specificAccountSpecified && accounts.contains(c.getAccountName()) || (specificAccountSpecified && event.getSpecifiedBrokerAccount().equals(c.getAccountName())))) {
                             //check if system is square
@@ -576,7 +574,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     break;
                                 case "011": //no position, open order exists, entry order
                                     if (event.isScale()) {
-                                    logger.log(Level.INFO, "200,Case 011.Delay Scale in as open order exists,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
+                                        logger.log(Level.INFO, "200,Case 011.Delay Scale in as open order exists,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
                                         eventWait(c, event, "011");
                                     } else {
                                         logger.log(Level.INFO, "200,Case 011.Do nothing.Scale in not allowed,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
@@ -593,10 +591,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                             logger.log(Level.INFO, "200,Case 101.Do nothing,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
                                         }
                                     } else {
-                                            logger.log(Level.INFO, "200,Case 101.New Entry received without prior exit.Delay new entry order,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
-                                            //Wait for an actual exit. Dont square off in anticipation..
-                                           //squareAllPositions(c, id, event.getOrderReference());
-                                           eventWait(c, event, "101");
+                                        logger.log(Level.INFO, "200,Case 101.New Entry received without prior exit.Delay new entry order,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
+                                        //Wait for an actual exit. Dont square off in anticipation..
+                                        //squareAllPositions(c, id, event.getOrderReference());
+                                        eventWait(c, event, "101");
                                     }//                                                                               
 
                                     break;
@@ -618,17 +616,17 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                 case "110"://position, open order, exit order received.
                                     if (event.isScale()) {
                                         if (openBuy.size() > 0 || openShort.size() > 0) {
-                                        logger.log(Level.INFO, "200,Case 110.Cancel entry open orders and delay exit,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
+                                            logger.log(Level.INFO, "200,Case 110.Cancel entry open orders and delay exit,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
                                             this.closeAllOpenOrders(c, id, event.getOrderReference());
                                             eventWait(c, event, "110");
                                         } else {
-                                        logger.log(Level.INFO, "200,Case 110.Exit already in progress.Delay current exit,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
+                                            logger.log(Level.INFO, "200,Case 110.Exit already in progress.Delay current exit,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
                                             eventWait(c, event, "110");
                                         }
                                     } else if (!event.isScale()) {
 //                                        logger.log(Level.INFO, "{0},{1},Execution Manager,Case:110. Scale in not allowed. Cleanse orders, Symbol:{2}, Size={3}, Side:{4}, Limit:{5}, Trigger:{6}, Expiration Time:{7}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getSymbol(), event.getOrderSize(), event.getSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getExpireTime()});
                                         if ((signedPositions > 0 && openSell.size() > 0) || (signedPositions < 0 && openCover.size() > 0)) {
-                                        logger.log(Level.INFO, "200,Case 110.Exit already in progress. Delay currency exit,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
+                                            logger.log(Level.INFO, "200,Case 110.Exit already in progress. Delay currency exit,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
                                             eventWait(c, event, "110");
                                         } else {
                                             logger.log(Level.INFO, "200,Case 110.Cancel entry open orders. Delay current exit,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
@@ -639,7 +637,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     }
                                     break;
                                 default: //print message with details
-//                                    logger.log(Level.INFO, "{0},{1},Execution Manager,Case:Default, Symbol:{2}, Size={3}, Side:{4}, Limit:{5}, Trigger:{6}, Expiration Time:{7}", new Object[]{c.getAccountName(), orderReference, Parameters.symbol.get(id).getSymbol(), event.getOrderSize(), event.getSide(), event.getLimitPrice(), event.getTriggerPrice(), event.getExpireTime()});
+                                    logger.log(Level.INFO, "200,Case ERROR,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
                                     break;
                             }
                         }
@@ -834,16 +832,16 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             logger.log(Level.INFO, "Residual Trade size was {0} for TradeKey:{1}", new Object[]{residualTradeSize, tradeKey});
             return;
         }
-        if (event.getOriginalOrderSize() > residualTradeSize & event.getTotalFillSize()==0) { //first iteration of the exit order
+        if (event.getOriginalOrderSize() > residualTradeSize & event.getTotalFillSize() == 0) { //first iteration of the exit order
             event.setOriginalOrderSize(residualTradeSize);
         }
         orders = c.getWrapper().createOrder(event);
         Gson gson = new Gson();
         String json = gson.toJson(event);
-        logger.log(Level.INFO, "200,ExitOrder,{0}:{1}:{2}:{3}:{4},JSONOrder={5}",new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalOrderID()), -1, json});
+        logger.log(Level.INFO, "200,ExitOrder,{0}:{1}:{2}:{3}:{4},JSONOrder={5}", new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalOrderID()), -1, json});
         event = c.getWrapper().placeOrder(c, orders, this, event);
-        json=gson.toJson(event);
-        logger.log(Level.INFO, "200,ExitOrder sent to broker,{0}:{1}:{2}:{3}:{4},JSONOrder={5}",new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalOrderID()), -1, json});
+        json = gson.toJson(event);
+        logger.log(Level.INFO, "200,ExitOrder sent to broker,{0}:{1}:{2}:{3}:{4},JSONOrder={5}", new Object[]{getOrderReference(), c.getAccountName(), Parameters.symbol.get(id).getDisplayname(), String.valueOf(event.getInternalOrderID()), -1, json});
         int orderid = event.getExternalOrderID();
         switch (event.getOrderType()) {
             case CUSTOMREL:
@@ -1022,10 +1020,10 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         OrderBean ob = c.getOrderBeanCopy(oqk);
                         if (ob != null && ob.getOrderReference().compareToIgnoreCase(getOrderReference()) == 0) {
                             int parentid = ob.getParentSymbolID();
-                            if(parentid==-1){
+                            if (parentid == -1) {
                                 //symbol not in parameters.symbol. add to symbol file
                                 this.getS().insertSymbol(Parameters.symbol, ob.getParentDisplayName(), Boolean.FALSE);
-                                parentid=ob.getParentSymbolID();
+                                parentid = ob.getParentSymbolID();
                             }
                             if (parentid >= 0) {
                                 EnumOrderStatus fillStatus = EnumOrderStatus.SUBMITTED;
@@ -1169,8 +1167,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         Thread t = new Thread(new Mail(event.getConnection().getOwnerEmail(), "Order placed by inStrat for symbol " + Parameters.symbol.get(id).getBrokerSymbol() + " over strategy " + getS().getStrategy() + " was outside permissible range. Please check inStrat status", "Algorithm SEVERE ALERT"));
                         t.start();
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
-                        OrderStatusEvent e=new OrderStatusEvent(new Object(),event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
-                        MainAlgorithm.orderEvents.add(e);                            
+                        OrderStatusEvent e = new OrderStatusEvent(new Object(), event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
+                        MainAlgorithm.orderEvents.add(e);
                     }
                 } else {
                     logger.log(Level.SEVERE, "501,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
@@ -1183,8 +1181,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                         int id = ob.getParentSymbolID();
                         int orderid = event.getId();
                         logger.log(Level.INFO, "205,OrderCancelledEvent,{0}", new Object[]{event.getConnection().getAccountName() + delimiter + getOrderReference() + delimiter + Parameters.symbol.get(id).getDisplayname() + delimiter + event.getErrorCode() + delimiter + event.getId() + delimiter + event.getErrorMessage()});
-                        OrderStatusEvent e=new OrderStatusEvent(new Object(),event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
-                        MainAlgorithm.orderEvents.add(e);                           
+                        OrderStatusEvent e = new OrderStatusEvent(new Object(), event.getConnection(), event.getId(), "Cancelled", 0, 0, 0, 0, 0, 0D, 0, "");
+                        MainAlgorithm.orderEvents.add(e);
                     }
                 } else {
                     logger.log(Level.SEVERE, "501,TWSErrorReceived: Duplicate OrderID for key ,{0}", new Object[]{"OQ:" + "OQ:" + event.getId() + ":" + event.getConnection().getAccountName() + ":.*"});
@@ -1297,7 +1295,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 ArrayList<Integer> oid = ob.getLinkInternalOrderID();
                 if (oid != null && oid.size() >= 1) {
                     String orderstatus = os.get(0);
-                    String key = "OQ:"+ob.getExternalOrderID()+".*:" + oid.get(0) + ":" + oid.get(0) + ".*"; //get first orderkey
+                    String key = "OQ:" + ob.getExternalOrderID() + ".*:" + oid.get(0) + ":" + oid.get(0) + ".*"; //get first orderkey
                     Set<OrderQueueKey> oqks = Utilities.getAllOrderKeys(db, c, key);
                     if (oqks.size() == 1) {
                         for (OrderQueueKey oqki : oqks) {
@@ -1868,8 +1866,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     // DO NOTHING
                 } else {
                     key = "opentrades_" + this.getOrderReference() + ":" + ob.getInternalOrderID() + ":" + c.getAccountName();
-                    int totalfillsize=Trade.getExitSize(db, key);
-                    double totalfillprice=Trade.getExitPrice(db, key);
+                    int totalfillsize = Trade.getExitSize(db, key);
+                    double totalfillprice = Trade.getExitPrice(db, key);
                     Trade.openPartiallyFilledClosedTrade(this.getS().getDb(), key, totalfillsize, totalfillprice);
                 }
                 break;
@@ -2099,7 +2097,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                             Trade.closeTrade(db, key);
                             exitCompleted = true;
                         }
-                        logger.log(Level.INFO, "200,TradeUpdate,{0}:{1}:{2}:{3}:{4},Key={5}", new Object[]{getOrderReference(),c.getAccountName(),Trade.getParentSymbol(db, key),Trade.getExitOrderIDInternal(db, key),Trade.getExitOrderIDExternal(db, key), key });
+                        logger.log(Level.INFO, "200,TradeUpdate,{0}:{1}:{2}:{3}:{4},Key={5}", new Object[]{getOrderReference(), c.getAccountName(), Trade.getParentSymbol(db, key), Trade.getExitOrderIDInternal(db, key), Trade.getExitOrderIDExternal(db, key), key});
                     } else {
                         logger.log(Level.INFO, "200,NoTradeUpdate,{0}", new Object[]{c.getAccountName() + delimiter + getOrderReference() + delimiter + Trade.getEntrySize(db, key) + delimiter + ob.getInternalOrderID() + delimiter + ob.getParentInternalOrderID() + delimiter + orderid + delimiter + key});
                     }
