@@ -1021,8 +1021,10 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                                 tickType = "size";
                                 break;
                             case TickType.HIGH:
+                                tickType="high";
                                 break;
                             case TickType.LOW:
+                                tickType="low";
                                 break;
                             case TickType.VOLUME: //volume
                                 tickType = "dayvolume";
