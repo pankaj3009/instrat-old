@@ -1506,19 +1506,21 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                 //add check to confirm that getRequestDetails().get(reqId+delimiter+c.getAccountName()) is not null
                 //System.out.println(reqId);
                 if (date.toLowerCase().contains("finished".toLowerCase())) {
+                    date="0";
                     switch (requestDetails.get(reqId).barSize) {
                         case FIVESECOND:
                             break;
+                        case ONESECOND:
                         case DAILY:
                             if (Parameters.symbol.get(id).getDailyBar() != null) {
                                 Parameters.symbol.get(id).getDailyBar().setFinished(true);
                             }
-                            return;
+                            break;
                         case ONEMINUTE:
                             if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
                                 Parameters.symbol.get(id).getIntraDayBarsFromTick().setFinished(true);
                             }
-                            return;
+                            break;
                         default:
                             return;
                     }
