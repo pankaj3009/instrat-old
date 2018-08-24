@@ -990,7 +990,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                             }
                             tes.fireTradeEvent(id, com.ib.client.TickType.LAST);
                             if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
-                                Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.LAST, String.valueOf(price));
+                                Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(time, com.ib.client.TickType.LAST, String.valueOf(price));
                             }
                         } else if (field == TickType.HIGH) {
                             Parameters.symbol.get(id).setHighPrice(price, false);
@@ -1111,7 +1111,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                                     tes.fireTradeEvent(id, com.ib.client.TickType.LAST_SIZE);
                                     tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                                     if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
-                                        Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
+                                        Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(time, com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
                                     }
                                     if (MainAlgorithm.getCollectTicks()) {
                                         Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "Volume," + size);
@@ -1252,7 +1252,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                             tes.fireTradeEvent(id, com.ib.client.TickType.LAST_SIZE);
                             tes.fireTradeEvent(id, com.ib.client.TickType.VOLUME);
                             if (Parameters.symbol.get(id).getIntraDayBarsFromTick() != null) {
-                                Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(new Date().getTime(), com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
+                                Parameters.symbol.get(id).getIntraDayBarsFromTick().setOHLCFromTick(time, com.ib.client.TickType.VOLUME, String.valueOf(calculatedLastSize));
                             }
                             if (MainAlgorithm.getCollectTicks()) {
                                 Utilities.writeToFile("tick_" + Parameters.symbol.get(id).getDisplayname() + ".csv", "ExchangeTimeStamp," + sdfTime.format(new Date(time)));
