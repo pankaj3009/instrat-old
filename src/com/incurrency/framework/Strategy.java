@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -93,7 +94,7 @@ public class Strategy implements NotificationListener {
             //cancel all open orders and delete entry records from orders and trades
 
             logger.log(Level.INFO, "300,TradingWindowSet,,Strategy={0},TradingWindowValue={1}",
-                    new Object[]{strategy,tradingWindow.get()});
+                    new Object[]{strategy, tradingWindow.get()});
             for (BeanPosition p : getPosition().values()) {
                 if (p.getPosition() != 0) {
                     int id = p.getSymbolid();
@@ -101,7 +102,18 @@ public class Strategy implements NotificationListener {
                         if (MainAlgorithm.isUseForTrading()) {
                             for (BeanConnection c : Parameters.connection) {
                                 if (c.getAccountName().equals(account)) {
-                                    oms.cancelOpenOrders(c, id, strategy);
+                                    String searchString = "OQ:.*" + c.getAccountName() + ":" + strategy + ":" + Parameters.symbol.get(id).getDisplayname() + ":" + Parameters.symbol.get(id).getDisplayname() + ".*";
+                                    Set<String> oqks = c.getKeys(searchString);
+                                    for (String oqki : oqks) {
+                                        OrderQueueKey oqk = new OrderQueueKey(oqki);
+                                        if (Utilities.isLiveOrder(c, oqk)) { //if the order is live
+                                            OrderBean oqvl = c.getOrderBeanCopy(oqk);
+                                            if (oqvl.getTIF() != "GTC") {
+                                                oms.cancelOpenOrders(c, id, strategy);
+
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
