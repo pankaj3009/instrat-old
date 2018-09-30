@@ -1855,9 +1855,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         switch (ob.getOrderStatus()) {
             case CANCELLEDNOFILL:
                 if (ob.getOrderSide() == EnumOrderSide.BUY || ob.getOrderSide() == EnumOrderSide.SHORT) {
-                    if(ob.getTotalFillSize()==0){
-                        this.getS().getDb().delKey("", key);                        
-                    }
+                    this.getS().getDb().delKey("", key);
                 } else {
                     key = "closedtrades_" + this.getOrderReference() + ":" + ob.getInternalOrderIDEntry() + ":" + "Order";
                     Trade.openClosedTrade(this.getS().getDb(), key);
