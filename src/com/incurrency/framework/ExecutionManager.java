@@ -193,6 +193,26 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
             }
         }
     };
+    TimerTask loadRestingOrders = new TimerTask() {
+        @Override
+        public void run() {
+            for (String account : accounts) {
+                for (BeanConnection c : Parameters.connection) {
+                    if (c.getAccountName().equals(account)) {
+                        Set<OrderQueueKey> oqks = Utilities.getRestingOrderKeys(Algorithm.tradeDB, c, "OQ:-1:" + c.getAccountName() + ":.*");
+                        for (OrderQueueKey oqki : oqks) {
+                            OrderBean ob = c.getOrderBeanCopy(oqki);
+                            if (ob.getTIF().equals("GTC") && ob.getOrderReference().toLowerCase().equals(orderReference.toLowerCase())) {
+                                orderReceived(ob);
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+    };
 
     public ExecutionManager(Strategy s, double tickSize, Date endDate, String orderReference, double pointValue, Integer maxOpenPositions, String timeZone, ArrayList<String> accounts) {
         this.s = s;
@@ -298,6 +318,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         //brokerage.schedule(runBrokerage, new Date(), 120000);
         java.util.Timer orderProcessing = new java.util.Timer("Timer: Periodic Order and Execution Cleanup");
         orderProcessing.schedule(runGetOrderStatus, new Date(), 60000);
+        java.util.Timer restingOrders = new java.util.Timer("Timer: Startup Load of Resting Orders");
+        restingOrders.schedule(loadRestingOrders,new Date());
 //        openingPosition = new java.util.Timer("Timer: OpeningPositions");
 //        openingPosition.schedule(reconcileOpeningPositions, new Date(), 10000);
     }
@@ -566,10 +588,20 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     }
                                     break;
                                 case "010": //position=0, open order, exit order
-                                    logger.log(Level.INFO, "200,Case 010.Cancel Open Orders and Delay Entry,{0}:{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
-                                    if (event.getOrderSide() == EnumOrderSide.BUY || event.getOrderSide() == EnumOrderSide.COVER) {
-                                        this.closeAllOpenOrders(c, id, event.getOrderReference());
+                                    logger.log(Level.INFO, "200,Case 010.Cancel Open Orders and Delay Entry,{0},{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
+                                    if (openBuy.size()>0) {
+                                        for(OrderBean ob: openBuy){
+                                           logger.log(Level.INFO, "200,Case 010.Cancel Open Buy Order,{0},{1},{2},{3},{4}", new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), Integer.toString(ob.getInternalOrderID()), Integer.toString(ob.getExternalOrderID())});
+                                           c.getWrapper().cancelOrder(c, ob);
+                                        }
                                     }
+                                    if(openShort.size()>0){
+                                        for(OrderBean ob: openShort){
+                                           logger.log(Level.INFO, "200,Case 010.Cancel Open Short Order,{0},{1},{2},{3},{4}", new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), Integer.toString(ob.getInternalOrderID()), Integer.toString(ob.getExternalOrderID())});
+                                           c.getWrapper().cancelOrder(c, ob);
+                                        }
+                                    }
+                                    
                                     eventWait(c, event, "010");
                                     break;
                                 case "011": //no position, open order exists, entry order
