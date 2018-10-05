@@ -1546,17 +1546,21 @@ public class Utilities {
     public static double getTheoreticalOptionPrice(List<BeanSymbol> symbols, int id, int underlyingid, EnumOrderSide side, String right, double tickSize) {
         double price = -1;
         try {
-            double optionlastprice = Utilities.getSettlePrice(symbols.get(id));
-            double underlyingpriorclose = Utilities.getSettlePrice(symbols.get(underlyingid));
+            Pair optionPriorClose=Utilities.getSettlePrice(symbols.get(id));
+            Pair underlyingPriorClose=Utilities.getSettlePrice(symbols.get(underlyingid));
+            double optionPriorClosePrice = Utilities.getDouble(optionPriorClose.getValue(), 0);
+            double underlyingPriorClosePrice = Utilities.getDouble(underlyingPriorClose.getValue(),0);
+            Date optionPriorCloseDate = new Date(optionPriorClose.getTime());
+            Date underlyingPriorCloseDate = new Date(underlyingPriorClose.getTime());
             double vol = 0;
-            if (optionlastprice > 0) {
-                String priorBusinessDay = DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd", 1);
-                Date settleDate = DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", Algorithm.timeZone);
-                vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, settleDate);
+            if (optionPriorCloseDate.equals(underlyingPriorCloseDate) && optionPriorClosePrice > 0) {
+                //String priorBusinessDay = DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd", 1);
+               // Date settleDate = DateUtil.getFormattedDate(priorBusinessDay, "yyyy-MM-dd", Algorithm.timeZone);
+                vol = Utilities.getImpliedVol(symbols.get(id), underlyingPriorClosePrice, optionPriorClosePrice, underlyingPriorCloseDate);
                 if (vol == 0) {
                     if (symbols.get(id).getBidPrice() != 0 && symbols.get(id).getAskPrice() != 0 && symbols.get(underlyingid).getLastPrice() != 0) {
-                        optionlastprice = (symbols.get(id).getBidPrice() + symbols.get(id).getAskPrice()) / 2;
-                        underlyingpriorclose = symbols.get(underlyingid).getLastPrice();
+                        double optionlastprice = (symbols.get(id).getBidPrice() + symbols.get(id).getAskPrice()) / 2;
+                        double underlyingpriorclose = symbols.get(underlyingid).getLastPrice();
                         vol = Utilities.getImpliedVol(symbols.get(id), underlyingpriorclose, optionlastprice, new Date());
                     }
                 }
@@ -1735,7 +1739,8 @@ public class Utilities {
         return pairs;
     }
 
-    public static double getSettlePrice(BeanSymbol s) {
+    public static Pair getSettlePrice(BeanSymbol s) {
+        Pair out= new Pair(0,null);
         ArrayList<Pair> pairs = new ArrayList<>();
         try (Jedis jedis = Algorithm.marketdatapool.getResource()) {
             Set<String> data = jedis.zrange(s.getDisplayname() + ":daily:settle", -1, -1);
@@ -1751,10 +1756,11 @@ public class Utilities {
                     pairs.add(p);
                 }
                 int length = pairs.size();
-                return Utilities.getDouble(pairs.get(length - 1).getValue(), 0);
+                out=pairs.get(length - 1);
+                //return Utilities.getDouble(pairs.get(length - 1).getValue(), 0);
             }
         }
-        return 0;
+        return out;
     }
 
     public static boolean rolloverDay(int daysBeforeExpiry, Date startDate, String expiryDate) {
@@ -3110,7 +3116,7 @@ public class Utilities {
             price = Parameters.symbol.get(id).getClosePrice();
         }
         if (price == 0) {
-            price = Utilities.getSettlePrice(Parameters.symbol.get(id));
+            price = Utilities.getDouble(Utilities.getSettlePrice(Parameters.symbol.get(id)).getValue(),0);
         }
         if (price > 0) {
             price = Utilities.roundTo(price, increment);
