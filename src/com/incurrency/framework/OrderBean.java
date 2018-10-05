@@ -555,6 +555,14 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     public void setFatFingerWindow(int value) {
         this.put("FatFingerWindow", String.valueOf(value));
     }
+    
+    public double getBarrierLimitPrice() {
+        return Utilities.getInt(this.get("BarrierLimitPrice"), 0);
+    }
+
+    public void setBarrierLimitPrice(double value) {
+        this.put("BarrierLimitPrice", String.valueOf(value));
+    }
 
     public int getStickyPeriod() {
         return Utilities.getInt(this.get("StickyPeriod"), 60);
@@ -628,5 +636,6 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.setImproveAmount(Utilities.getInt(orderAttributes.get("improveamt"), 1));
         this.setStickyPeriod(Utilities.getInt(orderAttributes.get("stickyperiod"), 0));
         this.setFatFingerWindow(Utilities.getInt(orderAttributes.get("fatfingerwindow"), 120));
+        this.setTIF(orderAttributes.get("tif")!=null?orderAttributes.get("tif").toString().toUpperCase():"GTD");
     }
 }

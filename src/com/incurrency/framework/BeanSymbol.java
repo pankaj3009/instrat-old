@@ -317,9 +317,9 @@ public class BeanSymbol implements Serializable, ReaderWriterInterface<BeanSymbo
 
     public void SetOptionProcess() {//expiry,right,strike
         if (getCloseVol() == 0) {
-            double optionlastprice = Utilities.getSettlePrice(this);
+            double optionlastprice = Utilities.getDouble(Utilities.getSettlePrice(this).getValue(),0);
             int futureid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, this.getSerialno(), expiry);
-            double underlyingpriorclose = Utilities.getSettlePrice(Parameters.symbol.get(futureid));
+            double underlyingpriorclose = Utilities.getDouble(Utilities.getSettlePrice(Parameters.symbol.get(futureid)).getValue(),0);
 
             if (optionlastprice != 0) {
                 String priorBusinessDay = DateUtil.getPriorBusinessDay(DateUtil.getFormatedDate("yyyy-MM-dd", new Date().getTime(), TimeZone.getTimeZone(Algorithm.timeZone)), "yyyy-MM-dd", 1);
