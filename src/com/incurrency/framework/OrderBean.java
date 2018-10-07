@@ -636,6 +636,6 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
         this.setImproveAmount(Utilities.getInt(orderAttributes.get("improveamt"), 1));
         this.setStickyPeriod(Utilities.getInt(orderAttributes.get("stickyperiod"), 0));
         this.setFatFingerWindow(Utilities.getInt(orderAttributes.get("fatfingerwindow"), 120));
-        this.setTIF(orderAttributes.get("tif")!=null?orderAttributes.get("tif").toString().toUpperCase():"GTD");
+        this.setTIF(orderAttributes.get("tif")!=null?orderAttributes.get("tif").toString().toUpperCase():"DAY");
     }
 }

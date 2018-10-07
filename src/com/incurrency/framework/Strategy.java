@@ -126,7 +126,7 @@ public class Strategy implements NotificationListener {
                             Set<OrderQueueKey> oqks = Utilities.getRestingOrderKeys(Algorithm.tradeDB, c, "OQ:-1:" + c.getAccountName() + ":.*");
                             for (OrderQueueKey oqki : oqks) {
                                 OrderBean ob = c.getOrderBeanCopy(oqki);
-                                if (ob.getTIF().equals("GTD") && ob.getOrderReference().toLowerCase().equals(strategy.toLowerCase())) {
+                                if (ob.getTIF().equals("DAY") && ob.getOrderReference().toLowerCase().equals(strategy.toLowerCase())) {
                                     Algorithm.tradeDB.delKey("", oqki.getKey(c.getAccountName()));
                                 }
                             }
