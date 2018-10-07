@@ -319,7 +319,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         java.util.Timer orderProcessing = new java.util.Timer("Timer: Periodic Order and Execution Cleanup");
         orderProcessing.schedule(runGetOrderStatus, new Date(), 60000);
         java.util.Timer restingOrders = new java.util.Timer("Timer: Startup Load of Resting Orders");
-        restingOrders.schedule(loadRestingOrders,new Date());
+        restingOrders.schedule(loadRestingOrders, new Date());
 //        openingPosition = new java.util.Timer("Timer: OpeningPositions");
 //        openingPosition.schedule(reconcileOpeningPositions, new Date(), 10000);
     }
@@ -507,6 +507,20 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         }
     }
 
+    TimerTask TimedEventTask = new TimerTask() {
+        OrderBean timerEvent;
+
+        public void TimedEventTask(OrderBean event) {
+            this.timerEvent = event;
+        }
+
+        @Override
+        public void run() {
+            tes.fireOrderEvent(timerEvent);
+        }
+
+    };
+
     //<editor-fold defaultstate="collapsed" desc="Event Listeners">    
     @Override
     public void orderReceived(OrderBean event) {
@@ -517,37 +531,26 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 //we first handle initial orders given by EnumOrderStage=INIT
                 if (EnumOrderStage.valueOf(event.get("OrderStage")) == EnumOrderStage.INIT) {
                     int id = event.getParentSymbolID();
-                    if (event.getEffectiveFromDate() != null && event.getEffectiveFromDate().after(new Date())) {
-                        //add timer to call
-                        TimerTask TimedEventTask = new TimerTask() {
-                            boolean ordersent = false;
-                            @Override
-                            public void run() {
-                                for (BeanConnection c : Parameters.connection) {
-                                    Set<OrderQueueKey> oqks = Utilities.getRestingOrderKeys(db, c, "OQ:-1:" + c.getAccountName() + ":.*");
-                                    for (OrderQueueKey oqki : oqks) {
-                                        OrderBean ob = c.getOrderBeanCopy(oqki);
-                                        Date effectiveFrom = ob.getEffectiveFromDate();
-                                        if (effectiveFrom == null) {
-                                            logger.log(Level.SEVERE, "101,Null effective date,Key={0}", new Object[]{Utilities.constructOrderKey(c, ob)});
-                                        }
-                                        if (effectiveFrom != null && ob.getEffectiveFromDate().before(new Date())) {
-                                            Algorithm.tradeDB.delKey("", oqki.getKey(c.getAccountName()));
-                                            c.removeOrderKey(oqki);
-                                            tes.fireOrderEvent(ob);
-                                            if (ob.getInternalOrderID() == event.getInternalOrderID()) {
-                                                ordersent = true;
-                                            }
-                                        }
-                                    }
+                    if (event.getEffectiveFromDate() != null) {
+                        //add timer to call, if needed
+                        for (BeanConnection c : Parameters.connection) {
+                            Set<OrderQueueKey> oqks = Utilities.getRestingOrderKeys(db, c, "OQ:-1:" + c.getAccountName() + ":.*" + event.getParentInternalOrderID());
+                            for (OrderQueueKey oqki : oqks) {
+                                OrderBean ob = c.getOrderBeanCopy(oqki);
+                                Date effectiveFrom = ob.getEffectiveFromDate();
+                                if (effectiveFrom == null) {
+                                    logger.log(Level.SEVERE, "101,Null effective date,Key={0}", new Object[]{Utilities.constructOrderKey(c, ob)});
                                 }
-                                if (!ordersent) {
-                                    tes.fireOrderEvent(event);
+                                Date snapShot = new Date();
+                                if (effectiveFrom != null && ob.getEffectiveFromDate().before(snapShot)) {
+                                    // Remove resting order from tradedb
+                                    Algorithm.tradeDB.delKey("", oqki.getKey(c.getAccountName()));
+                                    c.removeOrderKey(oqki);
+                                } else if (ob.getEffectiveFromDate().after(snapShot)) {
+                                    new java.util.Timer("Timer: " + event.getParentInternalOrderID() + ":" + new Date().getTime()).schedule(new TimedOrderBeanProcessor(event), event.getEffectiveFromDate());
                                 }
                             }
-                        };
-                        new java.util.Timer("Timer: " + event.getParentInternalOrderID() + ":" + new Date().getTime()).schedule(TimedEventTask, event.getEffectiveFromDate());
-                        return;
+                        }
                     }
                     for (BeanConnection c : Parameters.connection) {
                         boolean specificAccountSpecified = event.getSpecifiedBrokerAccount() != null && !event.getSpecifiedBrokerAccount().isEmpty();
@@ -589,19 +592,19 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                                     break;
                                 case "010": //position=0, open order, exit order
                                     logger.log(Level.INFO, "200,Case 010.Cancel Open Orders and Delay Entry,{0},{1},{2},{3},{4}", new Object[]{event.getOrderReference(), c.getAccountName(), event.getParentDisplayName(), Integer.toString(event.getInternalOrderID()), Integer.toString(event.getExternalOrderID())});
-                                    if (openBuy.size()>0) {
-                                        for(OrderBean ob: openBuy){
-                                           logger.log(Level.INFO, "200,Case 010.Cancel Open Buy Order,{0},{1},{2},{3},{4}", new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), Integer.toString(ob.getInternalOrderID()), Integer.toString(ob.getExternalOrderID())});
-                                           c.getWrapper().cancelOrder(c, ob);
+                                    if (openBuy.size() > 0) {
+                                        for (OrderBean ob : openBuy) {
+                                            logger.log(Level.INFO, "200,Case 010.Cancel Open Buy Order,{0},{1},{2},{3},{4}", new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), Integer.toString(ob.getInternalOrderID()), Integer.toString(ob.getExternalOrderID())});
+                                            c.getWrapper().cancelOrder(c, ob);
                                         }
                                     }
-                                    if(openShort.size()>0){
-                                        for(OrderBean ob: openShort){
-                                           logger.log(Level.INFO, "200,Case 010.Cancel Open Short Order,{0},{1},{2},{3},{4}", new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), Integer.toString(ob.getInternalOrderID()), Integer.toString(ob.getExternalOrderID())});
-                                           c.getWrapper().cancelOrder(c, ob);
+                                    if (openShort.size() > 0) {
+                                        for (OrderBean ob : openShort) {
+                                            logger.log(Level.INFO, "200,Case 010.Cancel Open Short Order,{0},{1},{2},{3},{4}", new Object[]{ob.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), Integer.toString(ob.getInternalOrderID()), Integer.toString(ob.getExternalOrderID())});
+                                            c.getWrapper().cancelOrder(c, ob);
                                         }
                                     }
-                                    
+
                                     eventWait(c, event, "010");
                                     break;
                                 case "011": //no position, open order exists, entry order
@@ -1316,7 +1319,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
     private synchronized void fireLinkedActions(BeanConnection c, OrderBean ob) {
         ob = c.getOrderBeanCopy(ob.generateKey(c.getAccountName()));
         int orderid = ob.getExternalOrderID();
-        logger.log(Level.INFO, "200,LinkedActionOrderID,{0}:{1}:{2}:{3}:{4},OrderUpdateTime={5}",
+        logger.log(Level.FINER, "200,LinkedActionOrderID,{0}:{1}:{2}:{3}:{4},OrderUpdateTime={5}",
                 new Object[]{this.getOrderReference(), c.getAccountName(), ob.getParentDisplayName(), String.valueOf(ob.getInternalOrderID()), String.valueOf(ob.getExternalOrderID()), ob.getUpdateTime()});
         //this function only supports linked actions for cancellation. What about linked action for fills?
         if (orderid >= 0) {
@@ -1388,7 +1391,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                 String key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                         + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                         + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                c.setOrder(new OrderQueueKey(key), ob);
+                c.setOrder(new OrderQueueKey(key), newob);
                 tes.fireOrderEvent(newob);
                 break;
             case REVERSEFILL:
@@ -1419,7 +1422,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                             + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                             + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                    c.setOrder(new OrderQueueKey(key), ob);
+                    c.setOrder(new OrderQueueKey(key), newob);
                     tes.fireOrderEvent(newob);
                 }
                 break;
@@ -1444,7 +1447,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                             + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                             + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                    c.setOrder(new OrderQueueKey(key), ob);
+                    c.setOrder(new OrderQueueKey(key), newob);
                     newob.setOrderLog(newob.getOrderLog() + ";" + "Firelinkedaction CLOSEPOSITION");
                     tes.fireOrderEvent(newob);
                 }
@@ -1492,7 +1495,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
                     key = "OQ:" + ob.getExternalOrderID() + ":" + c.getAccountName() + ":" + ob.getOrderReference() + ":"
                             + ob.getParentDisplayName() + ":" + ob.getChildDisplayName() + ":"
                             + ob.getParentInternalOrderID() + ":" + ob.getInternalOrderID();
-                    c.setOrder(new OrderQueueKey(key), ob);
+                    c.setOrder(new OrderQueueKey(key), newob);
                     tes.fireOrderEvent(newob);
                 }
                 break;
@@ -1887,8 +1890,8 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         switch (ob.getOrderStatus()) {
             case CANCELLEDNOFILL:
                 if (ob.getOrderSide() == EnumOrderSide.BUY || ob.getOrderSide() == EnumOrderSide.SHORT) {
-                    if(ob.getTotalFillSize()==0){
-                    this.getS().getDb().delKey("", key);                        
+                    if (ob.getTotalFillSize() == 0) {
+                        this.getS().getDb().delKey("", key);
                     }
                 } else {
                     key = "closedtrades_" + this.getOrderReference() + ":" + ob.getInternalOrderIDEntry() + ":" + "Order";

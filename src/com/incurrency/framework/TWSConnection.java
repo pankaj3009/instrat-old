@@ -609,7 +609,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 //                        order.m_totalQuantity = Math.min(order.m_displaySize, (event.getOriginalOrderSize() - event.getTotalFillSize()));
 //                        event.put("CurrentOrderSize", String.valueOf(order.m_totalQuantity));
 //                        int connectionid = Parameters.connection.indexOf(this.getC());
-                            logger.log(Level.INFO, "200,Placing Hidden Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize()-event.getTotalFillSize()-order.m_totalQuantity)});
+                            logger.log(Level.INFO, "200,Adding Linked Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize()-event.getTotalFillSize()-order.m_totalQuantity)});
                             if (event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
                                 double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingFutureID(), event.getOrderSide(), oms.getTickSize(), event.getOrderType());
                                 if (limitprice > 0) {
@@ -617,7 +617,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
                                 }
                             }
                             event.createLinkedAction(event.getInternalOrderID(), "PROPOGATE", "COMPLETEFILLED", String.valueOf(event.getSubOrderDelay()));
-                            event.createLinkedAction(event.getInternalOrderID(), "PROPOGATE", "COMPLETEFILLED", String.valueOf(event.getSubOrderDelay()));
+                            //event.createLinkedAction(event.getInternalOrderID(), "PROPOGATE", "COMPLETEFILLED", String.valueOf(event.getSubOrderDelay()));
                         }
                         order.m_displaySize = 0; //reset display size to zero as we do not use IB's displaysize feature
                         if (event.getOrderStage() != EnumOrderStage.AMEND) {
