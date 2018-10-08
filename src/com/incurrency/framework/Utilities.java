@@ -128,7 +128,7 @@ public class Utilities {
         profit.add(0.3D);
        Utilities.hwm(profit,3);
         Path path = Paths.get("/home/psharma/Dropbox/code/strategies");
-        applyBrokerage(redis, brokerage, 1, "Asia/Kolkata", "U724054", "value01", path);
+        applyBrokerage(redis, brokerage, 1, "Asia/Kolkata", "U724054", "value01", path,0.05);
 //        applyBrokerage(redis, brokerage, 50, "USDADROrders.csv", "", 100000, "DU67768", "Equity.csv");
         //String out=DateUtil.getFormattedDate("yyyy-MM-dd HH:mm:ss",new Date().getTime(),TimeZone.getTimeZone("GMT-4:00"));
     }
@@ -147,7 +147,7 @@ public class Utilities {
         return out;
     }
     
-    public static int tradesToday(RedisConnect db, String strategyName, String timeZone, String accountName, String today) {
+    public static int tradesToday(RedisConnect db, String strategyName, String timeZone, String accountName, String today,double tickSize) {
         int tradesToday = 0; //Holds the number of trades done today
         List<String> result = db.scanRedis("opentrades_" + strategyName + "*" + accountName);
         for (String key : result) {
@@ -155,7 +155,7 @@ public class Utilities {
             String entryTime = Trade.getEntryTime(db, key);
             String exitTime = Trade.getExitTime(db, key);
             String account = Trade.getAccountName(db, key);
-            String childdisplayname = Trade.getEntrySymbol(db, key);
+            String childdisplayname = Trade.getEntrySymbol(db, key,tickSize);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
             if ((entryTime.contains(today) && account.equals(accountName) && !childdisplayname.contains(":"))) {
                 tradesToday = tradesToday + 1;
@@ -177,7 +177,7 @@ public class Utilities {
             String entryTime = Trade.getEntryTime(db, key);
             String exitTime = Trade.getExitTime(db, key);
             String account = Trade.getAccountName(db, key);
-            String childdisplayname = Trade.getEntrySymbol(db, key);
+            String childdisplayname = Trade.getEntrySymbol(db, key,tickSize);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
             if (entryTime.contains(today) && account.equals(accountName) && !childdisplayname.contains(":")) { //not a combo
                 tradesToday = tradesToday + 1;
@@ -196,7 +196,7 @@ public class Utilities {
         return tradesToday;
     }
 
-    public static double[] applyBrokerage(RedisConnect db, ArrayList<BrokerageRate> brokerage, double pointValue, String timeZone, String accountName, String strategyName, Path path) {
+    public static double[] applyBrokerage(RedisConnect db, ArrayList<BrokerageRate> brokerage, double pointValue, String timeZone, String accountName, String strategyName, Path path,double tickSize) {
         double[] profitGrid = new double[14];
         try {
             /*
@@ -220,26 +220,26 @@ public class Utilities {
             //set brokerage for open trades.
             List<String> result = db.scanRedis("opentrades_" + strategyName + "*" + accountName);
             for (String key : result) {
-                String parentDisplayName = Trade.getParentSymbol(db, key);
+                String parentDisplayName = Trade.getParentSymbol(db, key,tickSize);
                 int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentDisplayName);
                 if (id >= 0 && Parameters.symbol.get(id).getLastPrice() != 0 && Parameters.symbol.get(id).getLastPrice() != -1) {
                     Trade.setMtm(db, parentDisplayName, today, Parameters.symbol.get(id).getLastPrice());
                 }
                 if (Trade.getEntryBrokerage(db, key) == 0) {
-                    int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10));
-                    ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
+                    int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10),tickSize);
+                    ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp,tickSize);
                     Trade.setEntryBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(0), 0));
                 }
                 if (Trade.getExitSize(db, key) > 0 && Trade.getExitBrokerage(db, key) == 0) {
-                    int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10));
-                    ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
+                    int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10),tickSize);
+                    ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp,tickSize);
                     Trade.setExitBrokerage(db, key, "opentrades", Utilities.round(tempBrokerage.get(1), 0));
                 }
 
                 //close trade if derivative has expired
-                String expiry = Trade.getParentSymbol(db, key).split("_", -1)[2];
+                String expiry = Trade.getParentSymbol(db, key,tickSize).split("_", -1)[2];
                 if (expiry != null && !expiry.equals("") && expiry.compareTo(todayyyyyMMdd) <= 0) {
-                    double tdyexitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key), today);
+                    double tdyexitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key,tickSize), today);
                     double ydyexitprice = Trade.getExitPrice(db, key);
                     int ydayexitsize = Trade.getExitSize(db, key);
                     double exitprice;
@@ -247,7 +247,7 @@ public class Utilities {
                         int tdyexitsize = Trade.getEntrySize(db, key) - ydayexitsize;
                         exitprice = (ydyexitprice * ydayexitsize + tdyexitprice * tdyexitsize) / Trade.getEntrySize(db, key);
                     } else {
-                        exitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key), today);
+                        exitprice = Trade.getMtm(db, Trade.getParentSymbol(db, key,tickSize), today);
                     }
                     Trade.setExitPrice(db, key, "opentrades", exitprice);
                     Trade.setExitSize(db, key, "opentrades", Trade.getEntrySize(db, key));
@@ -262,13 +262,13 @@ public class Utilities {
             result = db.scanRedis("closedtrades_*" + strategyName + "*" + accountName);
             for (String key : result) {
                 if (Trade.getExitBrokerage(db, key) == 0) {
-                    int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getExitTime(db, key).substring(0, 10));
-                    ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
+                    int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getExitTime(db, key).substring(0, 10),tickSize);
+                    ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp,tickSize);
                     Trade.setExitBrokerage(db, key, "closedtrades", Utilities.round(tempBrokerage.get(1), 0));
                 }
                 if (Trade.getEntryBrokerage(db, key) == 0) {
-                    int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10));
-                    ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp);
+                    int tradesTodayTemp = tradesToday(db, strategyName, timeZone, accountName, Trade.getEntryTime(db, key).substring(0, 10),tickSize);
+                    ArrayList<Double> tempBrokerage = calculateBrokerage(db, key, brokerage, accountName, tradesTodayTemp,tickSize);
                     Trade.setEntryBrokerage(db, key, "closedtrades", Utilities.round(tempBrokerage.get(0), 0));
                 }
             }
@@ -290,7 +290,7 @@ public class Utilities {
                 String yesterday = getYesterdayFolderPNLRecord(db, path);
                 Date yesterdayDate = new SimpleDateFormat("yyyy-MM-dd").parse(yesterday);
                 Date startingDate = Utilities.nextGoodDay(yesterdayDate, 24 * 60, Algorithm.timeZone, Algorithm.openHour, Algorithm.openMinute, Algorithm.closeHour, Algorithm.closeMinute, Algorithm.holidays, true);
-                success = Utilities.updateRedisPNL(db, path, strategyName, accountName, startingDate);
+                success = Utilities.updateRedisPNL(db, path, strategyName, accountName, startingDate,tickSize);
             }
 
             String redisPNLRecord = getLastRedisPNLRecord(db, accountName, strategyName);
@@ -313,17 +313,17 @@ public class Utilities {
         return profitGrid;
     }
 
-    public static ArrayList<Double> calculateBrokerage(RedisConnect db, String key, ArrayList<BrokerageRate> brokerage, String accountName, int tradesToday) {
+    public static ArrayList<Double> calculateBrokerage(RedisConnect db, String key, ArrayList<BrokerageRate> brokerage, String accountName, int tradesToday,double tickSize) {
         ArrayList<Double> brokerageCost = new ArrayList<>();
         brokerageCost.add(0D);
         brokerageCost.add(0D);
         int entryorderidint = Trade.getEntryOrderIDInternal(db, key);
-        String childsymboldisplayname = Trade.getEntrySymbol(db, key);
+        String childsymboldisplayname = Trade.getEntrySymbol(db, key,tickSize);
         int id = Utilities.getIDFromDisplayName(Parameters.symbol, childsymboldisplayname);
         String account = Trade.getAccountName(db, key);
         if (id >= 0 && Parameters.symbol.get(id).getType().equals("COMBO")) {
             if (!account.equals("Order")) {
-                ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(db, key, brokerage, tradesToday);
+                ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(db, key, brokerage, tradesToday,tickSize);
                 double earlierEntryCost = brokerageCost.get(0);
                 double earlierExitCost = brokerageCost.get(1);
                 brokerageCost.set(0, earlierEntryCost + singleLegCost.get(0));
@@ -345,15 +345,15 @@ public class Utilities {
                  */
             } else {
                 //get legs for orders
-                String parentdisplayname = Trade.getParentSymbol(db, key);
+                String parentdisplayname = Trade.getParentSymbol(db, key,tickSize);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
                 int parentEntryOrderIDInt = Trade.getParentExitOrderIDInternal(db, key);
                 for (Map.Entry<BeanSymbol, Integer> comboComponent : Parameters.symbol.get(parentid).getCombo().entrySet()) {
                     int childid = comboComponent.getKey().getSerialno();
                     for (String subkey : db.scanRedis("opentrades"+"*")) {
                         int sparentEntryOrderIDInt = Trade.getParentEntryOrderIDInternal(db, key);
-                        if (sparentEntryOrderIDInt == parentEntryOrderIDInt && !Trade.getEntrySymbol(db, subkey).equals(Trade.getParentSymbol(db, subkey))) {
-                            ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(db, subkey, brokerage, tradesToday);
+                        if (sparentEntryOrderIDInt == parentEntryOrderIDInt && !Trade.getEntrySymbol(db, subkey,tickSize).equals(Trade.getParentSymbol(db, subkey,tickSize))) {
+                            ArrayList<Double> singleLegCost = calculateSingleLegBrokerage(db, subkey, brokerage, tradesToday,tickSize);
                             double earlierEntryCost = brokerageCost.get(0);
                             double earlierExitCost = brokerageCost.get(1);
                             brokerageCost.set(0, earlierEntryCost + singleLegCost.get(0));
@@ -364,17 +364,17 @@ public class Utilities {
                 }
             }
         } else {
-            brokerageCost = calculateSingleLegBrokerage(db, key, brokerage, tradesToday);
+            brokerageCost = calculateSingleLegBrokerage(db, key, brokerage, tradesToday,tickSize);
         }
 //         TradingUtil.writeToFile("brokeragedetails.txt", t.getEntrySymbol()+","+brokerageCost.get(0)+","+brokerageCost.get(1));
         return brokerageCost;
     }
 
-    private static ArrayList<Double> calculateSingleLegBrokerage(RedisConnect db, String key, ArrayList<BrokerageRate> brokerage, int tradesToday) {
+    private static ArrayList<Double> calculateSingleLegBrokerage(RedisConnect db, String key, ArrayList<BrokerageRate> brokerage, int tradesToday,double tickSize) {
         ArrayList<Double> brokerageCost = new ArrayList<>();
         double entryCost = 0;
         double exitCost = 0;
-        String parentdisplayname = Trade.getParentSymbol(db, key);
+        String parentdisplayname = Trade.getParentSymbol(db, key,tickSize);
         int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
         double entryPrice = Trade.getEntryPrice(db, key);
         double exitPrice = Trade.getExitPrice(db, key);
@@ -394,7 +394,7 @@ public class Utilities {
                     }
                     break;
                 case SIZE:
-                    String symboldisplayName = Trade.getEntrySymbol(db, key);
+                    String symboldisplayName = Trade.getEntrySymbol(db, key,tickSize);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, symboldisplayName);
                     int contractsize = 0;
                     if (id >= 0) {//symbols have moved on...
@@ -434,7 +434,7 @@ public class Utilities {
                     }
                     break;
                 case SIZE:
-                    String symboldisplayName = Trade.getEntrySymbol(db, key);
+                    String symboldisplayName = Trade.getEntrySymbol(db, key,tickSize);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, symboldisplayName);
                     int contractsize = 0;
                     if (id >= 0) {//symbols have moved on...
@@ -712,7 +712,7 @@ public class Utilities {
         return Utilities.writePNLCSV(path, out);
     }
 
-    public synchronized static boolean updateRedisPNL(RedisConnect db, Path path, String strategy, String account, Date today) {
+    public synchronized static boolean updateRedisPNL(RedisConnect db, Path path, String strategy, String account, Date today,double tickSize) {
         //load all pnl data from files
         System.gc();
         if (today.after(getAlgoDate())) {
@@ -770,7 +770,7 @@ public class Utilities {
             }
         }
         double sharpeRatio = Utilities.sharpeRatio(returns);
-        HashMap<String, String> winMetrics = Utilities.winRatio(db, strategy, account, dateString);
+        HashMap<String, String> winMetrics = Utilities.winRatio(db, strategy, account, dateString,tickSize);
         ArrayList<Integer> drawdownDays=Utilities.drawdownDaysNew(cumProfit);
         int drawdowndaysmax=0;
         int currentDrawdownDays=0;
@@ -1270,7 +1270,7 @@ public class Utilities {
         }
     }
 
-    public static HashMap<String, String> winRatio(RedisConnect db, String strategy, String account, String today) {
+    public static HashMap<String, String> winRatio(RedisConnect db, String strategy, String account, String today,double tickSize) {
         HashMap<String, String> out = new HashMap<>();
         List<String> result = db.scanRedis("closedtrades_*" + strategy + "*" + account);
         int longwins = 0;
@@ -1310,7 +1310,7 @@ public class Utilities {
             String entryDate = Trade.getEntryTime(db, key);
             entryDate = entryDate.equals("") ? "" : entryDate.substring(0, 10);
             if (entryDate.compareTo(today) <= 0) {//update win loss ratio
-                String displayName=Trade.getParentSymbol(db, key);
+                String displayName=Trade.getParentSymbol(db, key,tickSize);
                 EnumOrderSide side = Trade.getEntrySide(db, key);
                 switch (side) {
                     case BUY:
@@ -1784,7 +1784,7 @@ public class Utilities {
         return rollover;
     }
 
-    public static int openPositionCount(RedisConnect db, List<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly) {
+    public static int openPositionCount(RedisConnect db, List<BeanSymbol> symbols, String strategy, double pointValue, boolean longPositionOnly,double tickSize) {
         int out = 0;
         HashSet<String> temp = new HashSet<>();;
         HashMap<Integer, BeanPosition> position = new HashMap<>();
@@ -1793,8 +1793,8 @@ public class Utilities {
         }
         for (String key : db.scanRedis("opentrades_" + strategy+"*")) {
             if (key.contains("_" + strategy)) {
-                String childdisplayname = Trade.getEntrySymbol(db, key);
-                String parentdisplayname = Trade.getParentSymbol(db, key);
+                String childdisplayname = Trade.getEntrySymbol(db, key,tickSize);
+                String parentdisplayname = Trade.getParentSymbol(db, key,tickSize);
                 int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
                 int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, parentdisplayname);
                 if (longPositionOnly) {
@@ -2187,8 +2187,8 @@ public class Utilities {
     public static String roundToDecimal(String input) {
         if (!input.equals("")) {
             Float inputvalue = Float.parseFloat(input);
-            DecimalFormat df = new DecimalFormat("0.00");
-            df.setMaximumFractionDigits(2);
+            DecimalFormat df = new DecimalFormat("0.####");
+            //df.setMaximumFractionDigits(2);
             return df.format(inputvalue);
         } else {
             return input;
@@ -3600,7 +3600,7 @@ public class Utilities {
      * @param ob
      * @return 
      */
-    public static TreeMap<String, Integer> splitTradesDuringExit(RedisConnect db, String accountName, OrderBean ob) {
+    public static TreeMap<String, Integer> splitTradesDuringExit(RedisConnect db, String accountName, OrderBean ob,double tickSize) {
         TreeMap<String, Integer> shortlistedKeys = new TreeMap<>();
         if (ob.getOrderSide() == EnumOrderSide.SELL || ob.getOrderSide() == EnumOrderSide.COVER) {
             int residualTradeSize = ob.getOriginalOrderSize();
@@ -3609,7 +3609,7 @@ public class Utilities {
             List<String> result = db.scanRedis("opentrades_" + ob.getOrderReference().toLowerCase() + "*" + accountName);
             for (String key : result) {
                 int keyTradeSize = Trade.getEntrySize(db, key) - Trade.getExitSize(db, key);
-                if (Trade.getParentSymbol(db, key).equals(ob.getParentDisplayName()) && Trade.getEntrySide(db, key).equals(entrySide) && keyTradeSize > 0) {
+                if (Trade.getParentSymbol(db, key,tickSize).equals(ob.getParentDisplayName()) && Trade.getEntrySide(db, key).equals(entrySide) && keyTradeSize > 0) {
                     String entryTime = Trade.getEntryTime(db, key);
                     if (entryTime != null) {
                         eligibleKeys.put(entryTime, key+","+String.valueOf(keyTradeSize));

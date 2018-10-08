@@ -131,10 +131,21 @@ public class Trade {
     /**
      * @return the entrySymbol
      */
-    public static String getEntrySymbol(RedisConnect db, Object internalOrderID) {
+    public static String getEntrySymbol(RedisConnect db, Object internalOrderID,double tickSize) {
+        String out="";
         Object out1 = db.getValue("opentrades", internalOrderID.toString(), "entrysymbol");
         Object out2 = db.getValue("closedtrades", internalOrderID.toString(), "entrysymbol");
-        return (out1 != null ? out1.toString() : out2 != null ? out2.toString() : "");
+        out= (out1 != null ? out1.toString() : out2 != null ? out2.toString() : "");
+        String[] symbolsvector = out.split("_", -1);
+        if (symbolsvector.length == 5 && symbolsvector[2].equals("OPT")) {
+            double entrysplitadjust = Trade.getEntrySplitAdjust(db, internalOrderID);
+            double strike = Utilities.getDouble(out1, 1) / entrysplitadjust;
+            strike = Utilities.round(strike, tickSize);
+            String sStrike = Utilities.roundToDecimal(String.valueOf(strike));
+            symbolsvector[4] = sStrike;
+            out = String.join("_", symbolsvector);
+        }
+        return out;
     }
 
     /**
@@ -168,11 +179,11 @@ public class Trade {
      */
     public static double getEntryPrice(RedisConnect db, Object internalOrderID) {
         double out = Utilities.getDouble(db.getValue("opentrades", internalOrderID.toString(), "entryprice"), 0);
-        if (out != 0) {
-            return out;
-        } else {
-            return Utilities.getDouble(db.getValue("closedtrades", internalOrderID.toString(), "entryprice"), 0);
+        if (out == 0) {
+            out = Utilities.getDouble(db.getValue("closedtrades", internalOrderID.toString(), "entryprice"), 0);
         }
+        double entrysplitadjust = Trade.getEntrySplitAdjust(db, internalOrderID);
+        return (out / entrysplitadjust);
     }
 
     /**
@@ -186,12 +197,15 @@ public class Trade {
      * @return the entrySize
      */
     public static int getEntrySize(RedisConnect db, Object internalOrderID) {
-        int size1 = Utilities.getInt(db.getValue("opentrades", internalOrderID.toString(), "entrysize"), 0);
-        if (size1 == 0) {
-            return Utilities.getInt(db.getValue("closedtrades", internalOrderID.toString(), "entrysize"), 0);
-        } else {
-            return size1;
+        int size=0;
+        size = Utilities.getInt(db.getValue("opentrades", internalOrderID.toString(), "entrysize"), 0);
+        if (size == 0) {
+            size= Utilities.getInt(db.getValue("closedtrades", internalOrderID.toString(), "entrysize"), 0);
         }
+        double entrysplitadjust=Trade.getEntrySplitAdjust(db, internalOrderID);
+        double adjustedsize=size*entrysplitadjust;
+        size= (int) Math.round(adjustedsize);
+        return size;
     }
 
     /**
@@ -244,14 +258,25 @@ public class Trade {
     /**
      * @return the exitSymbol
      */
-    public static String getExitSymbol(RedisConnect db, Object internalOrderID) {
+    public static String getExitSymbol(RedisConnect db, Object internalOrderID,double tickSize) {
+        String out="";
         Object out1 = db.getValue("opentrades", internalOrderID.toString(), "exitsymbol");
         if (out1 != null) {
-            return out1.toString();
+            out= out1.toString();
         } else {
             Object out2 = db.getValue("closedtrades", internalOrderID.toString(), "exitsymbol");
-            return out2 != null ? out2.toString() : "";
+            out= out2 != null ? out2.toString() : "";
         }
+        String[] symbolsvector = out.split("_", -1);
+        if (symbolsvector.length == 5 && symbolsvector[2].equals("OPT")) {
+            double entrysplitadjust = Trade.getEntrySplitAdjust(db, internalOrderID);
+            double strike = Utilities.getDouble(out1, 1) / entrysplitadjust;
+            strike = Utilities.round(strike, tickSize);
+            String sStrike = Utilities.roundToDecimal(String.valueOf(strike));
+            symbolsvector[4] = sStrike;
+            out = String.join("_", symbolsvector);
+        }
+        return out;
     }
 
     /**
@@ -292,12 +317,12 @@ public class Trade {
      * @return the exitPrice
      */
     public static double getExitPrice(RedisConnect db, Object internalOrderID) {
-        double out1 = Utilities.getDouble(db.getValue("opentrades", internalOrderID.toString(), "exitprice"), 0);
-        if (out1 != 0) {
-            return out1;
-        } else {
-            return Utilities.getDouble(db.getValue("closedtrades", internalOrderID.toString(), "exitprice"), 0);
+        double out = Utilities.getDouble(db.getValue("opentrades", internalOrderID.toString(), "exitprice"), 0);
+        if (out == 0) {
+           out= Utilities.getDouble(db.getValue("closedtrades", internalOrderID.toString(), "exitprice"), 0);
         }
+        double exitsplitadjust=Trade.getExitSplitAdjust(db, internalOrderID);
+        return(out*exitsplitadjust);
     }
 
     /**
@@ -311,11 +336,17 @@ public class Trade {
      * @return the exitSize
      */
     public static int getExitSize(RedisConnect db, Object internalOrderID) {
-        int out1 = Utilities.getInt(db.getValue("opentrades", internalOrderID.toString(), "exitsize"), 0);
-        if (out1 != 0) {
-            return out1;
+        int size = Utilities.getInt(db.getValue("opentrades", internalOrderID.toString(), "exitsize"), 0);
+        if (size == 0) {
+            size = Utilities.getInt(db.getValue("closedtrades", internalOrderID.toString(), "exitsize"), 0);
+        }
+        if (size > 0) {
+            double exitsplitadjust = Trade.getExitSplitAdjust(db, internalOrderID);
+            double adjustedsize = size * exitsplitadjust;
+            size = (int) Math.round(adjustedsize);
+            return size;
         } else {
-            return Utilities.getInt(db.getValue("closedtrades", internalOrderID.toString(), "exitsize"), 0);
+            return size;
         }
     }
 
@@ -566,13 +597,46 @@ public class Trade {
     /**
      * @return the parentSymbol
      */
-    public static String getParentSymbol(RedisConnect db, Object internalOrderID) {
+    public static String getParentSymbol(RedisConnect db, Object internalOrderID,double tickSize) {
+        String out="";
         Object out1 = db.getValue("opentrades", internalOrderID.toString(), "parentsymbol");
         if (out1 != null) {
-            return String.valueOf(out1);
+            out=String.valueOf(out1);
         } else {
             Object out2 = db.getValue("closedtrades", internalOrderID.toString(), "parentsymbol");
-            return out2 == null ? "" : String.valueOf(out2);
+            out= out2 == null ? "" : String.valueOf(out2);
+        }
+        String[] symbolsvector=out.split("_", -1);
+        if(symbolsvector.length==5 && symbolsvector[2].equals("OPT")){
+        double entrysplitadjust=Trade.getEntrySplitAdjust(db, internalOrderID);
+        double strike=Utilities.getDouble(out1, 1)/entrysplitadjust;
+        strike=Utilities.round(strike, tickSize);
+        String sStrike=Utilities.roundToDecimal(String.valueOf(strike));
+        symbolsvector[4]=sStrike;
+        out= String.join("_", symbolsvector);
+        }
+        return out;
+    }
+    
+    public static int getEntrySplitAdjust(RedisConnect db, Object internalOrderID) {
+        Object out1 = db.getValue("opentrades", internalOrderID.toString(), "entrysplitadjust");
+        if (out1 != null) {
+            return Utilities.getInt(out1, 1);
+        } else {
+            Object out2 = db.getValue("closedtrades", internalOrderID.toString(), "entrysplitadjust");
+            return out2 == null ? 1 : Utilities.getInt(out2, 1);
+
+        }
+    }
+
+    public static int getExitSplitAdjust(RedisConnect db, Object internalOrderID) {
+        Object out1 = db.getValue("opentrades", internalOrderID.toString(), "exitsplitadjust");
+        if (out1 != null) {
+            return Utilities.getInt(out1, 1);
+        } else {
+            Object out2 = db.getValue("closedtrades", internalOrderID.toString(), "exitsplitadjust");
+            return out2 == null ? 1 : Utilities.getInt(out2, 1);
+
         }
     }
 

@@ -188,9 +188,9 @@ public class Strategy implements NotificationListener {
                     return;
                 }
 
-                stratVal = Validator.reconcile("", strategyDB, Algorithm.tradeDB, account, ownerEmail, this.getStrategy(), Boolean.TRUE);
+                stratVal = Validator.reconcile("", strategyDB, Algorithm.tradeDB, account, ownerEmail, this.getStrategy(), Boolean.TRUE,tickSize);
                 if (!stratVal) {
-                    stratVal = Validator.reconcile("", strategyDB, Algorithm.tradeDB, account, ownerEmail, this.getStrategy(), Boolean.FALSE);
+                    stratVal = Validator.reconcile("", strategyDB, Algorithm.tradeDB, account, ownerEmail, this.getStrategy(), Boolean.FALSE,tickSize);
                     if (!stratVal) {
                         logger.log(Level.INFO, "300,IntegerityCheckFailed,{0}:{1}:{2}:{3}:{4}",
                                 new Object[]{strategy, "Order", "Unknown", -1, -1});
@@ -200,7 +200,7 @@ public class Strategy implements NotificationListener {
             }
             //Add symbols if exist in position, but not in Parameters.symbol
             for (String key : strategyDB.scanRedis("opentrades_" + strategy + "*")) {
-                String parentsymbolname = Trade.getParentSymbol(strategyDB, key);
+                String parentsymbolname = Trade.getParentSymbol(strategyDB, key,tickSize);
                 if (parentsymbolname.split("_", -1).length == 5) {
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     if (id == -1) {//symbol not in symbols file, but an open position exists. Add to symbols
@@ -271,7 +271,7 @@ public class Strategy implements NotificationListener {
             if (validation) {
                 //Initialize open notional orders and positions
                 for (String key : strategyDB.scanRedis("opentrades_" + strategy + "*")) {
-                    String parentsymbolname = Trade.getParentSymbol(strategyDB, key);
+                    String parentsymbolname = Trade.getParentSymbol(strategyDB, key,tickSize);
                     int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
                     int tempPosition = 0;
                     double tempPositionPrice = 0D;
@@ -401,7 +401,7 @@ public class Strategy implements NotificationListener {
 
         EnumOrderSide entrySide = side == EnumOrderSide.SELL ? EnumOrderSide.BUY : EnumOrderSide.SHORT;
         for (String key : getDb().scanRedis("opentrades_" + strategy + "*" + accountName)) {
-            if (Trade.getParentSymbol(strategyDB, key).equals(symbol) && Trade.getEntrySide(strategyDB, key).equals(entrySide) && Trade.getEntrySize(strategyDB, key) > Trade.getExitSize(strategyDB, key) && Trade.getParentSymbol(strategyDB, key).equals(Trade.getEntrySymbol(strategyDB, key))) {
+            if (Trade.getParentSymbol(strategyDB, key,tickSize).equals(symbol) && Trade.getEntrySide(strategyDB, key).equals(entrySide) && Trade.getEntrySize(strategyDB, key) > Trade.getExitSize(strategyDB, key) && Trade.getParentSymbol(strategyDB, key,tickSize).equals(Trade.getEntrySymbol(strategyDB, key,tickSize))) {
                 out.add(Trade.getEntryOrderIDInternal(strategyDB, key));
             }
 
@@ -495,7 +495,7 @@ public class Strategy implements NotificationListener {
             if ((priceCheck && orderPrice > 0) && (value < maxOrderValue)) {
                 int id = order.getParentSymbolID();
                 order.setOrderReference(getStrategy());
-                if (order.getOrderKeyForSquareOff() != null || Utilities.splitTradesDuringExit(strategyDB, "Order", order).size() > 0) {
+                if (order.getOrderKeyForSquareOff() != null || Utilities.splitTradesDuringExit(strategyDB, "Order", order,tickSize).size() > 0) {
                     int tradeSize = order.isScale() == false ? Math.abs(getPosition().get(id).getPosition()) : order.getOriginalOrderSize();
                     tradeSize = Math.min(tradeSize, Math.abs(getPosition().get(id).getPosition()));
                     order.setOriginalOrderSize(tradeSize);
@@ -523,7 +523,7 @@ public class Strategy implements NotificationListener {
                     }
                     order.setOriginalOrderSize(tradeSize);
                     while (tradeSize > 0) { //only update trades if tradeSize>0
-                        TreeMap<String, Integer> splitTradesDuringExit = Utilities.splitTradesDuringExit(strategyDB, "Order", order);
+                        TreeMap<String, Integer> splitTradesDuringExit = Utilities.splitTradesDuringExit(strategyDB, "Order", order,tickSize);
                         for (Map.Entry<String, Integer> pair : splitTradesDuringExit.entrySet()) {
                             String key = pair.getKey();
                             logger.log(Level.INFO, "300,ExitOrder Details,,Processing key={0}", new Object[]{key});
@@ -1063,7 +1063,7 @@ public class Strategy implements NotificationListener {
             }
             if (prefix.equals("")) {
                 Path path = Paths.get(System.getProperty("user.dir"));
-                profitGrid = Utilities.applyBrokerage(getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTimeZone(), "Order", s.getStrategy(), path);
+                profitGrid = Utilities.applyBrokerage(getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTimeZone(), "Order", s.getStrategy(), path,tickSize);
                 Utilities.writeToFile(file.getName(), "-----------------Orders:" + s.strategy + " --------------------------------------------------");
                 Utilities.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
                 Utilities.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
@@ -1088,7 +1088,7 @@ public class Strategy implements NotificationListener {
                 for (BeanConnection c : Parameters.connection) {
                     if (s.accounts.contains(c.getAccountName())) {
                         Path path = Paths.get(System.getProperty("user.dir"));
-                        profitGrid = Utilities.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTimeZone(), c.getAccountName(), s.getStrategy(), path);
+                        profitGrid = Utilities.applyBrokerage(s.oms.getDb(), s.getBrokerageRate(), s.getPointValue(), s.getTimeZone(), c.getAccountName(), s.getStrategy(), path,tickSize);
                         Utilities.writeToFile(file.getName(), "-----------------Trades: " + s.strategy + " , Account: " + c.getAccountName() + "----------------------");
                         Utilities.writeToFile(file.getName(), "Gross P&L today: " + df.format(profitGrid[0]));
                         Utilities.writeToFile(file.getName(), "Brokerage today: " + df.format(profitGrid[1]));
@@ -1116,7 +1116,7 @@ public class Strategy implements NotificationListener {
                                 + "Average Drawdown Value:  " + df.format(profitGrid[12]) + Strategy.newline
                                 + "Current Drawdown Value: " + df.format(profitGrid[13]);
 
-                        String openPositions = Validator.openPositions(c.getAccountName(), s);
+                        String openPositions = Validator.openPositions(c.getAccountName(), s,tickSize);
 
                         if (openPositions.equals("")) {
                             message = message + newline + "No open trade positions";
@@ -1142,7 +1142,7 @@ public class Strategy implements NotificationListener {
             }
             for (BeanConnection c : Parameters.connection) {
                 if (s.accounts.contains(c.getAccountName())) {
-                    Validator.reconcile(prefix, getDb(), s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE);
+                    Validator.reconcile(prefix, getDb(), s.getOms().getDb(), c.getAccountName(), c.getOwnerEmail(), this.getStrategy(), Boolean.TRUE,tickSize);
                 }
             }
             if (Algorithm.useForSimulation) {
@@ -1162,7 +1162,7 @@ public class Strategy implements NotificationListener {
             p.setPrice(0);
         }
         for (String key : getDb().scanRedis("opentrades_" + strategy + "*")) {
-            String parentsymbolname = Trade.getParentSymbol(getDb(), key);
+            String parentsymbolname = Trade.getParentSymbol(getDb(), key,tickSize);
             int id = Utilities.getIDFromDisplayName(Parameters.symbol, parentsymbolname);
             int tempPosition = 0;
             double tempPositionPrice = 0D;

@@ -66,15 +66,15 @@ public class Validator {
         return out;
     }
 
-    public synchronized static boolean reconcile(String prefix, RedisConnect orderDB, RedisConnect tradeDB, String account, String email, String strategy, Boolean fix) {
+    public synchronized static boolean reconcile(String prefix, RedisConnect orderDB, RedisConnect tradeDB, String account, String email, String strategy, Boolean fix,double tickSize) {
         //for(BeanConnection c:Parameters.connection){
 //        String tradeFileFullName = "logs" + File.separator + prefix + tradeFile;
 //        String orderFileFullName = "logs" + File.separator + prefix + orderFile;
-        HashMap<String, ArrayList<Integer>> singleLegReconIssue = getPositionMismatch(orderDB, tradeDB, account, "SingleLeg", strategy);
-        HashMap<String, ArrayList<Integer>> comboReconIssue = getPositionMismatch(orderDB, tradeDB, account, "Combo", strategy);
-        TreeMap<String,String> comboParents = returnComboParent(tradeDB, account, strategy);
-        TreeMap<String,String>  comboChildren = returnComboChildren(tradeDB, account, strategy);
-        HashMap<String, HashMap<String, ArrayList<Integer>>> comboChildrenReconIssue = reconComboChildren(comboParents, comboChildren, tradeDB, account);
+        HashMap<String, ArrayList<Integer>> singleLegReconIssue = getPositionMismatch(orderDB, tradeDB, account, "SingleLeg", strategy,tickSize);
+        HashMap<String, ArrayList<Integer>> comboReconIssue = getPositionMismatch(orderDB, tradeDB, account, "Combo", strategy,tickSize);
+        TreeMap<String,String> comboParents = returnComboParent(tradeDB, account, strategy,tickSize);
+        TreeMap<String,String>  comboChildren = returnComboChildren(tradeDB, account, strategy,tickSize);
+        HashMap<String, HashMap<String, ArrayList<Integer>>> comboChildrenReconIssue = reconComboChildren(comboParents, comboChildren, tradeDB, account,tickSize);
         String singleLegIssues = "";
         String comboIssues = "";
         String comboChildrenIssues = "";
@@ -168,11 +168,11 @@ public class Validator {
         //}
     }
 
-    public synchronized static String openPositions(String account, Strategy s) {
+    public synchronized static String openPositions(String account, Strategy s,double tickSize) {
         String out = "";
         try {
-            TreeMap<String,String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account, s.getStrategy());
-            TreeMap<String,String> comboTrades = returnComboParent(s.getOms().getDb(), account, s.getStrategy());
+            TreeMap<String,String> singleLegTrades = returnSingleLegTrades(s.getOms().getDb(), account, s.getStrategy(),tickSize);
+            TreeMap<String,String> comboTrades = returnComboParent(s.getOms().getDb(), account, s.getStrategy(),tickSize);
             boolean headerWritten = false;
             for (String key : singleLegTrades.values()) {
                 if (!headerWritten) {
@@ -184,7 +184,7 @@ public class Validator {
                 int entrySize = Trade.getEntrySize(s.getOms().getDb(), key);
                 int exitSize = Trade.getExitSize(s.getOms().getDb(), key);
                 String entryTime = Trade.getEntryTime(s.getOms().getDb(), key);
-                String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(), key);
+                String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(), key,tickSize);
                 EnumOrderSide entrySide = Trade.getEntrySide(s.getOms().getDb(), key);
                 double entryPrice = Trade.getEntryPrice(s.getOms().getDb(), key);
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(), key);
@@ -195,7 +195,7 @@ public class Validator {
                 JDate yesterday = today.sub(1);
                 yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
                 String yesterdayString = sdf.format(yesterday.isoDate());
-                String parentDisplayName = Trade.getParentSymbol(s.getOms().getDb(), key);
+                String parentDisplayName = Trade.getParentSymbol(s.getOms().getDb(), key,tickSize);
                 double mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, todayString);
                 if (mtmToday == 0) {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
@@ -216,7 +216,7 @@ public class Validator {
                 int entrySize = Trade.getEntrySize(s.getOms().getDb(), key);
                 int exitSize = Trade.getExitSize(s.getOms().getDb(), key);
                 String entryTime = Trade.getEntryTime(s.getOms().getDb(), key);
-                String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(), key);
+                String childdisplayname = Trade.getEntrySymbol(s.getOms().getDb(), key,tickSize);
                 EnumOrderSide entrySide = Trade.getEntrySide(s.getOms().getDb(), key);
                 double entryPrice = Trade.getEntryPrice(s.getOms().getDb(), key);
                 double entryBrokerage = Trade.getEntryBrokerage(s.getOms().getDb(), key);
@@ -226,7 +226,7 @@ public class Validator {
                 JDate yesterday = today.sub(1);
                 yesterday = Algorithm.ind.adjust(yesterday, BusinessDayConvention.Preceding);
                 String yesterdayString = sdf.format(yesterday.isoDate());
-                String parentDisplayName = Trade.getParentSymbol(s.getOms().getDb(), key);
+                String parentDisplayName = Trade.getParentSymbol(s.getOms().getDb(), key,tickSize);
                 double mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, todayString);
                 if (mtmToday == 0) {
                     mtmToday = Trade.getMtm(s.getOms().getDb(), parentDisplayName, yesterdayString);
@@ -453,22 +453,22 @@ public class Validator {
         return true;
     }
 
-    public static HashMap<String, ArrayList<Integer>> getPositionMismatch(RedisConnect orderDB, RedisConnect tradeDB, String account, String reconType, String strategy) {
+    public static HashMap<String, ArrayList<Integer>> getPositionMismatch(RedisConnect orderDB, RedisConnect tradeDB, String account, String reconType, String strategy,double tickSize) {
         HashMap<String, ArrayList<Integer>> out = new HashMap<>();
         TreeMap<String,String> t = new TreeMap<>();
         TreeMap<String,String> o = new TreeMap<>();
 
         switch (reconType) {
             case "SingleLeg":
-                t = returnSingleLegTrades(tradeDB, account, strategy);
-                o = returnSingleLegTrades(orderDB, "Order", strategy);
-                out = reconTrades(t, o, account, "Order", orderDB, tradeDB);
+                t = returnSingleLegTrades(tradeDB, account, strategy,tickSize);
+                o = returnSingleLegTrades(orderDB, "Order", strategy,tickSize);
+                out = reconTrades(t, o, account, "Order", orderDB, tradeDB,tickSize);
                 break;
 
             case "Combo":
-                t = returnComboParent(tradeDB, account, strategy);
-                o = returnComboParent(orderDB, "Order", strategy);
-                out = reconTrades(t, o, account, "Order", orderDB, tradeDB);
+                t = returnComboParent(tradeDB, account, strategy,tickSize);
+                o = returnComboParent(orderDB, "Order", strategy,tickSize);
+                out = reconTrades(t, o, account, "Order", orderDB, tradeDB,tickSize);
                 break;
             default:
                 break;
@@ -477,14 +477,14 @@ public class Validator {
         return out;
     }
 
-    private static Set<String> returnSingleLegTrades(RedisConnect db) {
+    private static Set<String> returnSingleLegTrades(RedisConnect db,double tickSize) {
         //Remove orders that are not in symbolist
         Set<String> keys = db.getKeys("closedtrades");
         keys.addAll(db.scanRedis("opentrades"+"*"));
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
-            String childdisplayname = Trade.getEntrySymbol(db, key);
+            String childdisplayname = Trade.getEntrySymbol(db, key,tickSize);
             if (Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname) == -1) {
                 iter.remove();
             }
@@ -492,7 +492,7 @@ public class Validator {
         iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
-            if (isCombo(db, key)) {
+            if (isCombo(db, key,tickSize)) {
                 iter.remove();
             }
 
@@ -501,7 +501,7 @@ public class Validator {
 
     }
 
-    private static TreeMap<String,String> returnSingleLegTrades(RedisConnect db, String accountName, String strategy) {
+    private static TreeMap<String,String> returnSingleLegTrades(RedisConnect db, String accountName, String strategy,double tickSize) {
         //Remove orders that are not in symbolist or are combos
         TreeMap<String,String>out=new TreeMap<>();
         List<String> result = db.scanRedis("opentrades_" + strategy+"*"+accountName);
@@ -514,7 +514,7 @@ public class Validator {
             //String childdisplayname = Trade.getEntrySymbol(db, key);
             //int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
             // if (!Trade.getAccountName(db, key).equals(accountName)||!key.contains("_"+strategy)||childid < 0 || isCombo(db, key)) {
-            if (!isCombo(db, key)) {
+            if (!isCombo(db, key,tickSize)) {
                 out.put(Trade.getEntryTime(db, key), key);
             }
         }
@@ -524,40 +524,40 @@ public class Validator {
 
     }
 
-    private static boolean isCombo(RedisConnect db, String key) {
-        int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, Trade.getParentSymbol(db, key));
+    private static boolean isCombo(RedisConnect db, String key,double tickSize) {
+        int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, Trade.getParentSymbol(db, key,tickSize));
         String type = "";
         if (parentid >= 0) {
             type = Parameters.symbol.get(parentid).getType();
         }
-        if (!Trade.getParentSymbol(db, key).equals(Trade.getEntrySymbol(db, key)) || type.equals("COMBO")) {
+        if (!Trade.getParentSymbol(db, key,tickSize).equals(Trade.getEntrySymbol(db, key,tickSize)) || type.equals("COMBO")) {
             return true;
         } else {
             return false;
         }
     }
 
-    private static boolean isComboParent(RedisConnect db, String key) {
-        int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, Trade.getParentSymbol(db, key));
+    private static boolean isComboParent(RedisConnect db, String key,double tickSize) {
+        int parentid = Utilities.getIDFromDisplayName(Parameters.symbol, Trade.getParentSymbol(db, key,tickSize));
         String type = "";
         if (parentid >= 0) {
             type = Parameters.symbol.get(parentid).getType();
         }
-        if (Trade.getParentSymbol(db, key).equals(Trade.getEntrySymbol(db, key)) && type.equals("COMBO")) {
+        if (Trade.getParentSymbol(db, key,tickSize).equals(Trade.getEntrySymbol(db, key,tickSize)) && type.equals("COMBO")) {
             return true;
         } else {
             return false;
         }
     }
 
-    private static Set<String> returnComboParent(RedisConnect db) {
+    private static Set<String> returnComboParent(RedisConnect db,double tickSize) {
         //Remove orders that are not in symbolist
         Set<String> keys = db.getKeys("closedtrades");
         keys.addAll(db.scanRedis("opentrades"+"*"));
         Iterator<String> iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
-            String childdisplayname = Trade.getEntrySymbol(db, key);
+            String childdisplayname = Trade.getEntrySymbol(db, key,tickSize);
             if (Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname) == -1) {
                 iter.remove();
             }
@@ -566,7 +566,7 @@ public class Validator {
         iter = keys.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
-            if (!isComboParent(db, key)) {
+            if (!isComboParent(db, key,tickSize)) {
                 iter.remove();
             }
 
@@ -574,16 +574,16 @@ public class Validator {
         return keys;
     }
 
-    private static TreeMap<String,String> returnComboParent(RedisConnect db, String accountName, String strategy) {
+    private static TreeMap<String,String> returnComboParent(RedisConnect db, String accountName, String strategy,double tickSize) {
         //Remove orders that are not in symbolist or are combos
         List<String>result = db.scanRedis("opentrades_" + strategy+"*"+accountName);
         TreeMap<String,String>out=new TreeMap<>();
         Iterator<String> iter = result.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
-            String childdisplayname = Trade.getEntrySymbol(db, key);
+            String childdisplayname = Trade.getEntrySymbol(db, key,tickSize);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if ( childid >= 0 && isComboParent(db, key)) {
+            if ( childid >= 0 && isComboParent(db, key,tickSize)) {
                 out.put(Trade.getEntryTime(db, key), key);
             }
         }
@@ -591,16 +591,16 @@ public class Validator {
 
     }
 
-    private static TreeMap<String,String> returnComboChildren(RedisConnect db, String accountName, String strategy) {
+    private static TreeMap<String,String> returnComboChildren(RedisConnect db, String accountName, String strategy,double tickSize) {
         //Remove orders that are not in symbolist or are combos
         List<String> result = db.scanRedis("opentrades_" + strategy+"*"+accountName);
         TreeMap<String,String>out=new TreeMap<>();
         Iterator<String> iter = result.iterator();
         while (iter.hasNext()) {
             String key = iter.next();
-            String childdisplayname = Trade.getEntrySymbol(db, key);
+            String childdisplayname = Trade.getEntrySymbol(db, key,tickSize);
             int childid = Utilities.getIDFromDisplayName(Parameters.symbol, childdisplayname);
-            if (childid >= 0 || (isCombo(db, key) && !isComboParent(db, key))) {
+            if (childid >= 0 || (isCombo(db, key,tickSize) && !isComboParent(db, key,tickSize))) {
                 out.put(Trade.getEntryTime(db, key),key);
             }
         }
@@ -608,13 +608,13 @@ public class Validator {
 
     }
 
-    private static HashMap<String, ArrayList<Integer>> reconTrades(TreeMap<String,String> tr, TreeMap<String,String> or, String tradeAccount, String orderAccount, RedisConnect orderDB, RedisConnect tradeDB) {
+    private static HashMap<String, ArrayList<Integer>> reconTrades(TreeMap<String,String> tr, TreeMap<String,String> or, String tradeAccount, String orderAccount, RedisConnect orderDB, RedisConnect tradeDB,double tickSize) {
         HashMap<String, ArrayList<Integer>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, Integer> tradePosition = new TreeMap<>();
         SortedMap<String, Integer> orderPosition = new TreeMap<>();
         for (String key : tr.keySet()) {
             String accountName = Trade.getAccountName(tradeDB, key);
-            String childdisplayname = Trade.getEntrySymbol(tradeDB, key);
+            String childdisplayname = Trade.getEntrySymbol(tradeDB, key,tickSize);
             EnumOrderSide entrySide = Trade.getEntrySide(tradeDB, key);
             EnumOrderSide exitSide = Trade.getExitSide(tradeDB, key);
             int entrySize = Trade.getEntrySize(tradeDB, key);
@@ -635,7 +635,7 @@ public class Validator {
         }
         for (String key : or.keySet()) {
             String accountName = Trade.getAccountName(orderDB, key);
-            String childdisplayname = Trade.getEntrySymbol(orderDB, key);
+            String childdisplayname = Trade.getEntrySymbol(orderDB, key,tickSize);
             EnumOrderSide entrySide = Trade.getEntrySide(orderDB, key);
             EnumOrderSide exitSide = Trade.getExitSide(orderDB, key);
             int entrySize = Trade.getEntrySize(orderDB, key);
@@ -690,14 +690,14 @@ public class Validator {
         return out;
     }
 
-    private static HashMap<String, HashMap<String, ArrayList<Integer>>> reconComboChildren(TreeMap<String,String> combos, TreeMap<String,String> children, RedisConnect tradeDB, String tradeAccount) {
+    private static HashMap<String, HashMap<String, ArrayList<Integer>>> reconComboChildren(TreeMap<String,String> combos, TreeMap<String,String> children, RedisConnect tradeDB, String tradeAccount,double tickSize) {
         HashMap<String, HashMap<String, ArrayList<Integer>>> out = new HashMap<>(); //ArrayList contains two values: Index 0 is expected, index 1 is actual
         SortedMap<String, HashMap<String, Integer>> comboPosition = new TreeMap<>();
         SortedMap<String, HashMap<String, Integer>> childPosition = new TreeMap<>();
         for (String key : combos.keySet()) {
             String accountName = Trade.getAccountName(tradeDB, key);
-            String childdisplayname = Trade.getEntrySymbol(tradeDB, key);
-            String parentdisplayname = Trade.getParentSymbol(tradeDB, key);
+            String childdisplayname = Trade.getEntrySymbol(tradeDB, key,tickSize);
+            String parentdisplayname = Trade.getParentSymbol(tradeDB, key,tickSize);
             EnumOrderSide entrySide = Trade.getEntrySide(tradeDB, key);
             EnumOrderSide exitSide = Trade.getExitSide(tradeDB, key);
             int entrySize = Trade.getEntrySize(tradeDB, key);
@@ -730,8 +730,8 @@ public class Validator {
         }
         for (String key : children.keySet()) {
             String accountName = Trade.getAccountName(tradeDB, key);
-            String childdisplayname = Trade.getEntrySymbol(tradeDB, key);
-            String parentdisplayname = Trade.getParentSymbol(tradeDB, key);
+            String childdisplayname = Trade.getEntrySymbol(tradeDB, key,tickSize);
+            String parentdisplayname = Trade.getParentSymbol(tradeDB, key,tickSize);
             EnumOrderSide entrySide = Trade.getEntrySide(tradeDB, key);
             EnumOrderSide exitSide = Trade.getExitSide(tradeDB, key);
             int entrySize = Trade.getEntrySize(tradeDB, key);
