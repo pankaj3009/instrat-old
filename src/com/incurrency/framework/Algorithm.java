@@ -61,6 +61,7 @@ public class Algorithm {
     public static int redisdbtick;
     public static int redisdbsymbol;
     public static RedisConnect tradeDB;
+    public static RedisConnect staticDB;
     //public static String cassandraIP;
     public static boolean generateSymbolFile = false;
     public static String defaultExchange;
@@ -126,6 +127,7 @@ public class Algorithm {
             redisdbtick = Utilities.getInt(globalProperties.getProperty("redisdbtick"), -1);
             redisdbsymbol = Utilities.getInt(globalProperties.getProperty("redisdbsymbol"), -1);
             tradeDB = new RedisConnect(redisip, redisport, redisdbtrade);
+            staticDB=new RedisConnect(redisip, redisport, redisdbsymbol);
         }
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         //jedisPoolConfig.setMaxWaitMillis(60000);

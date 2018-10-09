@@ -925,31 +925,35 @@ public class Strategy implements NotificationListener {
     public void initSymbol(int id, boolean optionPricingUsingFutures) {
         try {
             if (id >= 0 && Parameters.symbol.get(id).isAddedToSymbols()) {
-                //do housekeeping
-                //1. ensure it exists in positions for strategy and oms
-                switch (Parameters.symbol.get(id).getType()) {
-                    case "OPT":
-                        if (Parameters.symbol.get(id).getMinsize() == 0) {
-                            int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id);
-                            String expiry = Parameters.symbol.get(id).getExpiry();
-                            if (optionPricingUsingFutures) {
-                                underlyingid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, underlyingid, expiry);
-                            }
-                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+            // 1. Ensure underlying exists for option
+                if (Parameters.symbol.get(id).getType().equals("OPT")) {
+                    int underlyingid = -1;
+                    String expiry = Parameters.symbol.get(id).getExpiry();
+                    if (optionPricingUsingFutures) {
+                        underlyingid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, id, expiry);
+                    } else {
+                        underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id);
+                    }
+                    if (underlyingid == -1) {
+                        String displaySymbol = "";
+                        String[] optionVector = Parameters.symbol.get(id).getDisplayname().split("_", -1);
+                        if (optionPricingUsingFutures) {
+                            optionVector[1] = "FUT";
+                            optionVector[3] = "";
+                            optionVector[4] = "";
+                            displaySymbol = String.join("_", optionVector);
+
+                        } else {
+                            optionVector[1] = "STK";
+                            optionVector[2] = "";
+                            optionVector[3] = "";
+                            optionVector[4] = "";
+                            displaySymbol = String.join("_", optionVector);
                         }
-                        break;
-                    case "FUT":
-                        if (Parameters.symbol.get(id).getMinsize() == 0) {
-                            int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id);
-                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
-                        }
-                        break;
-                    default:
-                        if (Parameters.symbol.get(id).getMinsize() == 0) {
-                            Parameters.symbol.get(id).setMinsize(1);
-                        }
-                        break;
+                        insertSymbol(Parameters.symbol, displaySymbol, optionPricingUsingFutures);
+                    }
                 }
+                //2. ensure it exists in positions for strategy and oms
                 if (!this.getStrategySymbols().contains(id)) {
                     this.getStrategySymbols().add(id);
                     String localStrategy = Parameters.symbol.get(id).getStrategy();
@@ -985,7 +989,6 @@ public class Strategy implements NotificationListener {
                     }
                 }
             }
-
         } catch (Exception e) {
             logger.log(Level.SEVERE, null, e);
         }
@@ -997,12 +1000,19 @@ public class Strategy implements NotificationListener {
             s.setExchange(Algorithm.defaultExchange);
             s.setPrimaryexchange(Algorithm.defaultPrimaryExchange);
             s.setCurrency(Algorithm.defaultCurrency);
+            if (s.getType().equals("FUT") || s.getType().equals("OPT")) {
+                //set min contract size from redis
+                String expiry = s.getExpiry();
+                String key = "contractsize:" + expiry;
+                String minsize = Algorithm.staticDB.getValue("", key, s.getExchangeSymbol());
+                s.setMinsize(Utilities.getInt(minsize, 1));
+            } else {
+                s.setMinsize(1);
+            }
             int id = Parameters.symbol.size();
             s.setSerialno(id);
             Parameters.symbol.add(s);
             Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
-            
-            
             initSymbol(s.getSerialno(), optionPricingUsingFutures);
         }
     }
