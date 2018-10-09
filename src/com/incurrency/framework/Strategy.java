@@ -58,6 +58,7 @@ public class Strategy implements NotificationListener {
     private transient AtomicBoolean longOnly = new AtomicBoolean(Boolean.TRUE);
     private transient AtomicBoolean shortOnly = new AtomicBoolean(Boolean.TRUE);
     private int maxOpenPositions = 1;
+    private Boolean reporting=Boolean.FALSE;
     private EnumOrderType ordType = EnumOrderType.UNDEFINED;
     private HashMap<String, Object> orderAttributes = new HashMap<>();
     private ProfitLossManager plmanager;
@@ -341,7 +342,6 @@ public class Strategy implements NotificationListener {
                 Algorithm.orderidint = new AtomicInteger(Math.max(Algorithm.orderidint.get(), maxorderid));
                 logger.log(Level.INFO, "300, OpeningInternalOrderID,,Strategy={0},OpeningInternalOrderID={1}",
                         new Object[]{getStrategy(), String.valueOf(Algorithm.orderidint.get() + 1)});
-
                 //print positions on initialization
                 for (int id : getStrategySymbols()) {
                     if (position.get(id).getPosition() != 0) {
@@ -349,7 +349,6 @@ public class Strategy implements NotificationListener {
                                 new Object[]{this.getStrategy(), "Order", Parameters.symbol.get(id).getDisplayname(), -1, -1, position.get(id).getPosition(), position.get(id).getPrice()});
                     }
                 }
-
                 if (MainAlgorithm.isUseForTrading()) {
                     Thread t = new Thread(oms = new ExecutionManager(this, this.getTickSize(), getEndDate(), this.strategy, getPointValue(), getMaxOpenPositions(), getTimeZone(), accounts));
                     t.setName(strategy + ":" + "OMS");
@@ -361,12 +360,13 @@ public class Strategy implements NotificationListener {
                     Timer closeProcessing = new Timer("Timer: " + this.strategy + " CloseProcessing");
                     Timer openTradingWindow = new Timer("Timer: " + this.strategy + " OpenTradingWindow");
                     Timer closeTradingWindow = new Timer("Timer: " + this.strategy + " CloseTradingWindow");
-                    closeProcessing.schedule(runPrintOrders, this.shutdownDate);
+                    if(reporting){
+                        closeProcessing.schedule(runPrintOrders, this.shutdownDate);                        
+                    }
                     openTradingWindow.schedule(runOpenTradingWindow, this.startDate);
                     closeTradingWindow.schedule(runCloseTradingWindow, this.endDate);
                 }
             }
-
         } catch (Exception e) {
             logger.log(Level.INFO, "101", e);
         }
@@ -1288,6 +1288,7 @@ public class Strategy implements NotificationListener {
         setIamail(p.getProperty("iaemail", Algorithm.senderEmail));
         String ordTypeString = p.getProperty("OrderType", "LMT");
         int i = 0;
+        reporting=Boolean.valueOf(p.getProperty("reporting","false"));
 
         for (String s : ordTypeString.split(":")) {
             if (i == 0) {
