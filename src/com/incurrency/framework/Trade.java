@@ -137,7 +137,7 @@ public class Trade {
         Object out2 = db.getValue("closedtrades", internalOrderID.toString(), "entrysymbol");
         out= (out1 != null ? out1.toString() : out2 != null ? out2.toString() : "");
         String[] symbolsvector = out.split("_", -1);
-        if (symbolsvector.length == 5 && symbolsvector[2].equals("OPT")) {
+        if (symbolsvector.length == 5 && symbolsvector[1].equals("OPT")) {
             double entrysplitadjust = Trade.getEntrySplitAdjust(db, internalOrderID);
             double strike = Utilities.getDouble(out1, 1) / entrysplitadjust;
             strike = Utilities.round(strike, tickSize);
@@ -268,7 +268,7 @@ public class Trade {
             out= out2 != null ? out2.toString() : "";
         }
         String[] symbolsvector = out.split("_", -1);
-        if (symbolsvector.length == 5 && symbolsvector[2].equals("OPT")) {
+        if (symbolsvector.length == 5 && symbolsvector[1].equals("OPT")) {
             double entrysplitadjust = Trade.getEntrySplitAdjust(db, internalOrderID);
             double strike = Utilities.getDouble(out1, 1) / entrysplitadjust;
             strike = Utilities.round(strike, tickSize);
@@ -607,7 +607,7 @@ public class Trade {
             out= out2 == null ? "" : String.valueOf(out2);
         }
         String[] symbolsvector=out.split("_", -1);
-        if(symbolsvector.length==5 && symbolsvector[2].equals("OPT")){
+        if(symbolsvector.length==5 && symbolsvector[1].equals("OPT")){
         double entrysplitadjust=Trade.getEntrySplitAdjust(db, internalOrderID);
         double strike=Utilities.getDouble(out1, 1)/entrysplitadjust;
         strike=Utilities.round(strike, tickSize);
