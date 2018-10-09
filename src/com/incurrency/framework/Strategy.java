@@ -923,66 +923,71 @@ public class Strategy implements NotificationListener {
      * @param referenceCashType
      */
     public void initSymbol(int id, boolean optionPricingUsingFutures) {
-        if (id >= 0 && Parameters.symbol.get(id).isAddedToSymbols()) {
-            //do housekeeping
-            //1. ensure it exists in positions for strategy and oms
-            switch (Parameters.symbol.get(id).getType()) {
-                case "OPT":
-                    if (Parameters.symbol.get(id).getMinsize() == 0) {
-                        int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id);
-                        String expiry = Parameters.symbol.get(id).getExpiry();
-                        if (optionPricingUsingFutures) {
-                            underlyingid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, underlyingid, expiry);
+        try {
+            if (id >= 0 && Parameters.symbol.get(id).isAddedToSymbols()) {
+                //do housekeeping
+                //1. ensure it exists in positions for strategy and oms
+                switch (Parameters.symbol.get(id).getType()) {
+                    case "OPT":
+                        if (Parameters.symbol.get(id).getMinsize() == 0) {
+                            int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id);
+                            String expiry = Parameters.symbol.get(id).getExpiry();
+                            if (optionPricingUsingFutures) {
+                                underlyingid = Utilities.getFutureIDFromBrokerSymbol(Parameters.symbol, underlyingid, expiry);
+                            }
+                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
                         }
-                        Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                        break;
+                    case "FUT":
+                        if (Parameters.symbol.get(id).getMinsize() == 0) {
+                            int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id);
+                            Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                        }
+                        break;
+                    default:
+                        if (Parameters.symbol.get(id).getMinsize() == 0) {
+                            Parameters.symbol.get(id).setMinsize(1);
+                        }
+                        break;
+                }
+                if (!this.getStrategySymbols().contains(id)) {
+                    this.getStrategySymbols().add(id);
+                    String localStrategy = Parameters.symbol.get(id).getStrategy();
+                    if (!Pattern.compile(Pattern.quote(localStrategy), Pattern.CASE_INSENSITIVE).matcher(strategy).find()) {
+                        //if (!localStrategy.contains(strategy)) {
+                        switch (localStrategy) {
+                            case "":
+                                localStrategy = strategy.toUpperCase();
+                                break;
+                            default:
+                                localStrategy = localStrategy + ":" + strategy.toUpperCase();
+                                break;
+                        }
+                        Parameters.symbol.get(id).setStrategy(localStrategy.toUpperCase());
                     }
-                    break;
-                case "FUT":
-                    if (Parameters.symbol.get(id).getMinsize() == 0) {
-                        int underlyingid = Utilities.getCashReferenceID(Parameters.symbol, id);
-                        Parameters.symbol.get(id).setMinsize(Parameters.symbol.get(underlyingid).getMinsize());
+                    this.getPosition().put(id, new BeanPosition(id, getStrategy()));
+                    if (Parameters.symbol.get(id).getBidPrice() == 0 || Parameters.symbol.get(id).getAskPrice() == 0) {
+                        Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ex) {
+                            logger.log(Level.SEVERE, null, ex);
+                        }
+                        Thread.yield();
                     }
-                    break;
-                default:
-                    if (Parameters.symbol.get(id).getMinsize() == 0) {
-                        Parameters.symbol.get(id).setMinsize(1);
+                    for (BeanConnection c : Parameters.connection) {
+                        c.initializeConnection(this.getStrategy(), id);
                     }
-                    break;
+                    if (plmanager != null) {
+                        plmanager.init(id);
+                    } else {
+                        logger.log(Level.SEVERE, "Symbol {0} not initialized. Probably the strategy has irreconciled positions", new Object[]{Parameters.symbol.get(id).getDisplayname()});
+                    }
+                }
             }
-            if (!this.getStrategySymbols().contains(id)) {
-                this.getStrategySymbols().add(id);
-                String localStrategy = Parameters.symbol.get(id).getStrategy();
-                if (!Pattern.compile(Pattern.quote(localStrategy), Pattern.CASE_INSENSITIVE).matcher(strategy).find()) {
-                    //if (!localStrategy.contains(strategy)) {
-                    switch (localStrategy) {
-                        case "":
-                            localStrategy = strategy.toUpperCase();
-                            break;
-                        default:
-                            localStrategy = localStrategy + ":" + strategy.toUpperCase();
-                            break;
-                    }
-                    Parameters.symbol.get(id).setStrategy(localStrategy.toUpperCase());
-                }
-                this.getPosition().put(id, new BeanPosition(id, getStrategy()));
-                if (Parameters.symbol.get(id).getBidPrice() == 0 || Parameters.symbol.get(id).getAskPrice() == 0) {
-                    Parameters.connection.get(connectionidForMarketData).getWrapper().getMktData(Parameters.symbol.get(id), false);
-                    try {
-                        Thread.sleep(2000);
-                    } catch (InterruptedException ex) {
-                        logger.log(Level.SEVERE, null, ex);
-                    }
-                    Thread.yield();
-                }
-                for (BeanConnection c : Parameters.connection) {
-                    c.initializeConnection(this.getStrategy(), id);
-                }
-                if (plmanager != null) {
-                    plmanager.init(id);
-                } else {
-                    logger.log(Level.SEVERE, "Symbol {0} not initialized. Probably the strategy has irreconciled positions", new Object[]{Parameters.symbol.get(id).getDisplayname()});
-                }
-            }
+
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, null, e);
         }
     }
 
@@ -996,6 +1001,8 @@ public class Strategy implements NotificationListener {
             s.setSerialno(id);
             Parameters.symbol.add(s);
             Parameters.symbol.get(id).setAddedToSymbols(Boolean.TRUE);
+            
+            
             initSymbol(s.getSerialno(), optionPricingUsingFutures);
         }
     }
