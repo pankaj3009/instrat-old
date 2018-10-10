@@ -1004,7 +1004,7 @@ public class Strategy implements NotificationListener {
                 //set min contract size from redis
                 String expiry = s.getExpiry();
                 String key = "contractsize:" + expiry;
-                String minsize = Algorithm.staticDB.getValue("", key, s.getExchangeSymbol());
+                String minsize = Algorithm.staticDB.getValue(key, s.getExchangeSymbol());
                 s.setMinsize(Utilities.getInt(minsize, 1));
             } else {
                 s.setMinsize(1);

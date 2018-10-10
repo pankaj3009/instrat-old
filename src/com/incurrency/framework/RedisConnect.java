@@ -41,13 +41,13 @@ public class RedisConnect {
     public RedisConnect(String uri, int port, int database) {
         this.ip = uri;
         this.port = port;
-        this.database=database;
+        this.database = database;
         JedisPoolConfig jedisPoolConfig = new JedisPoolConfig();
         jedisPoolConfig.setMaxWaitMillis(1000); //write timeout
         jedisPoolConfig.setBlockWhenExhausted(false);
         jedisPoolConfig.setMaxIdle(5);
         jedisPoolConfig.setMaxTotal(10);
-        pool = new JedisPool(jedisPoolConfig, uri, port,10000, null, database);
+        pool = new JedisPool(jedisPoolConfig, uri, port, 10000, null, database);
     }
 
     public List<String> scanRedis(String key) {
@@ -74,13 +74,13 @@ public class RedisConnect {
         StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
         StackTraceElement e = stacktrace[2];//maybe this number needs to be corrected
         String methodName = e.getMethodName();
-        logger.log(Level.INFO,"500,KeyDeleted,Key={0},CallingMethod={1}",new Object[]{key,methodName});
+        logger.log(Level.INFO, "500,KeyDeleted,Key={0},CallingMethod={1}", new Object[]{key, methodName});
         try (Jedis jedis = pool.getResource()) {
             if (key.contains("_")) {
                 return jedis.del(key.toString());
             } else {
                 return jedis.del(storeName + "_" + key);
-            }            
+            }
         }
     }
 
@@ -95,18 +95,18 @@ public class RedisConnect {
     }
 
     public Long setHash(String StoreName, String key, String field, String value) {
-        long out=0L;
+        long out = 0L;
         try (Jedis jedis = pool.getResource()) {
             if (key.contains("_")) {
-                out= jedis.hset(key, field.toString(), value.toString());
+                out = jedis.hset(key, field.toString(), value.toString());
             } else {
-                out= jedis.hset(StoreName + "_" + key, field.toString(), value.toString());
+                out = jedis.hset(StoreName + "_" + key, field.toString(), value.toString());
 
             }
         }
         return out;
     }
-    
+
     public void setHash(String StoreName, String key, List<String> fieldList, List<String> valueList) {
         try (Jedis jedis = pool.getResource()) {
             for (int i = 0; i < fieldList.size(); i++) {
@@ -156,6 +156,18 @@ public class RedisConnect {
         }
     }
 
+    public String getValue(String key, String field) {
+        try (Jedis jedis = pool.getResource()) {
+            Object out = jedis.hget(key, field.toString());
+            if (out != null) {
+                return String.valueOf(jedis.hget(key, field.toString()));
+            } else {
+                return null;
+            }
+
+        }
+    }
+
     public ConcurrentHashMap<String, String> getValues(String storeName, String Key) {
         try (Jedis jedis = pool.getResource()) {
             Map<String, String> in = jedis.hgetAll(Key);
@@ -175,7 +187,7 @@ public class RedisConnect {
         try (Jedis jedis = pool.getResource()) {
             return jedis.blpop(duration, storeName + key);
         }
-        
+
         //}
     }
 
@@ -250,7 +262,7 @@ public class RedisConnect {
             jedis.lpush(key, string);
         }
     }
-    
+
     public void insertTrade(String key, Map<String, String> trade) {
         try (Jedis jedis = pool.getResource()) {
             for (Map.Entry<String, String> pair : trade.entrySet()) {
@@ -261,10 +273,10 @@ public class RedisConnect {
         }
     }
 
-    public Map<String,String> getTradeBean(String key) {
+    public Map<String, String> getTradeBean(String key) {
         //Trade tr = null;
         try (Jedis jedis = pool.getResource()) {
-            Map<String,String> o = jedis.hgetAll(key);
+            Map<String, String> o = jedis.hgetAll(key);
 //            try {
 //                Type type = new TypeToken<Trade>() {
 //                }.getType();
@@ -275,7 +287,7 @@ public class RedisConnect {
 //            }
             return o;
         }
- //       return null;
+        //       return null;
     }
 
     public void updateOrderBean(String key, OrderBean ob) {
