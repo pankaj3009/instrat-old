@@ -787,7 +787,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
         int tempMaxPosition = this.maxOpenPositions.get(connectionid);
         if (tempOpenPosition < tempMaxPosition && !s.getPlmanager().isDayProfitTargetHit() && !s.getPlmanager().isDayStopLossHit()) {//enter loop is sl/tp is not hit
             int referenceid = Utilities.getCashReferenceID(Parameters.symbol, id);
-            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getOrderSide(), getTickSize(), event.getOrderType());
+            double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getOrderSide(), getTickSize(), event.getOrderType(),event.getBarrierLimitPrice());
             if (event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
                 event.setLimitPrice(limitprice);
             }
@@ -855,7 +855,7 @@ public class ExecutionManager implements Runnable, OrderListener, OrderStatusLis
 //    }
     void processExitOrder(int id, BeanConnection c, OrderBean event) {
         int referenceid = Utilities.getCashReferenceID(Parameters.symbol, id);
-        double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getOrderSide(), getTickSize(), event.getOrderType());
+        double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, id, referenceid, event.getOrderSide(), getTickSize(), event.getOrderType(),event.getBarrierLimitPrice());
         if (event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
             event.setLimitPrice(limitprice);
         }

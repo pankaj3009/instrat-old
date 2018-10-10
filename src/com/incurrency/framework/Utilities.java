@@ -1616,7 +1616,7 @@ public class Utilities {
         }
     }
 
-    public static double getLimitPriceForOrder(List<BeanSymbol> symbols, int id, int underlyingid, EnumOrderSide side, double tickSize, EnumOrderType orderType) {
+    public static double getLimitPriceForOrder(List<BeanSymbol> symbols, int id, int underlyingid, EnumOrderSide side, double tickSize, EnumOrderType orderType,double barrierlimitprice) {
         double price = symbols.get(id).getLastPrice();
         String type = symbols.get(id).getType();
         switch (type) {
@@ -1679,6 +1679,13 @@ public class Utilities {
                 }
                 break;
 
+        }
+        if(barrierlimitprice>0){
+            if (side.equals(EnumOrderSide.BUY) || side.equals(EnumOrderSide.COVER)) {
+                price = Math.min(barrierlimitprice, price);
+            } else {
+                price = Math.max(barrierlimitprice,price);
+            }
         }
         return price;
     }

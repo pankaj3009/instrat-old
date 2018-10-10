@@ -557,7 +557,7 @@ public class OrderBean extends ConcurrentHashMap<String, String> {
     }
     
     public double getBarrierLimitPrice() {
-        return Utilities.getInt(this.get("BarrierLimitPrice"), 0);
+        return Utilities.getDouble(this.get("BarrierLimitPrice"), 0);
     }
 
     public void setBarrierLimitPrice(double value) {

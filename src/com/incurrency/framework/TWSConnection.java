@@ -611,7 +611,7 @@ public class TWSConnection extends Thread implements EWrapper, Connection {
 //                        int connectionid = Parameters.connection.indexOf(this.getC());
                             logger.log(Level.INFO, "200,Adding Linked Order. Current OrderSize: {0}, Residual:{1}", new Object[]{String.valueOf(order.m_totalQuantity), String.valueOf(event.getOriginalOrderSize()-event.getTotalFillSize()-order.m_totalQuantity)});
                             if (event.getOrderType().equals(EnumOrderType.CUSTOMREL)) {
-                                double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingFutureID(), event.getOrderSide(), oms.getTickSize(), event.getOrderType());
+                                double limitprice = Utilities.getLimitPriceForOrder(Parameters.symbol, parentid, Parameters.symbol.get(parentid).getUnderlyingFutureID(), event.getOrderSide(), oms.getTickSize(), event.getOrderType(),event.getBarrierLimitPrice());
                                 if (limitprice > 0) {
                                     order.m_lmtPrice = limitprice;
                                 }
