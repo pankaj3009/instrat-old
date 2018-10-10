@@ -108,7 +108,7 @@ public class Strategy implements NotificationListener {
                                         OrderQueueKey oqk = new OrderQueueKey(oqki);
                                         if (Utilities.isLiveOrder(c, oqk)) { //if the order is live
                                             OrderBean oqvl = c.getOrderBeanCopy(oqk);
-                                            if (oqvl.getTIF() != "GTC") {
+                                            if (!oqvl.getTIF().equals("GTC")) {
                                                 oms.cancelOpenOrders(c, id, strategy);
                                             }
                                         }
