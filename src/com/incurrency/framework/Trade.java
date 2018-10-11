@@ -139,7 +139,7 @@ public class Trade {
         String[] symbolsvector = out.split("_", -1);
         if (symbolsvector.length == 5 && symbolsvector[1].equals("OPT")) {
             double entrysplitadjust = Trade.getEntrySplitAdjust(db, internalOrderID);
-            double strike = Utilities.getDouble(out1, 1) / entrysplitadjust;
+            double strike = Utilities.getDouble(symbolsvector[4], 1) / entrysplitadjust;
             strike = Utilities.round(strike, tickSize);
             String sStrike = Utilities.roundToDecimal(String.valueOf(strike));
             symbolsvector[4] = sStrike;
@@ -270,7 +270,7 @@ public class Trade {
         String[] symbolsvector = out.split("_", -1);
         if (symbolsvector.length == 5 && symbolsvector[1].equals("OPT")) {
             double entrysplitadjust = Trade.getEntrySplitAdjust(db, internalOrderID);
-            double strike = Utilities.getDouble(out1, 1) / entrysplitadjust;
+            double strike = Utilities.getDouble(symbolsvector[4], 1) / entrysplitadjust;
             strike = Utilities.round(strike, tickSize);
             String sStrike = Utilities.roundToDecimal(String.valueOf(strike));
             symbolsvector[4] = sStrike;
@@ -609,7 +609,7 @@ public class Trade {
         String[] symbolsvector=out.split("_", -1);
         if(symbolsvector.length==5 && symbolsvector[1].equals("OPT")){
         double entrysplitadjust=Trade.getEntrySplitAdjust(db, internalOrderID);
-        double strike=Utilities.getDouble(out1, 1)/entrysplitadjust;
+        double strike=Utilities.getDouble(symbolsvector[4], 1)/entrysplitadjust;
         strike=Utilities.round(strike, tickSize);
         String sStrike=Utilities.roundToDecimal(String.valueOf(strike));
         symbolsvector[4]=sStrike;
